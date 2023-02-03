@@ -3,11 +3,12 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Threading;
-using System.Collections.Immutable;
 
 namespace Microsoft.CommonLanguageServerProtocol.Framework;
 
@@ -156,6 +157,7 @@ public class RequestExecutionQueue<TRequestContext> : IRequestExecutionQueue<TRe
         ILspServices? lspServices = null;
         try
         {
+            var pendingTasks = new Dictionary<Task, CancellationTokenSource>();
             while (!_cancelSource.IsCancellationRequested)
             {
                 // First attempt to de-queue the work item in its own try-catch.
@@ -186,6 +188,22 @@ public class RequestExecutionQueue<TRequestContext> : IRequestExecutionQueue<TRe
                     var context = await work.CreateRequestContextAsync(cancellationToken).ConfigureAwait(false);
                     if (work.MutatesServerState)
                     {
+                        //if (work.MutationRequiresPendingTasksCompletion)
+                        //{
+                        if (pendingTasks.Count > 0)
+                        {
+                            // Cancel all pending tasks
+                            var pendingTasksArray = pendingTasks.ToArray();
+                            for (var i = 0; i < pendingTasksArray.Length; i++)
+                            {
+                                pendingTasksArray[i].Value.Cancel();
+                            }
+
+                            // wait for all pending tasks to complete
+                            await Task.WhenAll(pendingTasksArray.Select(kvp => kvp.Key)).ConfigureAwait(false);
+                        }
+                        //}
+
                         // Mutating requests block other requests from starting to ensure an up to date snapshot is used.
                         // Since we're explicitly awaiting exceptions to mutating requests will bubble up here.
                         await WrapStartRequestTaskAsync(work.StartRequestAsync(context, cancellationToken), rethrowExceptions: true).ConfigureAwait(false);
@@ -197,7 +215,14 @@ public class RequestExecutionQueue<TRequestContext> : IRequestExecutionQueue<TRe
                         // though these errors don't put us into a bad state as far as the rest of the queue goes.
                         // Furthermore we use Task.Run here to protect ourselves against synchronous execution of work
                         // blocking the request queue for longer periods of time (it enforces parallelizabilty).
-                        _ = WrapStartRequestTaskAsync(Task.Run(() => work.StartRequestAsync(context, cancellationToken), cancellationToken), rethrowExceptions: false);
+                        var pendingTask = WrapStartRequestTaskAsync(Task.Run(() => work.StartRequestAsync(context, cancellationToken), cancellationToken), rethrowExceptions: false);
+
+                        //if (work.MutationRequiresPendingTasksCompletion)
+                        //{
+                        pendingTasks.Add(pendingTask, cancellationTokenSource);
+
+                        _ = pendingTask.ContinueWith(t => pendingTasks.Remove(t), TaskScheduler.Default);
+                        //}
                     }
                 }
                 catch (OperationCanceledException ex) when (ex.CancellationToken == queueItem.cancellationToken)
