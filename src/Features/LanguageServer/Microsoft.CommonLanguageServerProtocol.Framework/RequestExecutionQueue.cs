@@ -13,7 +13,7 @@ using Microsoft.VisualStudio.Threading;
 namespace Microsoft.CommonLanguageServerProtocol.Framework;
 
 /// <summary>
-/// Coordinates the exectution of LSP messages to ensure correct results are sent back.
+/// Coordinates the execution of LSP messages to ensure correct results are sent back.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -22,7 +22,7 @@ namespace Microsoft.CommonLanguageServerProtocol.Framework;
 /// (via textDocument/didChange for example).
 /// </para>
 /// <para>
-/// This class acheives this by distinguishing between mutating and non-mutating requests, and ensuring that
+/// This class achieves this by distinguishing between mutating and non-mutating requests, and ensuring that
 /// when a mutating request comes in, its processing blocks all subsequent requests. As each request comes in
 /// it is added to a queue, and a queue item will not be retrieved while a mutating request is running. Before
 /// any request is handled the solution state is created by merging workspace solution state, which could have
@@ -214,7 +214,7 @@ public class RequestExecutionQueue<TRequestContext> : IRequestExecutionQueue<TRe
                         // will be sent back to the client but they can also be captured via HandleNonMutatingRequestError,
                         // though these errors don't put us into a bad state as far as the rest of the queue goes.
                         // Furthermore we use Task.Run here to protect ourselves against synchronous execution of work
-                        // blocking the request queue for longer periods of time (it enforces parallelizabilty).
+                        // blocking the request queue for longer periods of time (it enforces parallelizability).
                         var pendingTask = WrapStartRequestTaskAsync(Task.Run(() => work.StartRequestAsync(context, cancellationToken), cancellationToken), rethrowExceptions: false);
 
                         //if (work.MutationRequiresPendingTasksCompletion)
@@ -227,7 +227,7 @@ public class RequestExecutionQueue<TRequestContext> : IRequestExecutionQueue<TRe
                 }
                 catch (OperationCanceledException ex) when (ex.CancellationToken == queueItem.cancellationToken)
                 {
-                    // Explicitly ignore this exception as cancellation occured as a result of our linked cancellation token.
+                    // Explicitly ignore this exception as cancellation occurred as a result of our linked cancellation token.
                     // This means either the queue is shutting down or the request itself was cancelled.
                     //   1.  If the queue is shutting down, then while loop will exit before the next iteration since it checks for cancellation.
                     //   2.  Request cancellations are normal so no need to report anything there.
@@ -252,7 +252,7 @@ public class RequestExecutionQueue<TRequestContext> : IRequestExecutionQueue<TRe
     }
 
     /// <summary>
-    /// Provides an extensiblity point to log or otherwise inspect errors thrown from non-mutating requests,
+    /// Provides an extensibility point to log or otherwise inspect errors thrown from non-mutating requests,
     /// which would otherwise be lost to the fire-and-forget task in the queue.
     /// </summary>
     /// <param name="nonMutatingRequestTask">The task to be inspected.</param>
