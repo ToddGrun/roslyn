@@ -170,7 +170,7 @@ public class RequestExecutionQueue<TRequestContext> : IRequestExecutionQueue<TRe
         ILspServices? lspServices = null;
         try
         {
-            var pendingTasks = new ConcurrentDictionary<Task, CancellationTokenSource?>();
+            var concurrentlyExecutingTasks = new ConcurrentDictionary<Task, CancellationTokenSource>();
 
             while (!_cancelSource.IsCancellationRequested)
             {
@@ -198,10 +198,7 @@ public class RequestExecutionQueue<TRequestContext> : IRequestExecutionQueue<TRe
                     {
                         // Verify this queueitem hasn't already been cancelled before creating a linked
                         // CancellationTokenSource based on it.
-                        if (cancellationToken.IsCancellationRequested)
-                        {
-                            cancellationToken.ThrowIfCancellationRequested();
-                        }
+                        cancellationToken.ThrowIfCancellationRequested();
 
                         cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(CancellationToken, cancellationToken);
 
@@ -219,23 +216,20 @@ public class RequestExecutionQueue<TRequestContext> : IRequestExecutionQueue<TRe
                     {
                         if (CancelInProgressWorkUponMutatingRequest)
                         {
-                            if (pendingTasks.Count > 0)
+                            // Cancel all concurrently executing tasks
+                            var concurrentlyExecutingTasksArray = concurrentlyExecutingTasks.ToArray();
+                            for (var i = 0; i < concurrentlyExecutingTasksArray.Length; i++)
                             {
-                                // Cancel all pending tasks
-                                var pendingTasksArray = pendingTasks.ToArray();
-                                for (var i = 0; i < pendingTasksArray.Length; i++)
-                                {
-                                    pendingTasksArray[i].Value.Cancel();
-                                }
+                                concurrentlyExecutingTasksArray[i].Value.Cancel();
+                            }
 
-                                try
-                                {
-                                    // wait for all pending tasks to complete their cancellation
-                                    await Task.WhenAll(pendingTasksArray.Select(kvp => kvp.Key)).ConfigureAwait(false);
-                                }
-                                catch (TaskCanceledException)
-                                {
-                                }
+                            try
+                            {
+                                // wait for all pending tasks to complete their cancellation
+                                await Task.WhenAll(concurrentlyExecutingTasksArray.Select(kvp => kvp.Key)).ConfigureAwait(false);
+                            }
+                            catch (TaskCanceledException)
+                            {
                             }
                         }
 
@@ -254,15 +248,25 @@ public class RequestExecutionQueue<TRequestContext> : IRequestExecutionQueue<TRe
 
                         if (CancelInProgressWorkUponMutatingRequest)
                         {
-                            pendingTasks.TryAdd(pendingTask, cancellationTokenSource);
+                            if (cancellationTokenSource is null)
+                            {
+                                throw new InvalidOperationException($"unexpected null value for {nameof(cancellationTokenSource)}");
+                            }
+
+                            if (!concurrentlyExecutingTasks.TryAdd(pendingTask, cancellationTokenSource))
+                            {
+                                throw new InvalidOperationException($"unable to add {pendingTask} into {concurrentlyExecutingTasks}");
+                            }
 
                             _ = pendingTask.ContinueWith(t =>
                             {
-                                if (pendingTasks.TryRemove(t, out var pendingCancellationTokenSource))
+                                if (!concurrentlyExecutingTasks.TryRemove(t, out var pendingCancellationTokenSource))
                                 {
-                                    pendingCancellationTokenSource?.Dispose();
+                                    throw new InvalidOperationException($"unexpected failure to remove task from {nameof(concurrentlyExecutingTasks)}");
                                 }
-                            }, TaskScheduler.Default);
+
+                                pendingCancellationTokenSource.Dispose();
+                            }, CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
                         }
                     }
                 }
