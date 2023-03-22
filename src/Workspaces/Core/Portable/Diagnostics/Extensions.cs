@@ -91,6 +91,7 @@ namespace Microsoft.CodeAnalysis.Diagnostics
             IEnumerable<DiagnosticAnalyzer> analyzers,
             SkippedHostAnalyzersInfo skippedAnalyzersInfo,
             bool includeSuppressedDiagnostics,
+            Func<Task> waitForPriorityExecution,
             CancellationToken cancellationToken)
         {
             SyntaxTree? treeToAnalyze = null;
@@ -111,6 +112,7 @@ namespace Microsoft.CodeAnalysis.Diagnostics
             foreach (var analyzer in analyzers)
             {
                 cancellationToken.ThrowIfCancellationRequested();
+                await waitForPriorityExecution().ConfigureAwait(false);
 
                 if (skippedAnalyzersInfo.SkippedAnalyzers.Contains(analyzer))
                 {
@@ -165,12 +167,14 @@ namespace Microsoft.CodeAnalysis.Diagnostics
                 {
                     foreach (var (tree, diagnosticsByAnalyzerMap) in analysisResult.SyntaxDiagnostics)
                     {
+                        await waitForPriorityExecution().ConfigureAwait(false);
                         AddAnalyzerDiagnosticsToResult(analyzer, diagnosticsByAnalyzerMap, ref result, compilation,
                             tree, additionalDocumentId: null, span: null, AnalysisKind.Syntax, diagnosticIdsToFilter, includeSuppressedDiagnostics);
                     }
 
                     foreach (var (tree, diagnosticsByAnalyzerMap) in analysisResult.SemanticDiagnostics)
                     {
+                        await waitForPriorityExecution().ConfigureAwait(false);
                         AddAnalyzerDiagnosticsToResult(analyzer, diagnosticsByAnalyzerMap, ref result, compilation,
                             tree, additionalDocumentId: null, span: null, AnalysisKind.Semantic, diagnosticIdsToFilter, includeSuppressedDiagnostics);
                     }
@@ -179,6 +183,7 @@ namespace Microsoft.CodeAnalysis.Diagnostics
                     {
                         var additionalDocumentId = project.GetDocumentForFile(file);
                         var kind = additionalDocumentId != null ? AnalysisKind.Syntax : AnalysisKind.NonLocal;
+                        await waitForPriorityExecution().ConfigureAwait(false);
                         AddAnalyzerDiagnosticsToResult(analyzer, diagnosticsByAnalyzerMap, ref result, compilation,
                             tree: null, additionalDocumentId, span: null, kind, diagnosticIdsToFilter, includeSuppressedDiagnostics);
                     }
@@ -204,6 +209,7 @@ namespace Microsoft.CodeAnalysis.Diagnostics
                     {
                         foreach (var group in additionalPragmaSuppressionDiagnostics.GroupBy(d => d.Location.SourceTree!))
                         {
+                            await waitForPriorityExecution().ConfigureAwait(false);
                             AddDiagnosticsToResult(group.AsImmutable(), ref result, compilation, group.Key, additionalDocumentId: null,
                                 span: null, AnalysisKind.Semantic, diagnosticIdsToFilter, includeSuppressedDiagnostics);
                         }
