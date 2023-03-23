@@ -18,12 +18,21 @@ using Microsoft.CodeAnalysis.Shared.Extensions;
 using Microsoft.CodeAnalysis.Telemetry;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.CodeAnalysis.Workspaces.Diagnostics;
+using Microsoft.VisualStudio.Threading;
 using Roslyn.Utilities;
 
 namespace Microsoft.CodeAnalysis.Remote.Diagnostics
 {
     internal class DiagnosticComputer
     {
+        private record struct GetDiagnosticsParams(
+            DiagnosticComputer DiagnosticComputer,
+            IEnumerable<string> AnalyzerIds,
+            bool ReportSuppressedDiagnostics,
+            bool LogPerformanceInfo,
+            bool GetTelemetryInfo,
+            CancellationToken CancellationToken);
+
         /// <summary>
         /// Cache of <see cref="CompilationWithAnalyzers"/> and a map from analyzer IDs to <see cref="DiagnosticAnalyzer"/>s
         /// for all analyzers for the last project to be analyzed.
@@ -53,7 +62,7 @@ namespace Microsoft.CodeAnalysis.Remote.Diagnostics
 
         /// <summary>
         /// Indicates the count of high priority diagnostic requests in execution. When a
-        /// high priority request is completed and this value decremented, it will mark
+        /// high priority request is completed and this value gets decremented back to 0, it will mark
         /// <see cref="s_highPriorityComputeTaskCompletionSource"/>'s Task completed, allowing
         /// waiting normal priority diagnostics to resume.
         /// </summary>
@@ -61,7 +70,6 @@ namespace Microsoft.CodeAnalysis.Remote.Diagnostics
         /// Read/write access is guarded by <see cref="s_gate"/>.
         /// </remarks>
         private static int s_highPriorityComputeTaskCount = 0;
-
 
         /// <summary>
         /// Static gate controlling access to following static fields:
@@ -144,34 +152,20 @@ namespace Microsoft.CodeAnalysis.Remote.Diagnostics
                 }
             }
 
+            var diagnosticsComputer = new DiagnosticComputer(document, project, solutionChecksum, ideOptions, span, analysisKind, analyzerInfoCache, hostWorkspaceServices);
+            var getDiagnosticsParams = new GetDiagnosticsParams(diagnosticsComputer, analyzerIds, reportSuppressedDiagnostics, logPerformanceInfo, getTelemetryInfo, cancellationToken);
+
             if (highPriority)
             {
-                return await GetHighPriorityDiagnosticsAsync(
-                    document, project, solutionChecksum, ideOptions, span, analyzerIds, analysisKind, analyzerInfoCache,
-                    hostWorkspaceServices, reportSuppressedDiagnostics, logPerformanceInfo, getTelemetryInfo, cancellationToken).ConfigureAwait(false);
+                return await GetHighPriorityDiagnosticsAsync(getDiagnosticsParams).ConfigureAwait(false);
             }
             else
             {
-                return await GetNormalPriorityDiagnosticsAsync(
-                    document, project, solutionChecksum, ideOptions, span, analyzerIds, analysisKind, analyzerInfoCache,
-                    hostWorkspaceServices, reportSuppressedDiagnostics, logPerformanceInfo, getTelemetryInfo, cancellationToken).ConfigureAwait(false);
+                return await GetNormalPriorityDiagnosticsAsync(getDiagnosticsParams).ConfigureAwait(false);
             }
         }
 
-        private static async Task<SerializableDiagnosticAnalysisResults> GetHighPriorityDiagnosticsAsync(
-            TextDocument? document,
-            Project project,
-            Checksum solutionChecksum,
-            IdeAnalyzerOptions ideOptions,
-            TextSpan? span,
-            IEnumerable<string> analyzerIds,
-            AnalysisKind? analysisKind,
-            DiagnosticAnalyzerInfoCache analyzerInfoCache,
-            HostWorkspaceServices hostWorkspaceServices,
-            bool reportSuppressedDiagnostics,
-            bool logPerformanceInfo,
-            bool getTelemetryInfo,
-            CancellationToken cancellationToken)
+        private static async Task<SerializableDiagnosticAnalysisResults> GetHighPriorityDiagnosticsAsync(GetDiagnosticsParams param)
         {
             lock (s_gate)
             {
@@ -183,10 +177,8 @@ namespace Microsoft.CodeAnalysis.Remote.Diagnostics
 
             try
             {
-                var diagnosticsComputer = new DiagnosticComputer(document, project,
-                    solutionChecksum, ideOptions, span, analysisKind, analyzerInfoCache, hostWorkspaceServices);
-
-                return await diagnosticsComputer.GetDiagnosticsAsync(analyzerIds, reportSuppressedDiagnostics, logPerformanceInfo, getTelemetryInfo, () => Task.CompletedTask, cancellationToken).ConfigureAwait(false);
+                return await param.DiagnosticComputer.GetDiagnosticsAsync(param.AnalyzerIds, param.ReportSuppressedDiagnostics, param.LogPerformanceInfo,
+                    param.GetTelemetryInfo, WaitForPriorityExecutionAsync, param.CancellationToken).ConfigureAwait(false);
             }
             finally
             {
@@ -194,34 +186,28 @@ namespace Microsoft.CodeAnalysis.Remote.Diagnostics
                 {
                     if (0 == Interlocked.Decrement(ref s_highPriorityComputeTaskCount))
                     {
+                        Contract.ThrowIfNull(s_highPriorityComputeTaskCompletionSource);
                         s_highPriorityComputeTaskCompletionSource.SetResult(true);
+                        s_highPriorityComputeTaskCompletionSource = null;
                     }
                 }
             }
+
+            static ValueTask WaitForPriorityExecutionAsync(CancellationToken cancellationToken)
+            {
+                // High priority diagnostics need not wait
+                return new ValueTask();
+            }
         }
 
-        private static async Task<SerializableDiagnosticAnalysisResults> GetNormalPriorityDiagnosticsAsync(
-            TextDocument? document,
-            Project project,
-            Checksum solutionChecksum,
-            IdeAnalyzerOptions ideOptions,
-            TextSpan? span,
-            IEnumerable<string> analyzerIds,
-            AnalysisKind? analysisKind,
-            DiagnosticAnalyzerInfoCache analyzerInfoCache,
-            HostWorkspaceServices hostWorkspaceServices,
-            bool reportSuppressedDiagnostics,
-            bool logPerformanceInfo,
-            bool getTelemetryInfo,
-            CancellationToken cancellationToken)
+        private static async Task<SerializableDiagnosticAnalysisResults> GetNormalPriorityDiagnosticsAsync(GetDiagnosticsParams param)
         {
-            var diagnosticsComputer = new DiagnosticComputer(document, project,
-                solutionChecksum, ideOptions, span, analysisKind, analyzerInfoCache, hostWorkspaceServices);
-            return await diagnosticsComputer.GetDiagnosticsAsync(analyzerIds, reportSuppressedDiagnostics, logPerformanceInfo, getTelemetryInfo, WaitForPriorityExecutionAsync, cancellationToken).ConfigureAwait(false);
+            return await param.DiagnosticComputer.GetDiagnosticsAsync(param.AnalyzerIds, param.ReportSuppressedDiagnostics, param.LogPerformanceInfo,
+                param.GetTelemetryInfo, WaitForPriorityExecutionAsync, param.CancellationToken).ConfigureAwait(false);
 
-            static async Task WaitForPriorityExecutionAsync()
+            static async ValueTask WaitForPriorityExecutionAsync(CancellationToken cancellationToken)
             {
-                Task task;
+                Task? task;
 
                 lock (s_gate)
                 {
@@ -230,7 +216,7 @@ namespace Microsoft.CodeAnalysis.Remote.Diagnostics
 
                 if (task is not null)
                 {
-                    await task.ConfigureAwait(false);
+                    await task.WithCancellation(cancellationToken).ConfigureAwait(false);
                 }
             }
         }
@@ -240,12 +226,12 @@ namespace Microsoft.CodeAnalysis.Remote.Diagnostics
             bool reportSuppressedDiagnostics,
             bool logPerformanceInfo,
             bool getTelemetryInfo,
-            Func<Task> waitForPriorityExecution,
+            Func<CancellationToken, ValueTask> waitForPriorityExecutionAsync,
             CancellationToken cancellationToken)
         {
             var (compilationWithAnalyzers, analyzerToIdMap) = await GetOrCreateCompilationWithAnalyzersAsync(cancellationToken).ConfigureAwait(false);
 
-            await waitForPriorityExecution().ConfigureAwait(false);
+            await waitForPriorityExecutionAsync(cancellationToken).ConfigureAwait(false);
 
             var analyzers = GetAnalyzers(analyzerToIdMap, analyzerIds);
             if (analyzers.IsEmpty)
@@ -262,7 +248,7 @@ namespace Microsoft.CodeAnalysis.Remote.Diagnostics
             var skippedAnalyzersInfo = _project.GetSkippedAnalyzersInfo(_analyzerInfoCache);
 
             return await AnalyzeAsync(compilationWithAnalyzers, analyzerToIdMap, analyzers, skippedAnalyzersInfo,
-                reportSuppressedDiagnostics, logPerformanceInfo, getTelemetryInfo, waitForPriorityExecution, cancellationToken).ConfigureAwait(false);
+                reportSuppressedDiagnostics, logPerformanceInfo, getTelemetryInfo, waitForPriorityExecutionAsync, cancellationToken).ConfigureAwait(false);
         }
 
         private async Task<SerializableDiagnosticAnalysisResults> AnalyzeAsync(
@@ -273,7 +259,7 @@ namespace Microsoft.CodeAnalysis.Remote.Diagnostics
             bool reportSuppressedDiagnostics,
             bool logPerformanceInfo,
             bool getTelemetryInfo,
-            Func<Task> waitForPriorityExecution,
+            Func<CancellationToken, ValueTask> waitForPriorityExecutionAsync,
             CancellationToken cancellationToken)
         {
             var documentAnalysisScope = _document != null
@@ -283,7 +269,7 @@ namespace Microsoft.CodeAnalysis.Remote.Diagnostics
             var (analysisResult, additionalPragmaSuppressionDiagnostics) = await compilationWithAnalyzers.GetAnalysisResultAsync(
                 documentAnalysisScope, _project, _analyzerInfoCache, cancellationToken).ConfigureAwait(false);
 
-            await waitForPriorityExecution().ConfigureAwait(false);
+            await waitForPriorityExecutionAsync(cancellationToken).ConfigureAwait(false);
 
             if (logPerformanceInfo && _performanceTracker != null)
             {
@@ -304,7 +290,7 @@ namespace Microsoft.CodeAnalysis.Remote.Diagnostics
             var builderMap = await analysisResult.ToResultBuilderMapAsync(
                 additionalPragmaSuppressionDiagnostics, documentAnalysisScope,
                 _project, VersionStamp.Default, compilationWithAnalyzers.Compilation,
-                analyzers, skippedAnalyzersInfo, reportSuppressedDiagnostics, waitForPriorityExecution, cancellationToken).ConfigureAwait(false);
+                analyzers, skippedAnalyzersInfo, reportSuppressedDiagnostics, waitForPriorityExecutionAsync, cancellationToken).ConfigureAwait(false);
 
             var telemetry = getTelemetryInfo
                 ? GetTelemetryInfo(analysisResult, analyzers, analyzerToIdMap)

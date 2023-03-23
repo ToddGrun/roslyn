@@ -114,7 +114,7 @@ namespace Microsoft.CodeAnalysis.Diagnostics
             var builderMap = await analysisResult.ToResultBuilderMapAsync(
                 additionalPragmaSuppressionDiagnostics, documentAnalysisScope, project, version,
                 compilationWithAnalyzers.Compilation, analyzers, skippedAnalyzersInfo,
-                compilationWithAnalyzers.AnalysisOptions.ReportSuppressedDiagnostics, cancellationToken).ConfigureAwait(false);
+                compilationWithAnalyzers.AnalysisOptions.ReportSuppressedDiagnostics, _ => new ValueTask(), cancellationToken).ConfigureAwait(false);
 
             var result = builderMap.ToImmutableDictionary(kv => kv.Key, kv => DiagnosticAnalysisResult.CreateFromBuilder(kv.Value));
             var telemetry = getTelemetryInfo
