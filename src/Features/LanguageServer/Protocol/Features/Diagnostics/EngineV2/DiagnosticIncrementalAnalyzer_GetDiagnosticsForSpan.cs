@@ -556,7 +556,7 @@ namespace Microsoft.CodeAnalysis.Diagnostics.EngineV2
                 var analyzerTypeName = analyzer.GetType().Name;
                 var document = executor.AnalysisScope.TextDocument;
 
-                using (_addOperationScope?.Invoke(analyzerTypeName))
+                using (_addOperationScope?.Invoke($"{nameof(FunctionId.DiagnosticAnalyzerService_GetDiagnosticsForSpanAsync)}.{analyzerTypeName}"))
                 using (_addOperationScope is object ? RoslynEventSource.LogInformationalBlock(FunctionId.DiagnosticAnalyzerService_GetDiagnosticsForSpanAsync, analyzerTypeName, cancellationToken) : default)
                 {
                     var diagnostics = await executor.ComputeDiagnosticsAsync(analyzer, cancellationToken).ConfigureAwait(false);

@@ -176,10 +176,15 @@ namespace Microsoft.CodeAnalysis.CodeFixes
 
             // We mark requests to GetDiagnosticsForSpanAsync as 'isExplicit = true' to indicate
             // user-invoked diagnostic requests, for example, user invoked Ctrl + Dot operation for lightbulb.
-            var diagnostics = await _diagnosticService.GetDiagnosticsForSpanAsync(
-                document, range, GetShouldIncludeDiagnosticPredicate(document, priorityProvider),
-                includeCompilerDiagnostics: true, includeSuppressedDiagnostics: includeSuppressionFixes, priorityProvider,
-                addOperationScope, DiagnosticKind.All, isExplicit: true, cancellationToken).ConfigureAwait(false);
+            ImmutableArray<DiagnosticData> diagnostics;
+
+            using (addOperationScope(nameof(FunctionId.DiagnosticAnalyzerService_GetDiagnosticsForSpanAsync)))
+            {
+                diagnostics = await _diagnosticService.GetDiagnosticsForSpanAsync(
+                    document, range, GetShouldIncludeDiagnosticPredicate(document, priorityProvider),
+                    includeCompilerDiagnostics: true, includeSuppressedDiagnostics: includeSuppressionFixes, priorityProvider,
+                    addOperationScope, DiagnosticKind.All, isExplicit: true, cancellationToken).ConfigureAwait(false);
+            }
 
             var buildOnlyDiagnosticsService = document.Project.Solution.Services.GetRequiredService<IBuildOnlyDiagnosticsService>();
             var buildOnlyDiagnostics = buildOnlyDiagnosticsService.GetBuildOnlyDiagnostics(document.Id);
@@ -490,7 +495,7 @@ namespace Microsoft.CodeAnalysis.CodeFixes
                                 var fixerName = fixer.GetType().Name;
                                 var fixerMetadata = TryGetMetadata(fixer);
 
-                                using (addOperationScope(fixerName))
+                                using (addOperationScope($"{nameof(FunctionId.CodeFixes_GetCodeFixesAsync)}.{fixerName}"))
                                 using (RoslynEventSource.LogInformationalBlock(FunctionId.CodeFixes_GetCodeFixesAsync, fixerName, cancellationToken))
                                 {
                                     if (fixAllForInSpan)

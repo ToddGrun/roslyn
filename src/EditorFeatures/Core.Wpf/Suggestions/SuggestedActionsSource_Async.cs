@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
@@ -61,6 +62,34 @@ namespace Microsoft.CodeAnalysis.Editor.Implementation.Suggestions
                 }
             }
 
+            private record struct TelemetryOperationScopeResult(
+                string Name,
+                long ExecutionTime);
+
+            private class TelemetryOperationScope : IDisposable
+            {
+                private readonly string _name;
+                private readonly SharedStopwatch _timer;
+                private readonly ConcurrentQueue<TelemetryOperationScopeResult> _scopes;
+
+                public TelemetryOperationScope(string name, ConcurrentQueue<TelemetryOperationScopeResult> scopes)
+                {
+                    _name = name;
+                    _scopes = scopes;
+                    _timer = SharedStopwatch.StartNew();
+                }
+
+                public void Dispose()
+                {
+                    var elapsed = (long)_timer.Elapsed.TotalMilliseconds;
+
+                    if (elapsed > 50)
+                    {
+                        _scopes.Enqueue(new TelemetryOperationScopeResult(_name, elapsed));
+                    }
+                }
+            }
+
             private async Task GetSuggestedActionsWorkerAsync(
                 ISuggestedActionCategorySet requestedActionCategories,
                 SnapshotSpan range,
@@ -110,15 +139,21 @@ namespace Microsoft.CodeAnalysis.Editor.Implementation.Suggestions
                     // then pass it continuously from one priority group to the next.
                     var lowPriorityAnalyzers = new ConcurrentSet<DiagnosticAnalyzer>();
 
+                    var allTelemetryScopes = new List<(ConcurrentQueue<TelemetryOperationScopeResult> Results, CodeActionRequestPriority Priority, long Elapsed)>();
+                    var stopwatch = SharedStopwatch.StartNew();
+
                     // Collectors are in priority order.  So just walk them from highest to lowest.
                     foreach (var collector in collectors)
                     {
                         if (TryGetPriority(collector.Priority) is CodeActionRequestPriority priority)
                         {
+                            var scopes = new ConcurrentQueue<TelemetryOperationScopeResult>();
+                            var currentPriorityStopwatch = SharedStopwatch.StartNew();
+
                             var allSets = GetCodeFixesAndRefactoringsAsync(
                                 state, requestedActionCategories, document,
                                 range, selection,
-                                addOperationScope: _ => null,
+                                addOperationScope: name => new TelemetryOperationScope(name, scopes),
                                 new SuggestedActionPriorityProvider(priority, lowPriorityAnalyzers),
                                 currentActionCount, cancellationToken).WithCancellation(cancellationToken).ConfigureAwait(false);
 
@@ -168,6 +203,8 @@ namespace Microsoft.CodeAnalysis.Editor.Implementation.Suggestions
                                 currentActionCount += set.Actions.Count();
                                 collector.Add(set);
                             }
+
+                            allTelemetryScopes.Add((scopes, priority, (long)currentPriorityStopwatch.Elapsed.TotalMilliseconds));
                         }
 
                         // Ensure we always complete the collector even if we didn't add any items to it.
@@ -176,6 +213,31 @@ namespace Microsoft.CodeAnalysis.Editor.Implementation.Suggestions
                         collector.Complete();
                         completedCollectors.Add(collector);
                     }
+
+                    LogTelemetryScopes(allTelemetryScopes, stopwatch);
+                }
+
+                static void LogTelemetryScopes(List<(ConcurrentQueue<TelemetryOperationScopeResult> Results, CodeActionRequestPriority Priority, long Elapsed)> allTelemetryScopes, SharedStopwatch stopwatch)
+                {
+                    Logger.Log(FunctionId.SuggestedActions_PerformanceInfo, KeyValueLogMessage.Create(m =>
+                    {
+                        m["ExecutionTime"] = (long)stopwatch.Elapsed.TotalMilliseconds;
+
+                        foreach (var telemetryScope in allTelemetryScopes)
+                        {
+                            var priorityPropertyName = $"Priority{(int)telemetryScope.Priority}";
+                            m[priorityPropertyName + ".ExecutionTime"] = telemetryScope.Elapsed;
+
+                            var currentIndex = 1;
+                            foreach (var telemetryResult in telemetryScope.Results.OrderByDescending(r => r.ExecutionTime).Take(5))
+                            {
+                                var propertyNamePrefix = priorityPropertyName + ".Slow" + currentIndex++;
+
+                                m[propertyNamePrefix + ".Name"] = telemetryResult.Name;
+                                m[propertyNamePrefix + ".ExecutionTime"] = telemetryResult.ExecutionTime;
+                            }
+                        }
+                    }));
                 }
             }
 

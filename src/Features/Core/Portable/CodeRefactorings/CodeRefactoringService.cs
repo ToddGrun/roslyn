@@ -137,7 +137,7 @@ namespace Microsoft.CodeAnalysis.CodeRefactorings
                             var providerName = provider.GetType().Name;
                             RefactoringToMetadataMap.TryGetValue(provider, out var providerMetadata);
 
-                            using (addOperationScope(providerName))
+                            using (addOperationScope($"{nameof(FunctionId.Refactoring_CodeRefactoringService_GetRefactoringsAsync)}.{providerName}"))
                             using (RoslynEventSource.LogInformationalBlock(FunctionId.Refactoring_CodeRefactoringService_GetRefactoringsAsync, providerName, cancellationToken))
                             {
                                 return GetRefactoringFromProviderAsync(document, state, provider, providerMetadata,
