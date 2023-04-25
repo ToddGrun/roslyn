@@ -34,5 +34,17 @@ namespace Microsoft.CodeAnalysis.Telemetry
         /// Removes a <see cref="TraceSource"/> used to log unexpected exceptions.
         /// </summary>
         void UnregisterUnexpectedExceptionLogger(TraceSource logger);
+
+        ITelemetryMeter CreateMeter(string name, string? version = null);
+    }
+
+    internal interface ITelemetryMeter : IDisposable
+    {
+        ITelemetryHistogram<TType> CreateHistogram<TType>(string name, string? unit = null, string? description = null) where TType : struct;
+    }
+
+    internal interface ITelemetryHistogram<TType> where TType : struct
+    {
+        void Record(TType value, KeyValuePair<string, object?> tag);
     }
 }

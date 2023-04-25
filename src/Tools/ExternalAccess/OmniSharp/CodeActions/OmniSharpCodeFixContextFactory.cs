@@ -30,7 +30,7 @@ namespace Microsoft.CodeAnalysis.ExternalAccess.OmniSharp.CodeActions
             Action<CodeAction, TextSpan?> registerRefactoring,
             OmniSharpCodeActionOptions options,
             CancellationToken cancellationToken)
-            => new(document, span, registerRefactoring, new DelegatingCodeActionOptionsProvider(options.GetCodeActionOptions), cancellationToken);
+            => new(document, span, registerRefactoring, new DelegatingCodeActionOptionsProvider(options.GetCodeActionOptions), telemetryService: null, cancellationToken);
 
         public static FixAllContext CreateFixAllContext(
             Document? document,

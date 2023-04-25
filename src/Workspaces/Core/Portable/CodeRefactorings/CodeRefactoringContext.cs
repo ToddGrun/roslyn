@@ -6,6 +6,7 @@ using System;
 using System.ComponentModel;
 using System.Threading;
 using Microsoft.CodeAnalysis.CodeActions;
+using Microsoft.CodeAnalysis.Telemetry;
 using Microsoft.CodeAnalysis.Text;
 using Roslyn.Utilities;
 
@@ -58,6 +59,8 @@ namespace Microsoft.CodeAnalysis.CodeRefactorings
 
         private readonly Action<CodeAction, TextSpan?> _registerRefactoring;
 
+        internal readonly IWorkspaceTelemetryService? TelemetryService;
+
         /// <summary>
         /// Creates a code refactoring context to be passed into <see cref="CodeRefactoringProvider.ComputeRefactoringsAsync(CodeRefactoringContext)"/> method.
         /// </summary>
@@ -67,7 +70,7 @@ namespace Microsoft.CodeAnalysis.CodeRefactorings
             TextSpan span,
             Action<CodeAction> registerRefactoring,
             CancellationToken cancellationToken)
-            : this(document, span, (action, textSpan) => registerRefactoring(action), CodeActionOptions.DefaultProvider, cancellationToken)
+            : this(document, span, (action, textSpan) => registerRefactoring(action), CodeActionOptions.DefaultProvider, telemetryService: null, cancellationToken)
         { }
 
         /// <summary>
@@ -78,7 +81,7 @@ namespace Microsoft.CodeAnalysis.CodeRefactorings
             TextSpan span,
             Action<CodeAction> registerRefactoring,
             CancellationToken cancellationToken)
-            : this(document, span, (action, textSpan) => registerRefactoring(action), CodeActionOptions.DefaultProvider, cancellationToken)
+            : this(document, span, (action, textSpan) => registerRefactoring(action), CodeActionOptions.DefaultProvider, telemetryService: null, cancellationToken)
         { }
 
         /// <summary>
@@ -89,6 +92,7 @@ namespace Microsoft.CodeAnalysis.CodeRefactorings
             TextSpan span,
             Action<CodeAction, TextSpan?> registerRefactoring,
             CodeActionOptionsProvider options,
+            IWorkspaceTelemetryService? telemetryService,
             CancellationToken cancellationToken)
         {
             // NOTE/TODO: Don't make this overload public & obsolete the `Action<CodeAction> registerRefactoring`
@@ -97,6 +101,7 @@ namespace Microsoft.CodeAnalysis.CodeRefactorings
             Span = span;
             _registerRefactoring = registerRefactoring ?? throw new ArgumentNullException(nameof(registerRefactoring));
             Options = options;
+            TelemetryService = telemetryService;
             CancellationToken = cancellationToken;
         }
 

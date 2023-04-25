@@ -131,6 +131,19 @@ namespace Microsoft.CodeAnalysis.Telemetry
             }
         }
 
+        public void LogBlock(FunctionId functionId, LogMessage logMessage, int blockId, CancellationToken cancellationToken)
+        {
+            if (IgnoreMessage(logMessage))
+            {
+                return;
+            }
+
+            if (_pendingScopes.TryGetValue(blockId, out var scope) && scope is TelemetryEvent telemetryEvent)
+            {
+                SetProperties(telemetryEvent, functionId, logMessage);
+            }
+        }
+
         public void LogBlockEnd(FunctionId functionId, LogMessage logMessage, int blockId, int delta, CancellationToken cancellationToken)
         {
             if (IgnoreMessage(logMessage))

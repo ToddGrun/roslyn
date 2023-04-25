@@ -27,6 +27,11 @@ namespace Microsoft.CodeAnalysis.Internal.Log
         void LogBlockStart(FunctionId functionId, LogMessage logMessage, int uniquePairId, CancellationToken cancellationToken);
 
         /// <summary>
+        /// log an event with context message
+        /// </summary>
+        void LogBlock(FunctionId functionId, LogMessage logMessage, int uniquePairId, CancellationToken cancellationToken);
+
+        /// <summary>
         /// log an end event
         /// </summary>
         void LogBlockEnd(FunctionId functionId, LogMessage logMessage, int uniquePairId, int delta, CancellationToken cancellationToken);

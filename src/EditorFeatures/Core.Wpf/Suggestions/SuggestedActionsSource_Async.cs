@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
@@ -61,6 +62,22 @@ namespace Microsoft.CodeAnalysis.Editor.Implementation.Suggestions
                 }
             }
 
+            private class TelemetryOperationScope : IDisposable
+            {
+                private readonly string _name;
+                SharedStopwatch _timer;
+
+                public TelemetryOperationScope(string name)
+                {
+                    _name = name;
+                    _timer = SharedStopwatch.StartNew();
+                }
+
+                public void Dispose()
+                {
+                }
+            }
+
             private async Task GetSuggestedActionsWorkerAsync(
                 ISuggestedActionCategorySet requestedActionCategories,
                 SnapshotSpan range,
@@ -110,15 +127,25 @@ namespace Microsoft.CodeAnalysis.Editor.Implementation.Suggestions
                     // then pass it continuously from one priority group to the next.
                     var lowPriorityAnalyzers = new ConcurrentSet<DiagnosticAnalyzer>();
 
+                    var allTelemetryScopes = new List<ConcurrentQueue<TelemetryOperationScope>>();
+
                     // Collectors are in priority order.  So just walk them from highest to lowest.
                     foreach (var collector in collectors)
                     {
                         if (TryGetPriority(collector.Priority) is CodeActionRequestPriority priority)
                         {
+                            var scopes = new ConcurrentQueue<TelemetryOperationScope>();
+                            allTelemetryScopes.Add(scopes);
+
                             var allSets = GetCodeFixesAndRefactoringsAsync(
                                 state, requestedActionCategories, document,
                                 range, selection,
-                                addOperationScope: _ => null,
+                                addOperationScope: s =>
+                                {
+                                    var scope = new TelemetryOperationScope(s);
+                                    scopes.Enqueue(scope);
+                                    return scope;
+                                },
                                 new SuggestedActionPriorityProvider(priority, lowPriorityAnalyzers),
                                 currentActionCount, cancellationToken).WithCancellation(cancellationToken).ConfigureAwait(false);
 
