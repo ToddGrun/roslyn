@@ -162,6 +162,10 @@ namespace Microsoft.CodeAnalysis.CodeFixes
             Func<string, IDisposable?> addOperationScope,
             [EnumeratorCancellation] CancellationToken cancellationToken)
         {
+            var telemetryPrioritySuffix = $" (Priority {(int)priorityProvider.Priority})";
+
+            using var _ = TelemetryHistogramLogger.LogBlockTimed(TelemetryPerfEventNames.CodeFixes, "Total" + telemetryPrioritySuffix);
+
             // We only need to compute suppression/configuration fixes when request priority is
             // 'CodeActionPriorityRequest.Lowest' or 'CodeActionPriorityRequest.None'.
             var includeSuppressionFixes = priorityProvider.Priority is CodeActionRequestPriority.Lowest or CodeActionRequestPriority.None;
@@ -176,10 +180,15 @@ namespace Microsoft.CodeAnalysis.CodeFixes
 
             // We mark requests to GetDiagnosticsForSpanAsync as 'isExplicit = true' to indicate
             // user-invoked diagnostic requests, for example, user invoked Ctrl + Dot operation for lightbulb.
-            var diagnostics = await _diagnosticService.GetDiagnosticsForSpanAsync(
-                document, range, GetShouldIncludeDiagnosticPredicate(document, priorityProvider),
-                includeCompilerDiagnostics: true, includeSuppressedDiagnostics: includeSuppressionFixes, priorityProvider,
-                addOperationScope, DiagnosticKind.All, isExplicit: true, cancellationToken).ConfigureAwait(false);
+            ImmutableArray<DiagnosticData> diagnostics;
+
+            using (TelemetryHistogramLogger.LogBlockTimed(TelemetryPerfEventNames.CodeFixes, "GetDiagnosticsForSpanAsync" + telemetryPrioritySuffix))
+            {
+                diagnostics = await _diagnosticService.GetDiagnosticsForSpanAsync(
+                    document, range, GetShouldIncludeDiagnosticPredicate(document, priorityProvider),
+                    includeCompilerDiagnostics: true, includeSuppressedDiagnostics: includeSuppressionFixes, priorityProvider,
+                    addOperationScope, DiagnosticKind.All, isExplicit: true, cancellationToken).ConfigureAwait(false);
+            }
 
             var buildOnlyDiagnosticsService = document.Project.Solution.Services.GetRequiredService<IBuildOnlyDiagnosticsService>();
             var buildOnlyDiagnostics = buildOnlyDiagnosticsService.GetBuildOnlyDiagnostics(document.Id);
@@ -471,6 +480,8 @@ namespace Microsoft.CodeAnalysis.CodeFixes
             // To ensure this, we track the fixer that first registered a code action to fix a diagnostic with a specific equivalence key.
             var diagnosticAndEquivalenceKeyToFixersMap = new Dictionary<(Diagnostic diagnostic, string? equivalenceKey), CodeFixProvider>();
 
+            var telemetryPrioritySuffix = $" (Priority {(int)priorityProvider.Priority})";
+
             try
             {
                 foreach (var fixer in allFixers)
@@ -490,6 +501,7 @@ namespace Microsoft.CodeAnalysis.CodeFixes
                                 var fixerName = fixer.GetType().Name;
                                 var fixerMetadata = TryGetMetadata(fixer);
 
+                                using (TelemetryHistogramLogger.LogBlockTimed(TelemetryPerfEventNames.CodeFixes, fixerName + telemetryPrioritySuffix))
                                 using (addOperationScope(fixerName))
                                 using (RoslynEventSource.LogInformationalBlock(FunctionId.CodeFixes_GetCodeFixesAsync, fixerName, cancellationToken))
                                 {
