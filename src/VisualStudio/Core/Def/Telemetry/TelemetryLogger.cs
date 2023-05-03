@@ -85,7 +85,11 @@ namespace Microsoft.CodeAnalysis.Telemetry
             => Enum.GetName(typeof(FunctionId), id)!.Replace('_', separator).ToLowerInvariant();
 
         public static TelemetryLogger Create(TelemetrySession session, bool logDelta)
-            => new Implementation(session, logDelta);
+        {
+            VisualStudioTelemetryHistogramLogger.CreateTelemetryHistogramLogger(session);
+
+            return new Implementation(session, logDelta);
+        }
 
         public abstract bool IsEnabled(FunctionId functionId);
         protected abstract void PostEvent(TelemetryEvent telemetryEvent);

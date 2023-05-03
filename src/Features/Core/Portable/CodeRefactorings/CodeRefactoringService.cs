@@ -17,6 +17,7 @@ using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.Internal.Log;
 using Microsoft.CodeAnalysis.PooledObjects;
 using Microsoft.CodeAnalysis.Shared.Utilities;
+using Microsoft.CodeAnalysis.Telemetry;
 using Microsoft.CodeAnalysis.Text;
 using Roslyn.Utilities;
 
@@ -122,6 +123,7 @@ namespace Microsoft.CodeAnalysis.CodeRefactorings
             Func<string, IDisposable?> addOperationScope,
             CancellationToken cancellationToken)
         {
+            using (TelemetryHistogramLogger.LogBlockTimed(TelemetryPerfEventNames.CodeRefactoring, $"Total (Priority {(int)priority})"))
             using (Logger.LogBlock(FunctionId.Refactoring_CodeRefactoringService_GetRefactoringsAsync, cancellationToken))
             {
                 var extensionManager = document.Project.Solution.Services.GetRequiredService<IExtensionManager>();
@@ -137,6 +139,7 @@ namespace Microsoft.CodeAnalysis.CodeRefactorings
                             var providerName = provider.GetType().Name;
                             RefactoringToMetadataMap.TryGetValue(provider, out var providerMetadata);
 
+                            using (TelemetryHistogramLogger.LogBlockTimed(TelemetryPerfEventNames.CodeRefactoring, providerName))
                             using (addOperationScope(providerName))
                             using (RoslynEventSource.LogInformationalBlock(FunctionId.Refactoring_CodeRefactoringService_GetRefactoringsAsync, providerName, cancellationToken))
                             {

@@ -15,6 +15,7 @@ using Microsoft.CodeAnalysis.ErrorReporting;
 using Microsoft.CodeAnalysis.Internal.Log;
 using Microsoft.CodeAnalysis.PooledObjects;
 using Microsoft.CodeAnalysis.Shared.Extensions;
+using Microsoft.CodeAnalysis.Telemetry;
 using Microsoft.CodeAnalysis.Text;
 using Roslyn.Utilities;
 
@@ -563,6 +564,7 @@ namespace Microsoft.CodeAnalysis.Diagnostics.EngineV2
                 var analyzerTypeName = analyzer.GetType().Name;
                 var document = executor.AnalysisScope.TextDocument;
 
+                using (TelemetryHistogramLogger.LogBlockTimed(TelemetryPerfEventNames.DiagnosticsForSpan, analyzerTypeName))
                 using (_addOperationScope?.Invoke(analyzerTypeName))
                 using (_addOperationScope is object ? RoslynEventSource.LogInformationalBlock(FunctionId.DiagnosticAnalyzerService_GetDiagnosticsForSpanAsync, analyzerTypeName, cancellationToken) : default)
                 {
