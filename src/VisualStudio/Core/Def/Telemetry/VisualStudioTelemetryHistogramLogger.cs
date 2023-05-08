@@ -1,0 +1,186 @@
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.VisualStudio.Telemetry;
+using Microsoft.VisualStudio.Telemetry.Metrics;
+using Microsoft.VisualStudio.Telemetry.Metrics.Events;
+using Roslyn.Utilities;
+
+namespace Microsoft.CodeAnalysis.Telemetry
+{
+    internal class VisualStudioTelemetryHistogramLogger : TelemetryHistogramLogger, IDisposable
+    {
+        private readonly TelemetrySession _session;
+        private readonly VSTelemetryMeterProvider _meterProvider;
+        private readonly Dictionary<string, TelemetryHistogramLoggerForFeature> _histogramLoggers;
+        private readonly int BatchedTelemetryCollectionPeriodInSeconds = 60;
+        private readonly object _lock;
+
+        private VisualStudioTelemetryHistogramLogger(TelemetrySession session)
+        {
+            _session = session;
+            _meterProvider = new();
+            _histogramLoggers = new();
+
+            _ = PostCollectedTelemetryAsync();
+
+            _lock = new object();
+        }
+
+        public static VisualStudioTelemetryHistogramLogger CreateTelemetryHistogramLogger(TelemetrySession session)
+        {
+            var histogramLogger = new VisualStudioTelemetryHistogramLogger(session);
+
+            TelemetryHistogramLogger.SetLogger(histogramLogger);
+
+            return histogramLogger;
+        }
+
+        public override IDisposable LogBlock(string featureName, string metricName)
+        {
+            TelemetryHistogramLoggerForFeature? histogramLogger;
+
+            lock (_lock)
+            {
+                if (!_histogramLoggers.TryGetValue(featureName, out histogramLogger))
+                {
+                    var meterName = "vs.ide.vbcs.perf." + featureName;
+                    var meter = _meterProvider.CreateMeter(meterName, version: "0.25");
+
+                    histogramLogger = new TelemetryHistogramLoggerForFeature(meter, featureName);
+                    _histogramLoggers.Add(featureName, histogramLogger);
+                }
+            }
+
+            return histogramLogger.LogBlockTimed(metricName);
+        }
+
+        private async Task PostCollectedTelemetryAsync()
+        {
+            while (true)
+            {
+                await Task.Delay(BatchedTelemetryCollectionPeriodInSeconds * 1000).ConfigureAwait(false);
+
+                PostCollectedTelemetry();
+            }
+        }
+
+        public void Dispose()
+        {
+            PostCollectedTelemetry();
+        }
+
+        private void PostCollectedTelemetry()
+        {
+            lock (_lock)
+            {
+                foreach (var histogramLogger in _histogramLoggers.Values)
+                {
+                    histogramLogger.PostTelemetry(_session);
+                }
+            }
+        }
+
+        private class TelemetryHistogramLoggerForFeature
+        {
+            private readonly IMeter _meter;
+            private readonly string _featureName;
+            private readonly Dictionary<string, IHistogram<int>> _histograms;
+            private readonly object _lock;
+
+            public TelemetryHistogramLoggerForFeature(IMeter meter, string featureName)
+            {
+                _meter = meter;
+                _featureName = featureName;
+                _histograms = new();
+                _lock = new();
+            }
+
+            public void Log(string metricName, int value)
+            {
+                lock (_lock)
+                {
+                    if (!_histograms.TryGetValue(metricName, out var histogram))
+                    {
+                        histogram = _meter.CreateHistogram<int>(metricName);
+                        _histograms.Add(metricName, histogram);
+                    }
+
+                    histogram.Record(value);
+                }
+            }
+
+            public void PostTelemetry(TelemetrySession session)
+            {
+                lock (_lock)
+                {
+                    foreach (var histogram in _histograms.Values)
+                    {
+                        var telemetryEvent = new TelemetryEvent("vs/ide/vbcs/perf/" + _featureName);
+                        var histogramEvent = new TelemetryHistogramEvent<int>(telemetryEvent, histogram);
+
+                        session.PostMetricEvent(histogramEvent);
+                    }
+
+                    _histograms.Clear();
+                }
+            }
+
+            public IDisposable LogBlockTimed(string metricName)
+            {
+                return new TelemetryLogBlock(metricName, this);
+            }
+        }
+
+        private class TelemetryLogBlock : IDisposable
+        {
+            private static readonly AsyncLocal<TelemetryLogBlock?> s_context = new();
+
+            private readonly string _metricName;
+            private readonly SharedStopwatch _stopwatch;
+            private readonly TelemetryHistogramLoggerForFeature _histogramLogger;
+            private readonly TelemetryLogBlock? _priorBlock;
+
+            public TelemetryLogBlock(string metricName, TelemetryHistogramLoggerForFeature histogramLogger)
+            {
+                _metricName = metricName;
+                _histogramLogger = histogramLogger;
+                _stopwatch = SharedStopwatch.StartNew();
+
+                _priorBlock = s_context.Value;
+                s_context.Value = this;
+
+                var priorBlock = _priorBlock;
+                while (priorBlock is not null)
+                {
+                    if (priorBlock._histogramLogger == _histogramLogger)
+                    {
+                        _metricName = priorBlock._metricName + "." + _metricName;
+                        break;
+                    }
+
+                    priorBlock = priorBlock._priorBlock;
+                }
+            }
+
+            public void Dispose()
+            {
+                if (Debugger.IsAttached)
+                    return;
+
+#if !DEBUG
+                var elapsed = (int)_stopwatch.Elapsed.TotalMilliseconds;
+                _histogramLogger.Log(_metricName, elapsed);
+#endif
+
+                s_context.Value = _priorBlock;
+            }
+        }
+    }
+}

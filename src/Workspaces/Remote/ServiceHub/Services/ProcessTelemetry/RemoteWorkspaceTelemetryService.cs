@@ -13,17 +13,28 @@ using Microsoft.VisualStudio.Telemetry;
 namespace Microsoft.VisualStudio.LanguageServices.Telemetry
 {
     [ExportWorkspaceService(typeof(IWorkspaceTelemetryService)), Shared]
-    internal sealed class RemoteWorkspaceTelemetryService : AbstractWorkspaceTelemetryService
+    internal sealed class RemoteWorkspaceTelemetryService : AbstractWorkspaceTelemetryService, IDisposable
     {
+        private TelemetryLogger? _telemetryLogger;
+
         [ImportingConstructor]
         [Obsolete(MefConstruction.ImportingConstructorMessage, error: true)]
         public RemoteWorkspaceTelemetryService()
         {
         }
 
+        public void Dispose()
+        {
+            (_telemetryLogger as IDisposable)?.Dispose();
+        }
+
         protected override ILogger CreateLogger(TelemetrySession telemetrySession, bool logDelta)
-            => AggregateLogger.Create(
-                TelemetryLogger.Create(telemetrySession, logDelta),
+        {
+            _telemetryLogger = TelemetryLogger.Create(telemetrySession, logDelta);
+
+            return AggregateLogger.Create(
+                _telemetryLogger,
                 Logger.GetLogger());
+        }
     }
 }
