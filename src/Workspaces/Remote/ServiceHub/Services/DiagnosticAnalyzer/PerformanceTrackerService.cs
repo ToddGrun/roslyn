@@ -14,6 +14,7 @@ using System.Text;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.Internal.Log;
+using Microsoft.CodeAnalysis.Telemetry;
 
 namespace Microsoft.CodeAnalysis.Remote.Diagnostics
 {
@@ -61,6 +62,13 @@ namespace Microsoft.CodeAnalysis.Remote.Diagnostics
 
         public void AddSnapshot(IEnumerable<AnalyzerPerformanceInfo> snapshot, int unitCount, bool forSpanAnalysis)
         {
+            var featureName = forSpanAnalysis ? "SpanAnalysis" : "DocumentAnalysis";
+            foreach (var perfInfo in snapshot)
+            {
+                var metricName = GetMetricNameForAnalyzerId(perfInfo.AnalyzerId, perfInfo.BuiltIn);
+                TelemetryHistogramLogger.Log(featureName, metricName, (int)perfInfo.TimeSpan.TotalMilliseconds);
+            }
+
             Logger.Log(FunctionId.PerformanceTrackerService_AddSnapshot, s_snapshotLogger, snapshot, unitCount, forSpanAnalysis);
 
             RecordBuiltInAnalyzers(snapshot);
@@ -72,6 +80,28 @@ namespace Microsoft.CodeAnalysis.Remote.Diagnostics
             }
 
             OnSnapshotAdded();
+
+            static string GetMetricNameForAnalyzerId(string analyzerId, bool isBuiltIn)
+            {
+                if (!isBuiltIn)
+                {
+                    return analyzerId.GetHashCode().ToString();
+                }
+
+                var braceCount = 0;
+                for (var i = 0; i < analyzerId.Length; ++i)
+                {
+                    var ch = analyzerId[i];
+                    if (ch == '[')
+                        braceCount++;
+                    else if (ch == ']')
+                        braceCount--;
+                    else if (braceCount == 0 && ch == ',')
+                        return analyzerId[..i];
+                }
+
+                return analyzerId;
+            }
         }
 
         public void GenerateReport(List<AnalyzerInfoForPerformanceReporting> analyzerInfos, bool forSpanAnalysis)
