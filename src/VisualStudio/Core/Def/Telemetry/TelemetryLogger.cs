@@ -18,14 +18,22 @@ namespace Microsoft.CodeAnalysis.Telemetry
 {
     internal abstract class TelemetryLogger : ILogger
     {
-        private sealed class Implementation : TelemetryLogger
+        private sealed class Implementation : TelemetryLogger, IDisposable
         {
             private readonly TelemetrySession _session;
+            private readonly VisualStudioTelemetryHistogramLogger _histogramLogger;
 
             public Implementation(TelemetrySession session, bool logDelta)
             {
                 _session = session;
                 LogDelta = logDelta;
+
+                _histogramLogger = VisualStudioTelemetryHistogramLogger.CreateTelemetryHistogramLogger(session);
+            }
+
+            public void Dispose()
+            {
+                _histogramLogger.Dispose();
             }
 
             protected override bool LogDelta { get; }
@@ -85,7 +93,9 @@ namespace Microsoft.CodeAnalysis.Telemetry
             => Enum.GetName(typeof(FunctionId), id)!.Replace('_', separator).ToLowerInvariant();
 
         public static TelemetryLogger Create(TelemetrySession session, bool logDelta)
-            => new Implementation(session, logDelta);
+        {
+            return new Implementation(session, logDelta);
+        }
 
         public abstract bool IsEnabled(FunctionId functionId);
         protected abstract void PostEvent(TelemetryEvent telemetryEvent);

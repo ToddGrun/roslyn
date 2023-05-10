@@ -14,6 +14,7 @@ using System.Text;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.Internal.Log;
+using Microsoft.CodeAnalysis.Telemetry;
 
 namespace Microsoft.CodeAnalysis.Remote.Diagnostics
 {
@@ -61,6 +62,12 @@ namespace Microsoft.CodeAnalysis.Remote.Diagnostics
 
         public void AddSnapshot(IEnumerable<AnalyzerPerformanceInfo> snapshot, int unitCount, bool forSpanAnalysis)
         {
+            var featureName = forSpanAnalysis ? "SpanAnalysis" : "DocumentAnalysis";
+            foreach (var perfInfo in snapshot)
+            {
+                TelemetryHistogramLogger.Log(featureName, perfInfo.AnalyzerId, (int)perfInfo.TimeSpan.TotalMilliseconds);
+            }
+
             Logger.Log(FunctionId.PerformanceTrackerService_AddSnapshot, s_snapshotLogger, snapshot, unitCount, forSpanAnalysis);
 
             RecordBuiltInAnalyzers(snapshot);
