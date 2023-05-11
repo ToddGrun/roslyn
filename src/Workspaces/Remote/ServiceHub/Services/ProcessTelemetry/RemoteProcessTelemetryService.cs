@@ -43,6 +43,15 @@ namespace Microsoft.CodeAnalysis.Remote
         {
         }
 
+        private RemoteWorkspaceTelemetryService? _remoteWorkspaceTelemetryService;
+
+        public override void Dispose()
+        {
+            _remoteWorkspaceTelemetryService?.Dispose();
+
+            base.Dispose();
+        }
+
         /// <summary>
         /// Remote API. Initializes ServiceHub process global state.
         /// </summary>
@@ -52,12 +61,12 @@ namespace Microsoft.CodeAnalysis.Remote
             {
                 var services = GetWorkspace().Services;
 
-                var telemetryService = (RemoteWorkspaceTelemetryService)services.GetRequiredService<IWorkspaceTelemetryService>();
+                _remoteWorkspaceTelemetryService = (RemoteWorkspaceTelemetryService)services.GetRequiredService<IWorkspaceTelemetryService>();
                 var telemetrySession = new TelemetrySession(serializedSession);
                 telemetrySession.Start();
 
-                telemetryService.InitializeTelemetrySession(telemetrySession, logDelta);
-                telemetryService.RegisterUnexpectedExceptionLogger(TraceLogger);
+                _remoteWorkspaceTelemetryService.InitializeTelemetrySession(telemetrySession, logDelta);
+                _remoteWorkspaceTelemetryService.RegisterUnexpectedExceptionLogger(TraceLogger);
                 FaultReporter.InitializeFatalErrorHandlers();
 
                 // log telemetry that service hub started

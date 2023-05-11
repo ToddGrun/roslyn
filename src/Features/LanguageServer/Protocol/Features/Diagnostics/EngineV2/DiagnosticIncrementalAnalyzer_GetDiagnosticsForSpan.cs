@@ -15,6 +15,7 @@ using Microsoft.CodeAnalysis.ErrorReporting;
 using Microsoft.CodeAnalysis.Internal.Log;
 using Microsoft.CodeAnalysis.PooledObjects;
 using Microsoft.CodeAnalysis.Shared.Extensions;
+using Microsoft.CodeAnalysis.Telemetry;
 using Microsoft.CodeAnalysis.Text;
 using Roslyn.Utilities;
 
@@ -392,6 +393,8 @@ namespace Microsoft.CodeAnalysis.Diagnostics.EngineV2
                 Debug.Assert(!incrementalAnalysis || analyzersWithState.All(analyzerWithState => analyzerWithState.Analyzer.SupportsSpanBasedSemanticDiagnosticAnalysis()));
 
                 using var _ = ArrayBuilder<AnalyzerWithState>.GetInstance(analyzersWithState.Length, out var filteredAnalyzersWithStateBuilder);
+                using var _1 = TelemetryHistogramLogger.LogBlockTimed(TelemetryPerfEventNames.DiagnosticAnalyzers, "Pri" + (int)_priorityProvider.Priority);
+
                 foreach (var analyzerWithState in analyzersWithState)
                 {
                     Debug.Assert(_priorityProvider.MatchesPriority(analyzerWithState.Analyzer));
@@ -420,6 +423,8 @@ namespace Microsoft.CodeAnalysis.Diagnostics.EngineV2
                 ImmutableDictionary<DiagnosticAnalyzer, ImmutableArray<DiagnosticData>> diagnosticsMap;
                 if (incrementalAnalysis)
                 {
+                    using var _2 = TelemetryHistogramLogger.LogBlockTimed(TelemetryPerfEventNames.DiagnosticAnalyzers, "Incremental");
+
                     diagnosticsMap = await _owner._incrementalMemberEditAnalyzer.ComputeDiagnosticsAsync(
                         executor,
                         analyzersWithState,
@@ -430,6 +435,8 @@ namespace Microsoft.CodeAnalysis.Diagnostics.EngineV2
                 }
                 else
                 {
+                    using var _2 = TelemetryHistogramLogger.LogBlockTimed(TelemetryPerfEventNames.DiagnosticAnalyzers, "Document");
+
                     diagnosticsMap = await ComputeDocumentDiagnosticsCoreAsync(executor, cancellationToken).ConfigureAwait(false);
                 }
 
@@ -562,12 +569,21 @@ namespace Microsoft.CodeAnalysis.Diagnostics.EngineV2
 
                 var analyzerTypeName = analyzer.GetType().Name;
                 var document = executor.AnalysisScope.TextDocument;
+                var metricName = GetMetricNameForAnalyzerId(_owner, analyzer, analyzerTypeName);
 
+                using (TelemetryHistogramLogger.LogBlockTimed(TelemetryPerfEventNames.DiagnosticAnalyzers, metricName))
                 using (_addOperationScope?.Invoke(analyzerTypeName))
                 using (_addOperationScope is object ? RoslynEventSource.LogInformationalBlock(FunctionId.DiagnosticAnalyzerService_GetDiagnosticsForSpanAsync, analyzerTypeName, cancellationToken) : default)
                 {
                     var diagnostics = await executor.ComputeDiagnosticsAsync(analyzer, cancellationToken).ConfigureAwait(false);
                     return diagnostics?.ToImmutableArrayOrEmpty() ?? ImmutableArray<DiagnosticData>.Empty;
+                }
+
+                static string GetMetricNameForAnalyzerId(DiagnosticIncrementalAnalyzer owner, DiagnosticAnalyzer analyzer, string analyzerTypeName)
+                {
+                    var isTelemetryCollectionAllowed = owner.DiagnosticAnalyzerInfoCache.IsTelemetryCollectionAllowed(analyzer);
+
+                    return isTelemetryCollectionAllowed ? analyzerTypeName : analyzer.GetType().FullName!.GetHashCode().ToString();
                 }
             }
 

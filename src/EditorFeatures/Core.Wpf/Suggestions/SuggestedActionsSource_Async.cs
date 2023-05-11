@@ -20,6 +20,7 @@ using Microsoft.CodeAnalysis.Host;
 using Microsoft.CodeAnalysis.Internal.Log;
 using Microsoft.CodeAnalysis.PooledObjects;
 using Microsoft.CodeAnalysis.Remote;
+using Microsoft.CodeAnalysis.Telemetry;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.CodeAnalysis.Text.Shared.Extensions;
 using Microsoft.CodeAnalysis.UnifiedSuggestions;
@@ -110,11 +111,15 @@ namespace Microsoft.CodeAnalysis.Editor.Implementation.Suggestions
                     // then pass it continuously from one priority group to the next.
                     var lowPriorityAnalyzers = new ConcurrentSet<DiagnosticAnalyzer>();
 
+                    using var _2 = TelemetryHistogramLogger.LogBlockTimed(TelemetryPerfEventNames.SuggestedAction, "Total");
+
                     // Collectors are in priority order.  So just walk them from highest to lowest.
                     foreach (var collector in collectors)
                     {
                         if (TryGetPriority(collector.Priority) is CodeActionRequestPriority priority)
                         {
+                            using var _3 = TelemetryHistogramLogger.LogBlockTimed(TelemetryPerfEventNames.SuggestedAction, $"Pri{(int)priority}");
+
                             var allSets = GetCodeFixesAndRefactoringsAsync(
                                 state, requestedActionCategories, document,
                                 range, selection,
@@ -216,6 +221,8 @@ namespace Microsoft.CodeAnalysis.Editor.Implementation.Suggestions
 
                 Task<ImmutableArray<UnifiedSuggestedActionSet>> GetCodeFixesAsync()
                 {
+                    using var _ = TelemetryHistogramLogger.LogBlockTimed(TelemetryPerfEventNames.SuggestedAction, nameof(GetCodeFixesAsync));
+
                     if (owner._codeFixService == null ||
                         !supportsFeatureService.SupportsCodeFixes(target.SubjectBuffer) ||
                         !requestedActionCategories.Contains(PredefinedSuggestedActionCategoryNames.CodeFix))
@@ -230,6 +237,8 @@ namespace Microsoft.CodeAnalysis.Editor.Implementation.Suggestions
 
                 Task<ImmutableArray<UnifiedSuggestedActionSet>> GetRefactoringsAsync()
                 {
+                    using var _ = TelemetryHistogramLogger.LogBlockTimed(TelemetryPerfEventNames.SuggestedAction, nameof(GetRefactoringsAsync));
+
                     if (!selection.HasValue)
                     {
                         // this is here to fail test and see why it is failed.
