@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Composition;
+using System.Configuration.Provider;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,6 +18,7 @@ using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.Internal.Log;
 using Microsoft.CodeAnalysis.PooledObjects;
 using Microsoft.CodeAnalysis.Shared.Utilities;
+using Microsoft.CodeAnalysis.Telemetry;
 using Microsoft.CodeAnalysis.Text;
 using Roslyn.Utilities;
 
@@ -122,6 +124,7 @@ namespace Microsoft.CodeAnalysis.CodeRefactorings
             Func<string, IDisposable?> addOperationScope,
             CancellationToken cancellationToken)
         {
+            using (TelemetryHistogram.LogBlockTimed(FunctionId.CodeRefactoring_Summary, $"Pri{(int)priority}"))
             using (Logger.LogBlock(FunctionId.Refactoring_CodeRefactoringService_GetRefactoringsAsync, cancellationToken))
             {
                 var extensionManager = document.Project.Solution.Services.GetRequiredService<IExtensionManager>();
@@ -132,16 +135,25 @@ namespace Microsoft.CodeAnalysis.CodeRefactorings
                     if (priority != CodeActionRequestPriority.None && priority != provider.RequestPriority)
                         continue;
 
-                    tasks.Add(Task.Run(() =>
+                    tasks.Add(Task.Run(async () =>
                         {
+                            var sw = SharedStopwatch.StartNew();
                             var providerName = provider.GetType().Name;
                             RefactoringToMetadataMap.TryGetValue(provider, out var providerMetadata);
 
                             using (addOperationScope(providerName))
                             using (RoslynEventSource.LogInformationalBlock(FunctionId.Refactoring_CodeRefactoringService_GetRefactoringsAsync, providerName, cancellationToken))
                             {
-                                return GetRefactoringFromProviderAsync(document, state, provider, providerMetadata,
-                                    extensionManager, options, cancellationToken);
+                                var result = await GetRefactoringFromProviderAsync(document, state, provider, providerMetadata,
+                                    extensionManager, options, cancellationToken).ConfigureAwait(false);
+
+                                var delay = (int)sw.Elapsed.TotalMilliseconds;
+                                if (delay > 500)
+                                {
+                                    TelemetryHistogram.Log(FunctionId.CodeRefactoring_Delay, providerName, delay);
+                                }
+
+                                return result;
                             }
                         },
                         cancellationToken));
