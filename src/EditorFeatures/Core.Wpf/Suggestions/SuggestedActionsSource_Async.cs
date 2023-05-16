@@ -20,6 +20,7 @@ using Microsoft.CodeAnalysis.Host;
 using Microsoft.CodeAnalysis.Internal.Log;
 using Microsoft.CodeAnalysis.PooledObjects;
 using Microsoft.CodeAnalysis.Remote;
+using Microsoft.CodeAnalysis.Telemetry;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.CodeAnalysis.Text.Shared.Extensions;
 using Microsoft.CodeAnalysis.UnifiedSuggestions;
@@ -110,17 +111,22 @@ namespace Microsoft.CodeAnalysis.Editor.Implementation.Suggestions
                     // then pass it continuously from one priority group to the next.
                     var lowPriorityAnalyzers = new ConcurrentSet<DiagnosticAnalyzer>();
 
+                    using var _2 = TelemetryHistogram.LogBlockTimed(FunctionId.SuggestedAction_Summary, "Total");
+
                     // Collectors are in priority order.  So just walk them from highest to lowest.
                     foreach (var collector in collectors)
                     {
                         if (TryGetPriority(collector.Priority) is CodeActionRequestPriority priority)
                         {
+                            var telemetryContext = "Total.Pri" + (int)priority;
+                            using var _3 = TelemetryHistogram.LogBlockTimed(FunctionId.SuggestedAction_Summary, telemetryContext);
+
                             var allSets = GetCodeFixesAndRefactoringsAsync(
                                 state, requestedActionCategories, document,
                                 range, selection,
                                 addOperationScope: _ => null,
                                 new SuggestedActionPriorityProvider(priority, lowPriorityAnalyzers),
-                                currentActionCount, cancellationToken).WithCancellation(cancellationToken).ConfigureAwait(false);
+                                telemetryContext, currentActionCount, cancellationToken).WithCancellation(cancellationToken).ConfigureAwait(false);
 
                             await foreach (var set in allSets)
                             {
@@ -187,6 +193,7 @@ namespace Microsoft.CodeAnalysis.Editor.Implementation.Suggestions
                 TextSpan? selection,
                 Func<string, IDisposable?> addOperationScope,
                 ICodeActionRequestPriorityProvider priorityProvider,
+                string telemetryContext,
                 int currentActionCount,
                 [EnumeratorCancellation] CancellationToken cancellationToken)
             {
@@ -216,6 +223,8 @@ namespace Microsoft.CodeAnalysis.Editor.Implementation.Suggestions
 
                 Task<ImmutableArray<UnifiedSuggestedActionSet>> GetCodeFixesAsync()
                 {
+                    using var _ = TelemetryHistogram.LogBlockTimed(FunctionId.SuggestedAction_Summary, telemetryContext + ".GetCodeFixesAsync");
+
                     if (owner._codeFixService == null ||
                         !supportsFeatureService.SupportsCodeFixes(target.SubjectBuffer) ||
                         !requestedActionCategories.Contains(PredefinedSuggestedActionCategoryNames.CodeFix))
@@ -230,6 +239,8 @@ namespace Microsoft.CodeAnalysis.Editor.Implementation.Suggestions
 
                 Task<ImmutableArray<UnifiedSuggestedActionSet>> GetRefactoringsAsync()
                 {
+                    using var _ = TelemetryHistogram.LogBlockTimed(FunctionId.SuggestedAction_Summary, telemetryContext + ".GetRefactoringsAsync");
+
                     if (!selection.HasValue)
                     {
                         // this is here to fail test and see why it is failed.

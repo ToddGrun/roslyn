@@ -5,12 +5,9 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
-using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Internal.Log;
-using Microsoft.CodeAnalysis.Options;
 using Microsoft.VisualStudio.Telemetry;
 using Roslyn.Utilities;
 
@@ -18,14 +15,22 @@ namespace Microsoft.CodeAnalysis.Telemetry
 {
     internal abstract class TelemetryLogger : ILogger
     {
-        private sealed class Implementation : TelemetryLogger
+        private sealed class Implementation : TelemetryLogger, IDisposable
         {
             private readonly TelemetrySession _session;
+            private readonly TelemetryHistogramLoggerManager _histogramLoggerManager;
 
             public Implementation(TelemetrySession session, bool logDelta)
             {
                 _session = session;
                 LogDelta = logDelta;
+
+                _histogramLoggerManager = TelemetryHistogramLoggerManager.Create(session);
+            }
+
+            public void Dispose()
+            {
+                _histogramLoggerManager.Dispose();
             }
 
             protected override bool LogDelta { get; }

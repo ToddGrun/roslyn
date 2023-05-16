@@ -594,5 +594,19 @@ namespace Microsoft.CodeAnalysis.Internal.Log
 
         // 680-690 LSP Initialization info ids.
         LSP_Initialize = 680,
+
+        // 690-719 Performance histogram logging.
+        CodeAction_Preview = 690,
+        CodeFix_Delay = 691,
+        CodeFix_Summary = 692,
+        CodeRefactoring_Delay = 693,
+        CodeRefactoring_Summary = 694,
+        PerformAnalysis_Delay = 695,
+        PerformAnalysis_Summary = 696,
+        RequestDiagnostics_Delay = 697,
+        RequestDiagnostics_Summary = 698,
+        SuggestedAction_Application = 699,
+        SuggestedAction_Delay = 700,
+        SuggestedAction_Summary = 701,
     }
 }

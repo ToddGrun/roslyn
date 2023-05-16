@@ -79,7 +79,7 @@ namespace Microsoft.CodeAnalysis.Remote
                                 m[nameof(analyzerInfo.Average)] = analyzerInfo.Average;
                                 m[nameof(analyzerInfo.AdjustedStandardDeviation)] = analyzerInfo.AdjustedStandardDeviation;
                                 m[nameof(forSpanAnalysis)] = forSpanAnalysis;
-                            }));
+                            }, LogLevel.Debug));
                         }
                     }
 
