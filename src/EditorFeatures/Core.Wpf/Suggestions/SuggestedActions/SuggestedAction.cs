@@ -113,7 +113,7 @@ namespace Microsoft.CodeAnalysis.Editor.Implementation.Suggestions
         {
             try
             {
-                using var _ = TelemetryHistogram.LogBlockTimed(FunctionId.SuggestedAction_Application, "Total");
+                using var _ = TelemetryLogging.LogBlockTimeAggregated(FunctionId.SuggestedAction_Application, "Total");
 
                 using var token = SourceProvider.OperationListener.BeginAsyncOperation($"{nameof(SuggestedAction)}.{nameof(Invoke)}");
                 using var context = SourceProvider.UIThreadOperationExecutor.BeginExecute(

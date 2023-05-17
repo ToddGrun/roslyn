@@ -6,8 +6,9 @@ using Microsoft.CodeAnalysis.Internal.Log;
 
 namespace Microsoft.CodeAnalysis.Telemetry
 {
-    internal interface ITelemetryHistogramLoggerProvider
+    internal interface ITelemetryLogProvider
     {
-        public ITelemetryHistogramLogger? GetLogger(FunctionId functionId, double[]? bucketBoundaries = null);
+        public ITelemetryLog? GetLog(FunctionId functionId);
+        public ITelemetryLog? GetAggregatingLog(FunctionId functionId, double[]? bucketBoundaries = null);
     }
 }

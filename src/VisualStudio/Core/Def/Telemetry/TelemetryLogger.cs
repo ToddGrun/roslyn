@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading;
 using Microsoft.CodeAnalysis.Internal.Log;
 using Microsoft.VisualStudio.Telemetry;
+using Microsoft.VisualStudio.LanguageServices.Telemetry;
 using Roslyn.Utilities;
 
 namespace Microsoft.CodeAnalysis.Telemetry
@@ -18,19 +19,22 @@ namespace Microsoft.CodeAnalysis.Telemetry
         private sealed class Implementation : TelemetryLogger, IDisposable
         {
             private readonly TelemetrySession _session;
-            private readonly TelemetryHistogramLoggerManager _histogramLoggerManager;
+            private TelemetryLogProvider? _telemetryLogProvider;
 
             public Implementation(TelemetrySession session, bool logDelta)
             {
                 _session = session;
                 LogDelta = logDelta;
-
-                _histogramLoggerManager = TelemetryHistogramLoggerManager.Create(session);
             }
 
             public void Dispose()
             {
-                _histogramLoggerManager.Dispose();
+                _telemetryLogProvider?.Dispose();
+            }
+
+            public void Initialize(ILogger logger)
+            {
+                _telemetryLogProvider = TelemetryLogProvider.Create(_session, logger);
             }
 
             protected override bool LogDelta { get; }
@@ -90,7 +94,13 @@ namespace Microsoft.CodeAnalysis.Telemetry
             => Enum.GetName(typeof(FunctionId), id)!.Replace('_', separator).ToLowerInvariant();
 
         public static TelemetryLogger Create(TelemetrySession session, bool logDelta)
-            => new Implementation(session, logDelta);
+        { 
+            var logger = new Implementation(session, logDelta);
+
+            logger.Initialize(logger);
+
+            return logger;
+        }
 
         public abstract bool IsEnabled(FunctionId functionId);
         protected abstract void PostEvent(TelemetryEvent telemetryEvent);

@@ -71,7 +71,13 @@ namespace Microsoft.CodeAnalysis.Remote.Diagnostics
                 {
                     var analyzerId = perfInfo.BuiltIn ? perfInfo.AnalyzerId : perfInfo.BuiltIn.GetHashCode().ToString();
 
-                    TelemetryHistogram.Log(FunctionId.PerformAnalysis_Delay, analyzerId, delay);
+                    var logMessage = KeyValueLogMessage.Create(LogType.Trace, m =>
+                    {
+                        m["AnalyzerId"] = analyzerId;
+                        m["Delay"] = delay;
+                    });
+
+                    TelemetryLogging.Log(FunctionId.PerformAnalysis_Delay, logMessage);
                 }
             }
 

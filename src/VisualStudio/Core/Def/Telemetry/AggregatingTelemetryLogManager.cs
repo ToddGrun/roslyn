@@ -10,46 +10,37 @@ using Microsoft.VisualStudio.Telemetry;
 
 namespace Microsoft.CodeAnalysis.Telemetry
 {
-    internal class TelemetryHistogramLoggerManager : ITelemetryHistogramLoggerProvider, IDisposable
+    internal class AggregatingTelemetryLogManager : IDisposable
     {
         private readonly TelemetrySession _session;
-        private readonly Dictionary<FunctionId, TelemetryHistogramLogger> _histogramLoggers;
+        private readonly Dictionary<FunctionId, AggregatingTelemetryLog> _aggregatingLogs;
         private readonly object _lock;
         private const int BatchedTelemetryCollectionPeriodInSeconds = 60 * 30;
 
-        private TelemetryHistogramLoggerManager(TelemetrySession session)
+        public AggregatingTelemetryLogManager(TelemetrySession session)
         {
             _session = session;
-            _histogramLoggers = new();
+            _aggregatingLogs = new();
 
             _ = PostCollectedTelemetryAsync();
 
             _lock = new object();
         }
 
-        public static TelemetryHistogramLoggerManager Create(TelemetrySession session)
+        public ITelemetryLog? GetLog(FunctionId functionId, double[]? bucketBoundaries = null)
         {
-            var logger = new TelemetryHistogramLoggerManager(session);
-
-            TelemetryHistogram.SetLoggerProvider(logger);
-
-            return logger;
-        }
-
-        public ITelemetryHistogramLogger? GetLogger(FunctionId functionId, double[]? bucketBoundaries = null)
-        {
-            TelemetryHistogramLogger? histogramLogger;
+            AggregatingTelemetryLog? aggregatingLogger;
 
             lock (_lock)
             {
-                if (!_histogramLoggers.TryGetValue(functionId, out histogramLogger))
+                if (!_aggregatingLogs.TryGetValue(functionId, out aggregatingLogger))
                 {
-                    histogramLogger = new TelemetryHistogramLogger(_session, functionId, bucketBoundaries);
-                    _histogramLoggers.Add(functionId, histogramLogger);
+                    aggregatingLogger = new AggregatingTelemetryLog(_session, functionId, bucketBoundaries);
+                    _aggregatingLogs.Add(functionId, aggregatingLogger);
                 }
             }
 
-            return histogramLogger;
+            return aggregatingLogger;
         }
 
         private async Task PostCollectedTelemetryAsync()
@@ -71,9 +62,9 @@ namespace Microsoft.CodeAnalysis.Telemetry
         {
             lock (_lock)
             {
-                foreach (var histogramLogger in _histogramLoggers.Values)
+                foreach (var log in _aggregatingLogs.Values)
                 {
-                    histogramLogger.PostTelemetry(_session);
+                    log.PostTelemetry(_session);
                 }
             }
         }

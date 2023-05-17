@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using Microsoft.CodeAnalysis.Internal.Log;
 using Microsoft.VisualStudio.Telemetry;
 using Microsoft.VisualStudio.Telemetry.Metrics;
@@ -12,7 +13,7 @@ using Microsoft.VisualStudio.Telemetry.Metrics.Events;
 
 namespace Microsoft.CodeAnalysis.Telemetry
 {
-    internal class TelemetryHistogramLogger : ITelemetryHistogramLogger
+    internal class AggregatingTelemetryLog : ITelemetryLog
     {
         private readonly IMeter _meter;
         private readonly TelemetrySession _session;
@@ -23,7 +24,7 @@ namespace Microsoft.CodeAnalysis.Telemetry
 
         private const string MeterVersion = "0.35";
 
-        public TelemetryHistogramLogger(TelemetrySession session, FunctionId functionId, double[]? bucketBoundaries = null)
+        public AggregatingTelemetryLog(TelemetrySession session, FunctionId functionId, double[]? bucketBoundaries = null)
         {
             var meterName = TelemetryLogger.GetPropertyName(functionId, "meter");
             var meterProvider = new VSTelemetryMeterProvider();
@@ -40,10 +41,22 @@ namespace Microsoft.CodeAnalysis.Telemetry
             }
         }
 
-        public void Log(string metricName, int value)
+        public void Log(LogMessage logMessage)
         {
             if (!IsEnabled)
                 return;
+
+            if (logMessage is not KeyValueLogMessage kvLogMessage)
+                return;
+
+            if (!kvLogMessage.ContainsProperty)
+                return;
+
+            var kvp = kvLogMessage.Properties.First();
+            if (kvp.Value is not int value)
+                return;
+
+            var metricName = kvp.Key;
 
             lock (_lock)
             {
@@ -57,12 +70,12 @@ namespace Microsoft.CodeAnalysis.Telemetry
             }
         }
 
-        public IDisposable? LogBlockTimed(string metricName)
+        public IDisposable? LogBlockTimed(string metricName, int minThreshold)
         {
             if (!IsEnabled)
                 return null;
 
-            return new TimedTelemetryHistogramLogBlock(metricName, this);
+            return new TimedTelemetryLogBlock(metricName, minThreshold, this);
         }
 
         private bool IsEnabled

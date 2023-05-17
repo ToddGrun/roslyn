@@ -124,7 +124,7 @@ namespace Microsoft.CodeAnalysis.CodeRefactorings
             Func<string, IDisposable?> addOperationScope,
             CancellationToken cancellationToken)
         {
-            using (TelemetryHistogram.LogBlockTimed(FunctionId.CodeRefactoring_Summary, "Pri" + (int)priority))
+            using (TelemetryLogging.LogBlockTimeAggregated(FunctionId.CodeRefactoring_Summary, "Pri" + (int)priority))
             using (Logger.LogBlock(FunctionId.Refactoring_CodeRefactoringService_GetRefactoringsAsync, cancellationToken))
             {
                 var extensionManager = document.Project.Solution.Services.GetRequiredService<IExtensionManager>();
@@ -137,23 +137,17 @@ namespace Microsoft.CodeAnalysis.CodeRefactorings
 
                     tasks.Add(Task.Run(async () =>
                         {
-                            var sw = SharedStopwatch.StartNew();
+                            const int CodeRefactoringTelemetryDelay = 500;
+
                             var providerName = provider.GetType().Name;
                             RefactoringToMetadataMap.TryGetValue(provider, out var providerMetadata);
 
                             using (addOperationScope(providerName))
                             using (RoslynEventSource.LogInformationalBlock(FunctionId.Refactoring_CodeRefactoringService_GetRefactoringsAsync, providerName, cancellationToken))
+                            using (TelemetryLogging.LogBlockTime(FunctionId.CodeRefactoring_Delay, providerName, CodeRefactoringTelemetryDelay))
                             {
                                 var result = await GetRefactoringFromProviderAsync(document, state, provider, providerMetadata,
                                     extensionManager, options, cancellationToken).ConfigureAwait(false);
-
-                                const int CodeRefactoringTelemetryDelay = 500;
-
-                                var delay = (int)sw.Elapsed.TotalMilliseconds;
-                                if (delay > CodeRefactoringTelemetryDelay)
-                                {
-                                    TelemetryHistogram.Log(FunctionId.CodeRefactoring_Delay, providerName, delay);
-                                }
 
                                 return result;
                             }

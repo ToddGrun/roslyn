@@ -394,7 +394,7 @@ namespace Microsoft.CodeAnalysis.Diagnostics.EngineV2
 
                 var telemetryContext = "Pri" + (int)_priorityProvider.Priority;
                 using var _ = ArrayBuilder<AnalyzerWithState>.GetInstance(analyzersWithState.Length, out var filteredAnalyzersWithStateBuilder);
-                using var _1 = TelemetryHistogram.LogBlockTimed(FunctionId.RequestDiagnostics_Summary, telemetryContext);
+                using var _1 = TelemetryLogging.LogBlockTimeAggregated(FunctionId.RequestDiagnostics_Summary, telemetryContext);
 
                 foreach (var analyzerWithState in analyzersWithState)
                 {
@@ -424,7 +424,7 @@ namespace Microsoft.CodeAnalysis.Diagnostics.EngineV2
                 ImmutableDictionary<DiagnosticAnalyzer, ImmutableArray<DiagnosticData>> diagnosticsMap;
                 if (incrementalAnalysis)
                 {
-                    using var _2 = TelemetryHistogram.LogBlockTimed(FunctionId.RequestDiagnostics_Summary, telemetryContext + ".Incremental");
+                    using var _2 = TelemetryLogging.LogBlockTimeAggregated(FunctionId.RequestDiagnostics_Summary, telemetryContext + ".Incremental");
 
                     diagnosticsMap = await _owner._incrementalMemberEditAnalyzer.ComputeDiagnosticsAsync(
                         executor,
@@ -436,7 +436,7 @@ namespace Microsoft.CodeAnalysis.Diagnostics.EngineV2
                 }
                 else
                 {
-                    using var _2 = TelemetryHistogram.LogBlockTimed(FunctionId.RequestDiagnostics_Summary, telemetryContext + ".Document");
+                    using var _2 = TelemetryLogging.LogBlockTimeAggregated(FunctionId.RequestDiagnostics_Summary, telemetryContext + ".Document");
 
                     diagnosticsMap = await ComputeDocumentDiagnosticsCoreAsync(executor, cancellationToken).ConfigureAwait(false);
                 }
@@ -571,29 +571,18 @@ namespace Microsoft.CodeAnalysis.Diagnostics.EngineV2
                 var analyzerTypeName = analyzer.GetType().Name;
                 var document = executor.AnalysisScope.TextDocument;
 
+                const int RequestDiagnosticsTelemetryDelay = 200;
+
+                var isTelemetryCollectionAllowed = _owner.DiagnosticAnalyzerInfoCache.IsTelemetryCollectionAllowed(analyzer);
+                var analyzerId = isTelemetryCollectionAllowed ? analyzerTypeName : analyzer.GetType().FullName!.GetHashCode().ToString();
+
                 using (_addOperationScope?.Invoke(analyzerTypeName))
                 using (_addOperationScope is object ? RoslynEventSource.LogInformationalBlock(FunctionId.DiagnosticAnalyzerService_GetDiagnosticsForSpanAsync, analyzerTypeName, cancellationToken) : default)
+                using (TelemetryLogging.LogBlockTime(FunctionId.RequestDiagnostics_Delay, analyzerId, RequestDiagnosticsTelemetryDelay))
                 {
-                    var sw = SharedStopwatch.StartNew();
                     var diagnostics = await executor.ComputeDiagnosticsAsync(analyzer, cancellationToken).ConfigureAwait(false);
 
-                    SendTelemetryUponDelay(sw, analyzerTypeName, _owner, analyzer);
-
                     return diagnostics?.ToImmutableArrayOrEmpty() ?? ImmutableArray<DiagnosticData>.Empty;
-                }
-
-                static void SendTelemetryUponDelay(SharedStopwatch sw, string analyzerTypeName, DiagnosticIncrementalAnalyzer owner, DiagnosticAnalyzer analyzer)
-                {
-                    const int RequestDiagnosticsTelemetryDelay = 200;
-
-                    var delay = (int)sw.Elapsed.TotalMilliseconds;
-                    if (delay > RequestDiagnosticsTelemetryDelay)
-                    {
-                        var isTelemetryCollectionAllowed = owner.DiagnosticAnalyzerInfoCache.IsTelemetryCollectionAllowed(analyzer);
-                        var analyzerId = isTelemetryCollectionAllowed ? analyzerTypeName : analyzer.GetType().FullName!.GetHashCode().ToString();
-
-                        TelemetryHistogram.Log(FunctionId.RequestDiagnostics_Delay, analyzerId, delay);
-                    }
                 }
             }
 

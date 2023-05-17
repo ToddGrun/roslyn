@@ -40,10 +40,13 @@
     <Compile Include="..\..\..\VisualStudio\Core\Def\Storage\ProjectContainerKeyCache.cs" Link="Host\Storage\ProjectContainerKeyCache.cs" />
     <Compile Include="..\..\..\VisualStudio\Core\Def\Storage\FileDownloader.cs" Link="Host\Storage\FileDownloader.cs" />
     <Compile Include="..\..\..\VisualStudio\Core\Def\Telemetry\AbstractWorkspaceTelemetryService.cs" Link="Services\ProcessTelemetry\AbstractWorkspaceTelemetryService.cs" />
-    <Compile Include="..\..\..\VisualStudio\Core\Def\Telemetry\TelemetryHistogramLogger.cs" Link="Services\ProcessTelemetry\TelemetryHistogramLogger.cs" />
-    <Compile Include="..\..\..\VisualStudio\Core\Def\Telemetry\TelemetryHistogramLoggerManager.cs" Link="Services\ProcessTelemetry\TelemetryHistogramLoggerManager.cs" />
+    <Compile Include="..\..\..\VisualStudio\Core\Def\Telemetry\AggregatingTelemetryLog.cs" Link="Services\ProcessTelemetry\AggregatingTelemetryLog.cs" />
+    <Compile Include="..\..\..\VisualStudio\Core\Def\Telemetry\AggregatingTelemetryLogManager.cs" Link="Services\ProcessTelemetry\AggregatingTelemetryLogManager.cs" />
     <Compile Include="..\..\..\VisualStudio\Core\Def\Telemetry\TelemetryLogger.cs" Link="Services\ProcessTelemetry\TelemetryLogger.cs" />
-    <Compile Include="..\..\..\VisualStudio\Core\Def\Telemetry\TimedTelemetryHistogramLogBlock.cs" Link="Services\ProcessTelemetry\TimedTelemetryHistogramLogBlock.cs" />
+    <Compile Include="..\..\..\VisualStudio\Core\Def\Telemetry\TelemetryLogProvider.cs" Link="Services\ProcessTelemetry\TelemetryLogProvider.cs" />
+    <Compile Include="..\..\..\VisualStudio\Core\Def\Telemetry\TimedTelemetryLogBlock.cs" Link="Services\ProcessTelemetry\TimedTelemetryLogBlock.cs" />
+    <Compile Include="..\..\..\VisualStudio\Core\Def\Telemetry\VisualStudioTelemetryLog.cs" Link="Services\ProcessTelemetry\VisualStudioTelemetryLog.cs" />
+    <Compile Include="..\..\..\VisualStudio\Core\Def\Telemetry\VisualStudioTelemetryLogManager.cs" Link="Services\ProcessTelemetry\VisualStudioTelemetryLogManager.cs" />
   </ItemGroup>
   <ItemGroup>
     <RestrictedInternalsVisibleTo Include="Microsoft.CodeAnalysis.LiveUnitTesting.BuildManager" Partner="UnitTesting" Key="$(UnitTestingKey)" />

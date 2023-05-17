@@ -7,9 +7,9 @@ using Microsoft.CodeAnalysis.Internal.Log;
 
 namespace Microsoft.CodeAnalysis.Telemetry
 {
-    internal interface ITelemetryHistogramLogger
+    internal interface ITelemetryLog
     {
-        public IDisposable? LogBlockTimed(string metricName);
-        public void Log(string metricName, int value);
+        public IDisposable? LogBlockTimed(string name, int minThreshold = -1);
+        public void Log(LogMessage logMessage);
     }
 }

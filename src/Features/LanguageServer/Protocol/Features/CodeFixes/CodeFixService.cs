@@ -102,12 +102,12 @@ namespace Microsoft.CodeAnalysis.CodeFixes
             TextDocument document, TextSpan range, ICodeActionRequestPriorityProvider priorityProvider, CodeActionOptionsProvider fallbackOptions, CancellationToken cancellationToken)
         {
             var telemetryContext = "Pri" + (int)priorityProvider.Priority + "." + nameof(GetMostSevereFixAsync);
-            using var _ = TelemetryHistogram.LogBlockTimed(FunctionId.CodeFix_Summary, telemetryContext);
+            using var _ = TelemetryLogging.LogBlockTimeAggregated(FunctionId.CodeFix_Summary, telemetryContext);
 
             ImmutableArray<DiagnosticData> allDiagnostics;
             bool upToDate;
 
-            using (TelemetryHistogram.LogBlockTimed(FunctionId.CodeFix_Summary, telemetryContext + ".GetDiagnosticsForSpanAsync"))
+            using (TelemetryLogging.LogBlockTimeAggregated(FunctionId.CodeFix_Summary, telemetryContext + ".GetDiagnosticsForSpanAsync"))
             {
                 (allDiagnostics, upToDate) = await _diagnosticService.TryGetDiagnosticsForSpanAsync(
                     document, range, GetShouldIncludeDiagnosticPredicate(document, priorityProvider),
@@ -174,7 +174,7 @@ namespace Microsoft.CodeAnalysis.CodeFixes
             [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             var telemetryContext = "Pri" + (int)priorityProvider.Priority;
-            using var _ = TelemetryHistogram.LogBlockTimed(FunctionId.CodeFix_Summary, telemetryContext);
+            using var _ = TelemetryLogging.LogBlockTimeAggregated(FunctionId.CodeFix_Summary, telemetryContext);
 
             // We only need to compute suppression/configuration fixes when request priority is
             // 'CodeActionPriorityRequest.Lowest' or 'CodeActionPriorityRequest.None'.
@@ -192,7 +192,7 @@ namespace Microsoft.CodeAnalysis.CodeFixes
             // user-invoked diagnostic requests, for example, user invoked Ctrl + Dot operation for lightbulb.
             ImmutableArray<DiagnosticData> diagnostics;
 
-            using (TelemetryHistogram.LogBlockTimed(FunctionId.CodeFix_Summary, telemetryContext + ".GetDiagnosticsForSpanAsync"))
+            using (TelemetryLogging.LogBlockTimeAggregated(FunctionId.CodeFix_Summary, telemetryContext + ".GetDiagnosticsForSpanAsync"))
             {
                 diagnostics = await _diagnosticService.GetDiagnosticsForSpanAsync(
                     document, range, GetShouldIncludeDiagnosticPredicate(document, priorityProvider),
@@ -278,10 +278,10 @@ namespace Microsoft.CodeAnalysis.CodeFixes
             cancellationToken.ThrowIfCancellationRequested();
 
             var telemetryContext = nameof(GetDocumentFixAllForIdInSpanAsync);
-            using var _ = TelemetryHistogram.LogBlockTimed(FunctionId.CodeFix_Summary, telemetryContext);
+            using var _ = TelemetryLogging.LogBlockTimeAggregated(FunctionId.CodeFix_Summary, telemetryContext);
             ImmutableArray<DiagnosticData> diagnostics;
 
-            using (TelemetryHistogram.LogBlockTimed(FunctionId.CodeFix_Summary, telemetryContext + ".GetDiagnosticsForSpanAsync"))
+            using (TelemetryLogging.LogBlockTimeAggregated(FunctionId.CodeFix_Summary, telemetryContext + ".GetDiagnosticsForSpanAsync"))
             {
                 diagnostics = await _diagnosticService.GetDiagnosticsForSpanAsync(
                     document, range, diagnosticId, includeSuppressedDiagnostics: false, priorityProvider: new DefaultCodeActionRequestPriorityProvider(),
@@ -509,7 +509,10 @@ namespace Microsoft.CodeAnalysis.CodeFixes
 
                     foreach (var (span, diagnostics) in fixerToRangesAndDiagnostics[fixer])
                     {
-                        var sw = SharedStopwatch.StartNew();
+                        const int CodeFixTelemetryDelay = 250;
+
+                        using var _ = TelemetryLogging.LogBlockTime(FunctionId.CodeFix_Delay, fixer.GetType().Name, CodeFixTelemetryDelay);
+
                         var codeFixCollection = await TryGetFixesOrConfigurationsAsync(
                             document, span, diagnostics, fixAllForInSpan, fixer,
                             hasFix: d => this.GetFixableDiagnosticIds(fixer, extensionManager).Contains(d.Id),
@@ -537,14 +540,6 @@ namespace Microsoft.CodeAnalysis.CodeFixes
                             },
                             fallbackOptions,
                             cancellationToken).ConfigureAwait(false);
-
-                        const int CodeFixTelemetryDelay = 250;
-
-                        var delay = (int)sw.Elapsed.TotalMilliseconds;
-                        if (delay > CodeFixTelemetryDelay)
-                        {
-                            TelemetryHistogram.Log(FunctionId.CodeFix_Delay, fixer.GetType().Name, delay);
-                        }
 
                         if (codeFixCollection != null)
                         {

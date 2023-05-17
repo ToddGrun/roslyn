@@ -236,7 +236,7 @@ namespace Microsoft.CodeAnalysis.Diagnostics
 
             if (_lazySyntaxDiagnostics == null)
             {
-                using var _ = TelemetryHistogram.LogBlockTimed(FunctionId.RequestDiagnostics_Summary, nameof(GetAnalysisResultAsync));
+                using var _ = TelemetryLogging.LogBlockTimeAggregated(FunctionId.RequestDiagnostics_Summary, nameof(GetAnalysisResultAsync));
                     
                 var analysisScope = AnalysisScope.WithAnalyzers(_compilationBasedAnalyzersInAnalysisScope);
                 var syntaxDiagnostics = await GetAnalysisResultAsync(analysisScope, cancellationToken).ConfigureAwait(false);
@@ -272,7 +272,7 @@ namespace Microsoft.CodeAnalysis.Diagnostics
 
             if (_lazySemanticDiagnostics == null)
             {
-                using var _ = TelemetryHistogram.LogBlockTimed(FunctionId.RequestDiagnostics_Summary, nameof(GetAnalysisResultAsync));
+                using var _ = TelemetryLogging.LogBlockTimeAggregated(FunctionId.RequestDiagnostics_Summary, nameof(GetAnalysisResultAsync));
 
                 var analysisScope = AnalysisScope.WithAnalyzers(_compilationBasedAnalyzersInAnalysisScope);
                 var semanticDiagnostics = await GetAnalysisResultAsync(analysisScope, cancellationToken).ConfigureAwait(false);
