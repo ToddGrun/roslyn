@@ -5,12 +5,10 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
-using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Internal.Log;
-using Microsoft.CodeAnalysis.Options;
+using Microsoft.VisualStudio.LanguageServices.Telemetry;
 using Microsoft.VisualStudio.Telemetry;
 using Roslyn.Utilities;
 
@@ -18,14 +16,27 @@ namespace Microsoft.CodeAnalysis.Telemetry
 {
     internal abstract class TelemetryLogger : ILogger
     {
-        private sealed class Implementation : TelemetryLogger
+        private sealed class Implementation : TelemetryLogger, IDisposable
         {
             private readonly TelemetrySession _session;
+            private TelemetryLogProvider? _telemetryLogProvider;
 
             public Implementation(TelemetrySession session, bool logDelta)
             {
                 _session = session;
                 LogDelta = logDelta;
+            }
+
+            public void Dispose()
+            {
+                _telemetryLogProvider?.Dispose();
+            }
+
+            public void Initialize()
+            {
+                // Two stage initialization as TelemetryLogProvider.Create needs access to
+                //  the ILogger that this class implements.
+                _telemetryLogProvider = TelemetryLogProvider.Create(_session, this);
             }
 
             protected override bool LogDelta { get; }
@@ -85,7 +96,13 @@ namespace Microsoft.CodeAnalysis.Telemetry
             => Enum.GetName(typeof(FunctionId), id)!.Replace('_', separator).ToLowerInvariant();
 
         public static TelemetryLogger Create(TelemetrySession session, bool logDelta)
-            => new Implementation(session, logDelta);
+        { 
+            var logger = new Implementation(session, logDelta);
+
+            logger.Initialize();
+
+            return logger;
+        }
 
         public abstract bool IsEnabled(FunctionId functionId);
         protected abstract void PostEvent(TelemetryEvent telemetryEvent);

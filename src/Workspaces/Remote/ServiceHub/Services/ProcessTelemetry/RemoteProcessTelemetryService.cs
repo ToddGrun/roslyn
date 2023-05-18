@@ -3,9 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Diagnostics;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -15,7 +15,6 @@ using Microsoft.CodeAnalysis.Host;
 using Microsoft.CodeAnalysis.Internal.Log;
 using Microsoft.CodeAnalysis.Notification;
 using Microsoft.CodeAnalysis.Remote.Diagnostics;
-using Microsoft.CodeAnalysis.Storage;
 using Microsoft.CodeAnalysis.Telemetry;
 using Microsoft.VisualStudio.LanguageServices.Telemetry;
 using Microsoft.VisualStudio.Telemetry;
@@ -33,6 +32,7 @@ namespace Microsoft.CodeAnalysis.Remote
         }
 
         private readonly CancellationTokenSource _shutdownCancellationSource = new();
+        private RemoteWorkspaceTelemetryService? _telemetryService;
 
 #pragma warning disable IDE0052 // Remove unread private members
         private PerformanceReporter? _performanceReporter;
@@ -41,6 +41,13 @@ namespace Microsoft.CodeAnalysis.Remote
         public RemoteProcessTelemetryService(ServiceConstructionArguments arguments)
             : base(arguments)
         {
+        }
+
+        public override void Dispose()
+        {
+            _telemetryService?.Dispose();
+
+            base.Dispose();
         }
 
         /// <summary>
@@ -52,12 +59,12 @@ namespace Microsoft.CodeAnalysis.Remote
             {
                 var services = GetWorkspace().Services;
 
-                var telemetryService = (RemoteWorkspaceTelemetryService)services.GetRequiredService<IWorkspaceTelemetryService>();
+                _telemetryService = (RemoteWorkspaceTelemetryService)services.GetRequiredService<IWorkspaceTelemetryService>();
                 var telemetrySession = new TelemetrySession(serializedSession);
                 telemetrySession.Start();
 
-                telemetryService.InitializeTelemetrySession(telemetrySession, logDelta);
-                telemetryService.RegisterUnexpectedExceptionLogger(TraceLogger);
+                _telemetryService.InitializeTelemetrySession(telemetrySession, logDelta);
+                _telemetryService.RegisterUnexpectedExceptionLogger(TraceLogger);
                 FaultReporter.InitializeFatalErrorHandlers();
 
                 // log telemetry that service hub started
