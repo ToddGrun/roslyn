@@ -6,24 +6,37 @@ using System;
 using System.Composition;
 using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.Internal.Log;
-using Microsoft.CodeAnalysis.Options;
 using Microsoft.CodeAnalysis.Telemetry;
 using Microsoft.VisualStudio.Telemetry;
 
 namespace Microsoft.VisualStudio.LanguageServices.Telemetry
 {
     [ExportWorkspaceService(typeof(IWorkspaceTelemetryService)), Shared]
-    internal sealed class RemoteWorkspaceTelemetryService : AbstractWorkspaceTelemetryService
+    internal sealed class RemoteWorkspaceTelemetryService : AbstractWorkspaceTelemetryService, IDisposable
     {
+        private TelemetryLogger? _telemetryLogger;
+        private TelemetrySession? _telemetrySession;
+
         [ImportingConstructor]
         [Obsolete(MefConstruction.ImportingConstructorMessage, error: true)]
         public RemoteWorkspaceTelemetryService()
         {
         }
 
+        public void Dispose()
+        {
+            (_telemetryLogger as IDisposable)?.Dispose();
+            _telemetrySession?.Dispose();
+        }
+
         protected override ILogger CreateLogger(TelemetrySession telemetrySession, bool logDelta)
-            => AggregateLogger.Create(
-                TelemetryLogger.Create(telemetrySession, logDelta),
+        {
+            _telemetrySession = telemetrySession;
+            _telemetryLogger = TelemetryLogger.Create(_telemetrySession, logDelta);
+
+            return AggregateLogger.Create(
+                _telemetryLogger,
                 Logger.GetLogger());
+        }
     }
 }

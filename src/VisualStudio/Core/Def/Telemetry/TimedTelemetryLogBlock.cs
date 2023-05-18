@@ -1,0 +1,57 @@
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
+using System.Diagnostics;
+using Microsoft.CodeAnalysis.Internal.Log;
+using Roslyn.Utilities;
+
+namespace Microsoft.CodeAnalysis.Telemetry
+{
+    /// <summary>
+    /// Provides a mechanism to log telemetry information containing the execution time between
+    /// creation and disposal of this object.
+    /// </summary>
+    internal sealed class TimedTelemetryLogBlock : IDisposable
+    {
+        private readonly string _name;
+        private readonly int _minThreshold;
+        private readonly ITelemetryLog _telemetryLog;
+        private readonly SharedStopwatch _stopwatch;
+
+        public TimedTelemetryLogBlock(string name, int minThreshold, ITelemetryLog telemetryLog)
+        {
+            _name = name;
+            _minThreshold = minThreshold;
+            _telemetryLog = telemetryLog;
+            _stopwatch = SharedStopwatch.StartNew();
+        }
+
+        public void Dispose()
+        {
+            // Don't add elapsed information in debug bits or while under debugger.
+#if DEBUG
+            return;
+#else
+            if (Debugger.IsAttached)
+                return;
+#endif
+
+            var elapsed = (int)_stopwatch.Elapsed.TotalMilliseconds;
+            if (elapsed >= _minThreshold)
+            {
+                const string Name = nameof(Name);
+                const string Delay = nameof(Delay);
+
+                var logMessage = KeyValueLogMessage.Create(m =>
+                {
+                    m[Name] = _name;
+                    m[Delay] = elapsed;
+                });
+
+                _telemetryLog.Log(logMessage);
+            }
+        }
+    }
+}

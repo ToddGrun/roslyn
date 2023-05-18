@@ -5,7 +5,6 @@
 using System;
 using System.Composition;
 using System.Diagnostics;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -20,10 +19,11 @@ using Roslyn.Utilities;
 namespace Microsoft.VisualStudio.LanguageServices.Telemetry
 {
     [ExportWorkspaceService(typeof(IWorkspaceTelemetryService)), Shared]
-    internal sealed class VisualStudioWorkspaceTelemetryService : AbstractWorkspaceTelemetryService
+    internal sealed class VisualStudioWorkspaceTelemetryService : AbstractWorkspaceTelemetryService, IDisposable
     {
         private readonly VisualStudioWorkspace _workspace;
         private readonly IGlobalOptionService _globalOptions;
+        private TelemetryLogger? _telemetryLogger;
 
         [ImportingConstructor]
         [Obsolete(MefConstruction.ImportingConstructorMessage, error: true)]
@@ -35,13 +35,22 @@ namespace Microsoft.VisualStudio.LanguageServices.Telemetry
             _globalOptions = globalOptions;
         }
 
+        public void Dispose()
+        {
+            (_telemetryLogger as IDisposable)?.Dispose();
+        }
+
         protected override ILogger CreateLogger(TelemetrySession telemetrySession, bool logDelta)
-            => AggregateLogger.Create(
+        {
+            _telemetryLogger = TelemetryLogger.Create(telemetrySession, logDelta);
+
+            return  AggregateLogger.Create(
                 CodeMarkerLogger.Instance,
                 new EtwLogger(FunctionIdOptions.CreateFunctionIsEnabledPredicate(_globalOptions)),
-                TelemetryLogger.Create(telemetrySession, logDelta),
+                _telemetryLogger,
                 new FileLogger(_globalOptions),
                 Logger.GetLogger());
+        }
 
         protected override void TelemetrySessionInitialized()
         {
