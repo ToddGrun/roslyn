@@ -4,6 +4,7 @@
 
 using System;
 using Microsoft.CodeAnalysis.Internal.Log;
+using Microsoft.CodeAnalysis.Shared.TestHooks;
 using Microsoft.CodeAnalysis.Telemetry;
 using Microsoft.VisualStudio.Telemetry;
 
@@ -17,15 +18,15 @@ namespace Microsoft.VisualStudio.LanguageServices.Telemetry
         private readonly AggregatingTelemetryLogManager _aggregatingTelemetryLogManager;
         private readonly VisualStudioTelemetryLogManager _visualStudioTelemetryLogManager;
 
-        private TelemetryLogProvider(TelemetrySession session, ILogger telemetryLogger)
+        private TelemetryLogProvider(TelemetrySession session, ILogger telemetryLogger, IAsynchronousOperationListener asyncListener)
         {
-            _aggregatingTelemetryLogManager = new AggregatingTelemetryLogManager(session);
+            _aggregatingTelemetryLogManager = new AggregatingTelemetryLogManager(session, asyncListener);
             _visualStudioTelemetryLogManager = new VisualStudioTelemetryLogManager(telemetryLogger);
         }
 
-        public static TelemetryLogProvider Create(TelemetrySession session, ILogger telemetryLogger)
+        public static TelemetryLogProvider Create(TelemetrySession session, ILogger telemetryLogger, IAsynchronousOperationListener asyncListener)
         {
-            var logProvider = new TelemetryLogProvider(session, telemetryLogger);
+            var logProvider = new TelemetryLogProvider(session, telemetryLogger, asyncListener);
 
             TelemetryLogging.SetLogProvider(logProvider);
 
@@ -40,7 +41,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Telemetry
         /// <summary>
         /// Returns an <see cref="ITelemetryLog"/> for logging telemetry.
         /// </summary>
-        public ITelemetryLog? GetLog(FunctionId functionId)
+        public ITelemetryLog GetLog(FunctionId functionId)
         {
             return _visualStudioTelemetryLogManager.GetLog(functionId);
         }
@@ -48,7 +49,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Telemetry
         /// <summary>
         /// Returns an aggregating <see cref="ITelemetryLog"/> for logging telemetry.
         /// </summary>
-        public ITelemetryLog? GetAggregatingLog(FunctionId functionId, double[]? bucketBoundaries = null)
+        public ITelemetryLog GetAggregatingLog(FunctionId functionId, double[]? bucketBoundaries)
         {
             return _aggregatingTelemetryLogManager.GetLog(functionId, bucketBoundaries);
         }

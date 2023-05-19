@@ -6,6 +6,7 @@ using System;
 using System.Composition;
 using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.Internal.Log;
+using Microsoft.CodeAnalysis.Shared.TestHooks;
 using Microsoft.CodeAnalysis.Telemetry;
 using Microsoft.VisualStudio.Telemetry;
 
@@ -16,11 +17,13 @@ namespace Microsoft.VisualStudio.LanguageServices.Telemetry
     {
         private TelemetryLogger? _telemetryLogger;
         private TelemetrySession? _telemetrySession;
+        private readonly IAsynchronousOperationListenerProvider _asyncListenerProvider;
 
         [ImportingConstructor]
         [Obsolete(MefConstruction.ImportingConstructorMessage, error: true)]
-        public RemoteWorkspaceTelemetryService()
+        public RemoteWorkspaceTelemetryService(IAsynchronousOperationListenerProvider asyncListenerProvider)
         {
+            _asyncListenerProvider = asyncListenerProvider;
         }
 
         public void Dispose()
@@ -32,7 +35,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Telemetry
         protected override ILogger CreateLogger(TelemetrySession telemetrySession, bool logDelta)
         {
             _telemetrySession = telemetrySession;
-            _telemetryLogger = TelemetryLogger.Create(_telemetrySession, logDelta);
+            _telemetryLogger = TelemetryLogger.Create(_telemetrySession, logDelta, _asyncListenerProvider);
 
             return AggregateLogger.Create(
                 _telemetryLogger,

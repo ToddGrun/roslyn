@@ -32,7 +32,6 @@ namespace Microsoft.CodeAnalysis.Remote
         }
 
         private readonly CancellationTokenSource _shutdownCancellationSource = new();
-        private RemoteWorkspaceTelemetryService? _telemetryService;
 
 #pragma warning disable IDE0052 // Remove unread private members
         private PerformanceReporter? _performanceReporter;
@@ -41,13 +40,6 @@ namespace Microsoft.CodeAnalysis.Remote
         public RemoteProcessTelemetryService(ServiceConstructionArguments arguments)
             : base(arguments)
         {
-        }
-
-        public override void Dispose()
-        {
-            _telemetryService?.Dispose();
-
-            base.Dispose();
         }
 
         /// <summary>
@@ -59,12 +51,12 @@ namespace Microsoft.CodeAnalysis.Remote
             {
                 var services = GetWorkspace().Services;
 
-                _telemetryService = (RemoteWorkspaceTelemetryService)services.GetRequiredService<IWorkspaceTelemetryService>();
+                var telemetryService = (RemoteWorkspaceTelemetryService)services.GetRequiredService<IWorkspaceTelemetryService>();
                 var telemetrySession = new TelemetrySession(serializedSession);
                 telemetrySession.Start();
 
-                _telemetryService.InitializeTelemetrySession(telemetrySession, logDelta);
-                _telemetryService.RegisterUnexpectedExceptionLogger(TraceLogger);
+                telemetryService.InitializeTelemetrySession(telemetrySession, logDelta);
+                telemetryService.RegisterUnexpectedExceptionLogger(TraceLogger);
                 FaultReporter.InitializeFatalErrorHandlers();
 
                 // log telemetry that service hub started
