@@ -21,7 +21,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Telemetry
             _lock = new object();
         }
 
-        public ITelemetryLog? GetLog(FunctionId functionId)
+        public ITelemetryLog GetLog(FunctionId functionId)
         {
             VisualStudioTelemetryLog? log;
 

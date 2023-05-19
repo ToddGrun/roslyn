@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Microsoft.CodeAnalysis.Internal.Log;
+using Microsoft.CodeAnalysis.Shared.TestHooks;
 using Microsoft.VisualStudio.LanguageServices.Telemetry;
 using Microsoft.VisualStudio.Telemetry;
 using Roslyn.Utilities;
@@ -32,11 +33,13 @@ namespace Microsoft.CodeAnalysis.Telemetry
                 _telemetryLogProvider?.Dispose();
             }
 
-            public void Initialize()
+            public void Initialize(IAsynchronousOperationListenerProvider asyncListenerProvider)
             {
+                var asyncListener = asyncListenerProvider.GetListener(FeatureAttribute.Telemetry);
+
                 // Two stage initialization as TelemetryLogProvider.Create needs access to
                 //  the ILogger that this class implements.
-                _telemetryLogProvider = TelemetryLogProvider.Create(_session, this);
+                _telemetryLogProvider = TelemetryLogProvider.Create(_session, this, asyncListener);
             }
 
             protected override bool LogDelta { get; }
@@ -95,11 +98,11 @@ namespace Microsoft.CodeAnalysis.Telemetry
         private static string GetTelemetryName(FunctionId id, char separator)
             => Enum.GetName(typeof(FunctionId), id)!.Replace('_', separator).ToLowerInvariant();
 
-        public static TelemetryLogger Create(TelemetrySession session, bool logDelta)
+        public static TelemetryLogger Create(TelemetrySession session, bool logDelta, IAsynchronousOperationListenerProvider asyncListenerProvider)
         { 
             var logger = new Implementation(session, logDelta);
 
-            logger.Initialize();
+            logger.Initialize(asyncListenerProvider);
 
             return logger;
         }

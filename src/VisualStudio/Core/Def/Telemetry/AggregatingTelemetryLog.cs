@@ -29,7 +29,7 @@ namespace Microsoft.CodeAnalysis.Telemetry
 
         private const string MeterVersion = "0.39";
 
-        public AggregatingTelemetryLog(TelemetrySession session, FunctionId functionId, double[]? bucketBoundaries = null)
+        public AggregatingTelemetryLog(TelemetrySession session, FunctionId functionId, double[]? bucketBoundaries)
         {
             var meterName = TelemetryLogger.GetPropertyName(functionId, "meter");
             var meterProvider = new VSTelemetryMeterProvider();

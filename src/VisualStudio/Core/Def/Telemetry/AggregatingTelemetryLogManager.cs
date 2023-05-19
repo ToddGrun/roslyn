@@ -4,9 +4,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Internal.Log;
+using Microsoft.CodeAnalysis.Shared.TestHooks;
 using Microsoft.VisualStudio.Telemetry;
+using Roslyn.Utilities;
 
 namespace Microsoft.CodeAnalysis.Telemetry
 {
@@ -18,21 +21,28 @@ namespace Microsoft.CodeAnalysis.Telemetry
     {
         private readonly TelemetrySession _session;
         private readonly Dictionary<FunctionId, AggregatingTelemetryLog> _aggregatingLogs;
-        private bool _isDisposed;
         private readonly object _lock;
-        private const int BatchedTelemetryCollectionPeriodInSeconds = 60 * 30;
+        private const int BatchedTelemetryCollectionPeriodInSeconds = 30 * 1;
+        private readonly AsyncBatchingWorkQueue _postTelemetryQueue;
+        private readonly CancellationTokenSource _cancellationTokenSource;
 
-        public AggregatingTelemetryLogManager(TelemetrySession session)
+        public AggregatingTelemetryLogManager(TelemetrySession session, IAsynchronousOperationListener asyncListener)
         {
             _session = session;
             _aggregatingLogs = new();
-            _isDisposed = false;
             _lock = new object();
+            _cancellationTokenSource = new();
 
-            _ = PostCollectedTelemetryAsync();
+            _postTelemetryQueue = new AsyncBatchingWorkQueue(
+                TimeSpan.FromSeconds(BatchedTelemetryCollectionPeriodInSeconds),
+                PostCollectedTelemetryAsync,
+                asyncListener,
+                _cancellationTokenSource.Token);
+
+            _postTelemetryQueue.AddWork();
         }
 
-        public ITelemetryLog? GetLog(FunctionId functionId, double[]? bucketBoundaries = null)
+        public ITelemetryLog GetLog(FunctionId functionId, double[]? bucketBoundaries)
         {
             AggregatingTelemetryLog? aggregatingLog;
 
@@ -48,20 +58,26 @@ namespace Microsoft.CodeAnalysis.Telemetry
             return aggregatingLog;
         }
 
-        private async Task PostCollectedTelemetryAsync()
-        {
-            while (!_isDisposed)
-            {
-                await Task.Delay(BatchedTelemetryCollectionPeriodInSeconds * 1000).ConfigureAwait(false);
-
-                PostCollectedTelemetry();
-            }
-        }
-
         public void Dispose()
         {
-            _isDisposed = true;
+            // Cancel any pending work, instead posting telemetry immediately
+            _cancellationTokenSource.Dispose();
+
             PostCollectedTelemetry();
+        }
+
+        private ValueTask PostCollectedTelemetryAsync(CancellationToken token)
+        {
+            token.ThrowIfCancellationRequested();
+
+            PostCollectedTelemetry();
+
+            // Add another work item to the queue as we want this continue executing until disposal.
+            // The AddWork call below is a no-op if we've been Disposed since checking
+            // the cancellation token.
+            _postTelemetryQueue.AddWork();
+
+            return ValueTaskFactory.CompletedTask;
         }
 
         private void PostCollectedTelemetry()

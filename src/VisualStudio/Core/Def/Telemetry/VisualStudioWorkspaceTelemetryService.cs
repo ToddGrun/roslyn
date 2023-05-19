@@ -12,6 +12,7 @@ using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.Internal.Log;
 using Microsoft.CodeAnalysis.Options;
 using Microsoft.CodeAnalysis.Remote;
+using Microsoft.CodeAnalysis.Shared.TestHooks;
 using Microsoft.CodeAnalysis.Telemetry;
 using Microsoft.VisualStudio.Telemetry;
 using Roslyn.Utilities;
@@ -23,16 +24,19 @@ namespace Microsoft.VisualStudio.LanguageServices.Telemetry
     {
         private readonly VisualStudioWorkspace _workspace;
         private readonly IGlobalOptionService _globalOptions;
+        private readonly IAsynchronousOperationListenerProvider _asyncListenerProvider;
         private TelemetryLogger? _telemetryLogger;
 
         [ImportingConstructor]
         [Obsolete(MefConstruction.ImportingConstructorMessage, error: true)]
         public VisualStudioWorkspaceTelemetryService(
             VisualStudioWorkspace workspace,
-            IGlobalOptionService globalOptions)
+            IGlobalOptionService globalOptions,
+            IAsynchronousOperationListenerProvider asyncListenerProvider)
         {
             _workspace = workspace;
             _globalOptions = globalOptions;
+            _asyncListenerProvider = asyncListenerProvider;
         }
 
         public void Dispose()
@@ -42,7 +46,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Telemetry
 
         protected override ILogger CreateLogger(TelemetrySession telemetrySession, bool logDelta)
         {
-            _telemetryLogger = TelemetryLogger.Create(telemetrySession, logDelta);
+            _telemetryLogger = TelemetryLogger.Create(telemetrySession, logDelta, _asyncListenerProvider);
 
             return  AggregateLogger.Create(
                 CodeMarkerLogger.Instance,
