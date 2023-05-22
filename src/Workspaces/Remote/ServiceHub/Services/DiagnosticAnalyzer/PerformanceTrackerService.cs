@@ -75,6 +75,7 @@ namespace Microsoft.CodeAnalysis.Remote.Diagnostics
                 {
                     const string AnalyzerId = nameof(AnalyzerId);
                     const string Delay = nameof(Delay);
+                    const string ForSpanAnalysis = nameof(ForSpanAnalysis);
 
                     var analyzerId = perfInfo.BuiltIn ? perfInfo.AnalyzerId : perfInfo.BuiltIn.GetHashCode().ToString();
 
@@ -82,6 +83,7 @@ namespace Microsoft.CodeAnalysis.Remote.Diagnostics
                     {
                         m[AnalyzerId] = analyzerId;
                         m[Delay] = delay;
+                        m[ForSpanAnalysis] = forSpanAnalysis;
                     });
 
                     TelemetryLogging.Log(FunctionId.PerformAnalysis_Delay, logMessage);

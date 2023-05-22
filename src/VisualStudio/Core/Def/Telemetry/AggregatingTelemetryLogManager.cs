@@ -42,16 +42,19 @@ namespace Microsoft.CodeAnalysis.Telemetry
             _postTelemetryQueue.AddWork();
         }
 
-        public ITelemetryLog GetLog(FunctionId functionId, double[]? bucketBoundaries)
+        public ITelemetryLog? GetLog(FunctionId functionId, double[]? bucketBoundaries)
         {
-            AggregatingTelemetryLog? aggregatingLog;
+            AggregatingTelemetryLog? aggregatingLog = null;
 
-            lock (_lock)
+            if (_session.IsOptedIn)
             {
-                if (!_aggregatingLogs.TryGetValue(functionId, out aggregatingLog))
+                lock (_lock)
                 {
-                    aggregatingLog = new AggregatingTelemetryLog(_session, functionId, bucketBoundaries);
-                    _aggregatingLogs.Add(functionId, aggregatingLog);
+                    if (!_aggregatingLogs.TryGetValue(functionId, out aggregatingLog))
+                    {
+                        aggregatingLog = new AggregatingTelemetryLog(_session, functionId, bucketBoundaries);
+                        _aggregatingLogs.Add(functionId, aggregatingLog);
+                    }
                 }
             }
 
@@ -82,11 +85,14 @@ namespace Microsoft.CodeAnalysis.Telemetry
 
         private void PostCollectedTelemetry()
         {
-            lock (_lock)
+            if (_session.IsOptedIn)
             {
-                foreach (var log in _aggregatingLogs.Values)
+                lock (_lock)
                 {
-                    log.PostTelemetry(_session);
+                    foreach (var log in _aggregatingLogs.Values)
+                    {
+                        log.PostTelemetry(_session);
+                    }
                 }
             }
         }

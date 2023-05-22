@@ -21,7 +21,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Telemetry
         private TelemetryLogProvider(TelemetrySession session, ILogger telemetryLogger, IAsynchronousOperationListener asyncListener)
         {
             _aggregatingTelemetryLogManager = new AggregatingTelemetryLogManager(session, asyncListener);
-            _visualStudioTelemetryLogManager = new VisualStudioTelemetryLogManager(telemetryLogger);
+            _visualStudioTelemetryLogManager = new VisualStudioTelemetryLogManager(session, telemetryLogger);
         }
 
         public static TelemetryLogProvider Create(TelemetrySession session, ILogger telemetryLogger, IAsynchronousOperationListener asyncListener)
@@ -41,7 +41,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Telemetry
         /// <summary>
         /// Returns an <see cref="ITelemetryLog"/> for logging telemetry.
         /// </summary>
-        public ITelemetryLog GetLog(FunctionId functionId)
+        public ITelemetryLog? GetLog(FunctionId functionId)
         {
             return _visualStudioTelemetryLogManager.GetLog(functionId);
         }
@@ -49,7 +49,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Telemetry
         /// <summary>
         /// Returns an aggregating <see cref="ITelemetryLog"/> for logging telemetry.
         /// </summary>
-        public ITelemetryLog GetAggregatingLog(FunctionId functionId, double[]? bucketBoundaries)
+        public ITelemetryLog? GetAggregatingLog(FunctionId functionId, double[]? bucketBoundaries)
         {
             return _aggregatingTelemetryLogManager.GetLog(functionId, bucketBoundaries);
         }
