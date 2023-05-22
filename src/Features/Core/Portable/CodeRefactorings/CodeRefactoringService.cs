@@ -136,6 +136,10 @@ namespace Microsoft.CodeAnalysis.CodeRefactorings
 
                     tasks.Add(Task.Run(async () =>
                         {
+                            // Log an individual telemetry event for slow code refactoring computations to
+                            // allow targeted trace notifications for further investigation. 500 ms seemed like
+                            // a good value so as to not be too noisy, but if fired, indicates a potential
+                            // area requiring investigation.
                             const int CodeRefactoringTelemetryDelay = 500;
 
                             var providerName = provider.GetType().Name;

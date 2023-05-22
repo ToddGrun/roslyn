@@ -10,6 +10,7 @@ using Microsoft.CodeAnalysis.Internal.Log;
 using Microsoft.VisualStudio.Telemetry;
 using Microsoft.VisualStudio.Telemetry.Metrics;
 using Microsoft.VisualStudio.Telemetry.Metrics.Events;
+using Roslyn.Utilities;
 
 namespace Microsoft.CodeAnalysis.Telemetry
 {
@@ -47,35 +48,26 @@ namespace Microsoft.CodeAnalysis.Telemetry
         }
 
         /// <summary>
-        /// Adds aggregated information for the metric and value passed in via logMessage. KeyValueLogMessage.Properties
-        /// is searched for appropriate entries to determine the metric name and value.
+        /// Adds aggregated information for the metric and value passed in via logMessage. The Name/Value properties
+        /// are used as the metric name and value to record.
         /// </summary>
         /// <param name="logMessage"></param>
         public void Log(LogMessage logMessage)
         {
+            const string Name = nameof(Name);
+            const string Value = nameof(Value);
+
             if (!IsEnabled)
                 return;
 
             if (logMessage is not KeyValueLogMessage kvLogMessage)
                 return;
 
-            string? metricName = null;
-            int? value = null;
-            foreach (var kvp in kvLogMessage.Properties)
-            {
-                switch (kvp.Value)
-                {
-                    case string s:
-                        metricName = s;
-                        break;
-                    case int i:
-                        value = i;
-                        break;
-                }
-            }
+            if (!kvLogMessage.TryGetValue(Name, out var nameValue) || nameValue is not string metricName)
+                throw ExceptionUtilities.Unreachable();
 
-            if (metricName is null || value is null)
-                return;
+            if (!kvLogMessage.TryGetValue(Value, out var valueValue) || valueValue is not int value)
+                throw ExceptionUtilities.Unreachable();
 
             IHistogram<int>? histogram;
             lock (_lock)
@@ -87,7 +79,7 @@ namespace Microsoft.CodeAnalysis.Telemetry
                 }
             }
 
-            histogram.Record(value.Value);
+            histogram.Record(value);
         }
 
         public IDisposable? LogBlockTime(string name, int minThreshold)

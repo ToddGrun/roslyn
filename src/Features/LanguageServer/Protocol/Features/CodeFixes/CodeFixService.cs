@@ -106,7 +106,7 @@ namespace Microsoft.CodeAnalysis.CodeFixes
             ImmutableArray<DiagnosticData> allDiagnostics;
             bool upToDate;
 
-            using (TelemetryLogging.LogBlockTimeAggregated(FunctionId.CodeFix_Summary, telemetryContext + ".GetDiagnosticsForSpanAsync"))
+            using (TelemetryLogging.LogBlockTimeAggregated(FunctionId.CodeFix_Summary, telemetryContext + "." + nameof(_diagnosticService.GetDiagnosticsForSpanAsync)))
             {
                 (allDiagnostics, upToDate) = await _diagnosticService.TryGetDiagnosticsForSpanAsync(
                     document, range, GetShouldIncludeDiagnosticPredicate(document, priorityProvider),
@@ -191,7 +191,7 @@ namespace Microsoft.CodeAnalysis.CodeFixes
             // user-invoked diagnostic requests, for example, user invoked Ctrl + Dot operation for lightbulb.
             ImmutableArray<DiagnosticData> diagnostics;
 
-            using (TelemetryLogging.LogBlockTimeAggregated(FunctionId.CodeFix_Summary, telemetryContext + ".GetDiagnosticsForSpanAsync"))
+            using (TelemetryLogging.LogBlockTimeAggregated(FunctionId.CodeFix_Summary, telemetryContext + "." + nameof(_diagnosticService.GetDiagnosticsForSpanAsync)))
             {
                 diagnostics = await _diagnosticService.GetDiagnosticsForSpanAsync(
                     document, range, GetShouldIncludeDiagnosticPredicate(document, priorityProvider),
@@ -280,7 +280,7 @@ namespace Microsoft.CodeAnalysis.CodeFixes
             using var _ = TelemetryLogging.LogBlockTimeAggregated(FunctionId.CodeFix_Summary, telemetryContext);
             ImmutableArray<DiagnosticData> diagnostics;
 
-            using (TelemetryLogging.LogBlockTimeAggregated(FunctionId.CodeFix_Summary, telemetryContext + ".GetDiagnosticsForSpanAsync"))
+            using (TelemetryLogging.LogBlockTimeAggregated(FunctionId.CodeFix_Summary, telemetryContext + "." + nameof(_diagnosticService.GetDiagnosticsForSpanAsync)))
             {
                 diagnostics = await _diagnosticService.GetDiagnosticsForSpanAsync(
                     document, range, diagnosticId, includeSuppressedDiagnostics: false, priorityProvider: new DefaultCodeActionRequestPriorityProvider(),
@@ -508,7 +508,11 @@ namespace Microsoft.CodeAnalysis.CodeFixes
 
                     foreach (var (span, diagnostics) in fixerToRangesAndDiagnostics[fixer])
                     {
-                        const int CodeFixTelemetryDelay = 250;
+                        // Log an individual telemetry event for slow codefix computations to
+                        // allow targeted trace notifications for further investigation. 500 ms seemed like
+                        // a good value so as to not be too noisy, but if fired, indicates a potential
+                        // area requiring investigation.
+                        const int CodeFixTelemetryDelay = 500;
 
                         using var _ = TelemetryLogging.LogBlockTime(FunctionId.CodeFix_Delay, fixer.GetType().Name, CodeFixTelemetryDelay);
 
