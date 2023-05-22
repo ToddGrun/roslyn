@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Internal.Log;
@@ -20,17 +20,15 @@ namespace Microsoft.CodeAnalysis.Telemetry
     internal sealed class AggregatingTelemetryLogManager : IDisposable
     {
         private readonly TelemetrySession _session;
-        private readonly Dictionary<FunctionId, AggregatingTelemetryLog> _aggregatingLogs;
-        private readonly object _lock;
         private const int BatchedTelemetryCollectionPeriodInSeconds = 60 * 30;
         private readonly AsyncBatchingWorkQueue _postTelemetryQueue;
         private readonly CancellationTokenSource _cancellationTokenSource;
 
+        private ImmutableDictionary<FunctionId, AggregatingTelemetryLog> _aggregatingLogs = ImmutableDictionary<FunctionId, AggregatingTelemetryLog>.Empty;
+
         public AggregatingTelemetryLogManager(TelemetrySession session, IAsynchronousOperationListener asyncListener)
         {
             _session = session;
-            _aggregatingLogs = new();
-            _lock = new object();
             _cancellationTokenSource = new();
 
             _postTelemetryQueue = new AsyncBatchingWorkQueue(
@@ -47,18 +45,7 @@ namespace Microsoft.CodeAnalysis.Telemetry
             if (!_session.IsOptedIn)
                 return null;
 
-            AggregatingTelemetryLog? aggregatingLog;
-
-            lock (_lock)
-            {
-                if (!_aggregatingLogs.TryGetValue(functionId, out aggregatingLog))
-                {
-                    aggregatingLog = new AggregatingTelemetryLog(_session, functionId, bucketBoundaries);
-                    _aggregatingLogs.Add(functionId, aggregatingLog);
-                }
-            }
-
-            return aggregatingLog;
+            return ImmutableInterlocked.GetOrAdd(ref _aggregatingLogs, functionId, functionId => new AggregatingTelemetryLog(_session, functionId, bucketBoundaries));
         }
 
         public void Dispose()
@@ -88,12 +75,9 @@ namespace Microsoft.CodeAnalysis.Telemetry
             if (!_session.IsOptedIn)
                 return;
 
-            lock (_lock)
+            foreach (var log in _aggregatingLogs.Values)
             {
-                foreach (var log in _aggregatingLogs.Values)
-                {
-                    log.PostTelemetry(_session);
-                }
+                log.PostTelemetry(_session);
             }
         }
     }
