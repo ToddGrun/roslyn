@@ -31,12 +31,9 @@ namespace Microsoft.CodeAnalysis.Telemetry
         public void Dispose()
         {
             // Don't add elapsed information in debug bits or while under debugger.
-#if DEBUG
-            return;
-#else
+#if !DEBUG
             if (Debugger.IsAttached)
                 return;
-#endif
 
             var elapsed = (int)_stopwatch.Elapsed.TotalMilliseconds;
             if (elapsed >= _minThreshold)
@@ -52,6 +49,7 @@ namespace Microsoft.CodeAnalysis.Telemetry
 
                 _telemetryLog.Log(logMessage);
             }
+#endif
         }
     }
 }

@@ -5,32 +5,38 @@
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis.Internal.Log;
 using Microsoft.CodeAnalysis.Telemetry;
+using Microsoft.VisualStudio.Telemetry;
 
 namespace Microsoft.VisualStudio.LanguageServices.Telemetry
 {
     internal sealed class VisualStudioTelemetryLogManager
     {
         private readonly Dictionary<FunctionId, VisualStudioTelemetryLog> _logs;
+        private readonly TelemetrySession _session;
         private readonly ILogger _telemetryLogger;
         private readonly object _lock;
 
-        public VisualStudioTelemetryLogManager(ILogger telemetryLogger)
+        public VisualStudioTelemetryLogManager(TelemetrySession session, ILogger telemetryLogger)
         {
+            _session = session;
             _telemetryLogger = telemetryLogger;
             _logs = new();
             _lock = new object();
         }
 
-        public ITelemetryLog GetLog(FunctionId functionId)
+        public ITelemetryLog? GetLog(FunctionId functionId)
         {
-            VisualStudioTelemetryLog? log;
+            VisualStudioTelemetryLog? log = null;
 
-            lock (_lock)
+            if (_session.IsOptedIn)
             {
-                if (!_logs.TryGetValue(functionId, out log))
+                lock (_lock)
                 {
-                    log = new VisualStudioTelemetryLog(_telemetryLogger, functionId);
-                    _logs.Add(functionId, log);
+                    if (!_logs.TryGetValue(functionId, out log))
+                    {
+                        log = new VisualStudioTelemetryLog(_telemetryLogger, functionId);
+                        _logs.Add(functionId, log);
+                    }
                 }
             }
 

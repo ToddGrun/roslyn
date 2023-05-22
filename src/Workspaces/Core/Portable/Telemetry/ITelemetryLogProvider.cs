@@ -8,7 +8,7 @@ namespace Microsoft.CodeAnalysis.Telemetry
 {
     internal interface ITelemetryLogProvider
     {
-        public ITelemetryLog GetLog(FunctionId functionId);
-        public ITelemetryLog GetAggregatingLog(FunctionId functionId, double[]? bucketBoundaries = null);
+        public ITelemetryLog? GetLog(FunctionId functionId);
+        public ITelemetryLog? GetAggregatingLog(FunctionId functionId, double[]? bucketBoundaries = null);
     }
 }
