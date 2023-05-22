@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Collections.Generic;
+using System.Collections.Immutable;
 using Microsoft.CodeAnalysis.Internal.Log;
 using Microsoft.CodeAnalysis.Telemetry;
 using Microsoft.VisualStudio.Telemetry;
@@ -11,17 +11,15 @@ namespace Microsoft.VisualStudio.LanguageServices.Telemetry
 {
     internal sealed class VisualStudioTelemetryLogManager
     {
-        private readonly Dictionary<FunctionId, VisualStudioTelemetryLog> _logs;
         private readonly TelemetrySession _session;
         private readonly ILogger _telemetryLogger;
-        private readonly object _lock;
+
+        private ImmutableDictionary<FunctionId, VisualStudioTelemetryLog> _logs = ImmutableDictionary<FunctionId, VisualStudioTelemetryLog>.Empty;
 
         public VisualStudioTelemetryLogManager(TelemetrySession session, ILogger telemetryLogger)
         {
             _session = session;
             _telemetryLogger = telemetryLogger;
-            _logs = new();
-            _lock = new object();
         }
 
         public ITelemetryLog? GetLog(FunctionId functionId)
@@ -29,18 +27,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Telemetry
             if (!_session.IsOptedIn)
                 return null;
 
-            VisualStudioTelemetryLog? log;
-
-            lock (_lock)
-            {
-                if (!_logs.TryGetValue(functionId, out log))
-                {
-                    log = new VisualStudioTelemetryLog(_telemetryLogger, functionId);
-                    _logs.Add(functionId, log);
-                }
-            }
-
-            return log;
+            return ImmutableInterlocked.GetOrAdd(ref _logs, functionId, functionId => new VisualStudioTelemetryLog(_telemetryLogger, functionId));
         }
     }
 }

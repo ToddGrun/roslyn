@@ -3,9 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Diagnostics.Metrics;
+using System.Collections.Immutable;
 using Microsoft.CodeAnalysis.Internal.Log;
 using Microsoft.VisualStudio.Telemetry;
 using Microsoft.VisualStudio.Telemetry.Metrics;
@@ -21,15 +19,24 @@ namespace Microsoft.CodeAnalysis.Telemetry
     /// </summary>
     internal sealed class AggregatingTelemetryLog : ITelemetryLog
     {
+        // Indicates version information which vs telemetry will use for our aggregated telemetry. This can be used
+        // by Kusto queries to filter against telemetry versions which have the specified version and thus desired shape.
+        private const string MeterVersion = "0.39";
+
         private readonly IMeter _meter;
         private readonly TelemetrySession _session;
-        private readonly Dictionary<string, IHistogram<int>> _histograms;
-        private readonly object _lock;
         private readonly HistogramConfiguration? _histogramConfiguration;
         private readonly string _eventName;
 
-        private const string MeterVersion = "0.39";
+        private ImmutableDictionary<string, IHistogram<int>> _histograms = ImmutableDictionary<string, IHistogram<int>>.Empty;
 
+        /// <summary>
+        /// Creates a new aggregating telemetry log
+        /// </summary>
+        /// <param name="session">Telemetry session used to post events</param>
+        /// <param name="functionId">Used to derive meter name</param>
+        /// <param name="bucketBoundaries">Optional values indicating bucket boundaries. If not specified, 
+        /// all histograms created will use the default histogram configuration</param>
         public AggregatingTelemetryLog(TelemetrySession session, FunctionId functionId, double[]? bucketBoundaries)
         {
             var meterName = TelemetryLogger.GetPropertyName(functionId, "meter");
@@ -37,8 +44,6 @@ namespace Microsoft.CodeAnalysis.Telemetry
 
             _session = session;
             _meter = meterProvider.CreateMeter(meterName, version: MeterVersion);
-            _histograms = new();
-            _lock = new();
             _eventName = TelemetryLogger.GetEventName(functionId);
 
             if (bucketBoundaries != null)
@@ -69,15 +74,7 @@ namespace Microsoft.CodeAnalysis.Telemetry
             if (!kvLogMessage.TryGetValue(Value, out var valueValue) || valueValue is not int value)
                 throw ExceptionUtilities.Unreachable();
 
-            IHistogram<int>? histogram;
-            lock (_lock)
-            {
-                if (!_histograms.TryGetValue(metricName, out histogram))
-                {
-                    histogram = _meter.CreateHistogram<int>(metricName, _histogramConfiguration);
-                    _histograms.Add(metricName, histogram);
-                }
-            }
+            var histogram = ImmutableInterlocked.GetOrAdd(ref _histograms, metricName, metricName => _meter.CreateHistogram<int>(metricName, _histogramConfiguration));
 
             histogram.Record(value);
         }
@@ -94,18 +91,15 @@ namespace Microsoft.CodeAnalysis.Telemetry
 
         public void PostTelemetry(TelemetrySession session)
         {
-            lock (_lock)
+            foreach (var histogram in _histograms.Values)
             {
-                foreach (var histogram in _histograms.Values)
-                {
-                    var telemetryEvent = new TelemetryEvent(_eventName);
-                    var histogramEvent = new TelemetryHistogramEvent<int>(telemetryEvent, histogram);
+                var telemetryEvent = new TelemetryEvent(_eventName);
+                var histogramEvent = new TelemetryHistogramEvent<int>(telemetryEvent, histogram);
 
-                    session.PostMetricEvent(histogramEvent);
-                }
-
-                _histograms.Clear();
+                session.PostMetricEvent(histogramEvent);
             }
+
+            _histograms = ImmutableDictionary<string, IHistogram<int>>.Empty;
         }
     }
 }
