@@ -217,8 +217,7 @@ namespace Microsoft.CodeAnalysis.Diagnostics.EngineV2
                     using var _2 = ArrayBuilder<AnalyzerWithState>.GetInstance(out var semanticSpanBasedAnalyzers);
                     using var _3 = ArrayBuilder<AnalyzerWithState>.GetInstance(out var semanticDocumentBasedAnalyzers);
 
-                    var telemetryContext = "Pri" + (int)_priorityProvider.Priority;
-                    using var _4 = TelemetryLogging.LogBlockTimeAggregated(FunctionId.RequestDiagnostics_Summary, telemetryContext);
+                    using var _4 = TelemetryLogging.LogBlockTimeAggregated(FunctionId.RequestDiagnostics_Summary, $"Pri{(int)_priorityProvider.Priority}");
 
                     foreach (var stateSet in _stateSets)
                     {
@@ -273,9 +272,9 @@ namespace Microsoft.CodeAnalysis.Diagnostics.EngineV2
                     }
 
                     // Compute diagnostics for non-cached state sets.
-                    await ComputeDocumentDiagnosticsAsync(syntaxAnalyzers.ToImmutable(), AnalysisKind.Syntax, _range, list, incrementalAnalysis: false, telemetryContext, cancellationToken).ConfigureAwait(false);
-                    await ComputeDocumentDiagnosticsAsync(semanticSpanBasedAnalyzers.ToImmutable(), AnalysisKind.Semantic, _range, list, _incrementalAnalysis, telemetryContext, cancellationToken).ConfigureAwait(false);
-                    await ComputeDocumentDiagnosticsAsync(semanticDocumentBasedAnalyzers.ToImmutable(), AnalysisKind.Semantic, span: null, list, incrementalAnalysis: false, telemetryContext, cancellationToken).ConfigureAwait(false);
+                    await ComputeDocumentDiagnosticsAsync(syntaxAnalyzers.ToImmutable(), AnalysisKind.Syntax, _range, list, incrementalAnalysis: false, cancellationToken).ConfigureAwait(false);
+                    await ComputeDocumentDiagnosticsAsync(semanticSpanBasedAnalyzers.ToImmutable(), AnalysisKind.Semantic, _range, list, _incrementalAnalysis, cancellationToken).ConfigureAwait(false);
+                    await ComputeDocumentDiagnosticsAsync(semanticDocumentBasedAnalyzers.ToImmutable(), AnalysisKind.Semantic, span: null, list, incrementalAnalysis: false, cancellationToken).ConfigureAwait(false);
 
                     // If we are blocked for data, then we should always have full result.
                     Debug.Assert(!_blockForData || containsFullResult);
@@ -390,7 +389,6 @@ namespace Microsoft.CodeAnalysis.Diagnostics.EngineV2
                 TextSpan? span,
                 ArrayBuilder<DiagnosticData> builder,
                 bool incrementalAnalysis,
-                string telemetryContext,
                 CancellationToken cancellationToken)
             {
                 Debug.Assert(!incrementalAnalysis || kind == AnalysisKind.Semantic);
@@ -425,7 +423,7 @@ namespace Microsoft.CodeAnalysis.Diagnostics.EngineV2
                 ImmutableDictionary<DiagnosticAnalyzer, ImmutableArray<DiagnosticData>> diagnosticsMap;
                 if (incrementalAnalysis)
                 {
-                    using var _2 = TelemetryLogging.LogBlockTimeAggregated(FunctionId.RequestDiagnostics_Summary, telemetryContext + ".Incremental");
+                    using var _2 = TelemetryLogging.LogBlockTimeAggregated(FunctionId.RequestDiagnostics_Summary, $"Pri{(int)_priorityProvider.Priority}.Incremental");
 
                     diagnosticsMap = await _owner._incrementalMemberEditAnalyzer.ComputeDiagnosticsAsync(
                         executor,
@@ -437,7 +435,7 @@ namespace Microsoft.CodeAnalysis.Diagnostics.EngineV2
                 }
                 else
                 {
-                    using var _2 = TelemetryLogging.LogBlockTimeAggregated(FunctionId.RequestDiagnostics_Summary, telemetryContext + ".Document");
+                    using var _2 = TelemetryLogging.LogBlockTimeAggregated(FunctionId.RequestDiagnostics_Summary, $"Pri{(int)_priorityProvider.Priority}.Document");
 
                     diagnosticsMap = await ComputeDocumentDiagnosticsCoreAsync(executor, cancellationToken).ConfigureAwait(false);
                 }

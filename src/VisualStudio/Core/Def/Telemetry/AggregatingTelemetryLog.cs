@@ -61,7 +61,7 @@ namespace Microsoft.CodeAnalysis.Telemetry
                 return;
 
             if (logMessage is not KeyValueLogMessage kvLogMessage)
-                return;
+                throw ExceptionUtilities.Unreachable();
 
             if (!kvLogMessage.TryGetValue(Name, out var nameValue) || nameValue is not string metricName)
                 throw ExceptionUtilities.Unreachable();
@@ -87,16 +87,10 @@ namespace Microsoft.CodeAnalysis.Telemetry
             if (!IsEnabled)
                 return null;
 
-            return new TimedTelemetryLogBlock(name, minThreshold, this);
+            return new TimedTelemetryLogBlock(name, minThreshold, telemetryLog: this);
         }
 
-        private bool IsEnabled
-        {
-            get
-            {
-                return _session.IsOptedIn;
-            }
-        }
+        private bool IsEnabled => _session.IsOptedIn;
 
         public void PostTelemetry(TelemetrySession session)
         {

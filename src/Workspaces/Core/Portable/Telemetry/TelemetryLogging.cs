@@ -35,27 +35,30 @@ namespace Microsoft.CodeAnalysis.Telemetry
         /// and block execution time can be determined.
         /// </summary>
         /// <param name="minThreshold">Optional parameter used to determine whether to send the telemetry event</param>
-        public static IDisposable? LogBlockTime(FunctionId functionId, string name, int minThreshold = -1)
+        public static IDisposable? LogBlockTime(FunctionId functionId, TelemetryLoggingInterpolatedStringHandler name, int minThreshold = -1)
         {
-            return GetLog(functionId)?.LogBlockTime(name, minThreshold);
+            return GetLog(functionId)?.LogBlockTime(name.GetFormattedText(), minThreshold);
         }
 
         /// <summary>
         /// Adds information to an aggregated telemetry event representing the <paramref name="functionId"/> operation 
         /// with the specified name and value.
         /// </summary>
-        public static void LogAggregated(FunctionId functionId, string name, int value)
+        public static void LogAggregated(FunctionId functionId, TelemetryLoggingInterpolatedStringHandler name, int value)
         {
+            if (GetAggregatingLog(functionId) is not { } aggregatingLog)
+                return;
+
             const string Name = nameof(Name);
             const string Value = nameof(Value);
 
             var logMessage = KeyValueLogMessage.Create(m =>
             {
-                m[Name] = name;
+                m[Name] = name.GetFormattedText();
                 m[Value] = value;
             });
 
-            GetAggregatingLog(functionId)?.Log(logMessage);
+            aggregatingLog.Log(logMessage);
         }
 
         /// <summary>
@@ -63,9 +66,9 @@ namespace Microsoft.CodeAnalysis.Telemetry
         /// with metric <paramref name="metricName"/> only if the block duration meets or exceeds <paramref name="minThreshold"/> milliseconds.
         /// </summary>
         /// <param name="minThreshold">Optional parameter used to determine whether to send the telemetry event</param>
-        public static IDisposable? LogBlockTimeAggregated(FunctionId functionId, string metricName, int minThreshold = -1)
+        public static IDisposable? LogBlockTimeAggregated(FunctionId functionId, TelemetryLoggingInterpolatedStringHandler metricName, int minThreshold = -1)
         {
-            return GetAggregatingLog(functionId)?.LogBlockTime(metricName, minThreshold);
+            return GetAggregatingLog(functionId)?.LogBlockTime(metricName.GetFormattedText(), minThreshold);
         }
 
         /// <summary>

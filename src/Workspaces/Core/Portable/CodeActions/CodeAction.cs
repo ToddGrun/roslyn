@@ -170,7 +170,7 @@ namespace Microsoft.CodeAnalysis.CodeActions
         internal async Task<ImmutableArray<CodeActionOperation>> GetPreviewOperationsAsync(
             Solution originalSolution, CancellationToken cancellationToken)
         {
-            using var _ = TelemetryLogging.LogBlockTimeAggregated(FunctionId.CodeAction_Preview_Summary, "Total");
+            using var _ = TelemetryLogging.LogBlockTimeAggregated(FunctionId.CodeAction_Preview_Summary, $"Total");
 
             var operations = await this.ComputePreviewOperationsAsync(cancellationToken).ConfigureAwait(false);
 

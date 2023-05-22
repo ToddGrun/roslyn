@@ -26,17 +26,17 @@ namespace Microsoft.VisualStudio.LanguageServices.Telemetry
 
         public ITelemetryLog? GetLog(FunctionId functionId)
         {
-            VisualStudioTelemetryLog? log = null;
+            if (!_session.IsOptedIn)
+                return null;
 
-            if (_session.IsOptedIn)
+            VisualStudioTelemetryLog? log;
+
+            lock (_lock)
             {
-                lock (_lock)
+                if (!_logs.TryGetValue(functionId, out log))
                 {
-                    if (!_logs.TryGetValue(functionId, out log))
-                    {
-                        log = new VisualStudioTelemetryLog(_telemetryLogger, functionId);
-                        _logs.Add(functionId, log);
-                    }
+                    log = new VisualStudioTelemetryLog(_telemetryLogger, functionId);
+                    _logs.Add(functionId, log);
                 }
             }
 
