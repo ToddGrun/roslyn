@@ -123,7 +123,7 @@ namespace Microsoft.CodeAnalysis.CodeRefactorings
             Func<string, IDisposable?> addOperationScope,
             CancellationToken cancellationToken)
         {
-            using (TelemetryLogging.LogBlockTimeAggregated(FunctionId.CodeRefactoring_Summary, "Pri" + (int)priority))
+            using (TelemetryLogging.LogBlockTimeAggregated(FunctionId.CodeRefactoring_Summary, $"Pri{(int)priority}"))
             using (Logger.LogBlock(FunctionId.Refactoring_CodeRefactoringService_GetRefactoringsAsync, cancellationToken))
             {
                 var extensionManager = document.Project.Solution.Services.GetRequiredService<IExtensionManager>();
@@ -147,12 +147,10 @@ namespace Microsoft.CodeAnalysis.CodeRefactorings
 
                             using (addOperationScope(providerName))
                             using (RoslynEventSource.LogInformationalBlock(FunctionId.Refactoring_CodeRefactoringService_GetRefactoringsAsync, providerName, cancellationToken))
-                            using (TelemetryLogging.LogBlockTime(FunctionId.CodeRefactoring_Delay, providerName, CodeRefactoringTelemetryDelay))
+                            using (TelemetryLogging.LogBlockTime(FunctionId.CodeRefactoring_Delay, $"{providerName}", CodeRefactoringTelemetryDelay))
                             {
-                                var result = await GetRefactoringFromProviderAsync(document, state, provider, providerMetadata,
+                                return await GetRefactoringFromProviderAsync(document, state, provider, providerMetadata,
                                     extensionManager, options, cancellationToken).ConfigureAwait(false);
-
-                                return result;
                             }
                         },
                         cancellationToken));

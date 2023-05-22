@@ -26,7 +26,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Telemetry
 
         public IDisposable? LogBlockTime(string name, int minThreshold)
         {
-            return new TimedTelemetryLogBlock(name, minThreshold, this);
+            return new TimedTelemetryLogBlock(name, minThreshold, telemetryLog: this);
         }
     }
 }

@@ -64,12 +64,11 @@ namespace Microsoft.CodeAnalysis.Remote.Diagnostics
         {
             foreach (var perfInfo in snapshot)
             {
-                const string IndividualTimes = nameof(IndividualTimes);
                 const int PerformAnalysisTelemetryDelay = 250;
 
                 var delay = (int)perfInfo.TimeSpan.TotalMilliseconds;
 
-                TelemetryLogging.LogAggregated(FunctionId.PerformAnalysis_Summary, IndividualTimes, delay);
+                TelemetryLogging.LogAggregated(FunctionId.PerformAnalysis_Summary, $"IndividualTimes", delay);
 
                 if (delay > PerformAnalysisTelemetryDelay)
                 {
