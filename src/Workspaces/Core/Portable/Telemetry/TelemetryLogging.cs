@@ -42,11 +42,19 @@ namespace Microsoft.CodeAnalysis.Telemetry
 
         /// <summary>
         /// Adds information to an aggregated telemetry event representing the <paramref name="functionId"/> operation 
-        /// with context message <paramref name="logMessage"/>. Requires <paramref name="logMessage"/> to contain a string 
-        /// property indicating the metric name and an int property indicating the value to add to the aggregated telemetry event.
+        /// with the specified name and value.
         /// </summary>
-        public static void LogAggregated(FunctionId functionId, LogMessage logMessage)
+        public static void LogAggregated(FunctionId functionId, string name, int value)
         {
+            const string Name = nameof(Name);
+            const string Value = nameof(Value);
+
+            var logMessage = KeyValueLogMessage.Create(m =>
+            {
+                m[Name] = name;
+                m[Value] = value;
+            });
+
             GetAggregatingLog(functionId)?.Log(logMessage);
         }
 

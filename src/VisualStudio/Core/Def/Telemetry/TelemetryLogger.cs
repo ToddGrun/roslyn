@@ -22,7 +22,7 @@ namespace Microsoft.CodeAnalysis.Telemetry
             private readonly TelemetrySession _session;
             private TelemetryLogProvider? _telemetryLogProvider;
 
-            public Implementation(TelemetrySession session, bool logDelta)
+            private Implementation(TelemetrySession session, bool logDelta)
             {
                 _session = session;
                 LogDelta = logDelta;
@@ -33,13 +33,16 @@ namespace Microsoft.CodeAnalysis.Telemetry
                 _telemetryLogProvider?.Dispose();
             }
 
-            public void Initialize(IAsynchronousOperationListenerProvider asyncListenerProvider)
+            public static new Implementation Create(TelemetrySession session, bool logDelta, IAsynchronousOperationListenerProvider asyncListenerProvider)
             {
+                var logger = new Implementation(session, logDelta);
                 var asyncListener = asyncListenerProvider.GetListener(FeatureAttribute.Telemetry);
 
                 // Two stage initialization as TelemetryLogProvider.Create needs access to
                 //  the ILogger that this class implements.
-                _telemetryLogProvider = TelemetryLogProvider.Create(_session, this, asyncListener);
+                logger._telemetryLogProvider = TelemetryLogProvider.Create(session, logger, asyncListener);
+
+                return logger;
             }
 
             protected override bool LogDelta { get; }
@@ -99,13 +102,7 @@ namespace Microsoft.CodeAnalysis.Telemetry
             => Enum.GetName(typeof(FunctionId), id)!.Replace('_', separator).ToLowerInvariant();
 
         public static TelemetryLogger Create(TelemetrySession session, bool logDelta, IAsynchronousOperationListenerProvider asyncListenerProvider)
-        { 
-            var logger = new Implementation(session, logDelta);
-
-            logger.Initialize(asyncListenerProvider);
-
-            return logger;
-        }
+            => Implementation.Create(session, logDelta, asyncListenerProvider);
 
         public abstract bool IsEnabled(FunctionId functionId);
         protected abstract void PostEvent(TelemetryEvent telemetryEvent);

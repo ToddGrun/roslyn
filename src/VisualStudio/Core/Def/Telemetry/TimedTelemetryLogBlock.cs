@@ -42,12 +42,12 @@ namespace Microsoft.CodeAnalysis.Telemetry
             if (elapsed >= _minThreshold)
             {
                 const string Name = nameof(Name);
-                const string Delay = nameof(Delay);
+                const string Value = nameof(Value);
 
                 var logMessage = KeyValueLogMessage.Create(m =>
                 {
                     m[Name] = _name;
-                    m[Delay] = elapsed;
+                    m[Value] = elapsed;
                 });
 
                 _telemetryLog.Log(logMessage);

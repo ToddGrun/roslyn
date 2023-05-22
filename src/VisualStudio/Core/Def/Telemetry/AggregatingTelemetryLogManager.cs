@@ -22,7 +22,7 @@ namespace Microsoft.CodeAnalysis.Telemetry
         private readonly TelemetrySession _session;
         private readonly Dictionary<FunctionId, AggregatingTelemetryLog> _aggregatingLogs;
         private readonly object _lock;
-        private const int BatchedTelemetryCollectionPeriodInSeconds = 30 * 1;
+        private const int BatchedTelemetryCollectionPeriodInSeconds = 60 * 30;
         private readonly AsyncBatchingWorkQueue _postTelemetryQueue;
         private readonly CancellationTokenSource _cancellationTokenSource;
 
