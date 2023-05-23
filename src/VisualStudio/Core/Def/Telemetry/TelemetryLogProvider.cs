@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using Microsoft.CodeAnalysis.Editor.Shared.Utilities;
 using Microsoft.CodeAnalysis.Internal.Log;
 using Microsoft.CodeAnalysis.Shared.TestHooks;
 using Microsoft.CodeAnalysis.Telemetry;
@@ -19,15 +18,15 @@ namespace Microsoft.VisualStudio.LanguageServices.Telemetry
         private readonly AggregatingTelemetryLogManager _aggregatingTelemetryLogManager;
         private readonly VisualStudioTelemetryLogManager _visualStudioTelemetryLogManager;
 
-        private TelemetryLogProvider(TelemetrySession session, ILogger telemetryLogger, IThreadingContext threadingContext, IAsynchronousOperationListener asyncListener)
+        private TelemetryLogProvider(TelemetrySession session, ILogger telemetryLogger, IAsynchronousOperationListener asyncListener)
         {
-            _aggregatingTelemetryLogManager = new AggregatingTelemetryLogManager(session, threadingContext, asyncListener);
+            _aggregatingTelemetryLogManager = new AggregatingTelemetryLogManager(session, asyncListener);
             _visualStudioTelemetryLogManager = new VisualStudioTelemetryLogManager(session, telemetryLogger);
         }
 
-        public static TelemetryLogProvider Create(TelemetrySession session, ILogger telemetryLogger, IThreadingContext threadingContext, IAsynchronousOperationListener asyncListener)
+        public static TelemetryLogProvider Create(TelemetrySession session, ILogger telemetryLogger, IAsynchronousOperationListener asyncListener)
         {
-            var logProvider = new TelemetryLogProvider(session, telemetryLogger, threadingContext, asyncListener);
+            var logProvider = new TelemetryLogProvider(session, telemetryLogger, asyncListener);
 
             TelemetryLogging.SetLogProvider(logProvider);
 

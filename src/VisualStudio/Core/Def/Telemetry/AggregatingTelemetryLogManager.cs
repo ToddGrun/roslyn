@@ -6,7 +6,6 @@ using System;
 using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.Editor.Shared.Utilities;
 using Microsoft.CodeAnalysis.Internal.Log;
 using Microsoft.CodeAnalysis.Shared.TestHooks;
 using Microsoft.VisualStudio.Telemetry;
@@ -24,10 +23,11 @@ namespace Microsoft.CodeAnalysis.Telemetry
 
         private readonly TelemetrySession _session;
         private readonly AsyncBatchingWorkQueue _postTelemetryQueue;
+        private readonly CancellationTokenSource _cancellationTokenSource = new();
 
         private ImmutableDictionary<FunctionId, AggregatingTelemetryLog> _aggregatingLogs = ImmutableDictionary<FunctionId, AggregatingTelemetryLog>.Empty;
 
-        public AggregatingTelemetryLogManager(TelemetrySession session, IThreadingContext threadingContext, IAsynchronousOperationListener asyncListener)
+        public AggregatingTelemetryLogManager(TelemetrySession session, IAsynchronousOperationListener asyncListener)
         {
             _session = session;
 
@@ -35,7 +35,7 @@ namespace Microsoft.CodeAnalysis.Telemetry
                 s_batchedTelemetryCollectionPeriod,
                 PostCollectedTelemetryAsync,
                 asyncListener,
-                threadingContext.DisposalToken);
+                _cancellationTokenSource.Token);
 
             _postTelemetryQueue.AddWork();
         }
@@ -51,7 +51,9 @@ namespace Microsoft.CodeAnalysis.Telemetry
         // Called by TelemetryLogProvider.Dispose
         public void Dispose()
         {
-            // Post telemetry. Existing work will be cancelled by the threading context disposal.
+            // Cancel any pending work, instead posting telemetry immediately
+            _cancellationTokenSource.Dispose();
+
             PostCollectedTelemetry();
         }
 
