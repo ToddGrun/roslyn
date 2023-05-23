@@ -21,7 +21,7 @@ namespace Microsoft.CodeAnalysis.Telemetry
     {
         // Indicates version information which vs telemetry will use for our aggregated telemetry. This can be used
         // by Kusto queries to filter against telemetry versions which have the specified version and thus desired shape.
-        private const string MeterVersion = "0.39";
+        private const string MeterVersion = "0.40";
 
         private readonly IMeter _meter;
         private readonly TelemetrySession _session;

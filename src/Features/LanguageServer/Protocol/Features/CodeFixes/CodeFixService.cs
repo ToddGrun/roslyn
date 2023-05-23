@@ -511,14 +511,14 @@ namespace Microsoft.CodeAnalysis.CodeFixes
                         // area requiring investigation.
                         const int CodeFixTelemetryDelay = 500;
 
-                        using var _ = TelemetryLogging.LogBlockTime(FunctionId.CodeFix_Delay, $"{fixer.GetType().Name}", CodeFixTelemetryDelay);
+                        var fixerName = fixer.GetType().Name;
+                        using var _ = TelemetryLogging.LogBlockTime(FunctionId.CodeFix_Delay, $"{fixerName}", CodeFixTelemetryDelay);
 
                         var codeFixCollection = await TryGetFixesOrConfigurationsAsync(
                             document, span, diagnostics, fixAllForInSpan, fixer,
                             hasFix: d => this.GetFixableDiagnosticIds(fixer, extensionManager).Contains(d.Id),
                             getFixes: dxs =>
                             {
-                                var fixerName = fixer.GetType().Name;
                                 var fixerMetadata = TryGetMetadata(fixer);
 
                                 using (addOperationScope(fixerName))
