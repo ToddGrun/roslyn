@@ -45,8 +45,11 @@ namespace Microsoft.VisualStudio.LanguageServices.Telemetry
 
         public void Dispose()
         {
-            (_telemetryLogger as IDisposable)?.Dispose();
-            _telemetryLogger = null;
+            if (_telemetryLogger is not null)
+            {
+                (_telemetryLogger as IDisposable)?.Dispose();
+                _telemetryLogger = null;
+            }
         }
 
         protected override ILogger CreateLogger(TelemetrySession telemetrySession, bool logDelta)

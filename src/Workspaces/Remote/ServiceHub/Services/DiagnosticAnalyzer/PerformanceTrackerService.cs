@@ -14,6 +14,7 @@ using System.Text;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.Internal.Log;
+using Microsoft.CodeAnalysis.Options;
 using Microsoft.CodeAnalysis.Telemetry;
 
 namespace Microsoft.CodeAnalysis.Remote.Diagnostics
@@ -39,22 +40,29 @@ namespace Microsoft.CodeAnalysis.Remote.Diagnostics
         private readonly PerformanceQueue _queueForDocumentAnalysis, _queueForSpanAnalysis;
         private readonly ConcurrentDictionary<string, bool> _builtInMap = new ConcurrentDictionary<string, bool>(concurrencyLevel: 2, capacity: 10);
 
+//        private readonly int _logTelemetryForPerformAnalysisMsThreshold;
+
         public event EventHandler SnapshotAdded;
 
         [ImportingConstructor]
         [Obsolete(MefConstruction.ImportingConstructorMessage, error: true)]
         public PerformanceTrackerService()
             : this(MinSampleSizeForDocumentAnalysis, MinSampleSizeForSpanAnalysis)
+//        public PerformanceTrackerService(IGlobalOptionService globalOptions)
+//            : this(globalOptions, MinSampleSizeForDocumentAnalysis, MinSampleSizeForSpanAnalysis)
         {
         }
 
         // internal for testing
         [SuppressMessage("RoslynDiagnosticsReliability", "RS0034:Exported parts should have [ImportingConstructor]", Justification = "Used incorrectly by tests")]
         internal PerformanceTrackerService(int minSampleSizeForDocumentAnalysis, int minSampleSizeForSpanAnalysis)
+//        internal PerformanceTrackerService(IGlobalOptionService globalOptions, int minSampleSizeForDocumentAnalysis, int minSampleSizeForSpanAnalysis)
         {
             _queueForDocumentAnalysis = new PerformanceQueue(minSampleSizeForDocumentAnalysis);
 
             _queueForSpanAnalysis = new PerformanceQueue(minSampleSizeForSpanAnalysis);
+
+//            _logTelemetryForPerformAnalysisMsThreshold = globalOptions.GetOption(DiagnosticOptionsStorage.LogTelemetryForPerformAnalysisMsThreshold);
         }
 
         private PerformanceQueue GetQueue(bool forSpanAnalysis)
@@ -65,12 +73,12 @@ namespace Microsoft.CodeAnalysis.Remote.Diagnostics
             foreach (var perfInfo in snapshot)
             {
                 const int PerformAnalysisTelemetryDelay = 250;
-
                 var delay = (int)perfInfo.TimeSpan.TotalMilliseconds;
 
                 TelemetryLogging.LogAggregated(FunctionId.PerformAnalysis_Summary, $"IndividualTimes", delay);
 
                 if (delay > PerformAnalysisTelemetryDelay)
+//                if (delay > _logTelemetryForPerformAnalysisMsThreshold)
                 {
                     const string AnalyzerId = nameof(AnalyzerId);
                     const string Delay = nameof(Delay);

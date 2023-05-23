@@ -11,11 +11,16 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.Editor.UnitTests.Workspaces;
+using Microsoft.CodeAnalysis.Options;
 using Microsoft.CodeAnalysis.Remote.Diagnostics;
+using Microsoft.CodeAnalysis.Remote.Testing;
+using Microsoft.CodeAnalysis.Test.Utilities;
 using Xunit;
 
 namespace Roslyn.VisualStudio.Next.UnitTests.Services
 {
+    [UseExportProvider]
     public class PerformanceTrackerServiceTests
     {
         private const int TestMinSampleSizeForDocumentAnalysis = 100;
@@ -39,14 +44,21 @@ namespace Roslyn.VisualStudio.Next.UnitTests.Services
             Assert.NotEmpty(analyzerInfos);
         }
 
+        private static TestWorkspace CreateWorkspace(Type[] additionalParts = null)
+             => new TestWorkspace(composition: FeaturesTestCompositions.Features.WithTestHostParts(TestHost.OutOfProcess).AddParts(additionalParts));
+
         [Theory, CombinatorialData]
         public void TestNoDuplicateReportGeneration(bool forSpanAnalysis)
         {
+            using var workspace = CreateWorkspace();
+
             var minSampleSize = forSpanAnalysis
                 ? TestMinSampleSizeForSpanAnalysis
                 : TestMinSampleSizeForDocumentAnalysis;
 
             var service = new PerformanceTrackerService(TestMinSampleSizeForDocumentAnalysis, TestMinSampleSizeForSpanAnalysis);
+//            var globalOptions = workspace.ExportProvider.GetExportedValue<IGlobalOptionService>();
+//            var service = new PerformanceTrackerService(globalOptions, TestMinSampleSizeForDocumentAnalysis, TestMinSampleSizeForSpanAnalysis);
 
             // Verify analyzer infos reported when sampleSize >= minSampleSize
             var sampleSize = minSampleSize + 1;
@@ -143,7 +155,11 @@ namespace Roslyn.VisualStudio.Next.UnitTests.Services
 
         private static List<AnalyzerInfoForPerformanceReporting> GetAnalyzerInfos(int to, bool forSpanAnalysis)
         {
+            using var workspace = CreateWorkspace();
+            var globalOptions = workspace.ExportProvider.GetExportedValue<IGlobalOptionService>();
+
             var service = new PerformanceTrackerService(TestMinSampleSizeForDocumentAnalysis, TestMinSampleSizeForSpanAnalysis);
+//            var service = new PerformanceTrackerService(globalOptions, TestMinSampleSizeForDocumentAnalysis, TestMinSampleSizeForSpanAnalysis);
             ReadTestFileAndAddSnapshots(service, to, forSpanAnalysis);
             return GenerateReport(service, forSpanAnalysis);
         }

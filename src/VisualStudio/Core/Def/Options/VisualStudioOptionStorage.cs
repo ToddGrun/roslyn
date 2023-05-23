@@ -237,6 +237,9 @@ internal abstract class VisualStudioOptionStorage
         {"csharp_using_directive_placement", new RoamingProfileStorage("TextEditor.CSharp.Specific.PreferredUsingDirectivePlacement")},
         {"dotnet_provide_date_and_time_completions", new RoamingProfileStorage("TextEditor.%LANGUAGE%.Specific.ProvideDateAndTimeCompletions")},
         {"dotnet_log_telemetry_for_background_analyzer_execution", new FeatureFlagStorage(@"Roslyn.LogTelemetryForBackgroundAnalyzerExecution")},
+
+        {"dotnet_log_telemetry_for_perform_analysis_ms_threshold", new FeatureFlagStorage(@"Roslyn.LogTelemetryForPerformAnalysisMsThreshold")},
+
         {"dotnet_lightbulb_skip_executing_deprioritized_analyzers", new FeatureFlagStorage(@"Roslyn.LightbulbSkipExecutingDeprioritizedAnalyzers")},
         {"dotnet_enable_lsp_pull_diagnostics", new FeatureFlagStorage(@"Lsp.PullDiagnostics")},
 #pragma warning disable CS0612 // Type or member is obsolete
