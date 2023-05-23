@@ -4,6 +4,7 @@
 
 using System;
 using System.Composition;
+using Microsoft.CodeAnalysis.Editor.Shared.Utilities;
 using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.Internal.Log;
 using Microsoft.CodeAnalysis.Shared.TestHooks;
@@ -17,25 +18,36 @@ namespace Microsoft.VisualStudio.LanguageServices.Telemetry
     {
         private TelemetryLogger? _telemetryLogger;
         private TelemetrySession? _telemetrySession;
+        private readonly IThreadingContext _threadingContext;
         private readonly IAsynchronousOperationListenerProvider _asyncListenerProvider;
 
         [ImportingConstructor]
         [Obsolete(MefConstruction.ImportingConstructorMessage, error: true)]
-        public RemoteWorkspaceTelemetryService(IAsynchronousOperationListenerProvider asyncListenerProvider)
+        public RemoteWorkspaceTelemetryService(IThreadingContext threadingContext, IAsynchronousOperationListenerProvider asyncListenerProvider)
         {
+            _threadingContext = threadingContext;
             _asyncListenerProvider = asyncListenerProvider;
         }
 
         public void Dispose()
         {
-            (_telemetryLogger as IDisposable)?.Dispose();
-            _telemetrySession?.Dispose();
+            if (_telemetryLogger is not null)
+            {
+                (_telemetryLogger as IDisposable)?.Dispose();
+                _telemetryLogger = null;
+            }
+
+            if (_telemetrySession is not null)
+            {
+                _telemetrySession.Dispose();
+                _telemetrySession = null;
+            }
         }
 
         protected override ILogger CreateLogger(TelemetrySession telemetrySession, bool logDelta)
         {
             _telemetrySession = telemetrySession;
-            _telemetryLogger = TelemetryLogger.Create(_telemetrySession, logDelta, _asyncListenerProvider);
+            _telemetryLogger = TelemetryLogger.Create(_telemetrySession, logDelta, _threadingContext, _asyncListenerProvider);
 
             return AggregateLogger.Create(
                 _telemetryLogger,

@@ -6,6 +6,7 @@ using System;
 using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.Editor.Shared.Utilities;
 using Microsoft.CodeAnalysis.Internal.Log;
 using Microsoft.CodeAnalysis.Shared.TestHooks;
 using Microsoft.VisualStudio.Telemetry;
@@ -19,23 +20,22 @@ namespace Microsoft.CodeAnalysis.Telemetry
     /// </summary>
     internal sealed class AggregatingTelemetryLogManager : IDisposable
     {
+        private static readonly TimeSpan s_batchedTelemetryCollectionPeriod = TimeSpan.FromMinutes(30);
+
         private readonly TelemetrySession _session;
-        private const int BatchedTelemetryCollectionPeriodInSeconds = 60 * 30;
         private readonly AsyncBatchingWorkQueue _postTelemetryQueue;
-        private readonly CancellationTokenSource _cancellationTokenSource;
 
         private ImmutableDictionary<FunctionId, AggregatingTelemetryLog> _aggregatingLogs = ImmutableDictionary<FunctionId, AggregatingTelemetryLog>.Empty;
 
-        public AggregatingTelemetryLogManager(TelemetrySession session, IAsynchronousOperationListener asyncListener)
+        public AggregatingTelemetryLogManager(TelemetrySession session, IThreadingContext threadingContext, IAsynchronousOperationListener asyncListener)
         {
             _session = session;
-            _cancellationTokenSource = new();
 
             _postTelemetryQueue = new AsyncBatchingWorkQueue(
-                TimeSpan.FromSeconds(BatchedTelemetryCollectionPeriodInSeconds),
+                s_batchedTelemetryCollectionPeriod,
                 PostCollectedTelemetryAsync,
                 asyncListener,
-                _cancellationTokenSource.Token);
+                threadingContext.DisposalToken);
 
             _postTelemetryQueue.AddWork();
         }
@@ -48,11 +48,10 @@ namespace Microsoft.CodeAnalysis.Telemetry
             return ImmutableInterlocked.GetOrAdd(ref _aggregatingLogs, functionId, functionId => new AggregatingTelemetryLog(_session, functionId, bucketBoundaries));
         }
 
+        // Called by TelemetryLogProvider.Dispose
         public void Dispose()
         {
-            // Cancel any pending work, instead posting telemetry immediately
-            _cancellationTokenSource.Dispose();
-
+            // Post telemetry. Existing work will be cancelled by the threading context disposal.
             PostCollectedTelemetry();
         }
 

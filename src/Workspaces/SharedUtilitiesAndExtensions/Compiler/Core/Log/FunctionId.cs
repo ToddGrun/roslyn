@@ -598,19 +598,19 @@ namespace Microsoft.CodeAnalysis.Internal.Log
         // 700-799 Performance logging. Typically pairs with Delay/Summary values.
         //  Summary is a aggregation of all times collected.
         //  Delay is used as a non-aggregated value for an unexpectedly poor performing scenario.
-        CodeAction_Preview_Delay = 700,
-        CodeAction_Preview_Summary = 701,
-        CodeFix_Delay = 702,
-        CodeFix_Summary = 703,
-        CodeRefactoring_Delay = 704,
-        CodeRefactoring_Summary = 705,
-        PerformAnalysis_Delay = 706,
-        PerformAnalysis_Summary = 707,
-        RequestDiagnostics_Delay = 708,
-        RequestDiagnostics_Summary = 709,
-        SuggestedAction_Application_Delay = 710,
-        SuggestedAction_Application_Summary = 711,
-        SuggestedAction_Delay = 712,
-        SuggestedAction_Summary = 713,
+        CodeFix_Delay = 700,
+        CodeFix_Summary = 701,
+        CodeRefactoring_Delay = 710,
+        CodeRefactoring_Summary = 711,
+        PerformAnalysis_Delay = 720,
+        PerformAnalysis_Summary = 721,
+        RequestDiagnostics_Delay = 730,
+        RequestDiagnostics_Summary = 731,
+        SuggestedAction_Delay = 740,
+        SuggestedAction_Summary = 741,
+        SuggestedAction_Application_Delay = 742,
+        SuggestedAction_Application_Summary = 743,
+        SuggestedAction_Preview_Delay = 744,
+        SuggestedAction_Preview_Summary = 745,
     }
 }

@@ -30,14 +30,14 @@ namespace Microsoft.CodeAnalysis.Telemetry
 
         /// <summary>
         /// Posts a telemetry event representing the <paramref name="functionId"/> operation 
-        /// only if the block duration meets or exceeds <paramref name="minThreshold"/> milliseconds.
-        /// This event will contain properties from which both <paramref name="name"/> and <paramref name="minThreshold"/>.
+        /// only if the block duration meets or exceeds <paramref name="minThresholdMs"/> milliseconds.
+        /// This event will contain properties from which both <paramref name="name"/> and <paramref name="minThresholdMs"/>.
         /// and block execution time can be determined.
         /// </summary>
-        /// <param name="minThreshold">Optional parameter used to determine whether to send the telemetry event</param>
-        public static IDisposable? LogBlockTime(FunctionId functionId, TelemetryLoggingInterpolatedStringHandler name, int minThreshold = -1)
+        /// <param name="minThresholdMs">Optional parameter used to determine whether to send the telemetry event</param>
+        public static IDisposable? LogBlockTime(FunctionId functionId, TelemetryLoggingInterpolatedStringHandler name, int minThresholdMs = -1)
         {
-            return GetLog(functionId)?.LogBlockTime(name.GetFormattedText(), minThreshold);
+            return GetLog(functionId)?.LogBlockTime(name.GetFormattedText(), minThresholdMs);
         }
 
         /// <summary>
@@ -63,12 +63,12 @@ namespace Microsoft.CodeAnalysis.Telemetry
 
         /// <summary>
         /// Adds block execution time to an aggregated telemetry event representing the <paramref name="functionId"/> operation 
-        /// with metric <paramref name="metricName"/> only if the block duration meets or exceeds <paramref name="minThreshold"/> milliseconds.
+        /// with metric <paramref name="metricName"/> only if the block duration meets or exceeds <paramref name="minThresholdMs"/> milliseconds.
         /// </summary>
-        /// <param name="minThreshold">Optional parameter used to determine whether to send the telemetry event</param>
-        public static IDisposable? LogBlockTimeAggregated(FunctionId functionId, TelemetryLoggingInterpolatedStringHandler metricName, int minThreshold = -1)
+        /// <param name="minThresholdMs">Optional parameter used to determine whether to send the telemetry event</param>
+        public static IDisposable? LogBlockTimeAggregated(FunctionId functionId, TelemetryLoggingInterpolatedStringHandler metricName, int minThresholdMs = -1)
         {
-            return GetAggregatingLog(functionId)?.LogBlockTime(metricName.GetFormattedText(), minThreshold);
+            return GetAggregatingLog(functionId)?.LogBlockTime(metricName.GetFormattedText(), minThresholdMs);
         }
 
         /// <summary>
