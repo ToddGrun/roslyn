@@ -76,9 +76,11 @@ namespace Microsoft.VisualStudio.LanguageServices.Telemetry
                 // Only log "delta" property for block end events if feature flag is enabled.
                 var logDelta = _globalOptions.GetOption(DiagnosticOptionsStorage.LogTelemetryForBackgroundAnalyzerExecution);
 
+                var logTelemetryForPerformAnalysisMsThreshold = _globalOptions.GetOption(DiagnosticOptionsStorage.LogTelemetryForPerformAnalysisMsThreshold);
+
                 // initialize session in the remote service
                 _ = await client.TryInvokeAsync<IRemoteProcessTelemetryService>(
-                    (service, cancellationToken) => service.InitializeTelemetrySessionAsync(Process.GetCurrentProcess().Id, settings, logDelta, cancellationToken),
+                    (service, cancellationToken) => service.InitializeTelemetrySessionAsync(Process.GetCurrentProcess().Id, settings, logDelta, logTelemetryForPerformAnalysisMsThreshold, cancellationToken),
                     CancellationToken.None).ConfigureAwait(false);
             });
         }

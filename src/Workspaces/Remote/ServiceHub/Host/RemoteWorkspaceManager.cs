@@ -7,6 +7,7 @@ using System.Collections.Immutable;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.Editor.Shared.Utilities;
 using Microsoft.CodeAnalysis.ExternalAccess.AspNetCore.Internal.EmbeddedLanguages;
 using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.ServiceHub.Framework;
@@ -26,6 +27,7 @@ namespace Microsoft.CodeAnalysis.Remote
                 .Add(typeof(AspNetCoreEmbeddedLanguageClassifier).Assembly)
                 .Add(typeof(BrokeredServiceBase).Assembly)
                 .Add(typeof(RemoteWorkspacesResources).Assembly);
+//                .Add(typeof(ThreadingContext).Assembly);
 
         /// <summary>
         /// Default workspace manager used by the product. Tests may specify a custom <see
@@ -91,6 +93,9 @@ namespace Microsoft.CodeAnalysis.Remote
 
         private static RemoteWorkspace CreatePrimaryWorkspace()
         {
+//            for (var i = 0; i < 1000; i++)
+//                Thread.Sleep(1000);
+
             var catalog = CreateCatalog(RemoteHostAssemblies);
             var exportProviderFactory = CreateExportProviderFactory(catalog);
             var exportProvider = exportProviderFactory.CreateExportProvider();

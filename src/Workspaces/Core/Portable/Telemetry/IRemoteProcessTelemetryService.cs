@@ -20,7 +20,7 @@ namespace Microsoft.CodeAnalysis.Remote
         /// <summary>
         /// Initializes telemetry session.
         /// </summary>
-        ValueTask InitializeTelemetrySessionAsync(int hostProcessId, string serializedSession, bool logDelta, CancellationToken cancellationToken);
+        ValueTask InitializeTelemetrySessionAsync(int hostProcessId, string serializedSession, bool logDelta, int logTelemetryForPerformAnalysisMsThreshold, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sets <see cref="WorkspaceConfigurationOptions"/> for the process.

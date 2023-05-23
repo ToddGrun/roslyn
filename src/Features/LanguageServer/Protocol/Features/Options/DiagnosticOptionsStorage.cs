@@ -16,5 +16,9 @@ namespace Microsoft.CodeAnalysis.Diagnostics
 
         public static readonly Option2<bool> LightbulbSkipExecutingDeprioritizedAnalyzers = new(
             "dotnet_lightbulb_skip_executing_deprioritized_analyzers", defaultValue: false);
+
+        // TODO: Figure out how this works and move to a telemetry specific one?
+        public static readonly Option2<int> LogTelemetryForPerformAnalysisMsThreshold = new(
+            "dotnet_log_telemetry_for_perform_analysis_ms_threshold", defaultValue: 250);
     }
 }
