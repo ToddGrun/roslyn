@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.Editor.Shared.Utilities;
 using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.Internal.Log;
 using Microsoft.CodeAnalysis.Options;
@@ -24,6 +25,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Telemetry
     {
         private readonly VisualStudioWorkspace _workspace;
         private readonly IGlobalOptionService _globalOptions;
+        private readonly IThreadingContext _threadingContext;
         private readonly IAsynchronousOperationListenerProvider _asyncListenerProvider;
         private TelemetryLogger? _telemetryLogger;
 
@@ -32,21 +34,24 @@ namespace Microsoft.VisualStudio.LanguageServices.Telemetry
         public VisualStudioWorkspaceTelemetryService(
             VisualStudioWorkspace workspace,
             IGlobalOptionService globalOptions,
+            IThreadingContext threadingContext,
             IAsynchronousOperationListenerProvider asyncListenerProvider)
         {
             _workspace = workspace;
             _globalOptions = globalOptions;
+            _threadingContext = threadingContext;
             _asyncListenerProvider = asyncListenerProvider;
         }
 
         public void Dispose()
         {
             (_telemetryLogger as IDisposable)?.Dispose();
+            _telemetryLogger = null;
         }
 
         protected override ILogger CreateLogger(TelemetrySession telemetrySession, bool logDelta)
         {
-            _telemetryLogger = TelemetryLogger.Create(telemetrySession, logDelta, _asyncListenerProvider);
+            _telemetryLogger = TelemetryLogger.Create(telemetrySession, logDelta, _threadingContext, _asyncListenerProvider);
 
             return  AggregateLogger.Create(
                 CodeMarkerLogger.Instance,

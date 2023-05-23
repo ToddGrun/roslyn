@@ -9,7 +9,16 @@ namespace Microsoft.CodeAnalysis.Telemetry
 {
     internal interface ITelemetryLog
     {
-        public IDisposable? LogBlockTime(string name, int minThreshold = -1);
+        /// <summary>
+        /// Adds a telemetry event with values obtained from context message <paramref name="logMessage"/>
+        /// </summary>
         public void Log(LogMessage logMessage);
+
+        /// <summary>
+        /// Adds an execution time telemetry event representing the <paramref name="name"/> operation
+        /// only if  block duration meets or exceeds <paramref name="minThresholdMs"/> milliseconds.
+        /// </summary>
+        /// <param name="minThresholdMs">Optional parameter used to determine whether to send the telemetry event (in milliseconds)</param>
+        public IDisposable? LogBlockTime(string name, int minThresholdMs = -1);
     }
 }

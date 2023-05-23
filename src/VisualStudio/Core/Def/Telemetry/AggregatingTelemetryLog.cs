@@ -35,7 +35,7 @@ namespace Microsoft.CodeAnalysis.Telemetry
         /// </summary>
         /// <param name="session">Telemetry session used to post events</param>
         /// <param name="functionId">Used to derive meter name</param>
-        /// <param name="bucketBoundaries">Optional values indicating bucket boundaries. If not specified, 
+        /// <param name="bucketBoundaries">Optional values indicating bucket boundaries in milliseconds. If not specified, 
         /// all histograms created will use the default histogram configuration</param>
         public AggregatingTelemetryLog(TelemetrySession session, FunctionId functionId, double[]? bucketBoundaries)
         {
@@ -79,12 +79,12 @@ namespace Microsoft.CodeAnalysis.Telemetry
             histogram.Record(value);
         }
 
-        public IDisposable? LogBlockTime(string name, int minThreshold)
+        public IDisposable? LogBlockTime(string name, int minThresholdMs)
         {
             if (!IsEnabled)
                 return null;
 
-            return new TimedTelemetryLogBlock(name, minThreshold, telemetryLog: this);
+            return new TimedTelemetryLogBlock(name, minThresholdMs, telemetryLog: this);
         }
 
         private bool IsEnabled => _session.IsOptedIn;

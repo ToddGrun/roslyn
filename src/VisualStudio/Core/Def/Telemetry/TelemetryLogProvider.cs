@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using Microsoft.CodeAnalysis.Editor.Shared.Utilities;
 using Microsoft.CodeAnalysis.Internal.Log;
 using Microsoft.CodeAnalysis.Shared.TestHooks;
 using Microsoft.CodeAnalysis.Telemetry;
@@ -18,21 +19,22 @@ namespace Microsoft.VisualStudio.LanguageServices.Telemetry
         private readonly AggregatingTelemetryLogManager _aggregatingTelemetryLogManager;
         private readonly VisualStudioTelemetryLogManager _visualStudioTelemetryLogManager;
 
-        private TelemetryLogProvider(TelemetrySession session, ILogger telemetryLogger, IAsynchronousOperationListener asyncListener)
+        private TelemetryLogProvider(TelemetrySession session, ILogger telemetryLogger, IThreadingContext threadingContext, IAsynchronousOperationListener asyncListener)
         {
-            _aggregatingTelemetryLogManager = new AggregatingTelemetryLogManager(session, asyncListener);
+            _aggregatingTelemetryLogManager = new AggregatingTelemetryLogManager(session, threadingContext, asyncListener);
             _visualStudioTelemetryLogManager = new VisualStudioTelemetryLogManager(session, telemetryLogger);
         }
 
-        public static TelemetryLogProvider Create(TelemetrySession session, ILogger telemetryLogger, IAsynchronousOperationListener asyncListener)
+        public static TelemetryLogProvider Create(TelemetrySession session, ILogger telemetryLogger, IThreadingContext threadingContext, IAsynchronousOperationListener asyncListener)
         {
-            var logProvider = new TelemetryLogProvider(session, telemetryLogger, asyncListener);
+            var logProvider = new TelemetryLogProvider(session, telemetryLogger, threadingContext, asyncListener);
 
             TelemetryLogging.SetLogProvider(logProvider);
 
             return logProvider;
         }
 
+        // Called by either RemoteWorkspaceTelemetryService.Dispose or VisualStudioWorkspaceTelemetryService.Dispose
         public void Dispose()
         {
             _aggregatingTelemetryLogManager.Dispose();

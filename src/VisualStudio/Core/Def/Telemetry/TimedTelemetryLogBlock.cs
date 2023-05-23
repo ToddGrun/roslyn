@@ -17,15 +17,15 @@ namespace Microsoft.CodeAnalysis.Telemetry
     {
 #pragma warning disable IDE0052 // Remove unread private members - Not used in debug builds
         private readonly string _name;
-        private readonly int _minThreshold;
+        private readonly int _minThresholdMs;
         private readonly ITelemetryLog _telemetryLog;
         private readonly SharedStopwatch _stopwatch;
 #pragma warning restore IDE0052 // Remove unread private members
 
-        public TimedTelemetryLogBlock(string name, int minThreshold, ITelemetryLog telemetryLog)
+        public TimedTelemetryLogBlock(string name, int minThresholdMs, ITelemetryLog telemetryLog)
         {
             _name = name;
-            _minThreshold = minThreshold;
+            _minThresholdMs = minThresholdMs;
             _telemetryLog = telemetryLog;
             _stopwatch = SharedStopwatch.StartNew();
         }
@@ -38,7 +38,7 @@ namespace Microsoft.CodeAnalysis.Telemetry
                 return;
 
             var elapsed = (int)_stopwatch.Elapsed.TotalMilliseconds;
-            if (elapsed >= _minThreshold)
+            if (elapsed >= _minThresholdMs)
             {
                 const string Name = nameof(Name);
                 const string Value = nameof(Value);

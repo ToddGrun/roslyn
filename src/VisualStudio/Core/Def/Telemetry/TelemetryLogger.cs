@@ -7,6 +7,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Microsoft.CodeAnalysis.Editor.Shared.Utilities;
 using Microsoft.CodeAnalysis.Internal.Log;
 using Microsoft.CodeAnalysis.Shared.TestHooks;
 using Microsoft.VisualStudio.LanguageServices.Telemetry;
@@ -30,17 +31,21 @@ namespace Microsoft.CodeAnalysis.Telemetry
 
             public void Dispose()
             {
-                _telemetryLogProvider?.Dispose();
+                if (_telemetryLogProvider is not null)
+                {
+                    _telemetryLogProvider.Dispose();
+                    _telemetryLogProvider = null;
+                }
             }
 
-            public static new Implementation Create(TelemetrySession session, bool logDelta, IAsynchronousOperationListenerProvider asyncListenerProvider)
+            public static new Implementation Create(TelemetrySession session, bool logDelta, IThreadingContext threadingContext, IAsynchronousOperationListenerProvider asyncListenerProvider)
             {
                 var logger = new Implementation(session, logDelta);
                 var asyncListener = asyncListenerProvider.GetListener(FeatureAttribute.Telemetry);
 
                 // Two stage initialization as TelemetryLogProvider.Create needs access to
                 //  the ILogger that this class implements.
-                logger._telemetryLogProvider = TelemetryLogProvider.Create(session, logger, asyncListener);
+                logger._telemetryLogProvider = TelemetryLogProvider.Create(session, logger, threadingContext, asyncListener);
 
                 return logger;
             }
@@ -101,8 +106,8 @@ namespace Microsoft.CodeAnalysis.Telemetry
         private static string GetTelemetryName(FunctionId id, char separator)
             => Enum.GetName(typeof(FunctionId), id)!.Replace('_', separator).ToLowerInvariant();
 
-        public static TelemetryLogger Create(TelemetrySession session, bool logDelta, IAsynchronousOperationListenerProvider asyncListenerProvider)
-            => Implementation.Create(session, logDelta, asyncListenerProvider);
+        public static TelemetryLogger Create(TelemetrySession session, bool logDelta, IThreadingContext threadingContext, IAsynchronousOperationListenerProvider asyncListenerProvider)
+            => Implementation.Create(session, logDelta, threadingContext, asyncListenerProvider);
 
         public abstract bool IsEnabled(FunctionId functionId);
         protected abstract void PostEvent(TelemetryEvent telemetryEvent);
