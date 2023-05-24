@@ -24,7 +24,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Telemetry
             _asyncListenerProvider = asyncListenerProvider;
         }
 
-        protected override ILogger CreateLogger(TelemetrySession telemetrySession, bool logDelta) 
+        protected override ILogger CreateLogger(TelemetrySession telemetrySession, bool logDelta)
             => AggregateLogger.Create(
                 TelemetryLogger.Create(telemetrySession, logDelta, _asyncListenerProvider),
                 Logger.GetLogger());

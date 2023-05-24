@@ -52,7 +52,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Telemetry
         {
             _telemetryLogger = TelemetryLogger.Create(telemetrySession, logDelta, _asyncListenerProvider);
 
-            return  AggregateLogger.Create(
+            return AggregateLogger.Create(
                 CodeMarkerLogger.Instance,
                 new EtwLogger(FunctionIdOptions.CreateFunctionIsEnabledPredicate(_globalOptions)),
                 _telemetryLogger,
