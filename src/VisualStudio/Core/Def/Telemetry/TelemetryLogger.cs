@@ -17,24 +17,14 @@ namespace Microsoft.CodeAnalysis.Telemetry
 {
     internal abstract class TelemetryLogger : ILogger
     {
-        private sealed class Implementation : TelemetryLogger, IDisposable
+        private sealed class Implementation : TelemetryLogger
         {
             private readonly TelemetrySession _session;
-            private TelemetryLogProvider? _telemetryLogProvider;
 
             private Implementation(TelemetrySession session, bool logDelta)
             {
                 _session = session;
                 LogDelta = logDelta;
-            }
-
-            public void Dispose()
-            {
-                if (_telemetryLogProvider is not null)
-                {
-                    _telemetryLogProvider.Dispose();
-                    _telemetryLogProvider = null;
-                }
             }
 
             public static new Implementation Create(TelemetrySession session, bool logDelta, IAsynchronousOperationListenerProvider asyncListenerProvider)
@@ -44,7 +34,7 @@ namespace Microsoft.CodeAnalysis.Telemetry
 
                 // Two stage initialization as TelemetryLogProvider.Create needs access to
                 //  the ILogger that this class implements.
-                logger._telemetryLogProvider = TelemetryLogProvider.Create(session, logger, asyncListener);
+                TelemetryLogProvider.Create(session, logger, asyncListener);
 
                 return logger;
             }

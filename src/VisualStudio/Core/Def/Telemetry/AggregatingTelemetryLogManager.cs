@@ -15,9 +15,9 @@ namespace Microsoft.CodeAnalysis.Telemetry
 {
     /// <summary>
     /// Manages creation and obtaining aggregated telemetry logs. Also, notifies logs to
-    /// send aggregated events every 30 minutes or upon disposal.
+    /// send aggregated events every 30 minutes.
     /// </summary>
-    internal sealed class AggregatingTelemetryLogManager : IDisposable
+    internal sealed class AggregatingTelemetryLogManager
     {
         private static readonly TimeSpan s_batchedTelemetryCollectionPeriod = TimeSpan.FromMinutes(30);
 
@@ -48,24 +48,13 @@ namespace Microsoft.CodeAnalysis.Telemetry
             return ImmutableInterlocked.GetOrAdd(ref _aggregatingLogs, functionId, functionId => new AggregatingTelemetryLog(_session, functionId, bucketBoundaries));
         }
 
-        // Called by TelemetryLogProvider.Dispose
-        public void Dispose()
-        {
-            // Cancel any pending work, instead posting telemetry immediately
-            _cancellationTokenSource.Dispose();
-
-            PostCollectedTelemetry();
-        }
-
         private ValueTask PostCollectedTelemetryAsync(CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
 
             PostCollectedTelemetry();
 
-            // Add another work item to the queue as we want this continue executing until disposal.
-            // The AddWork call below is a no-op if we've been Disposed since checking
-            // the cancellation token.
+            // Add another work item to the queue as we want this continue executing.
             _postTelemetryQueue.AddWork();
 
             return ValueTaskFactory.CompletedTask;

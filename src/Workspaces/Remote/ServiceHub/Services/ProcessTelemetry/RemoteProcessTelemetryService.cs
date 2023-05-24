@@ -32,7 +32,6 @@ namespace Microsoft.CodeAnalysis.Remote
         }
 
         private readonly CancellationTokenSource _shutdownCancellationSource = new();
-        private RemoteWorkspaceTelemetryService? _telemetryService;
 
 #pragma warning disable IDE0052 // Remove unread private members
         private PerformanceReporter? _performanceReporter;
@@ -42,21 +41,6 @@ namespace Microsoft.CodeAnalysis.Remote
             : base(arguments)
         {
         }
-
-        public override void Dispose()
-        {
-            // This *looks* like a double dispose, but it's actually not. Even though
-            // _telemetryService is created via MEF, the service hub
-            // process doesn't currently dispose the mef export provider.
-            if (_telemetryService is not null)
-            {
-                _telemetryService?.Dispose();
-                _telemetryService = null;
-            }
-
-            base.Dispose();
-        }
-
         /// <summary>
         /// Remote API. Initializes ServiceHub process global state.
         /// </summary>
@@ -66,12 +50,12 @@ namespace Microsoft.CodeAnalysis.Remote
             {
                 var services = GetWorkspace().Services;
 
-                _telemetryService = (RemoteWorkspaceTelemetryService)services.GetRequiredService<IWorkspaceTelemetryService>();
+                var telemetryService = (RemoteWorkspaceTelemetryService)services.GetRequiredService<IWorkspaceTelemetryService>();
                 var telemetrySession = new TelemetrySession(serializedSession);
                 telemetrySession.Start();
 
-                _telemetryService.InitializeTelemetrySession(telemetrySession, logDelta);
-                _telemetryService.RegisterUnexpectedExceptionLogger(TraceLogger);
+                telemetryService.InitializeTelemetrySession(telemetrySession, logDelta);
+                telemetryService.RegisterUnexpectedExceptionLogger(TraceLogger);
                 FaultReporter.InitializeFatalErrorHandlers();
 
                 // log telemetry that service hub started

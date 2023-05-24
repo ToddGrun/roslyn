@@ -13,10 +13,8 @@ using Microsoft.VisualStudio.Telemetry;
 namespace Microsoft.VisualStudio.LanguageServices.Telemetry
 {
     [ExportWorkspaceService(typeof(IWorkspaceTelemetryService)), Shared]
-    internal sealed class RemoteWorkspaceTelemetryService : AbstractWorkspaceTelemetryService, IDisposable
+    internal sealed class RemoteWorkspaceTelemetryService : AbstractWorkspaceTelemetryService
     {
-        private TelemetryLogger? _telemetryLogger;
-        private TelemetrySession? _telemetrySession;
         private readonly IAsynchronousOperationListenerProvider _asyncListenerProvider;
 
         [ImportingConstructor]
@@ -26,28 +24,10 @@ namespace Microsoft.VisualStudio.LanguageServices.Telemetry
             _asyncListenerProvider = asyncListenerProvider;
         }
 
-        public void Dispose()
-        {
-            if (_telemetryLogger is not null)
-            {
-                (_telemetryLogger as IDisposable)?.Dispose();
-                _telemetryLogger = null;
-            }
-
-            if (_telemetrySession is not null)
-            {
-                _telemetrySession.Dispose();
-                _telemetrySession = null;
-            }
-        }
-
         protected override ILogger CreateLogger(TelemetrySession telemetrySession, bool logDelta)
         {
-            _telemetrySession = telemetrySession;
-            _telemetryLogger = TelemetryLogger.Create(_telemetrySession, logDelta, _asyncListenerProvider);
-
             return AggregateLogger.Create(
-                _telemetryLogger,
+                TelemetryLogger.Create(telemetrySession, logDelta, _asyncListenerProvider),
                 Logger.GetLogger());
         }
     }

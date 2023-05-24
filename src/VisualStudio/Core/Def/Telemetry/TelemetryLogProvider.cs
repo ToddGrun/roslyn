@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using Microsoft.CodeAnalysis.Internal.Log;
 using Microsoft.CodeAnalysis.Shared.TestHooks;
 using Microsoft.CodeAnalysis.Telemetry;
@@ -13,7 +12,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Telemetry
     /// <summary>
     /// Provides access to an appropriate <see cref="ITelemetryLogProvider"/> for logging telemetry.
     /// </summary>
-    internal sealed class TelemetryLogProvider : ITelemetryLogProvider, IDisposable
+    internal sealed class TelemetryLogProvider : ITelemetryLogProvider
     {
         private readonly AggregatingTelemetryLogManager _aggregatingTelemetryLogManager;
         private readonly VisualStudioTelemetryLogManager _visualStudioTelemetryLogManager;
@@ -31,12 +30,6 @@ namespace Microsoft.VisualStudio.LanguageServices.Telemetry
             TelemetryLogging.SetLogProvider(logProvider);
 
             return logProvider;
-        }
-
-        // Called by either RemoteWorkspaceTelemetryService.Dispose or VisualStudioWorkspaceTelemetryService.Dispose
-        public void Dispose()
-        {
-            _aggregatingTelemetryLogManager.Dispose();
         }
 
         /// <summary>
