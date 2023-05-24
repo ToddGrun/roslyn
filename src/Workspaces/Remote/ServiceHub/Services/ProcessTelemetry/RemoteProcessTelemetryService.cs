@@ -41,6 +41,7 @@ namespace Microsoft.CodeAnalysis.Remote
             : base(arguments)
         {
         }
+
         /// <summary>
         /// Remote API. Initializes ServiceHub process global state.
         /// </summary>
