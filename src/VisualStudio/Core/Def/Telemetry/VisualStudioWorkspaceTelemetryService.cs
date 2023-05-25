@@ -20,12 +20,11 @@ using Roslyn.Utilities;
 namespace Microsoft.VisualStudio.LanguageServices.Telemetry
 {
     [ExportWorkspaceService(typeof(IWorkspaceTelemetryService)), Shared]
-    internal sealed class VisualStudioWorkspaceTelemetryService : AbstractWorkspaceTelemetryService, IDisposable
+    internal sealed class VisualStudioWorkspaceTelemetryService : AbstractWorkspaceTelemetryService
     {
         private readonly VisualStudioWorkspace _workspace;
         private readonly IGlobalOptionService _globalOptions;
         private readonly IAsynchronousOperationListenerProvider _asyncListenerProvider;
-        private TelemetryLogger? _telemetryLogger;
 
         [ImportingConstructor]
         [Obsolete(MefConstruction.ImportingConstructorMessage, error: true)]
@@ -39,26 +38,13 @@ namespace Microsoft.VisualStudio.LanguageServices.Telemetry
             _asyncListenerProvider = asyncListenerProvider;
         }
 
-        public void Dispose()
-        {
-            if (_telemetryLogger is not null)
-            {
-                (_telemetryLogger as IDisposable)?.Dispose();
-                _telemetryLogger = null;
-            }
-        }
-
         protected override ILogger CreateLogger(TelemetrySession telemetrySession, bool logDelta)
-        {
-            _telemetryLogger = TelemetryLogger.Create(telemetrySession, logDelta, _asyncListenerProvider);
-
-            return AggregateLogger.Create(
+            => AggregateLogger.Create(
                 CodeMarkerLogger.Instance,
                 new EtwLogger(FunctionIdOptions.CreateFunctionIsEnabledPredicate(_globalOptions)),
-                _telemetryLogger,
+                TelemetryLogger.Create(telemetrySession, logDelta, _asyncListenerProvider),
                 new FileLogger(_globalOptions),
                 Logger.GetLogger());
-        }
 
         protected override void TelemetrySessionInitialized()
         {

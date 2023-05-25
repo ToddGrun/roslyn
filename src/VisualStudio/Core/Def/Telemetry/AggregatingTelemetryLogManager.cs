@@ -23,7 +23,6 @@ namespace Microsoft.CodeAnalysis.Telemetry
 
         private readonly TelemetrySession _session;
         private readonly AsyncBatchingWorkQueue _postTelemetryQueue;
-        private readonly CancellationTokenSource _cancellationTokenSource = new();
 
         private ImmutableDictionary<FunctionId, AggregatingTelemetryLog> _aggregatingLogs = ImmutableDictionary<FunctionId, AggregatingTelemetryLog>.Empty;
 
@@ -35,7 +34,7 @@ namespace Microsoft.CodeAnalysis.Telemetry
                 s_batchedTelemetryCollectionPeriod,
                 PostCollectedTelemetryAsync,
                 asyncListener,
-                _cancellationTokenSource.Token);
+                CancellationToken.None);
 
             _postTelemetryQueue.AddWork();
         }
