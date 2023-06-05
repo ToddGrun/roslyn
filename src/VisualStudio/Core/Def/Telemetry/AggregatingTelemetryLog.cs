@@ -59,19 +59,16 @@ namespace Microsoft.CodeAnalysis.Telemetry
         /// <param name="logMessage"></param>
         public void Log(LogMessage logMessage)
         {
-            const string Name = nameof(Name);
-            const string Value = nameof(Value);
-
             if (!IsEnabled)
                 return;
 
             if (logMessage is not KeyValueLogMessage kvLogMessage)
                 throw ExceptionUtilities.Unreachable();
 
-            if (!kvLogMessage.TryGetValue(Name, out var nameValue) || nameValue is not string metricName)
+            if (!kvLogMessage.TryGetValue(TelemetryLogging.AggregatedKeyName, out var nameValue) || nameValue is not string metricName)
                 throw ExceptionUtilities.Unreachable();
 
-            if (!kvLogMessage.TryGetValue(Value, out var valueValue) || valueValue is not int value)
+            if (!kvLogMessage.TryGetValue(TelemetryLogging.AggregatedKeyValue, out var valueValue) || valueValue is not int value)
                 throw ExceptionUtilities.Unreachable();
 
             var histogram = ImmutableInterlocked.GetOrAdd(ref _histograms, metricName, metricName => _meter.CreateHistogram<int>(metricName, _histogramConfiguration));

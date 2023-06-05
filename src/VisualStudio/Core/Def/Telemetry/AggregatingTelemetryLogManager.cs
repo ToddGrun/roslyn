@@ -24,11 +24,6 @@ namespace Microsoft.CodeAnalysis.Telemetry
         private readonly TelemetrySession _session;
         private readonly AsyncBatchingWorkQueue _postTelemetryQueue;
 
-        /// <summary>
-        /// Indicates whether <see cref="_postTelemetryQueue"/> has work already added to it.
-        /// </summary>
-        private int _workAdded = 0;
-
         private ImmutableDictionary<FunctionId, AggregatingTelemetryLog> _aggregatingLogs = ImmutableDictionary<FunctionId, AggregatingTelemetryLog>.Empty;
 
         public AggregatingTelemetryLogManager(TelemetrySession session, IAsynchronousOperationListener asyncListener)
@@ -47,12 +42,8 @@ namespace Microsoft.CodeAnalysis.Telemetry
             if (!_session.IsOptedIn)
                 return null;
 
-            if (Interlocked.Exchange(ref _workAdded, 1) == 0)
-            {
-                // The queue doesn't have any work pending. Add an item so PostCollectedTelemetryAsync
-                //   will get fired after the collection period.
-                _postTelemetryQueue.AddWork();
-            }
+            // Ensure PostCollectedTelemetryAsync will get fired after the collection period.
+            _postTelemetryQueue.AddWork();
 
             return ImmutableInterlocked.GetOrAdd(ref _aggregatingLogs, functionId, functionId => new AggregatingTelemetryLog(_session, functionId, bucketBoundaries));
         }
@@ -62,9 +53,6 @@ namespace Microsoft.CodeAnalysis.Telemetry
             token.ThrowIfCancellationRequested();
 
             PostCollectedTelemetry();
-
-            // Reset to indicate the queue doesn't have any work pending.
-            _workAdded = 0;
 
             return ValueTaskFactory.CompletedTask;
         }

@@ -600,12 +600,16 @@ namespace Microsoft.CodeAnalysis.Internal.Log
         //  Delay is used as a non-aggregated value for an unexpectedly poor performing scenario.
         CodeFix_Delay = 700,
         CodeFix_Summary = 701,
+
         CodeRefactoring_Delay = 710,
         CodeRefactoring_Summary = 711,
+
         PerformAnalysis_Delay = 720,
         PerformAnalysis_Summary = 721,
+
         RequestDiagnostics_Delay = 730,
         RequestDiagnostics_Summary = 731,
+
         SuggestedAction_Delay = 740,
         SuggestedAction_Summary = 741,
         SuggestedAction_Application_Delay = 742,

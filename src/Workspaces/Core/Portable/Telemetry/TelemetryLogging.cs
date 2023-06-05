@@ -15,6 +15,9 @@ namespace Microsoft.CodeAnalysis.Telemetry
     {
         private static ITelemetryLogProvider? s_logProvider;
 
+        public const string AggregatedKeyName = "Name";
+        public const string AggregatedKeyValue = "Value";
+
         public static void SetLogProvider(ITelemetryLogProvider logProvider)
         {
             s_logProvider = logProvider;
@@ -49,13 +52,10 @@ namespace Microsoft.CodeAnalysis.Telemetry
             if (GetAggregatingLog(functionId) is not { } aggregatingLog)
                 return;
 
-            const string Name = nameof(Name);
-            const string Value = nameof(Value);
-
             var logMessage = KeyValueLogMessage.Create(m =>
             {
-                m[Name] = name.GetFormattedText();
-                m[Value] = value;
+                m[AggregatedKeyName] = name.GetFormattedText();
+                m[AggregatedKeyValue] = value;
             });
 
             aggregatingLog.Log(logMessage);

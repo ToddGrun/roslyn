@@ -40,13 +40,10 @@ namespace Microsoft.CodeAnalysis.Telemetry
             var elapsed = (int)_stopwatch.Elapsed.TotalMilliseconds;
             if (elapsed >= _minThresholdMs)
             {
-                const string Name = nameof(Name);
-                const string Value = nameof(Value);
-
                 var logMessage = KeyValueLogMessage.Create(m =>
                 {
-                    m[Name] = _name;
-                    m[Value] = elapsed;
+                    m[TelemetryLogging.AggregatedKeyName] = _name;
+                    m[TelemetryLogging.AggregatedKeyValue] = elapsed;
                 });
 
                 _telemetryLog.Log(logMessage);
