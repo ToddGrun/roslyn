@@ -27,6 +27,7 @@ namespace Microsoft.CodeAnalysis.Telemetry
         private readonly TelemetrySession _session;
         private readonly HistogramConfiguration? _histogramConfiguration;
         private readonly string _eventName;
+        private readonly AggregatingTelemetryLogManager _aggregatingTelemetryLogManager;
 
         private ImmutableDictionary<string, IHistogram<int>> _histograms = ImmutableDictionary<string, IHistogram<int>>.Empty;
 
@@ -37,7 +38,7 @@ namespace Microsoft.CodeAnalysis.Telemetry
         /// <param name="functionId">Used to derive meter name</param>
         /// <param name="bucketBoundaries">Optional values indicating bucket boundaries in milliseconds. If not specified, 
         /// all histograms created will use the default histogram configuration</param>
-        public AggregatingTelemetryLog(TelemetrySession session, FunctionId functionId, double[]? bucketBoundaries)
+        public AggregatingTelemetryLog(TelemetrySession session, FunctionId functionId, double[]? bucketBoundaries, AggregatingTelemetryLogManager aggregatingTelemetryLogManager)
         {
             var meterName = TelemetryLogger.GetPropertyName(functionId, "meter");
             var meterProvider = new VSTelemetryMeterProvider();
@@ -45,6 +46,7 @@ namespace Microsoft.CodeAnalysis.Telemetry
             _session = session;
             _meter = meterProvider.CreateMeter(meterName, version: MeterVersion);
             _eventName = TelemetryLogger.GetEventName(functionId);
+            _aggregatingTelemetryLogManager = aggregatingTelemetryLogManager;
 
             if (bucketBoundaries != null)
             {
@@ -74,6 +76,8 @@ namespace Microsoft.CodeAnalysis.Telemetry
             var histogram = ImmutableInterlocked.GetOrAdd(ref _histograms, metricName, metricName => _meter.CreateHistogram<int>(metricName, _histogramConfiguration));
 
             histogram.Record(value);
+
+            _aggregatingTelemetryLogManager.EnsureTelemetryWorkQueued();
         }
 
         public IDisposable? LogBlockTime(string name, int minThresholdMs)

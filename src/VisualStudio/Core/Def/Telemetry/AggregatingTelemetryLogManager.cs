@@ -42,10 +42,13 @@ namespace Microsoft.CodeAnalysis.Telemetry
             if (!_session.IsOptedIn)
                 return null;
 
+            return ImmutableInterlocked.GetOrAdd(ref _aggregatingLogs, functionId, functionId => new AggregatingTelemetryLog(_session, functionId, bucketBoundaries, this));
+        }
+
+        public void EnsureTelemetryWorkQueued()
+        {
             // Ensure PostCollectedTelemetryAsync will get fired after the collection period.
             _postTelemetryQueue.AddWork();
-
-            return ImmutableInterlocked.GetOrAdd(ref _aggregatingLogs, functionId, functionId => new AggregatingTelemetryLog(_session, functionId, bucketBoundaries));
         }
 
         private ValueTask PostCollectedTelemetryAsync(CancellationToken token)
