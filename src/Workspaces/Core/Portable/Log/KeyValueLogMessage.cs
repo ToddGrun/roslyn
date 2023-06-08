@@ -182,11 +182,11 @@ namespace Microsoft.CodeAnalysis.Internal.Log
         /// <summary>
         /// Log some traces of an activity (default)
         /// </summary>
-        Trace,
+        Trace = 0,
 
         /// <summary>
         /// Log an user explicit action
         /// </summary>
-        UserAction,
+        UserAction = 1,
     }
 }
