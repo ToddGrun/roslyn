@@ -22,7 +22,7 @@ namespace Microsoft.CodeAnalysis.Telemetry
         private static readonly TimeSpan s_batchedTelemetryCollectionPeriod = TimeSpan.FromMinutes(30);
 
         private readonly TelemetrySession _session;
-        private readonly AsyncBatchingWorkQueue _postTelemetryQueue;
+//        private readonly AsyncBatchingWorkQueue _postTelemetryQueue;
 
         private ImmutableDictionary<FunctionId, AggregatingTelemetryLog> _aggregatingLogs = ImmutableDictionary<FunctionId, AggregatingTelemetryLog>.Empty;
 
@@ -30,11 +30,11 @@ namespace Microsoft.CodeAnalysis.Telemetry
         {
             _session = session;
 
-            _postTelemetryQueue = new AsyncBatchingWorkQueue(
-                s_batchedTelemetryCollectionPeriod,
-                PostCollectedTelemetryAsync,
-                asyncListener,
-                CancellationToken.None);
+            //_postTelemetryQueue = new AsyncBatchingWorkQueue(
+            //    s_batchedTelemetryCollectionPeriod,
+            //    PostCollectedTelemetryAsync,
+            //    asyncListener,
+            //    CancellationToken.None);
         }
 
         public ITelemetryLog? GetLog(FunctionId functionId, double[]? bucketBoundaries)
@@ -48,10 +48,10 @@ namespace Microsoft.CodeAnalysis.Telemetry
         public void EnsureTelemetryWorkQueued()
         {
             // Ensure PostCollectedTelemetryAsync will get fired after the collection period.
-            _postTelemetryQueue.AddWork();
+            //_postTelemetryQueue.AddWork();
         }
 
-        private ValueTask PostCollectedTelemetryAsync(CancellationToken token)
+        public ValueTask PostCollectedTelemetryAsync(CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
 
