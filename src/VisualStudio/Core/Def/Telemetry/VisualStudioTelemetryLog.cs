@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using Microsoft.CodeAnalysis.Internal.Log;
 using Microsoft.CodeAnalysis.Telemetry;
 
@@ -19,14 +20,14 @@ namespace Microsoft.VisualStudio.LanguageServices.Telemetry
             _functionId = functionId;
         }
 
-        public void Log(LogMessage logMessage)
+        public void Log(KeyValueLogMessage logMessage)
         {
             _telemetryLogger.Log(_functionId, logMessage);
         }
 
-        public IDisposable? LogBlockTime(string name, int minThresholdMs)
+        public IDisposable? LogBlockTime(KeyValueLogMessage logMessage, int minThresholdMs)
         {
-            return new TimedTelemetryLogBlock(name, minThresholdMs, telemetryLog: this);
+            return new TimedTelemetryLogBlock(logMessage, minThresholdMs, telemetryLog: this);
         }
     }
 }

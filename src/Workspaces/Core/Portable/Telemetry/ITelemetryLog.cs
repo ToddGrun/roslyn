@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using Microsoft.CodeAnalysis.Internal.Log;
 
 namespace Microsoft.CodeAnalysis.Telemetry
@@ -12,13 +13,14 @@ namespace Microsoft.CodeAnalysis.Telemetry
         /// <summary>
         /// Adds a telemetry event with values obtained from context message <paramref name="logMessage"/>
         /// </summary>
-        public void Log(LogMessage logMessage);
+        public void Log(KeyValueLogMessage logMessage);
 
         /// <summary>
-        /// Adds an execution time telemetry event representing the <paramref name="name"/> operation
+        /// Adds an execution time telemetry event representing <paramref name="logMessage"/>
         /// only if  block duration meets or exceeds <paramref name="minThresholdMs"/> milliseconds.
         /// </summary>
+        /// <param name="logMessage">Event data to be sent</param>
         /// <param name="minThresholdMs">Optional parameter used to determine whether to send the telemetry event (in milliseconds)</param>
-        public IDisposable? LogBlockTime(string name, int minThresholdMs = -1);
+        public IDisposable? LogBlockTime(KeyValueLogMessage logMessage, int minThresholdMs = -1);
     }
 }
