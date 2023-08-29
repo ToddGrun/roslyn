@@ -3607,12 +3607,21 @@ namespace Microsoft.CodeAnalysis
             return ConstantValue.Bad;
         }
 
+        private static int s_requestCount = 0;
+        private static int s_requestCountWithNamespaceSpecified = 0;
+        private static int s_requestSucceededCount = 0;
+
         internal (int FirstIndex, int SecondIndex) GetAssemblyRefsForForwardedType(string fullName, bool ignoreCase, out string matchedName)
         {
             EnsureForwardTypeToAssemblyMap();
 
             if (ignoreCase)
             {
+                Interlocked.Increment(ref s_requestCount);
+
+                if (fullName.IndexOf('.') >= 0)
+                    Interlocked.Increment(ref s_requestCountWithNamespaceSpecified);
+
                 // This linear search is not the optimal way to use a hashmap, but we should only use
                 // this functionality when computing diagnostics.  Note
                 // that we can't store the map case-insensitively, since real metadata name
@@ -3622,6 +3631,9 @@ namespace Microsoft.CodeAnalysis
                     if (string.Equals(pair.Key, fullName, StringComparison.OrdinalIgnoreCase))
                     {
                         matchedName = pair.Key;
+
+                        Interlocked.Increment(ref s_requestSucceededCount);
+
                         return pair.Value;
                     }
                 }
@@ -3646,11 +3658,16 @@ namespace Microsoft.CodeAnalysis
             return _lazyForwardedTypesToAssemblyIndexMap;
         }
 
+        private static int s_createdMaps = 0;
+        private static int s_nonEmptyMaps = 0;
+        private static int s_mapsContainingOnlyNSQualifiedEntries = 0;
+
         private void EnsureForwardTypeToAssemblyMap()
         {
             if (_lazyForwardedTypesToAssemblyIndexMap == null)
             {
                 var typesToAssemblyIndexMap = new Dictionary<string, (int FirstIndex, int SecondIndex)>();
+                bool containsOnlyNSQualifiedEntries = true;
 
                 try
                 {
@@ -3693,6 +3710,14 @@ namespace Microsoft.CodeAnalysis
                             {
                                 name = namespaceString + "." + name;
                             }
+                            else
+                            {
+                                containsOnlyNSQualifiedEntries = false;
+                            }
+                        }
+                        else
+                        {
+                            containsOnlyNSQualifiedEntries = false;
                         }
 
                         (int FirstIndex, int SecondIndex) indices;
@@ -3716,6 +3741,14 @@ namespace Microsoft.CodeAnalysis
                 }
                 catch (BadImageFormatException)
                 { }
+
+                Interlocked.Increment(ref s_createdMaps);
+
+                if (typesToAssemblyIndexMap.Count > 0)
+                    Interlocked.Increment(ref s_nonEmptyMaps);
+
+                if (containsOnlyNSQualifiedEntries)
+                    Interlocked.Increment(ref s_mapsContainingOnlyNSQualifiedEntries);
 
                 _lazyForwardedTypesToAssemblyIndexMap = typesToAssemblyIndexMap;
             }
