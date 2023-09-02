@@ -111,7 +111,8 @@ namespace Microsoft.VisualStudio.LanguageServices.Implementation.ProjectSystem
             {
                 try
                 {
-                    // TODO: Should we pass in cancellationToken here insead of CancellationToken.None?
+                    // TODO: Should we pass in cancellationToken here intsead of CancellationToken.None?
+                    // TODO: Duplicate
                     return await ((IVsAsyncFileChangeEx)_fileChangeService).AdviseFileChangeAsync(_filePath, _fileChangeFlags, this, CancellationToken.None).ConfigureAwait(false);
                 }
                 catch (Exception e) when (ReportException(e))

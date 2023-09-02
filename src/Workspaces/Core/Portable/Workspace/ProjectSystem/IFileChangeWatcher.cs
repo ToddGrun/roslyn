@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 
 namespace Microsoft.CodeAnalysis.ProjectSystem
@@ -87,6 +88,8 @@ namespace Microsoft.CodeAnalysis.ProjectSystem
         /// you'll need a file watched (eventually) but it's not worth blocking yet.
         /// </summary>
         IWatchedFile EnqueueWatchingFile(string filePath);
+
+        IEnumerable<IWatchedFile> EnqueueWatchingFiles(IEnumerable<string> filePaths);
     }
 
     internal interface IWatchedFile : IDisposable

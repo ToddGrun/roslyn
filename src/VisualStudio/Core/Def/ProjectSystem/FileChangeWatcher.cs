@@ -10,11 +10,12 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Collections;
+using Microsoft.CodeAnalysis.PooledObjects;
 using Microsoft.CodeAnalysis.ProjectSystem;
 using Microsoft.CodeAnalysis.Shared.TestHooks;
 using Microsoft.VisualStudio.Shell.Interop;
 using Roslyn.Utilities;
-using IVsAsyncFileChangeEx = Microsoft.VisualStudio.Shell.IVsAsyncFileChangeEx;
+using IVsAsyncFileChangeEx2 = Microsoft.VisualStudio.Shell.IVsAsyncFileChangeEx2;
 
 namespace Microsoft.VisualStudio.LanguageServices.Implementation.ProjectSystem
 {
@@ -24,7 +25,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Implementation.ProjectSystem
     /// </summary>
     internal sealed class FileChangeWatcher : IFileChangeWatcher
     {
-        private readonly Task<IVsAsyncFileChangeEx> _fileChangeService;
+        private readonly Task<IVsAsyncFileChangeEx2> _fileChangeService;
 
         /// <summary>
         /// We create a batching queue of operations against the IVsFileChangeEx service for two reasons. First, we are obtaining the service asynchronously, and don't want to
@@ -39,7 +40,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Implementation.ProjectSystem
 
         public FileChangeWatcher(
             IAsynchronousOperationListenerProvider listenerProvider,
-            Task<IVsAsyncFileChangeEx> fileChangeService)
+            Task<IVsAsyncFileChangeEx2> fileChangeService)
         {
             _fileChangeService = fileChangeService;
 
@@ -184,6 +185,22 @@ namespace Microsoft.VisualStudio.LanguageServices.Implementation.ProjectSystem
                 _tokens = null!;
             }
 
+            private WatcherOperation(Kind kind, IEnumerable<string> path, _VSFILECHANGEFLAGS fileChangeFlags, IVsFreeThreadedFileChangeEvents2 sink, IEnumerable<Context.RegularWatchedFile> tokens)
+            {
+                Contract.ThrowIfFalse(kind is Kind.WatchFiles);
+                _kind = kind;
+
+                _directory = path;
+                _fileChangeFlags = fileChangeFlags;
+                _sink = sink;
+                _tokens = tokens;
+
+                // Other watching fields are not used for this kind
+                _filter = null;
+                _cookies = null!;
+                _tokens = null!;
+            }
+
             private WatcherOperation(Kind kind, List<uint> cookies)
             {
                 Contract.ThrowIfFalse(kind is Kind.UnwatchDirectories);
@@ -237,6 +254,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Implementation.ProjectSystem
                 None,
                 WatchDirectory,
                 WatchFile,
+                WatchFiles,
                 UnwatchFile,
                 UnwatchDirectories,
                 UnwatchFiles,
@@ -253,6 +271,9 @@ namespace Microsoft.VisualStudio.LanguageServices.Implementation.ProjectSystem
 
             public static WatcherOperation WatchFile(string path, _VSFILECHANGEFLAGS fileChangeFlags, IVsFreeThreadedFileChangeEvents2 sink, Context.RegularWatchedFile token)
                 => new(Kind.WatchFile, path, fileChangeFlags, sink, token);
+
+            public static WatcherOperation WatchFiles(IEnumerable<string> paths, _VSFILECHANGEFLAGS fileChangeFlags, IVsFreeThreadedFileChangeEvents2 sink, IEnumerable<Context.RegularWatchedFile> tokens)
+                => new(Kind.WatchFile, paths, fileChangeFlags, sink, tokens);
 
             public static WatcherOperation UnwatchDirectories(List<uint> cookies)
                 => new(Kind.UnwatchDirectories, cookies);
@@ -324,7 +345,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Implementation.ProjectSystem
                 return false;
             }
 
-            public async ValueTask ApplyAsync(IVsAsyncFileChangeEx service, CancellationToken cancellationToken)
+            public async ValueTask ApplyAsync(IVsAsyncFileChangeEx2 service, CancellationToken cancellationToken)
             {
                 switch (_kind)
                 {
@@ -342,6 +363,10 @@ namespace Microsoft.VisualStudio.LanguageServices.Implementation.ProjectSystem
 
                     case Kind.WatchFile:
                         _token.Cookie = await service.AdviseFileChangeAsync(_directory, _fileChangeFlags, _sink, cancellationToken).ConfigureAwait(false);
+                        return;
+
+                    case Kind.WatchFiles:
+                        _token.Cookie = await service.AdviseFileChangesAsync(_directory, _fileChangeFlags, _sink, cancellationToken).ConfigureAwait(false);
                         return;
 
                     case Kind.UnwatchFile:
@@ -429,6 +454,43 @@ namespace Microsoft.VisualStudio.LanguageServices.Implementation.ProjectSystem
                 _fileChangeWatcher._taskQueue.AddWork(WatcherOperation.WatchFile(filePath, _VSFILECHANGEFLAGS.VSFILECHG_Size | _VSFILECHANGEFLAGS.VSFILECHG_Time, this, token));
 
                 return token;
+            }
+
+            public IEnumerable<IWatchedFile> EnqueueWatchingFiles(IEnumerable<string> filePaths)
+            {
+                using var _1 = ArrayBuilder<IWatchedFile>.GetInstance(out var watchedFilesBuilder);
+                using var _2 = ArrayBuilder<RegularWatchedFile>.GetInstance(out var newlyWatchedFilesBuilder);
+
+                IWatchedFile watchedFile;
+                foreach (var filePath in filePaths)
+                {
+                    // If we already have this file under our path, we may not have to do additional watching
+                    if (WatchedDirectory.FilePathCoveredByWatchedDirectories(_watchedDirectories, filePath, StringComparison.OrdinalIgnoreCase))
+                    {
+                        watchedFile = NoOpWatchedFile.Instance;
+                    }
+                    else
+                    {
+                        var newlyWatchedFile = new RegularWatchedFile(this);
+                        watchedFile = newlyWatchedFile;
+
+                        newlyWatchedFilesBuilder.Add(newlyWatchedFile);
+                    }
+
+                    watchedFilesBuilder.Add(watchedFile);
+                }
+
+                if (newlyWatchedFilesBuilder.Count > 0)
+                {
+                    lock (_gate)
+                    {
+                        _activeFileWatchingTokens.AddRange(newlyWatchedFilesBuilder);
+                    }
+
+                    _fileChangeWatcher._taskQueue.AddWork(WatcherOperation.WatchFiles(filePaths, _VSFILECHANGEFLAGS.VSFILECHG_Size | _VSFILECHANGEFLAGS.VSFILECHG_Time, this, newlyWatchedFilesBuilder));
+                }
+
+                return newlyWatchedFilesBuilder;
             }
 
             private void StopWatchingFile(RegularWatchedFile watchedFile)
