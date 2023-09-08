@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Internal.Log;
 using Microsoft.CodeAnalysis.Shared.TestHooks;
-using Microsoft.VisualStudio.Telemetry;
 using Roslyn.Utilities;
 
 namespace Microsoft.CodeAnalysis.Telemetry
@@ -21,14 +20,14 @@ namespace Microsoft.CodeAnalysis.Telemetry
     {
         private static readonly TimeSpan s_batchedTelemetryCollectionPeriod = TimeSpan.FromMinutes(30);
 
-        private readonly TelemetrySession _session;
+        private readonly ITelemetryLogProvider _telemetryLogProvider;
         private readonly AsyncBatchingWorkQueue _postTelemetryQueue;
 
-        private ImmutableDictionary<FunctionId, AggregatingTelemetryLog> _aggregatingLogs = ImmutableDictionary<FunctionId, AggregatingTelemetryLog>.Empty;
+        private ImmutableDictionary<FunctionId, ITelemetryLog> _aggregatingLogs = ImmutableDictionary<FunctionId, ITelemetryLog>.Empty;
 
-        public AggregatingTelemetryLogManager(TelemetrySession session, IAsynchronousOperationListener asyncListener)
+        public AggregatingTelemetryLogManager(ITelemetryLogProvider telemetryLogProvider, IAsynchronousOperationListener asyncListener)
         {
-            _session = session;
+            _telemetryLogProvider = telemetryLogProvider;
 
             _postTelemetryQueue = new AsyncBatchingWorkQueue(
                 s_batchedTelemetryCollectionPeriod,
@@ -39,10 +38,10 @@ namespace Microsoft.CodeAnalysis.Telemetry
 
         public ITelemetryLog? GetLog(FunctionId functionId, double[]? bucketBoundaries)
         {
-            if (!_session.IsOptedIn)
+            if (!_telemetryLogProvider.IsOptedIn)
                 return null;
 
-            return ImmutableInterlocked.GetOrAdd(ref _aggregatingLogs, functionId, functionId => new AggregatingTelemetryLog(_session, functionId, bucketBoundaries, this));
+            return ImmutableInterlocked.GetOrAdd(ref _aggregatingLogs, functionId, functionId => _telemetryLogProvider.CreateAggregatingLog(functionId, bucketBoundaries));
         }
 
         public void EnsureTelemetryWorkQueued()
@@ -62,12 +61,12 @@ namespace Microsoft.CodeAnalysis.Telemetry
 
         private void PostCollectedTelemetry()
         {
-            if (!_session.IsOptedIn)
+            if (!_telemetryLogProvider.IsOptedIn)
                 return;
 
             foreach (var log in _aggregatingLogs.Values)
             {
-                log.PostTelemetry(_session);
+                _telemetryLogProvider.PostTelemetry(log);
             }
         }
     }

@@ -21,5 +21,11 @@ namespace Microsoft.CodeAnalysis.Telemetry
         /// <param name="bucketBoundaries">Optional values indicating bucket boundaries in milliseconds. If not specified, 
         /// all aggregating events created will use a default configuration</param>
         public ITelemetryLog? GetAggregatingLog(FunctionId functionId, double[]? bucketBoundaries = null);
+
+        public bool IsOptedIn { get; }
+
+        public ITelemetryLog CreateAggregatingLog(FunctionId functionId, double[]? bucketBoundaries);
+
+        public void PostTelemetry(ITelemetryLog telemetryLog);
     }
 }
