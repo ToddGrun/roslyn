@@ -17,7 +17,7 @@ namespace Microsoft.CodeAnalysis.Serialization
     /// <summary>
     /// collection which children is checksum.
     /// </summary>
-    internal class ChecksumCollection(ImmutableArray<object> checksums) : ChecksumWithChildren(checksums), IReadOnlyCollection<Checksum>
+    internal class ChecksumCollection(ImmutableArray<object> checksums) : ChecksumWithChildren<Checksum>(checksums), IReadOnlyCollection<Checksum>
     {
         public ChecksumCollection(ImmutableArray<Checksum> checksums) : this(checksums.CastArray<object>())
         {
@@ -26,11 +26,14 @@ namespace Microsoft.CodeAnalysis.Serialization
         public int Count => Children.Length;
         public Checksum this[int index] => (Checksum)Children[index];
 
-        public IEnumerator<Checksum> GetEnumerator()
+        public ImmutableArray<Checksum>.Enumerator GetEnumerator()
+            => this.Children.Cast<Checksum>().GetEnumerator();
+
+        IEnumerator<Checksum> IEnumerable<Checksum>.GetEnumerator()
             => this.Children.Cast<Checksum>().GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator()
-            => GetEnumerator();
+            => ((IEnumerable<Checksum>) this).GetEnumerator();
 
         [PerformanceSensitive("https://devdiv.visualstudio.com/DevDiv/_workitems/edit/1333566", AllowGenericEnumeration = false)]
         internal static async Task FindAsync<TState>(

@@ -11,13 +11,13 @@ namespace Microsoft.CodeAnalysis.Serialization
     /// <summary>
     /// this is a collection that has its own checksum and contains only checksum or checksum collection as its children.
     /// </summary>
-    internal abstract class ChecksumWithChildren(ImmutableArray<object> children) : IChecksummedObject
+    internal abstract class ChecksumWithChildren<T>(ImmutableArray<T> children) : IChecksummedObject
     {
         public Checksum Checksum { get; } = CreateChecksum(children);
 
-        public ImmutableArray<object> Children { get; } = children;
+        public ImmutableArray<T> Children { get; } = children;
 
-        private static Checksum CreateChecksum(ImmutableArray<object> children)
+        private static Checksum CreateChecksum(ImmutableArray<T> children)
         {
             // given children must be either Checksum or Checksums (collection of a checksum)
             return Checksum.Create(children.Select(c => c as Checksum ?? ((ChecksumCollection)c).Checksum));
