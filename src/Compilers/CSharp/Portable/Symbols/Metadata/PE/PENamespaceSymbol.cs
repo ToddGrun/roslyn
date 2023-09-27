@@ -2,20 +2,110 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable disable
 
 using Microsoft.CodeAnalysis.PooledObjects;
 using Roslyn.Utilities;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection.Metadata;
 using System.Threading;
 
 namespace Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE
 {
+    internal struct FrugalDictionary<TKey, TValue> where TKey : notnull
+    {
+        private readonly KeyValuePair<TKey, TValue>? _kvp1;
+        private readonly KeyValuePair<TKey, TValue>? _kvp2;
+        private readonly IEqualityComparer<TKey> _comparer;
+
+        private readonly Dictionary<TKey, TValue>? _dictionary;
+
+        private FrugalDictionary(Dictionary<TKey, TValue> dictionary)
+        {
+            _dictionary = dictionary;
+            _comparer = dictionary.Comparer;
+        }
+
+        private FrugalDictionary(KeyValuePair<TKey, TValue>? kvp1, KeyValuePair<TKey, TValue>? kvp2 = null, IEqualityComparer<TKey>? comparer = null)
+        {
+            _kvp1 = kvp1;
+            _kvp2 = kvp2;
+            _comparer = comparer ?? EqualityComparer<TKey>.Default;
+        }
+
+        public static FrugalDictionary<TKey, TValue> Create(IEnumerable<KeyValuePair<TKey, TValue>> items, int count, IEqualityComparer<TKey>? comparer)
+        {
+            if (count > 2)
+                return new FrugalDictionary<TKey, TValue>(new Dictionary<TKey, TValue>(items));
+
+            var enumerator = 
+
+            KeyValuePair<TKey, TValue> kvp1 = items[0];
+            KeyValuePair<TKey, TValue> kvp2 = items.Count > 1 ? items[1] : default;
+
+            return new FrugalDictionary<TKey, TValue>(kvp1, kvp2, comparer);
+        }
+
+        public int Count
+        {
+            get
+            {
+                if (_dictionary is not null)
+                    return _dictionary.Count;
+                else if (_kvp1 is null)
+                    return 0;
+                else if (_kvp2 is null)
+                    return 1;
+
+                return 2;
+            }
+        }
+
+        public bool TryGetValue(TKey key, [MaybeNullWhen(false)] out TValue value)
+        {
+            if (_dictionary is not null)
+                return _dictionary.TryGetValue(key, out value);
+
+            if (_kvp1 is null)
+            {
+                value = default(TValue);
+                return false;
+            }
+
+            if (_comparer.Equals(_kvp1.Value.Key, key))
+            {
+                value = _kvp1.Value.Value;
+                return true;
+            }
+
+            if (_kvp2 is null)
+            {
+                value = default(TValue);
+                return false;
+            }
+
+            if (_comparer.Equals(_kvp2.Value.Key, key))
+            {
+                value = _kvp2.Value.Value;
+                return true;
+            }
+
+            value = default(TValue);
+            return false;
+        }
+
+        // TODO: Add struct enumerator
+        public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+    }
+
     /// <summary>
     /// The base class to represent a namespace imported from a PE/module. Namespaces that differ
     /// only by casing in name are not merged.
@@ -28,6 +118,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE
         /// mapped by their name (case-sensitively).
         /// </summary>
         protected Dictionary<ReadOnlyMemory<char>, PENestedNamespaceSymbol> lazyNamespaces;
+
+        protected FrugalDictionary<ReadOnlyMemory<char>, PENestedNamespaceSymbol>? lazyNamespaces2;
 
         /// <summary>
         /// A map of types immediately contained within this namespace 
@@ -65,13 +157,13 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE
 
             var memberTypes = GetMemberTypesPrivate();
 
-            if (lazyNamespaces.Count == 0)
+            if (lazyNamespaces2.Value.Count == 0)
                 return StaticCast<Symbol>.From(memberTypes);
 
-            var builder = ArrayBuilder<Symbol>.GetInstance(memberTypes.Length + lazyNamespaces.Count);
+            var builder = ArrayBuilder<Symbol>.GetInstance(memberTypes.Length + lazyNamespaces2.Value.Count);
 
             builder.AddRange(memberTypes);
-            foreach (var pair in lazyNamespaces)
+            foreach (var pair in lazyNamespaces2.Value)
             {
                 builder.Add(pair.Value);
             }
@@ -91,6 +183,12 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE
             return StaticCast<NamedTypeSymbol>.From(_lazyFlattenedTypes);
         }
 
+        private static int s_getMembersCalledCount = 0;
+        private static int s_GetMembersCalled_lazyNamespacesTotalSize = 0;
+        private static int s_GetMembersCalled_lazyNamespacesEmptyCount = 0;
+        private static int s_GetMembersCalled_lazyTypesTotalSize = 0;
+        private static int s_GetMembersCalled_lazyTypesEmptyCount = 0;
+
         public sealed override ImmutableArray<Symbol> GetMembers(ReadOnlyMemory<char> name)
         {
             EnsureAllMembersLoaded();
@@ -98,7 +196,18 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE
             PENestedNamespaceSymbol ns = null;
             ImmutableArray<PENamedTypeSymbol> t;
 
-            if (lazyNamespaces.TryGetValue(name, out ns))
+            Interlocked.Increment(ref s_getMembersCalledCount);
+            if (lazyNamespaces2.Value.Count == 0)
+                Interlocked.Increment(ref s_GetMembersCalled_lazyNamespacesEmptyCount);
+            else
+                Interlocked.Add(ref s_GetMembersCalled_lazyNamespacesTotalSize, lazyNamespaces2.Value.Count);
+
+            if (lazyTypes.Count == 0)
+                Interlocked.Increment(ref s_GetMembersCalled_lazyTypesEmptyCount);
+            else
+                Interlocked.Add(ref s_GetMembersCalled_lazyTypesTotalSize, lazyTypes.Count);
+
+            if (lazyNamespaces2.Value.TryGetValue(name, out ns))
             {
                 if (lazyTypes.TryGetValue(name, out t))
                 {
@@ -163,6 +272,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE
         /// <returns>PEModuleSymbol containing the namespace.</returns>
         internal abstract PEModuleSymbol ContainingPEModule { get; }
 
+        [MemberNotNull(nameof(lazyNamespaces2))]
         protected abstract void EnsureAllMembersLoaded();
 
         /// <summary>
@@ -190,7 +300,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE
             //    Key - contains simple name of a child namespace.
             //    Value - contains a sequence similar to the one passed to this function, but
             //            calculated for the child namespace. 
-            IEnumerable<KeyValuePair<string, IEnumerable<IGrouping<string, TypeDefinitionHandle>>>> nestedNamespaces = null;
+            List<KeyValuePair<string, IEnumerable<IGrouping<string, TypeDefinitionHandle>>>> nestedNamespaces = null;
             bool isGlobalNamespace = this.IsGlobalNamespace;
 
             MetadataHelpers.GetInfoForImmediateNamespaceMembers(
@@ -220,15 +330,20 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE
             return length;
         }
 
+        private static int s_lazyNamespacesCreationCount = 0;
+        private static int s_lazyNamespacesEmptyCount = 0;
+        private static int s_lazyNamespacesTotalSize = 0;
+        private static int s_lazyNamespacesLargest = 0;
+
         /// <summary>
         /// Create symbols for nested namespaces and initialize namespaces map.
         /// </summary>
         private void LazyInitializeNamespaces(
-            IEnumerable<KeyValuePair<string, IEnumerable<IGrouping<string, TypeDefinitionHandle>>>> childNamespaces)
+            List<KeyValuePair<string, IEnumerable<IGrouping<string, TypeDefinitionHandle>>>> childNamespaces)
         {
-            if (this.lazyNamespaces == null)
+            if (!this.lazyNamespaces2.HasValue)
             {
-                var namespaces = new Dictionary<ReadOnlyMemory<char>, PENestedNamespaceSymbol>(ReadOnlyMemoryOfCharComparer.Instance);
+                var namespaces = FrugalDictionary<ReadOnlyMemory<char>, PENestedNamespaceSymbol>(ReadOnlyMemoryOfCharComparer.Instance);
 
                 foreach (var child in childNamespaces)
                 {
@@ -236,9 +351,26 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE
                     namespaces.Add(c.Name.AsMemory(), c);
                 }
 
-                Interlocked.CompareExchange(ref this.lazyNamespaces, namespaces, null);
+                Interlocked.CompareExchange(ref this.lazyNamespaces2, namespaces, null);
+
+                Interlocked.Increment(ref s_lazyNamespacesCreationCount);
+
+                if (namespaces.Count == 0)
+                    Interlocked.Increment(ref s_lazyNamespacesEmptyCount);
+                else
+                {
+                    Interlocked.Add(ref s_lazyNamespacesTotalSize, namespaces.Count);
+
+                    if (s_lazyNamespacesLargest < namespaces.Count)
+                        s_lazyNamespacesLargest = namespaces.Count;
+                }
             }
         }
+
+        private static int s_lazyTypesCreationCount = 0;
+        private static int s_lazyTypesEmptyCount = 0;
+        private static int s_lazyTypesTotalSize = 0;
+        private static int s_lazyTypesLargest = 0;
 
         /// <summary>
         /// Create symbols for nested types and initialize types map.
@@ -295,6 +427,17 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE
                 if (original == null)
                 {
                     moduleSymbol.OnNewTypeDeclarationsLoaded(typesDict);
+                }
+
+                Interlocked.Increment(ref s_lazyTypesCreationCount);
+
+                if (typesDict.Count == 0)
+                    Interlocked.Increment(ref s_lazyTypesEmptyCount);
+                else
+                {
+                    Interlocked.Add(ref s_lazyTypesTotalSize, typesDict.Count);
+                    if (s_lazyTypesLargest < typesDict.Count)
+                        s_lazyTypesLargest = typesDict.Count;
                 }
             }
         }
