@@ -27,8 +27,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE
     /// </summary>
     internal abstract class PENamedTypeSymbol : NamedTypeSymbol
     {
-        private static readonly Dictionary<ReadOnlyMemory<char>, ImmutableArray<PENamedTypeSymbol>> s_emptyNestedTypes =
-            new Dictionary<ReadOnlyMemory<char>, ImmutableArray<PENamedTypeSymbol>>(EmptyReadOnlyMemoryOfCharComparer.Instance);
+        private static readonly InlineDictionary<ReadOnlyMemory<char>, ImmutableArray<PENamedTypeSymbol>> s_emptyNestedTypes =
+            new InlineDictionary<ReadOnlyMemory<char>, ImmutableArray<PENamedTypeSymbol>>(EmptyReadOnlyMemoryOfCharComparer.Instance);
 
         private readonly NamespaceOrTypeSymbol _container;
         private readonly TypeDefinitionHandle _handle;
@@ -61,7 +61,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE
         /// A map of types immediately contained within this type 
         /// grouped by their name (case-sensitively).
         /// </summary>
-        private Dictionary<ReadOnlyMemory<char>, ImmutableArray<PENamedTypeSymbol>> _lazyNestedTypes;
+        private InlineDictionary<ReadOnlyMemory<char>, ImmutableArray<PENamedTypeSymbol>> _lazyNestedTypes;
 
         /// <summary>
         /// Lazily initialized by TypeKind property.
@@ -1390,9 +1390,9 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE
                 // Now add types to the end.
                 int membersCount = members.Count;
 
-                foreach (var typeArray in _lazyNestedTypes.Values)
+                foreach (var typeArray in _lazyNestedTypes)
                 {
-                    members.AddRange(typeArray);
+                    members.AddRange(typeArray.Value);
                 }
 
                 // Sort the types based on row id.
@@ -1554,9 +1554,9 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE
         private ImmutableArray<NamedTypeSymbol> GetMemberTypesPrivate()
         {
             var builder = ArrayBuilder<NamedTypeSymbol>.GetInstance();
-            foreach (var typeArray in _lazyNestedTypes.Values)
+            foreach (var typeArray in _lazyNestedTypes)
             {
-                builder.AddRange(typeArray);
+                builder.AddRange(typeArray.Value);
             }
 
             return builder.ToImmutableAndFree();
@@ -2060,14 +2060,14 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE
             return symbols.ToDictionary(s => s.Name, StringOrdinalComparer.Instance);
         }
 
-        private static Dictionary<ReadOnlyMemory<char>, ImmutableArray<PENamedTypeSymbol>> GroupByName(ArrayBuilder<PENamedTypeSymbol> symbols)
+        private static InlineDictionary<ReadOnlyMemory<char>, ImmutableArray<PENamedTypeSymbol>> GroupByName(ArrayBuilder<PENamedTypeSymbol> symbols)
         {
             if (symbols.Count == 0)
             {
                 return s_emptyNestedTypes;
             }
 
-            return symbols.ToDictionary(s => s.Name.AsMemory(), ReadOnlyMemoryOfCharComparer.Instance);
+            return InlineDictionary<ReadOnlyMemory<char>, PENamedTypeSymbol>.FromArrayBuilder(symbols, s => s.Name.AsMemory(), ReadOnlyMemoryOfCharComparer.Instance);
         }
 
         internal override UseSiteInfo<AssemblySymbol> GetUseSiteInfo()

@@ -763,8 +763,8 @@ ExitDecodeTypeName:
             int namespaceNameLength,
             IEnumerable<IGrouping<string, TypeDefinitionHandle>> typesByNS,
             StringComparer nameComparer,
-            out IEnumerable<IGrouping<string, TypeDefinitionHandle>> types,
-            out IEnumerable<KeyValuePair<string, IEnumerable<IGrouping<string, TypeDefinitionHandle>>>> namespaces)
+            out List<IGrouping<string, TypeDefinitionHandle>> types,
+            out List<KeyValuePair<string, IEnumerable<IGrouping<string, TypeDefinitionHandle>>>> namespaces)
         {
             Debug.Assert(typesByNS != null);
             Debug.Assert(namespaceNameLength >= 0);
