@@ -437,8 +437,8 @@ namespace Microsoft.CodeAnalysis.UnitTests
 
             // The following code is equivalent to code in PENamespaceSymbol.LoadAllMembers
 
-            IEnumerable<IGrouping<string, TypeDefinitionHandle>> nestedTypes = null;
-            IEnumerable<KeyValuePair<string, IEnumerable<IGrouping<string, TypeDefinitionHandle>>>> nestedNamespaces = null;
+            List<IGrouping<string, TypeDefinitionHandle>> nestedTypes = null;
+            List<KeyValuePair<string, IEnumerable<IGrouping<string, TypeDefinitionHandle>>>> nestedNamespaces = null;
 
             MetadataHelpers.GetInfoForImmediateNamespaceMembers(
                 false,
@@ -477,8 +477,8 @@ namespace Microsoft.CodeAnalysis.UnitTests
 
             // The following code is equivalent to code in PENamespaceSymbol.LoadAllMembers
 
-            IEnumerable<IGrouping<string, TypeDefinitionHandle>> nestedTypes = null;
-            IEnumerable<KeyValuePair<string, IEnumerable<IGrouping<string, TypeDefinitionHandle>>>> nestedNamespaces = null;
+            List<IGrouping<string, TypeDefinitionHandle>> nestedTypes = null;
+            List<KeyValuePair<string, IEnumerable<IGrouping<string, TypeDefinitionHandle>>>> nestedNamespaces = null;
 
             MetadataHelpers.GetInfoForImmediateNamespaceMembers(
                 true, // global namespace

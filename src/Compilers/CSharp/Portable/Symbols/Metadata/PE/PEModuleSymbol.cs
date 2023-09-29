@@ -478,13 +478,13 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE
         }
 
         internal void OnNewTypeDeclarationsLoaded(
-            Dictionary<ReadOnlyMemory<char>, ImmutableArray<PENamedTypeSymbol>> typesDict)
+            InlineDictionary<ReadOnlyMemory<char>, ImmutableArray<PENamedTypeSymbol>> typesDict)
         {
             bool keepLookingForDeclaredCorTypes = (_ordinal == 0 && _assemblySymbol.KeepLookingForDeclaredSpecialTypes);
 
-            foreach (var types in typesDict.Values)
+            foreach (var types in typesDict)
             {
-                foreach (var type in types)
+                foreach (var type in types.Value)
                 {
                     bool added;
                     added = TypeHandleToTypeMap.TryAdd(type.Handle, type);

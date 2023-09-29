@@ -160,14 +160,14 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Symbols.Metadata.PE
             Debug.Assert(typesByNS IsNot Nothing)
 
             ' A sequence of TypeDef handles for types immediately contained within this namespace.
-            Dim nestedTypes As IEnumerable(Of IGrouping(Of String, TypeDefinitionHandle)) = Nothing
+            Dim nestedTypes As List(Of IGrouping(Of String, TypeDefinitionHandle)) = Nothing
 
             ' A sequence with information about namespaces immediately contained within this namespace.
             ' For each pair:
             '    Key - contains simple name of a child namespace.
             '    Value - contains a sequence similar to the one passed to this function, but
             '            calculated for the child namespace. 
-            Dim nestedNamespaces As IEnumerable(Of KeyValuePair(Of String, IEnumerable(Of IGrouping(Of String, TypeDefinitionHandle)))) = Nothing
+            Dim nestedNamespaces As List(Of KeyValuePair(Of String, IEnumerable(Of IGrouping(Of String, TypeDefinitionHandle)))) = Nothing
 
             'TODO: Perhaps there is a cheaper way to calculate the length of the name without actually building it with ToDisplayString.
             Dim isGlobalNamespace As Boolean = Me.IsGlobalNamespace

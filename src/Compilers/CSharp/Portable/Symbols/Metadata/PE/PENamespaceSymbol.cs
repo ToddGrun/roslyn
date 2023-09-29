@@ -4,15 +4,16 @@
 
 #nullable disable
 
-using Microsoft.CodeAnalysis.PooledObjects;
-using Roslyn.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection.Metadata;
 using System.Threading;
+using Microsoft.CodeAnalysis.PooledObjects;
+using Roslyn.Utilities;
 
 namespace Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE
 {
@@ -23,17 +24,20 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE
     internal abstract class PENamespaceSymbol
         : NamespaceSymbol
     {
+        private static readonly InlineDictionary<ReadOnlyMemory<char>, PENestedNamespaceSymbol> s_emptyNamespaces = InlineDictionary_Empty<ReadOnlyMemory<char>, PENestedNamespaceSymbol>.Instance;
+        private static readonly InlineDictionary<ReadOnlyMemory<char>, ImmutableArray<PENamedTypeSymbol>> s_emptyTypes = InlineDictionary_Empty<ReadOnlyMemory<char>, ImmutableArray<PENamedTypeSymbol>>.Instance;
+
         /// <summary>
         /// A map of namespaces immediately contained within this namespace 
         /// mapped by their name (case-sensitively).
         /// </summary>
-        protected Dictionary<ReadOnlyMemory<char>, PENestedNamespaceSymbol> lazyNamespaces;
+        protected InlineDictionary<ReadOnlyMemory<char>, PENestedNamespaceSymbol> lazyNamespaces;
 
         /// <summary>
         /// A map of types immediately contained within this namespace 
         /// grouped by their name (case-sensitively).
         /// </summary>
-        protected Dictionary<ReadOnlyMemory<char>, ImmutableArray<PENamedTypeSymbol>> lazyTypes;
+        protected InlineDictionary<ReadOnlyMemory<char>, ImmutableArray<PENamedTypeSymbol>> lazyTypes;
 
         /// <summary>
         /// A map of NoPia local types immediately contained in this assembly.
@@ -81,11 +85,24 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE
 
         private ImmutableArray<NamedTypeSymbol> GetMemberTypesPrivate()
         {
-            //assume that EnsureAllMembersLoaded() has initialize lazyTypes
+            //assume that EnsureAllMembersLoaded() has initialized lazyTypes
             if (_lazyFlattenedTypes.IsDefault)
             {
-                var flattened = lazyTypes.Flatten();
-                ImmutableInterlocked.InterlockedExchange(ref _lazyFlattenedTypes, flattened);
+                if (lazyTypes.Count == 0)
+                {
+                    _lazyFlattenedTypes = ImmutableArray<PENamedTypeSymbol>.Empty;
+                }
+                else
+                {
+                    var builder = ArrayBuilder<PENamedTypeSymbol>.GetInstance();
+
+                    foreach (var kvp in lazyTypes)
+                    {
+                        builder.AddRange(kvp.Value);
+                    }
+
+                    _lazyFlattenedTypes = builder.ToImmutableAndFree();
+                }
             }
 
             return StaticCast<NamedTypeSymbol>.From(_lazyFlattenedTypes);
@@ -183,14 +200,14 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE
             Debug.Assert(typesByNS != null);
 
             // A sequence of groups of TypeDef row ids for types immediately contained within this namespace.
-            IEnumerable<IGrouping<string, TypeDefinitionHandle>> nestedTypes = null;
+            List<IGrouping<string, TypeDefinitionHandle>> nestedTypes = null;
 
             // A sequence with information about namespaces immediately contained within this namespace.
             // For each pair:
             //    Key - contains simple name of a child namespace.
             //    Value - contains a sequence similar to the one passed to this function, but
             //            calculated for the child namespace. 
-            IEnumerable<KeyValuePair<string, IEnumerable<IGrouping<string, TypeDefinitionHandle>>>> nestedNamespaces = null;
+            List<KeyValuePair<string, IEnumerable<IGrouping<string, TypeDefinitionHandle>>>> nestedNamespaces = null;
             bool isGlobalNamespace = this.IsGlobalNamespace;
 
             MetadataHelpers.GetInfoForImmediateNamespaceMembers(
@@ -224,16 +241,28 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE
         /// Create symbols for nested namespaces and initialize namespaces map.
         /// </summary>
         private void LazyInitializeNamespaces(
-            IEnumerable<KeyValuePair<string, IEnumerable<IGrouping<string, TypeDefinitionHandle>>>> childNamespaces)
+            List<KeyValuePair<string, IEnumerable<IGrouping<string, TypeDefinitionHandle>>>> childNamespaces)
         {
             if (this.lazyNamespaces == null)
             {
-                var namespaces = new Dictionary<ReadOnlyMemory<char>, PENestedNamespaceSymbol>(ReadOnlyMemoryOfCharComparer.Instance);
-
-                foreach (var child in childNamespaces)
+                var namespaces = s_emptyNamespaces;
+                if (childNamespaces.Count > 0)
                 {
-                    var c = new PENestedNamespaceSymbol(child.Key, this, child.Value);
-                    namespaces.Add(c.Name.AsMemory(), c);
+                    var builder = ArrayBuilder<KeyValuePair<ReadOnlyMemory<char>, PENestedNamespaceSymbol>>.GetInstance(childNamespaces.Count);
+                    try
+                    {
+                        foreach (var child in childNamespaces)
+                        {
+                            var c = new PENestedNamespaceSymbol(child.Key, this, child.Value);
+                            builder.Add(new KeyValuePair<ReadOnlyMemory<char>, PENestedNamespaceSymbol>(c.Name.AsMemory(), c));
+                        }
+
+                        namespaces = InlineDictionary<ReadOnlyMemory<char>, PENestedNamespaceSymbol>.Create(builder, ReadOnlyMemoryOfCharComparer.Instance);
+                    }
+                    finally
+                    {
+                        builder.Free();
+                    }
                 }
 
                 Interlocked.CompareExchange(ref this.lazyNamespaces, namespaces, null);
@@ -243,7 +272,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE
         /// <summary>
         /// Create symbols for nested types and initialize types map.
         /// </summary>
-        private void LazyInitializeTypes(IEnumerable<IGrouping<string, TypeDefinitionHandle>> typeGroups)
+        private void LazyInitializeTypes(List<IGrouping<string, TypeDefinitionHandle>> typeGroups)
         {
             if (this.lazyTypes == null)
             {
@@ -280,7 +309,10 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE
                     }
                 }
 
-                var typesDict = children.ToDictionary(c => c.Name.AsMemory(), ReadOnlyMemoryOfCharComparer.Instance);
+                var typesDict = s_emptyTypes;
+                if (children.Count > 0)
+                    typesDict = InlineDictionary<ReadOnlyMemory<char>, PENamedTypeSymbol>.FromArrayBuilder(children, c => c.Name.AsMemory(), ReadOnlyMemoryOfCharComparer.Instance);
+
                 children.Free();
 
                 if (noPiaLocalTypes != null)
