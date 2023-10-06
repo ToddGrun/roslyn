@@ -386,9 +386,14 @@ namespace Microsoft.CodeAnalysis.Editor.Tagging
                 // We either have some new tags, or we have some tags to invalidate.
                 // First, determine which of the old tags we want to keep around.
                 var snapshot = noNewTags ? spansToInvalidate.First().Snapshot : newTags.First().Span.Snapshot;
+                var spansToInvalidateAsList = spansToInvalidate.ToList();
+                var oldSpansAsList = oldTagTree.GetSpans(snapshot).ToList();
+
                 var oldTagsToKeep = noSpansToInvalidate
                     ? oldTagTree.GetSpans(snapshot)
                     : GetNonIntersectingTagSpans(spansToInvalidate, oldTagTree);
+
+                var oldTagsToKeepAsList = oldTagsToKeep.ToList();
 
                 // Then union those with the new tags to produce the final tag tree.
                 var finalTags = oldTagsToKeep.Concat(newTags);
