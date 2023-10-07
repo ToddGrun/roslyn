@@ -11,10 +11,10 @@ using System.Composition;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.Collections;
 using Microsoft.CodeAnalysis.Common;
 using Microsoft.CodeAnalysis.Host;
 using Microsoft.CodeAnalysis.Host.Mef;
-using Microsoft.CodeAnalysis.Options;
 using Microsoft.CodeAnalysis.PooledObjects;
 using Microsoft.CodeAnalysis.Shared.TestHooks;
 using Roslyn.Utilities;
@@ -28,6 +28,7 @@ namespace Microsoft.CodeAnalysis.Diagnostics
 
         private readonly EventMap _eventMap = new();
         private readonly TaskQueue _eventQueue;
+        private readonly AsyncBatchingWorkQueue<(IDiagnosticUpdateSource, DiagnosticsUpdatedArgs args, EventMap.EventHandlerSet<EventHandler<DiagnosticsUpdatedArgs>>)> _batchingQueue;
 
         private readonly object _gate = new();
         private readonly Dictionary<IDiagnosticUpdateSource, Dictionary<Workspace, Dictionary<object, Data>>> _map = new();
@@ -49,6 +50,12 @@ namespace Microsoft.CodeAnalysis.Diagnostics
 
             // queue to serialize events.
             _eventQueue = new TaskQueue(listenerProvider.GetListener(FeatureAttribute.DiagnosticService), TaskScheduler.Default);
+
+            _batchingQueue = new AsyncBatchingWorkQueue<(IDiagnosticUpdateSource source, DiagnosticsUpdatedArgs args, EventMap.EventHandlerSet<EventHandler<DiagnosticsUpdatedArgs>>)>(
+                DelayTimeSpan.NearImmediate,
+                this.EnqueueEventsAsync,
+                listenerProvider.GetListener(FeatureAttribute.DiagnosticService),
+                CancellationToken.None);
 
             _eventListenerTracker = new EventListenerTracker<IDiagnosticService>(eventListeners, WellKnownEventListeners.DiagnosticService);
         }
@@ -72,40 +79,54 @@ namespace Microsoft.CodeAnalysis.Diagnostics
 
             var ev = _eventMap.GetEventHandlers<EventHandler<DiagnosticsUpdatedArgs>>(DiagnosticsUpdatedEventName);
 
-            _eventQueue.ScheduleTask(DiagnosticsUpdatedEventName, () =>
-            {
-                if (!UpdateDataMap(source, args))
-                {
-                    // there is no change, nothing to raise events for.
-                    return;
-                }
-
-                ev.RaiseEvent(static (handler, arg) => handler(arg.source, arg.args), (source, args));
-            }, CancellationToken.None);
+            _batchingQueue.AddWork((source, args, ev));
         }
 
         private void RaiseDiagnosticsCleared(IDiagnosticUpdateSource source)
         {
             var ev = _eventMap.GetEventHandlers<EventHandler<DiagnosticsUpdatedArgs>>(DiagnosticsUpdatedEventName);
 
+            _batchingQueue.AddWork((source, args: null, ev));
+        }
+
+        private ValueTask EnqueueEventsAsync(ImmutableSegmentedList<(IDiagnosticUpdateSource, DiagnosticsUpdatedArgs, EventMap.EventHandlerSet<EventHandler<DiagnosticsUpdatedArgs>>)> list, CancellationToken token)
+        {
             _eventQueue.ScheduleTask(DiagnosticsUpdatedEventName, () =>
             {
-                using var pooledObject = SharedPools.Default<List<DiagnosticsUpdatedArgs>>().GetPooledObject();
-
-                var removed = pooledObject.Object;
-                if (!ClearDiagnosticsReportedBySource(source, removed))
+                foreach ((var source, var updatedArgs, var ev) in list)
                 {
-                    // there is no change, nothing to raise events for.
-                    return;
-                }
+                    if (updatedArgs is not null)
+                    {
+                        if (!UpdateDataMap(source, updatedArgs))
+                        {
+                            // there is no change, nothing to raise events for.
+                            continue;
+                        }
 
-                // don't create event listener if it haven't created yet. if there is a diagnostic to remove
-                // listener should have already created since all events are done in the serialized queue
-                foreach (var args in removed)
-                {
-                    ev.RaiseEvent(static (handler, arg) => handler(arg.source, arg.args), (source, args));
+                        ev.RaiseEvent(static (handler, arg) => handler(arg.source, arg.updatedArgs), (source, updatedArgs));
+                    }
+                    else
+                    {
+                        using var pooledObject = SharedPools.Default<List<DiagnosticsUpdatedArgs>>().GetPooledObject();
+
+                        var removed = pooledObject.Object;
+                        if (!ClearDiagnosticsReportedBySource(source, removed))
+                        {
+                            // there is no change, nothing to raise events for.
+                            continue;
+                        }
+
+                        // don't create event listener if it haven't created yet. if there is a diagnostic to remove
+                        // listener should have already created since all events are done in the serialized queue
+                        foreach (var removedArgs in removed)
+                        {
+                            ev.RaiseEvent(static (handler, arg) => handler(arg.source, arg.removedArgs), (source, removedArgs));
+                        }
+                    }
                 }
             }, CancellationToken.None);
+
+            return default;
         }
 
         private bool UpdateDataMap(IDiagnosticUpdateSource source, DiagnosticsUpdatedArgs args)
