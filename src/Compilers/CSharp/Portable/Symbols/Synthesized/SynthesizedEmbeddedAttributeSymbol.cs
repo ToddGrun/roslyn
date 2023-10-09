@@ -14,6 +14,7 @@ using System.Runtime.InteropServices;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp.Emit;
 using Microsoft.CodeAnalysis.PooledObjects;
+using Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE;
 
 namespace Microsoft.CodeAnalysis.CSharp.Symbols
 {
@@ -132,9 +133,9 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
         protected override NamedTypeSymbol WithTupleDataCore(TupleExtraData newData) => throw ExceptionUtilities.Unreachable();
 
-        public override ImmutableArray<Symbol> GetMembers() => Constructors.CastArray<Symbol>();
+        public override ArrayWrapper<Symbol> GetMembers() => new ArrayWrapper<Symbol>(Constructors.CastArray<Symbol>());
 
-        public override ImmutableArray<Symbol> GetMembers(string name) => name == WellKnownMemberNames.InstanceConstructorName ? Constructors.CastArray<Symbol>() : ImmutableArray<Symbol>.Empty;
+        public override ArrayWrapper<Symbol> GetMembers(string name) => name == WellKnownMemberNames.InstanceConstructorName ? new ArrayWrapper<Symbol>(Constructors.CastArray<Symbol>()) : ArrayWrapper<Symbol>.Empty;
 
         public override ImmutableArray<NamedTypeSymbol> GetTypeMembers() => ImmutableArray<NamedTypeSymbol>.Empty;
 
@@ -150,9 +151,9 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
         internal override ImmutableArray<NamedTypeSymbol> GetDeclaredInterfaces(ConsList<TypeSymbol> basesBeingResolved) => ImmutableArray<NamedTypeSymbol>.Empty;
 
-        internal override ImmutableArray<Symbol> GetEarlyAttributeDecodingMembers() => GetMembers();
+        internal override ArrayWrapper<Symbol> GetEarlyAttributeDecodingMembers() => GetMembers();
 
-        internal override ImmutableArray<Symbol> GetEarlyAttributeDecodingMembers(string name) => GetMembers(name);
+        internal override ArrayWrapper<Symbol> GetEarlyAttributeDecodingMembers(string name) => GetMembers(name);
 
         internal override IEnumerable<FieldSymbol> GetFieldsToEmit() => SpecializedCollections.EmptyEnumerable<FieldSymbol>();
 

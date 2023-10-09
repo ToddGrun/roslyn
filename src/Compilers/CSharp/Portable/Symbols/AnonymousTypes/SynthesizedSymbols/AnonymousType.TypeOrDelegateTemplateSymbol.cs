@@ -8,6 +8,7 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
+using Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE;
 using Roslyn.Utilities;
 
 namespace Microsoft.CodeAnalysis.CSharp.Symbols
@@ -116,12 +117,12 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
             internal sealed override bool IsInterpolatedStringHandlerType => false;
 
-            internal sealed override ImmutableArray<Symbol> GetEarlyAttributeDecodingMembers()
+            internal sealed override ArrayWrapper<Symbol> GetEarlyAttributeDecodingMembers()
             {
                 return this.GetMembersUnordered();
             }
 
-            internal sealed override ImmutableArray<Symbol> GetEarlyAttributeDecodingMembers(string name)
+            internal sealed override ArrayWrapper<Symbol> GetEarlyAttributeDecodingMembers(string name)
             {
                 return this.GetMembers(name);
             }

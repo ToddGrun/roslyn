@@ -8,6 +8,8 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Linq;
+using Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.PooledObjects;
 using Microsoft.CodeAnalysis.Symbols;
@@ -37,7 +39,13 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// null.</returns>
         public IEnumerable<NamespaceSymbol> GetNamespaceMembers()
         {
-            return this.GetMembers().OfType<NamespaceSymbol>();
+            using var members = this.GetMembers();
+
+            // Enumerate in this method to ensure the members disposal occurs after iteration completes
+            foreach (var member in members.OfType<NamespaceSymbol>())
+            {
+                yield return member;
+            }
         }
 
         /// <summary>
@@ -264,7 +272,9 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
         internal NamespaceSymbol GetNestedNamespace(ReadOnlyMemory<char> name)
         {
-            foreach (var sym in this.GetMembers(name))
+            using var members = this.GetMembers(name);
+
+            foreach (var sym in members)
             {
                 if (sym.Kind == SymbolKind.Namespace)
                 {
@@ -275,9 +285,9 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             return null;
         }
 
-        public abstract ImmutableArray<Symbol> GetMembers(ReadOnlyMemory<char> name);
+        public abstract ArrayWrapper<Symbol> GetMembers(ReadOnlyMemory<char> name);
 
-        public sealed override ImmutableArray<Symbol> GetMembers(string name)
+        public sealed override ArrayWrapper<Symbol> GetMembers(string name)
             => GetMembers(name.AsMemory());
 
         internal NamespaceSymbol GetNestedNamespace(NameSyntax name)

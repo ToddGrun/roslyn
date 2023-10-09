@@ -6,6 +6,7 @@
 
 using Microsoft.CodeAnalysis.Collections;
 using Microsoft.CodeAnalysis.CSharp.Symbols;
+using Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.PooledObjects;
 using Microsoft.CodeAnalysis.Text;
@@ -3191,7 +3192,8 @@ namespace Microsoft.CodeAnalysis.CSharp
 
         internal GlobalExpressionVariable LookupDeclaredField(SyntaxNode node, string identifier)
         {
-            foreach (Symbol member in ContainingType?.GetMembers(identifier) ?? ImmutableArray<Symbol>.Empty)
+            ArrayWrapper<Symbol> members = ContainingType?.GetMembers(identifier) ?? ArrayWrapper<Symbol>.Empty;
+            foreach (Symbol member in members)
             {
                 GlobalExpressionVariable field;
                 if (member.Kind == SymbolKind.Field &&

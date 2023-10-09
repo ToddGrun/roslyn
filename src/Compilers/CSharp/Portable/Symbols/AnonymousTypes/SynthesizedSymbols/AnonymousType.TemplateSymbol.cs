@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using Microsoft.CodeAnalysis.CSharp.Emit;
+using Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.CodeAnalysis.PooledObjects;
 using Roslyn.Utilities;
@@ -105,9 +106,9 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
             internal override bool HasDeclaredRequiredMembers => false;
 
-            public override ImmutableArray<Symbol> GetMembers()
+            public override ArrayWrapper<Symbol> GetMembers()
             {
-                return _members;
+                return new ArrayWrapper<Symbol>(_members);
             }
 
             internal override IEnumerable<FieldSymbol> GetFieldsToEmit()
@@ -123,16 +124,17 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 }
             }
 
-            public override ImmutableArray<Symbol> GetMembers(string name)
+            public override ArrayWrapper<Symbol> GetMembers(string name)
             {
+                var builder = ArrayBuilder<Symbol>.GetInstance();
+
                 var symbols = _nameToSymbols[name];
-                var builder = ArrayBuilder<Symbol>.GetInstance(symbols.Count);
                 foreach (var symbol in symbols)
                 {
                     builder.Add(symbol);
                 }
 
-                return builder.ToImmutableAndFree();
+                return new ArrayWrapper<Symbol>(builder);
             }
 
             internal override ImmutableArray<NamedTypeSymbol> InterfacesNoUseSiteDiagnostics(ConsList<TypeSymbol> basesBeingResolved)

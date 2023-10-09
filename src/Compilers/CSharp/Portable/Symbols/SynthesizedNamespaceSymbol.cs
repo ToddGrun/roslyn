@@ -9,6 +9,8 @@ using Roslyn.Utilities;
 using System.Diagnostics;
 using System;
 using Microsoft.CodeAnalysis.Emit;
+using Microsoft.CodeAnalysis.PooledObjects;
+using Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE;
 
 namespace Microsoft.CodeAnalysis.CSharp.Symbols
 {
@@ -73,10 +75,10 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         public override ImmutableArray<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name, int arity)
             => ImmutableArray<NamedTypeSymbol>.Empty;
 
-        public override ImmutableArray<Symbol> GetMembers()
-            => ImmutableArray<Symbol>.Empty;
+        public override ArrayWrapper<Symbol> GetMembers()
+            => ArrayWrapper<Symbol>.Empty;
 
-        public override ImmutableArray<Symbol> GetMembers(ReadOnlyMemory<char> name)
-            => ImmutableArray<Symbol>.Empty;
+        public override ArrayWrapper<Symbol> GetMembers(ReadOnlyMemory<char> name)
+            => ArrayWrapper<Symbol>.Empty;
     }
 }

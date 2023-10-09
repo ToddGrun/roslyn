@@ -12,6 +12,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Microsoft.CodeAnalysis.Collections;
+using Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE;
 using Microsoft.CodeAnalysis.PooledObjects;
 using Microsoft.CodeAnalysis.Shared.Collections;
 using Microsoft.CodeAnalysis.Symbols;
@@ -185,7 +186,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 }
 
                 var methods = GetMembers(WellKnownMemberNames.DelegateInvokeName);
-                if (methods.Length != 1)
+                if (methods.Count != 1)
                 {
                     return null;
                 }
@@ -266,12 +267,12 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         {
             Debug.Assert(includeInstance || includeStatic);
 
-            ImmutableArray<Symbol> instanceCandidates = includeInstance
+            var instanceCandidates = includeInstance
                 ? GetMembers(WellKnownMemberNames.InstanceConstructorName)
-                : ImmutableArray<Symbol>.Empty;
-            ImmutableArray<Symbol> staticCandidates = includeStatic
+                : ArrayWrapper<Symbol>.Empty;
+            var staticCandidates = includeStatic
                 ? GetMembers(WellKnownMemberNames.StaticConstructorName)
-                : ImmutableArray<Symbol>.Empty;
+                : ArrayWrapper<Symbol>.Empty;
 
             if (instanceCandidates.IsEmpty && staticCandidates.IsEmpty)
             {
@@ -349,9 +350,9 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
         internal void DoGetExtensionMethods(ArrayBuilder<MethodSymbol> methods, string nameOpt, int arity, LookupOptions options)
         {
-            var members = nameOpt == null
+            using var members = nameOpt == null
                 ? this.GetMembersUnordered()
-                : this.GetSimpleNonTypeMembers(nameOpt);
+                : new ArrayWrapper<Symbol>(this.GetSimpleNonTypeMembers(nameOpt));
 
             foreach (var member in members)
             {
@@ -651,14 +652,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// </summary>
         /// <returns>An ImmutableArray containing all the members of this symbol. If this symbol has no members,
         /// returns an empty ImmutableArray. Never returns null.</returns>
-        public abstract override ImmutableArray<Symbol> GetMembers();
-
-        /// <summary>
-        /// Get all the members of this symbol that have a particular name.
-        /// </summary>
-        /// <returns>An ImmutableArray containing all the members of this symbol with the given name. If there are
-        /// no members with this name, returns an empty ImmutableArray. Never returns null.</returns>
-        public abstract override ImmutableArray<Symbol> GetMembers(string name);
+        public abstract override ArrayWrapper<Symbol> GetMembers(string name);
 
         /// <summary>
         /// A lightweight check for whether this type has a possible clone method. This is less costly than GetMembers,
@@ -669,7 +663,9 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
         internal virtual ImmutableArray<Symbol> GetSimpleNonTypeMembers(string name)
         {
-            return GetMembers(name);
+            using var members = GetMembers(name);
+
+            return members.ToImmutableArray();
         }
 
         /// <summary>
@@ -745,7 +741,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// Never returns null (empty instead).
         /// Expected implementations: for source, return type and field members; for metadata, return all members.
         /// </remarks>
-        internal abstract ImmutableArray<Symbol> GetEarlyAttributeDecodingMembers();
+        internal abstract ArrayWrapper<Symbol> GetEarlyAttributeDecodingMembers();
 
         /// <summary>
         /// During early attribute decoding, we consider a safe subset of all members that will not
@@ -755,7 +751,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// Never returns null (empty instead).
         /// Expected implementations: for source, return type and field members; for metadata, return all members.
         /// </remarks>
-        internal abstract ImmutableArray<Symbol> GetEarlyAttributeDecodingMembers(string name);
+        internal abstract ArrayWrapper<Symbol> GetEarlyAttributeDecodingMembers(string name);
 
         /// <summary>
         /// Gets the kind of this symbol.

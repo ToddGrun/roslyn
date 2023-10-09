@@ -895,10 +895,10 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE
             }
         }
 
-        public override ImmutableArray<Symbol> GetMembers()
+        public override ArrayWrapper<Symbol> GetMembers()
         {
             EnsureAllMembersAreLoaded();
-            return _lazyMembersInDeclarationOrder;
+            return new ArrayWrapper<Symbol>(_lazyMembersInDeclarationOrder);
         }
 
         private IEnumerable<FieldSymbol> GetEnumFieldsToEmit()
@@ -949,7 +949,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE
             }
 
             int staticIndex = 0;
-            ImmutableArray<Symbol> staticFields = GetMembers();
+            using ArrayWrapper<Symbol> staticFields = GetMembers();
             int instanceIndex = 0;
 
             foreach (var fieldDef in fieldDefs)
@@ -961,7 +961,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE
                     continue;
                 }
 
-                if (staticIndex < staticFields.Length && staticFields[staticIndex].Kind == SymbolKind.Field)
+                if (staticIndex < staticFields.Count && staticFields[staticIndex].Kind == SymbolKind.Field)
                 {
                     var field = (PEFieldSymbol)staticFields[staticIndex];
 
@@ -977,7 +977,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE
             fieldDefs.Free();
 
             Debug.Assert(instanceIndex == uncommon.lazyInstanceEnumFields.Length);
-            Debug.Assert(staticIndex == staticFields.Length || staticFields[staticIndex].Kind != SymbolKind.Field);
+            Debug.Assert(staticIndex == staticFields.Count || staticFields[staticIndex].Kind != SymbolKind.Field);
         }
 
         internal override IEnumerable<FieldSymbol> GetFieldsToEmit()
@@ -989,7 +989,9 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE
             else
             {
                 // If there are any non-event fields, they are at the very beginning.
-                IEnumerable<FieldSymbol> nonEventFields = GetMembers<FieldSymbol>(this.GetMembers().WhereAsArray(m => !(m is TupleErrorFieldSymbol)), SymbolKind.Field, offset: 0);
+                using var members = this.GetMembers();
+                using var filteredMembers = members.WhereAsArrayWrapper(m => !(m is TupleErrorFieldSymbol));
+                IEnumerable<FieldSymbol> nonEventFields = GetMembers<FieldSymbol>(filteredMembers, SymbolKind.Field, offset: 0);
 
                 // Event backing fields are not part of the set returned by GetMembers. Let's add them manually.
                 ArrayBuilder<FieldSymbol> eventFields = null;
@@ -1059,14 +1061,14 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE
 
         internal override IEnumerable<MethodSymbol> GetMethodsToEmit()
         {
-            ImmutableArray<Symbol> members = GetMembers();
+            using var members = GetMembers();
 
             // Get to methods.
             int index = GetIndexOfFirstMember(members, SymbolKind.Method);
 
             if (!this.IsInterfaceType())
             {
-                for (; index < members.Length; index++)
+                for (; index < members.Count; index++)
                 {
                     if (members[index].Kind != SymbolKind.Method)
                     {
@@ -1086,7 +1088,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE
             {
                 // We do not create symbols for v-table gap methods, let's figure out where the gaps go.
 
-                if (index >= members.Length || members[index].Kind != SymbolKind.Method)
+                if (index >= members.Count || members[index].Kind != SymbolKind.Method)
                 {
                     // We didn't import any methods, it is Ok to return an empty set.
                     yield break;
@@ -1114,7 +1116,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE
                         yield return method;
                         index++;
 
-                        if (index == members.Length || members[index].Kind != SymbolKind.Method)
+                        if (index == members.Count || members[index].Kind != SymbolKind.Method)
                         {
                             // no need to return any gaps at the end.
                             methodDefs.Free();
@@ -1154,20 +1156,22 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE
 
         internal override IEnumerable<PropertySymbol> GetPropertiesToEmit()
         {
-            return GetMembers<PropertySymbol>(this.GetMembers(), SymbolKind.Property);
+            using var members = this.GetMembers();
+            return GetMembers<PropertySymbol>(members, SymbolKind.Property);
         }
 
         internal override IEnumerable<EventSymbol> GetEventsToEmit()
         {
-            return GetMembers<EventSymbol>(this.GetMembers(), SymbolKind.Event);
+            using var members = this.GetMembers();
+            return GetMembers<EventSymbol>(members, SymbolKind.Event);
         }
 
-        internal override ImmutableArray<Symbol> GetEarlyAttributeDecodingMembers()
+        internal override ArrayWrapper<Symbol> GetEarlyAttributeDecodingMembers()
         {
             return this.GetMembersUnordered();
         }
 
-        internal override ImmutableArray<Symbol> GetEarlyAttributeDecodingMembers(string name)
+        internal override ArrayWrapper<Symbol> GetEarlyAttributeDecodingMembers(string name)
         {
             return this.GetMembers(name);
         }
@@ -1501,24 +1505,26 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE
             return m;
         }
 
-        public override ImmutableArray<Symbol> GetMembers(string name)
+        public override ArrayWrapper<Symbol> GetMembers(string name)
         {
             EnsureAllMembersAreLoaded();
 
-            ImmutableArray<Symbol> m;
-            if (!_lazyMembersByName.TryGetValue(name, out m))
+            ArrayBuilder<Symbol> builder = null;
+
+            if (_lazyMembersByName.TryGetValue(name, out var m))
             {
-                m = ImmutableArray<Symbol>.Empty;
+                builder ??= ArrayBuilder<Symbol>.GetInstance();
+                builder.AddRange(m);
             }
 
             // nested types are not common, but we need to check just in case
-            ImmutableArray<PENamedTypeSymbol> t;
-            if (_lazyNestedTypes.TryGetValue(name.AsMemory(), out t))
+            if (_lazyNestedTypes.TryGetValue(name.AsMemory(), out var t))
             {
-                m = m.Concat(StaticCast<Symbol>.From(t));
+                builder ??= ArrayBuilder<Symbol>.GetInstance();
+                builder.AddRange(t);
             }
 
-            return m;
+            return builder != null ? new ArrayWrapper<Symbol>(builder) : ArrayWrapper<Symbol>.Empty;
         }
 
         internal sealed override bool HasPossibleWellKnownCloneMethod()
@@ -1530,8 +1536,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE
             {
                 FieldSymbol result = null;
 
-                var candidates = this.GetMembers(FixedFieldImplementationType.FixedElementFieldName);
-                if (!candidates.IsDefault && candidates.Length == 1)
+                using var candidates = this.GetMembers(FixedFieldImplementationType.FixedElementFieldName);
+                if (candidates.Count == 1)
                 {
                     result = candidates[0] as FieldSymbol;
                 }
@@ -2418,9 +2424,9 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE
         /// Returns the index of the first member of the specific kind.
         /// Returns the number of members if not found.
         /// </summary>
-        private static int GetIndexOfFirstMember(ImmutableArray<Symbol> members, SymbolKind kind)
+        private static int GetIndexOfFirstMember(ArrayWrapper<Symbol> members, SymbolKind kind)
         {
-            int n = members.Length;
+            int n = members.Count;
             for (int i = 0; i < n; i++)
             {
                 if (members[i].Kind == kind)
@@ -2435,14 +2441,14 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE
         /// Returns all members of the specific kind, starting at the optional offset.
         /// Members of the same kind are assumed to be contiguous.
         /// </summary>
-        private static IEnumerable<TSymbol> GetMembers<TSymbol>(ImmutableArray<Symbol> members, SymbolKind kind, int offset = -1)
+        private static IEnumerable<TSymbol> GetMembers<TSymbol>(ArrayWrapper<Symbol> members, SymbolKind kind, int offset = -1)
             where TSymbol : Symbol
         {
             if (offset < 0)
             {
                 offset = GetIndexOfFirstMember(members, kind);
             }
-            int n = members.Length;
+            int n = members.Count;
             for (int i = offset; i < n; i++)
             {
                 var member = members[i];

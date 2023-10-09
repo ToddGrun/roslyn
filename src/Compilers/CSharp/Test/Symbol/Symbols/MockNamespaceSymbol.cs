@@ -9,6 +9,8 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp.Symbols;
+using Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE;
+using Microsoft.CodeAnalysis.PooledObjects;
 
 namespace Microsoft.CodeAnalysis.CSharp.UnitTests
 {
@@ -47,14 +49,18 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
             }
         }
 
-        public override ImmutableArray<Symbol> GetMembers()
+        public override ArrayWrapper<Symbol> GetMembers()
         {
-            return _children.AsImmutable();
+            return new ArrayWrapper<Symbol>(_children.AsImmutable());
         }
 
-        public override ImmutableArray<Symbol> GetMembers(ReadOnlyMemory<char> name)
+        public override ArrayWrapper<Symbol> GetMembers(ReadOnlyMemory<char> name)
         {
-            return _children.Where(ns => ns.Name.AsSpan().SequenceEqual(name.Span)).ToArray().AsImmutableOrNull();
+            var builder = ArrayBuilder<Symbol>.GetInstance();
+
+            builder.AddRange(_children.Where(ns => ns.Name.AsSpan().SequenceEqual(name.Span)));
+
+            return new ArrayWrapper<Symbol>(builder);
         }
 
         public override ImmutableArray<NamedTypeSymbol> GetTypeMembers()

@@ -12,6 +12,7 @@ using System.Linq;
 using System.Threading;
 using Microsoft.CodeAnalysis.Collections;
 using Microsoft.CodeAnalysis.CSharp.Symbols;
+using Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.PooledObjects;
 using Microsoft.CodeAnalysis.Text;
@@ -135,12 +136,17 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         private ImmutableArray<Symbol> SlowGetChildrenOfName(ReadOnlyMemory<char> name)
         {
             ArrayBuilder<NamespaceSymbol> namespaceSymbols = null;
+            ArrayBuilder<Symbol> childSymbols = null;
             var otherSymbols = ArrayBuilder<Symbol>.GetInstance();
 
             // Accumulate all the child namespaces and types.
             foreach (NamespaceSymbol namespaceSymbol in _namespacesToMerge)
             {
-                foreach (Symbol childSymbol in namespaceSymbol.GetMembers(name))
+                childSymbols = childSymbols ?? ArrayBuilder<Symbol>.GetInstance();
+
+                namespaceSymbol.GetMembers(childSymbols, name);
+
+                foreach (Symbol childSymbol in childSymbols)
                 {
                     if (childSymbol.Kind == SymbolKind.Namespace)
                     {
@@ -152,7 +158,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                         otherSymbols.Add(childSymbol);
                     }
                 }
+
+                childSymbols.Clear();
             }
+
+            childSymbols?.Free();
 
             if (namespaceSymbols != null)
             {
@@ -213,7 +223,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
         }
 
-        public override ImmutableArray<Symbol> GetMembers()
+        public override ArrayWrapper<Symbol> GetMembers()
         {
             // Return all the elements from every IGrouping in the ILookup.
             if (_allMembers.IsDefault)
@@ -223,12 +233,12 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 _allMembers = builder.ToImmutableAndFree();
             }
 
-            return _allMembers;
+            return new ArrayWrapper<Symbol>(_allMembers);
         }
 
-        public override ImmutableArray<Symbol> GetMembers(ReadOnlyMemory<char> name)
+        public override ArrayWrapper<Symbol> GetMembers(ReadOnlyMemory<char> name)
         {
-            return _cachedLookup[name];
+            return new ArrayWrapper<Symbol>(_cachedLookup[name]);
         }
 
         internal sealed override ImmutableArray<NamedTypeSymbol> GetTypeMembersUnordered()

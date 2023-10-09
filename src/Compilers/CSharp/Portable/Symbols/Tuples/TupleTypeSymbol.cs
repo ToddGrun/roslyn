@@ -8,6 +8,7 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE;
 using Microsoft.CodeAnalysis.PooledObjects;
 using Microsoft.CodeAnalysis.RuntimeMembers;
 using Roslyn.Utilities;
@@ -525,7 +526,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 Debug.Assert(type.IsDefinition);
 
                 MemberDescriptor relativeDescriptor = WellKnownMembers.GetDescriptor(relativeMember);
-                var members = type.GetMembers(relativeDescriptor.Name);
+                using var members = type.GetMembers(relativeDescriptor.Name);
 
                 return CSharpCompilation.GetRuntimeMember(members, relativeDescriptor, CSharpCompilation.SpecialMembersSignatureComparer.Instance,
                                                           accessWithinOpt: null); // force lookup of public members only
@@ -802,7 +803,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 return found;
             }
 
-            static void collectTargetTupleFields(int arity, ImmutableArray<Symbol> members, ArrayBuilder<FieldSymbol?> fieldsForElements)
+            static void collectTargetTupleFields(int arity, ArrayWrapper<Symbol> members, ArrayBuilder<FieldSymbol?> fieldsForElements)
             {
                 int fieldsPerType = Math.Min(arity, ValueTupleRestPosition - 1);
 
@@ -813,7 +814,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 }
             }
 
-            static Symbol? getWellKnownMemberInType(ImmutableArray<Symbol> members, WellKnownMember relativeMember)
+            static Symbol? getWellKnownMemberInType(ArrayWrapper<Symbol> members, WellKnownMember relativeMember)
             {
                 Debug.Assert(relativeMember >= WellKnownMember.System_ValueTuple_T1__Item1 && relativeMember <= WellKnownMember.System_ValueTuple_TRest__ctor);
 
@@ -1057,11 +1058,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     SmallDictionary<Symbol, Symbol> computeDefinitionToMemberMap()
                     {
                         var map = new SmallDictionary<Symbol, Symbol>(ReferenceEqualityComparer.Instance);
-                        var members = TupleUnderlyingType.GetMembers();
+                        using var members = TupleUnderlyingType.GetMembers();
 
                         // Go in reverse because we want members with default name, which precede the ones with
                         // friendly names, to be in the map.
-                        for (int i = members.Length - 1; i >= 0; i--)
+                        for (int i = members.Count - 1; i >= 0; i--)
                         {
                             var member = members[i];
                             switch (member.Kind)

@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp.Symbols;
+using Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE;
 using Roslyn.Utilities;
 
 namespace Microsoft.CodeAnalysis.CSharp.UnitTests
@@ -94,9 +95,9 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
 
         internal override bool HasDeclaredRequiredMembers => throw new NotImplementedException();
 
-        public override ImmutableArray<Symbol> GetMembers()
+        public override ArrayWrapper<Symbol> GetMembers()
         {
-            return _children.AsImmutable();
+            return new ArrayWrapper<Symbol>(_children.AsImmutable());
         }
 
         internal override IEnumerable<FieldSymbol> GetFieldsToEmit()
@@ -104,19 +105,20 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
             throw new NotImplementedException();
         }
 
-        public override ImmutableArray<Symbol> GetMembers(string name)
+        public override ArrayWrapper<Symbol> GetMembers(string name)
         {
-            return (from sym in _children
-                    where sym.Name == name
-                    select sym).ToArray().AsImmutableOrNull();
+            return new ArrayWrapper<Symbol>(
+                (from sym in _children
+                 where sym.Name == name
+                 select sym).ToImmutableArray());
         }
 
-        internal override ImmutableArray<Symbol> GetEarlyAttributeDecodingMembers()
+        internal override ArrayWrapper<Symbol> GetEarlyAttributeDecodingMembers()
         {
             return this.GetMembers();
         }
 
-        internal override ImmutableArray<Symbol> GetEarlyAttributeDecodingMembers(string name)
+        internal override ArrayWrapper<Symbol> GetEarlyAttributeDecodingMembers(string name)
         {
             return this.GetMembers(name);
         }

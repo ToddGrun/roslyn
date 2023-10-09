@@ -831,6 +831,13 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Retargeting
                     this);
             }
 
+            public ArrayWrapper<Symbol> Retarget(ArrayWrapper<Symbol> arr)
+            {
+                return arr.SelectAsArrayWrapper(
+                    static (s, self) => self.Retarget(s),
+                    this);
+            }
+
             public ImmutableArray<NamedTypeSymbol> Retarget(ImmutableArray<NamedTypeSymbol> sequence)
             {
                 return sequence.SelectAsArray(

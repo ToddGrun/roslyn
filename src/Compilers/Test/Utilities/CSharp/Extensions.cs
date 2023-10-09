@@ -14,6 +14,7 @@ using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Symbols;
+using Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.PooledObjects;
 using Microsoft.CodeAnalysis.Text;
@@ -216,10 +217,14 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
                      m.Parameters.All(p => p.RefKind == RefKind.Out && p.Type.Equals(primaryConstructor.Parameters[p.Ordinal].Type, SymbolEqualityComparer.Default)));
         }
 
-        public static ImmutableArray<T> GetMembers<T>(this Compilation compilation, string qualifiedName) where T : ISymbol
-            => GetMembers(compilation, qualifiedName).SelectAsArray(s => (T)s.ISymbol);
+        public static ArrayWrapper<T> GetMembers<T>(this Compilation compilation, string qualifiedName) where T : ISymbol
+        {
+            using var members = GetMembers(compilation, qualifiedName);
 
-        public static ImmutableArray<Symbol> GetMembers(this Compilation compilation, string qualifiedName)
+            return members.SelectAsArrayWrapper(s => (T)s.ISymbol);
+        }
+
+        public static ArrayWrapper<Symbol> GetMembers(this Compilation compilation, string qualifiedName)
         {
             NamespaceOrTypeSymbol lastContainer;
             var members = GetMembers(((CSharpCompilation)compilation).GlobalNamespace, qualifiedName, out lastContainer);
@@ -231,7 +236,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
             return members;
         }
 
-        private static ImmutableArray<Symbol> GetMembers(NamespaceOrTypeSymbol container, string qualifiedName, out NamespaceOrTypeSymbol lastContainer)
+        private static ArrayWrapper<Symbol> GetMembers(NamespaceOrTypeSymbol container, string qualifiedName, out NamespaceOrTypeSymbol lastContainer)
         {
             var parts = SplitMemberName(qualifiedName);
 
@@ -280,12 +285,12 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
         public static Symbol GetMember(this NamespaceOrTypeSymbol container, string qualifiedName)
         {
             NamespaceOrTypeSymbol lastContainer;
-            var members = GetMembers(container, qualifiedName, out lastContainer);
-            if (members.Length == 0)
+            using var members = GetMembers(container, qualifiedName, out lastContainer);
+            if (members.Count == 0)
             {
                 return null;
             }
-            else if (members.Length > 1)
+            else if (members.Count > 1)
             {
                 Assert.True(false, "Found multiple members of specified name:\r\n" + string.Join("\r\n", members));
             }

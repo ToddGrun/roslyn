@@ -10,6 +10,8 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Threading;
 using Microsoft.CodeAnalysis.CSharp.Emit;
+using Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE;
+using Microsoft.CodeAnalysis.PooledObjects;
 using Roslyn.Utilities;
 
 namespace Microsoft.CodeAnalysis.CSharp.Symbols.Retargeting
@@ -117,19 +119,23 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Retargeting
 
         internal override bool HasDeclaredRequiredMembers => _underlyingType.HasDeclaredRequiredMembers;
 
-        public override ImmutableArray<Symbol> GetMembers()
+        public override ArrayWrapper<Symbol> GetMembers()
         {
             return this.RetargetingTranslator.Retarget(_underlyingType.GetMembers());
         }
 
-        internal override ImmutableArray<Symbol> GetMembersUnordered()
+        internal override ArrayWrapper<Symbol> GetMembersUnordered()
         {
-            return this.RetargetingTranslator.Retarget(_underlyingType.GetMembersUnordered());
+            using var members = _underlyingType.GetMembersUnordered();
+
+            return this.RetargetingTranslator.Retarget(members);
         }
 
-        public override ImmutableArray<Symbol> GetMembers(string name)
+        public override ArrayWrapper<Symbol> GetMembers(string name)
         {
-            return this.RetargetingTranslator.Retarget(_underlyingType.GetMembers(name));
+            using var members = _underlyingType.GetMembers(name);
+
+            return this.RetargetingTranslator.Retarget(members);
         }
 
         internal override IEnumerable<FieldSymbol> GetFieldsToEmit()
@@ -181,14 +187,18 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Retargeting
             }
         }
 
-        internal override ImmutableArray<Symbol> GetEarlyAttributeDecodingMembers()
+        internal override ArrayWrapper<Symbol> GetEarlyAttributeDecodingMembers()
         {
-            return this.RetargetingTranslator.Retarget(_underlyingType.GetEarlyAttributeDecodingMembers());
+            using var members = _underlyingType.GetEarlyAttributeDecodingMembers();
+
+            return this.RetargetingTranslator.Retarget(members);
         }
 
-        internal override ImmutableArray<Symbol> GetEarlyAttributeDecodingMembers(string name)
+        internal override ArrayWrapper<Symbol> GetEarlyAttributeDecodingMembers(string name)
         {
-            return this.RetargetingTranslator.Retarget(_underlyingType.GetEarlyAttributeDecodingMembers(name));
+            using var members = _underlyingType.GetEarlyAttributeDecodingMembers(name);
+
+            return this.RetargetingTranslator.Retarget(members);
         }
 
         internal override ImmutableArray<NamedTypeSymbol> GetTypeMembersUnordered()

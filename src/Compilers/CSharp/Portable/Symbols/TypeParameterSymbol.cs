@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE;
 using Microsoft.CodeAnalysis.PooledObjects;
 using Microsoft.CodeAnalysis.Symbols;
 using Roslyn.Utilities;
@@ -140,15 +141,15 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         }
 
         // Type parameters do not have members
-        public sealed override ImmutableArray<Symbol> GetMembers()
+        public sealed override ArrayWrapper<Symbol> GetMembers()
         {
-            return ImmutableArray<Symbol>.Empty;
+            return ArrayWrapper<Symbol>.Empty;
         }
 
         // Type parameters do not have members
-        public sealed override ImmutableArray<Symbol> GetMembers(string name)
+        public sealed override ArrayWrapper<Symbol> GetMembers(string name)
         {
-            return ImmutableArray<Symbol>.Empty;
+            return ArrayWrapper<Symbol>.Empty;
         }
 
         // Type parameters do not have members

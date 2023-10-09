@@ -10,6 +10,7 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Threading;
 using Microsoft.CodeAnalysis.Collections;
+using Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE;
 using Microsoft.CodeAnalysis.PooledObjects;
 using Microsoft.CodeAnalysis.Text;
 using Roslyn.Utilities;
@@ -130,7 +131,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             return _mergedDeclaration.Declarations.SelectAsArray(s_declaringSyntaxReferencesSelector);
         }
 
-        internal override ImmutableArray<Symbol> GetMembersUnordered()
+        internal override ArrayWrapper<Symbol> GetMembersUnordered()
         {
             var result = _lazyAllMembers;
 
@@ -141,24 +142,26 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 result = _lazyAllMembers;
             }
 
-            return result.ConditionallyDeOrder();
+            return new ArrayWrapper<Symbol>(result.ConditionallyDeOrder());
         }
 
-        public override ImmutableArray<Symbol> GetMembers()
+        public override ArrayWrapper<Symbol> GetMembers()
         {
             if ((_flags & LazyAllMembersIsSorted) != 0)
             {
-                return _lazyAllMembers;
+                return new ArrayWrapper<Symbol>(_lazyAllMembers);
             }
             else
             {
-                var allMembers = this.GetMembersUnordered();
+                using var allMembers = this.GetMembersUnordered();
 
-                if (allMembers.Length >= 2)
+                if (allMembers.Count >= 2)
                 {
+                    var allMembersInImmutableArray = allMembers.ToImmutableArray();
+
                     // The array isn't sorted. Sort it and remember that we sorted it.
-                    allMembers = allMembers.Sort(LexicalOrderSymbolComparer.Instance);
-                    ImmutableInterlocked.InterlockedExchange(ref _lazyAllMembers, allMembers);
+                    allMembersInImmutableArray = allMembersInImmutableArray.Sort(LexicalOrderSymbolComparer.Instance);
+                    ImmutableInterlocked.InterlockedExchange(ref _lazyAllMembers, allMembersInImmutableArray);
                 }
 
                 ThreadSafeFlagOperations.Set(ref _flags, LazyAllMembersIsSorted);
@@ -166,12 +169,12 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
         }
 
-        public override ImmutableArray<Symbol> GetMembers(ReadOnlyMemory<char> name)
+        public override ArrayWrapper<Symbol> GetMembers(ReadOnlyMemory<char> name)
         {
             ImmutableArray<NamespaceOrTypeSymbol> members;
             return this.GetNameToMembersMap().TryGetValue(name, out members)
-                ? members.Cast<NamespaceOrTypeSymbol, Symbol>()
-                : ImmutableArray<Symbol>.Empty;
+                ? new ArrayWrapper<Symbol>(members.Cast<NamespaceOrTypeSymbol, Symbol>())
+                : ArrayWrapper<Symbol>.Empty;
         }
 
         internal override ImmutableArray<NamedTypeSymbol> GetTypeMembersUnordered()

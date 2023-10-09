@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
+using Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.PooledObjects;
 using Microsoft.CodeAnalysis.Symbols;
@@ -107,7 +108,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// </summary>
         /// <returns>An ImmutableArray containing all the members of this symbol. If this symbol has no members,
         /// returns an empty ImmutableArray. Never returns null.</returns>
-        public abstract ImmutableArray<Symbol> GetMembers();
+        public abstract ArrayWrapper<Symbol> GetMembers();
 
         /// <summary>
         /// Get all the members of this symbol. The members may not be in a particular order, and the order
@@ -115,12 +116,15 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// </summary>
         /// <returns>An ImmutableArray containing all the members of this symbol. If this symbol has no members,
         /// returns an empty ImmutableArray. Never returns null.</returns>
-        internal virtual ImmutableArray<Symbol> GetMembersUnordered()
+        internal virtual ArrayWrapper<Symbol> GetMembersUnordered()
         {
             // Default implementation is to use ordered version. When performance indicates, we specialize to have
             // separate implementation.
 
-            return GetMembers().ConditionallyDeOrder();
+            var result = GetMembers();
+            result.ConditionallyDeOrder();
+
+            return result;
         }
 
         /// <summary>
@@ -128,7 +132,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// </summary>
         /// <returns>An ImmutableArray containing all the members of this symbol with the given name. If there are
         /// no members with this name, returns an empty ImmutableArray. Never returns null.</returns>
-        public abstract ImmutableArray<Symbol> GetMembers(string name);
+
+        public abstract ArrayWrapper<Symbol> GetMembers(string name);
 
         /// <summary>
         /// Get all the members of this symbol that are types. The members may not be in a particular order, and the order

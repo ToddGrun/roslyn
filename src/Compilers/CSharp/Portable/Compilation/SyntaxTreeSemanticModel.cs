@@ -11,6 +11,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using Microsoft.CodeAnalysis.CSharp.Symbols;
+using Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.PooledObjects;
 using Microsoft.CodeAnalysis.Text;
@@ -1752,12 +1753,12 @@ namespace Microsoft.CodeAnalysis.CSharp
             }
 
             // look for any member with same declaration location
-            var collection = name != null ? container.GetMembers(name) : container.GetMembersUnordered();
+            using var collection = name != null ? container.GetMembers(name) : container.GetMembersUnordered();
             if (isKnownToBeANamespace)
             {
                 // Filter the collection to only include namespace symbols. This will not allocate a new instance for
                 // the common case where all symbols in the collection are already namespace symbols.
-                var namespaces = collection.WhereAsArray(symbol => symbol is NamespaceSymbol);
+                using var namespaces = collection.WhereAsArrayWrapper(symbol => symbol is NamespaceSymbol);
 
                 Debug.Assert(name is not null, "Should only be looking for a known namespace by name.");
                 Debug.Assert(namespaces is [NamespaceSymbol], "Namespace declarations of the same name are expected to appear as a single merged symbol.");
