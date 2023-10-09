@@ -2948,10 +2948,10 @@ class c1
                 Diagnostic(ErrorCode.ERR_ConstOutOfRangeChecked, "(byte)300").WithArguments("300", "byte")
                 );
 
-            var symbol = compilation.GlobalNamespace.GetTypeMembers("c1").First().GetMembers("Z1").First();
+            var symbol = compilation.GlobalNamespace.GetTypeMembers("c1").First().GetMembersAsImmutable("Z1").First();
             Assert.False(((FieldSymbol)symbol).HasConstantValue);
 
-            symbol = compilation.GlobalNamespace.GetTypeMembers("c1").First().GetMembers("Z2").First();
+            symbol = compilation.GlobalNamespace.GetTypeMembers("c1").First().GetMembersAsImmutable("Z2").First();
             Assert.False(((FieldSymbol)symbol).HasConstantValue);
         }
 

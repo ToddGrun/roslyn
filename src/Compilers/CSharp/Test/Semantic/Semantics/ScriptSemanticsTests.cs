@@ -371,7 +371,7 @@ namespace Goo
 
             var global = compilation.GlobalNamespace;
 
-            var goo = global.GetMembers("Goo").Single() as NamespaceSymbol;
+            var goo = global.GetMembersAsImmutable("Goo").Single() as NamespaceSymbol;
             Assert.Equal("Goo", goo.Name);
 
             var script = goo.GetTypeMembers("Script").Single();
@@ -401,19 +401,19 @@ G();
                 syntaxTrees: new[] { tree });
 
             var global = compilation.GlobalNamespace;
-            var members = global.GetMembers().Where(m => !m.IsImplicitlyDeclared).AsImmutable();
+            var members = global.GetMembersAsImmutable().Where(m => !m.IsImplicitlyDeclared).AsImmutable();
 
             Assert.Equal(1, members.Length);
             Assert.Equal("Goo", members[0].Name);
             Assert.IsAssignableFrom<NamespaceSymbol>(members[0]);
             var ns = (NamespaceSymbol)members[0];
-            members = ns.GetMembers();
+            members = ns.GetMembersAsImmutable();
 
             Assert.Equal(2, members.Length);
             foreach (var member in members)
             {
                 var cls = (ImplicitNamedTypeSymbol)member;
-                var methods = cls.GetMembers();
+                var methods = cls.GetMembersAsImmutable();
                 if (cls.IsScriptClass)
                 {
                     Assert.False(cls.IsImplicitClass);

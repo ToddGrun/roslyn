@@ -574,8 +574,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         // This method checks if the given PermissionSetAttribute type has a property member with the given propName which is writable, non-generic, public and of string type.
         private static bool PermissionSetAttributeTypeHasRequiredProperty(NamedTypeSymbol permissionSetType, string propName)
         {
-            var members = permissionSetType.GetMembers(propName);
-            if (members.Length == 1 && members[0].Kind == SymbolKind.Property)
+            using var members = permissionSetType.GetMembers(propName);
+            if (members.Count == 1 && members[0].Kind == SymbolKind.Property)
             {
                 var property = (PropertySymbol)members[0];
                 if (property.TypeWithAnnotations.HasType && property.Type.SpecialType == SpecialType.System_String &&

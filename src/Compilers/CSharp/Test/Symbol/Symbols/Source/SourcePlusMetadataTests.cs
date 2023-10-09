@@ -79,7 +79,7 @@ namespace System {
 ";
             var comp = CreateCompilation(text);
             var global = comp.GlobalNamespace;
-            var system = global.GetMembers("System").Single() as NamespaceSymbol;
+            var system = global.GetMembersAsImmutable("System").Single() as NamespaceSymbol;
             var a = system.GetTypeMembers("A", 0).Single();
             Assert.Equal(SymbolKind.NamedType, a.BaseType().Kind);
             Assert.Equal("Object", a.BaseType().Name);
@@ -135,29 +135,29 @@ namespace NS
 ";
             var compilation = CreateCompilation(new string[] { text1, text2, text3 });
 
-            var ns = (NamespaceSymbol)compilation.GlobalNamespace.GetMembers("NS").Single();
+            var ns = (NamespaceSymbol)compilation.GlobalNamespace.GetMembersAsImmutable("NS").Single();
 
-            var members1 = ns.GetMembers("Name1");
+            var members1 = ns.GetMembersAsImmutable("Name1");
             var types1 = ns.GetTypeMembers("Name1");
             Assert.Equal(1, members1.Length);
             Assert.True(types1.IsEmpty);
 
-            var members2 = ns.GetMembers("Name2");
+            var members2 = ns.GetMembersAsImmutable("Name2");
             var types2 = ns.GetTypeMembers("Name2");
             Assert.Equal(1, members2.Length);
             Assert.Equal(1, types2.Length);
 
-            var members3 = ns.GetMembers("Name3");
+            var members3 = ns.GetMembersAsImmutable("Name3");
             var types3 = ns.GetTypeMembers("Name3");
             Assert.Equal(1, members3.Length);
             Assert.True(types1.IsEmpty);
 
-            var members4 = ns.GetMembers("Name4");
+            var members4 = ns.GetMembersAsImmutable("Name4");
             var types4 = ns.GetTypeMembers("Name4");
             Assert.Equal(2, members4.Length);
             Assert.Equal(2, types4.Length);
 
-            var members5 = ns.GetMembers("Name5");
+            var members5 = ns.GetMembersAsImmutable("Name5");
             var types5 = ns.GetTypeMembers("Name5");
             Assert.Equal(3, members5.Length);
             Assert.Equal(2, types5.Length);
@@ -229,12 +229,12 @@ class Test : I1
 ";
             var compilation = CreateCompilation(text);
             var classC = compilation.GlobalNamespace.GetTypeMembers("Test").Single();
-            var srcSym = classC.GetMembers("I1.Method").Single();
+            var srcSym = classC.GetMembersAsImmutable("I1.Method").Single();
 
             var ref2 = TestReferences.SymbolsTests.InheritIComparable;
             var comp2 = CSharpCompilation.Create("Compilation2", references: new MetadataReference[] { ref2, MscorlibRef });
             var metaType = comp2.GlobalNamespace.GetTypeMembers("Test").Single();
-            var metaSym = metaType.GetMembers("I1.Method").First();
+            var metaSym = metaType.GetMembersAsImmutable("I1.Method").First();
             Assert.Equal(srcSym.DeclaredAccessibility, metaSym.DeclaredAccessibility);
         }
 

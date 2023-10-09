@@ -10,6 +10,7 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE;
 using Microsoft.CodeAnalysis.PooledObjects;
 using Roslyn.Utilities;
 
@@ -1945,7 +1946,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             return false;
         }
 
-        internal sealed override ImmutableArray<NamedTypeSymbol> GetInterfacesToEmit()
+        internal sealed override ArrayWrapper<NamedTypeSymbol> GetInterfacesToEmit()
         {
             return CalculateInterfacesToEmit();
         }

@@ -8,6 +8,7 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Microsoft.CodeAnalysis.CSharp.Emit;
+using Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE;
 using Microsoft.CodeAnalysis.PooledObjects;
 using Roslyn.Utilities;
 
@@ -122,15 +123,20 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
         internal override ObsoleteAttributeData? ObsoleteAttributeData => null;
 
-        public override ImmutableArray<Symbol> GetMembers() => ImmutableArray<Symbol>.CastUp(_fields);
+        public override ArrayWrapper<Symbol> GetMembers() => new ArrayWrapper<Symbol>(ImmutableArray<Symbol>.CastUp(_fields));
 
-        public override ImmutableArray<Symbol> GetMembers(string name) => GetMembers().WhereAsArray(m => m.Name == name);
+        public override ArrayWrapper<Symbol> GetMembers(string name)
+        {
+            using var members = GetMembers();
 
-        public override ImmutableArray<NamedTypeSymbol> GetTypeMembers() => ImmutableArray<NamedTypeSymbol>.Empty;
+            return members.WhereAsArrayWrapper(m => m.Name == name);
+        }
 
-        public override ImmutableArray<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name, int arity) => ImmutableArray<NamedTypeSymbol>.Empty;
+        public override ArrayWrapper<NamedTypeSymbol> GetTypeMembers() => ArrayWrapper<NamedTypeSymbol>.Empty;
 
-        public override ImmutableArray<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name) => ImmutableArray<NamedTypeSymbol>.Empty;
+        public override ArrayWrapper<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name, int arity) => ArrayWrapper<NamedTypeSymbol>.Empty;
+
+        public override ArrayWrapper<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name) => ArrayWrapper<NamedTypeSymbol>.Empty;
 
         protected override NamedTypeSymbol WithTupleDataCore(TupleExtraData newData) => throw ExceptionUtilities.Unreachable();
 
@@ -142,15 +148,15 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
         internal override NamedTypeSymbol GetDeclaredBaseType(ConsList<TypeSymbol> basesBeingResolved) => BaseTypeNoUseSiteDiagnostics;
 
-        internal override ImmutableArray<NamedTypeSymbol> GetDeclaredInterfaces(ConsList<TypeSymbol> basesBeingResolved) => ImmutableArray<NamedTypeSymbol>.Empty;
+        internal override ArrayWrapper<NamedTypeSymbol> GetDeclaredInterfaces(ConsList<TypeSymbol> basesBeingResolved) => ArrayWrapper<NamedTypeSymbol>.Empty;
 
-        internal override ImmutableArray<Symbol> GetEarlyAttributeDecodingMembers() => throw ExceptionUtilities.Unreachable();
+        internal override ArrayWrapper<Symbol> GetEarlyAttributeDecodingMembers() => throw ExceptionUtilities.Unreachable();
 
-        internal override ImmutableArray<Symbol> GetEarlyAttributeDecodingMembers(string name) => throw ExceptionUtilities.Unreachable();
+        internal override ArrayWrapper<Symbol> GetEarlyAttributeDecodingMembers(string name) => throw ExceptionUtilities.Unreachable();
 
         internal override IEnumerable<FieldSymbol> GetFieldsToEmit() => _fields;
 
-        internal override ImmutableArray<NamedTypeSymbol> GetInterfacesToEmit() => ImmutableArray<NamedTypeSymbol>.Empty;
+        internal override ArrayWrapper<NamedTypeSymbol> GetInterfacesToEmit() => ArrayWrapper<NamedTypeSymbol>.Empty;
 
         internal override IEnumerable<Cci.SecurityAttribute> GetSecurityInformation() => SpecializedCollections.EmptyEnumerable<Cci.SecurityAttribute>();
 

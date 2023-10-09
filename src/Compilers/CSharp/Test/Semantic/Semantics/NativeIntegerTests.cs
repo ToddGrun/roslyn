@@ -407,8 +407,8 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Semantics
         {
             Assert.Empty(nativeIntegerType.GetTypeMembers());
 
-            var nativeIntegerMembers = nativeIntegerType.GetMembers();
-            var underlyingMembers = underlyingType.GetMembers();
+            var nativeIntegerMembers = nativeIntegerType.GetMembersAsImmutable();
+            var underlyingMembers = underlyingType.GetMembersAsImmutable();
 
             var nativeIntegerMemberNames = nativeIntegerType.MemberNames;
             AssertEx.Equal(nativeIntegerMembers.SelectAsArray(m => m.Name), nativeIntegerMemberNames);
@@ -463,8 +463,8 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Semantics
         private static void VerifyMembers(NamedTypeSymbol type)
         {
             var memberNames = type.MemberNames;
-            var allMembers = type.GetMembers();
-            Assert.Equal(allMembers, type.GetMembers()); // same array
+            var allMembers = type.GetMembersAsImmutable();
+            Assert.Equal(allMembers, type.GetMembersAsImmutable()); // same array
 
             foreach (var member in allMembers)
             {
@@ -472,13 +472,13 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Semantics
                 verifyMember(type, member);
             }
 
-            var unorderedMembers = type.GetMembersUnordered();
+            var unorderedMembers = type.GetMembersUnorderedAsImmutable();
             Assert.Equal(allMembers.Length, unorderedMembers.Length);
             verifyMembers(type, allMembers, unorderedMembers);
 
             foreach (var memberName in memberNames)
             {
-                var members = type.GetMembers(memberName);
+                var members = type.GetMembersAsImmutable(memberName);
                 Assert.False(members.IsDefaultOrEmpty);
                 verifyMembers(type, allMembers, members);
             }
@@ -1805,7 +1805,7 @@ namespace System
                 VerifyType(type, signed: signed, isNativeInt: true);
                 VerifyType(type.GetPublicSymbol(), signed: signed, isNativeInt: true);
 
-                var members = type.GetMembers().Sort(SymbolComparison);
+                var members = type.GetMembersAsImmutable().Sort(SymbolComparison);
                 var actualMembers = members.SelectAsArray(m => m.ToTestDisplayString());
                 var expectedMembers = new[]
                 {
@@ -1970,7 +1970,7 @@ class Program
                 VerifyType(type, signed: signed, isNativeInt: true);
                 VerifyType(type.GetPublicSymbol(), signed: signed, isNativeInt: true);
 
-                var members = type.GetMembers().Sort(SymbolComparison);
+                var members = type.GetMembersAsImmutable().Sort(SymbolComparison);
                 var actualMembers = members.SelectAsArray(m => m.ToTestDisplayString());
                 var expectedMembers = new[]
                 {
@@ -2140,7 +2140,7 @@ class Program
                 VerifyType(type, signed: signed, isNativeInt: true);
                 VerifyType(type.GetPublicSymbol(), signed: signed, isNativeInt: true);
 
-                var members = type.GetMembers().Sort(SymbolComparison);
+                var members = type.GetMembersAsImmutable().Sort(SymbolComparison);
                 var actualMembers = members.SelectAsArray(m => m.ToTestDisplayString());
                 var expectedMembers = new[]
                 {
@@ -2236,7 +2236,7 @@ class Program
                 VerifyType(type, signed: signed, isNativeInt: true);
                 VerifyType(type.GetPublicSymbol(), signed: signed, isNativeInt: true);
 
-                var members = type.GetMembers().Sort(SymbolComparison);
+                var members = type.GetMembersAsImmutable().Sort(SymbolComparison);
                 var actualMembers = members.SelectAsArray(m => m.ToTestDisplayString());
                 var expectedMembers = new[]
                 {
@@ -2364,7 +2364,7 @@ class Program
                 VerifyType(type.GetPublicSymbol(), signed: signed, isNativeInt: true);
 
                 var underlyingType = type.NativeIntegerUnderlyingType;
-                var members = type.GetMembers().Sort(SymbolComparison);
+                var members = type.GetMembersAsImmutable().Sort(SymbolComparison);
                 var actualMembers = members.SelectAsArray(m => m.ToTestDisplayString());
                 var expectedMembers = new[]
                 {
@@ -2484,7 +2484,7 @@ class Program
                 VerifyType(type.GetPublicSymbol(), signed: signed, isNativeInt: true);
 
                 var underlyingType = type.NativeIntegerUnderlyingType;
-                var members = type.GetMembers().Sort(SymbolComparison);
+                var members = type.GetMembersAsImmutable().Sort(SymbolComparison);
                 foreach (var member in members)
                 {
                     Assert.True(member.GetExplicitInterfaceImplementations().IsEmpty);
@@ -2640,7 +2640,7 @@ class Program
                 VerifyType(type.GetPublicSymbol(), signed: signed, isNativeInt: true);
 
                 var underlyingType = type.NativeIntegerUnderlyingType;
-                var members = type.GetMembers().Sort(SymbolComparison);
+                var members = type.GetMembersAsImmutable().Sort(SymbolComparison);
                 var actualMembers = members.SelectAsArray(m => m.ToTestDisplayString());
                 var expectedMembers = new[]
                 {
@@ -2742,7 +2742,7 @@ namespace System.Reflection
                 VerifyType(type.GetPublicSymbol(), signed: signed, isNativeInt: true);
 
                 var underlyingType = type.NativeIntegerUnderlyingType;
-                var members = type.GetMembers().Sort(SymbolComparison);
+                var members = type.GetMembersAsImmutable().Sort(SymbolComparison);
                 var actualMembers = members.SelectAsArray(m => m.ToTestDisplayString());
                 var expectedMembers = new[]
                 {
@@ -2882,7 +2882,7 @@ namespace System.Reflection
                 VerifyType(type.GetPublicSymbol(), signed: signed, isNativeInt: true);
 
                 var underlyingType = type.NativeIntegerUnderlyingType;
-                var members = type.GetMembers().Sort(SymbolComparison);
+                var members = type.GetMembersAsImmutable().Sort(SymbolComparison);
                 var actualMembers = members.SelectAsArray(m => m.ToTestDisplayString());
                 var expectedMembers = new[]
                 {

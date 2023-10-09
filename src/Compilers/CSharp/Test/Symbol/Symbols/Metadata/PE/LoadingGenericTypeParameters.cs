@@ -22,7 +22,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             var assembly = MetadataTestHelpers.GetSymbolForReference(TestMetadata.Net40.mscorlib);
             var module0 = assembly.Modules[0];
 
-            var objectType = module0.GlobalNamespace.GetMembers("System").
+            var objectType = module0.GlobalNamespace.GetMembersAsImmutable("System").
                 OfType<NamespaceSymbol>().Single().
                 GetTypeMembers("Object").Single();
 
@@ -51,8 +51,8 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             Assert.Equal(Accessibility.NotApplicable, varC1_T.DeclaredAccessibility);
             Assert.Equal("C1_T", varC1_T.Name);
             Assert.Equal("C1_T", varC1_T.ToTestDisplayString());
-            Assert.Equal(0, varC1_T.GetMembers().Length);
-            Assert.Equal(0, varC1_T.GetMembers("goo").Length);
+            Assert.Equal(0, varC1_T.GetMembersAsImmutable().Length);
+            Assert.Equal(0, varC1_T.GetMembersAsImmutable("goo").Length);
             Assert.Equal(0, varC1_T.GetTypeMembers().Length);
             Assert.Equal(0, varC1_T.GetTypeMembers("goo").Length);
             Assert.Equal(0, varC1_T.GetTypeMembers("goo", 1).Length);

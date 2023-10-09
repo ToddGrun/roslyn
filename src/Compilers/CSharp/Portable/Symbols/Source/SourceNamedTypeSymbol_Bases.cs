@@ -16,6 +16,7 @@ using Microsoft.CodeAnalysis.Text;
 using Roslyn.Utilities;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis.Collections;
+using Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE;
 
 namespace Microsoft.CodeAnalysis.CSharp.Symbols
 {
@@ -272,9 +273,9 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             return GetDeclaredBases(basesBeingResolved).Item1;
         }
 
-        internal override ImmutableArray<NamedTypeSymbol> GetDeclaredInterfaces(ConsList<TypeSymbol> basesBeingResolved)
+        internal override ArrayWrapper<NamedTypeSymbol> GetDeclaredInterfaces(ConsList<TypeSymbol> basesBeingResolved)
         {
-            return GetDeclaredBases(basesBeingResolved).Item2;
+            return new ArrayWrapper<NamedTypeSymbol>(GetDeclaredBases(basesBeingResolved).Item2);
         }
 
         private Tuple<NamedTypeSymbol, ImmutableArray<NamedTypeSymbol>> MakeDeclaredBases(ConsList<TypeSymbol> basesBeingResolved, BindingDiagnosticBag diagnostics)
@@ -666,7 +667,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 return ImmutableArray<NamedTypeSymbol>.Empty;
             }
 
-            var declaredInterfaces = GetDeclaredInterfaces(basesBeingResolved: basesBeingResolved);
+            using var declaredInterfaces = GetDeclaredInterfaces(basesBeingResolved: basesBeingResolved);
             bool isInterface = (typeKind == TypeKind.Interface);
 
             ArrayBuilder<NamedTypeSymbol> result = isInterface ? ArrayBuilder<NamedTypeSymbol>.GetInstance() : null;
@@ -704,7 +705,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 diagnostics.Add(GetFirstLocation(), useSiteInfo);
             }
 
-            return isInterface ? result.ToImmutableAndFree() : declaredInterfaces;
+            return isInterface ? result.ToImmutableAndFree() : declaredInterfaces.ToImmutableArray();
         }
 
         private NamedTypeSymbol MakeAcyclicBaseType(BindingDiagnosticBag diagnostics)

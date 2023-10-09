@@ -131,7 +131,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
             var wns1 = winmdNS.GlobalNamespace.GetMember<NamespaceSymbol>("Windows");
             var wns2 = wns1.GetMember<NamespaceSymbol>("UI");
             var clas = wns2.GetMember<TypeSymbol>("Colors");
-            var blk = clas.GetMembers("Black").Single();
+            var blk = clas.GetMembersAsImmutable("Black").Single();
             //The windows.winmd module points to a Windows.UI.Color which should be modified to belong
             //to System.Runtime.WindowsRuntime
             Assert.Equal("System.Runtime.WindowsRuntime.dll", ((PENamedTypeSymbol)((((PropertySymbol)(blk)).GetMethod).ReturnType)).ContainingModule.ToString());
@@ -174,7 +174,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
             var wns2 = wns1.GetMember<NamespaceSymbol>("Globalization");
             var wns3 = wns2.GetMember<NamespaceSymbol>("NumberFormatting");
             var clas = wns3.GetMember<TypeSymbol>("DecimalFormatter");
-            var puint = clas.GetMembers("ParseUInt").Single();
+            var puint = clas.GetMembersAsImmutable("ParseUInt").Single();
 
             // The return type of ParseUInt should be Nullable<ulong>, not IReference<ulong>
             Assert.Equal("ulong?",

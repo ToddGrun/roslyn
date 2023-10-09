@@ -797,8 +797,8 @@ public interface Derived2 : Base
             var global = comp.GlobalNamespace;
 
             var baseInterface = global.GetMember<NamedTypeSymbol>("Base");
-            var baseMethod = baseInterface.GetMembers("M").OfType<MethodSymbol>().Single();
-            var baseProperty = baseInterface.GetMembers("M").OfType<PropertySymbol>().Single();
+            var baseMethod = baseInterface.GetMembersAsImmutable("M").OfType<MethodSymbol>().Single();
+            var baseProperty = baseInterface.GetMembersAsImmutable("M").OfType<PropertySymbol>().Single();
 
             var derivedInterface1 = global.GetMember<NamedTypeSymbol>("Derived1");
             var derivedMethod = derivedInterface1.GetMember<MethodSymbol>("M");

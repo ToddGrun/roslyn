@@ -391,7 +391,7 @@ class Test
             Assert.NotSame(mscorlibAssembly, c1.GetReferencedAssemblySymbol(oldMsCorLib));
 
             var @struct = c2.GlobalNamespace.GetMember<RetargetingNamedTypeSymbol>("S");
-            var method = (RetargetingMethodSymbol)@struct.GetMembers().Single();
+            var method = (RetargetingMethodSymbol)@struct.GetMembersAsImmutable().Single();
 
             Assert.True(method.IsDefaultValueTypeConstructor());
 

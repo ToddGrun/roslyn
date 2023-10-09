@@ -831,9 +831,16 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Retargeting
                     this);
             }
 
-            public ImmutableArray<NamedTypeSymbol> Retarget(ImmutableArray<NamedTypeSymbol> sequence)
+            public ArrayWrapper<Symbol> Retarget(ArrayWrapper<Symbol> arr)
             {
-                return sequence.SelectAsArray(
+                return arr.SelectAsArrayWrapper(
+                    static (s, self) => self.Retarget(s),
+                    this);
+            }
+
+            public ArrayWrapper<NamedTypeSymbol> Retarget(ArrayWrapper<NamedTypeSymbol> sequence)
+            {
+                return sequence.SelectAsArrayWrapper(
                     static (nts, self) =>
                     {
                         // If there is an error type in the base type list, it will end up in the interface list (rather

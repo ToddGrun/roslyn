@@ -43,7 +43,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Retargeting
 
             Assert.IsAssignableFrom<PENamedTypeSymbol>(modifiers);
 
-            FieldSymbol f0 = modifiers.GetMembers("F0").OfType<FieldSymbol>().Single();
+            FieldSymbol f0 = modifiers.GetMembersAsImmutable("F0").OfType<FieldSymbol>().Single();
 
             Assert.Equal(1, f0.TypeWithAnnotations.CustomModifiers.Length);
 
@@ -53,16 +53,16 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Retargeting
             Assert.Equal("System.Runtime.CompilerServices.IsConst", f0Mod.Modifier.ToTestDisplayString());
             Assert.Same(mscorlibAssembly, f0Mod.Modifier.ContainingAssembly.GetSymbol());
 
-            MethodSymbol m1 = modifiers.GetMembers("F1").OfType<MethodSymbol>().Single();
+            MethodSymbol m1 = modifiers.GetMembersAsImmutable("F1").OfType<MethodSymbol>().Single();
             ParameterSymbol p1 = m1.Parameters[0];
-            ParameterSymbol p2 = modifiers.GetMembers("F2").OfType<MethodSymbol>().Single().Parameters[0];
+            ParameterSymbol p2 = modifiers.GetMembersAsImmutable("F2").OfType<MethodSymbol>().Single().Parameters[0];
 
-            MethodSymbol m5 = modifiers.GetMembers("F5").OfType<MethodSymbol>().Single();
+            MethodSymbol m5 = modifiers.GetMembersAsImmutable("F5").OfType<MethodSymbol>().Single();
             ParameterSymbol p5 = m5.Parameters[0];
 
-            ParameterSymbol p6 = modifiers.GetMembers("F6").OfType<MethodSymbol>().Single().Parameters[0];
+            ParameterSymbol p6 = modifiers.GetMembersAsImmutable("F6").OfType<MethodSymbol>().Single().Parameters[0];
 
-            MethodSymbol m7 = modifiers.GetMembers("F7").OfType<MethodSymbol>().Single();
+            MethodSymbol m7 = modifiers.GetMembersAsImmutable("F7").OfType<MethodSymbol>().Single();
 
             Assert.Equal(0, m1.ReturnTypeWithAnnotations.CustomModifiers.Length);
 
@@ -161,7 +161,7 @@ public class Modifiers
 
             Assert.IsType<RetargetingNamedTypeSymbol>(modifiers);
 
-            FieldSymbol volatileFld = modifiers.GetMembers("volatileFld").OfType<FieldSymbol>().Single();
+            FieldSymbol volatileFld = modifiers.GetMembersAsImmutable("volatileFld").OfType<FieldSymbol>().Single();
 
             Assert.Equal(1, volatileFld.TypeWithAnnotations.CustomModifiers.Length);
 
@@ -188,7 +188,7 @@ public class Modifiers
             Assert.Same(volatileFld.ContainingModule, ((RetargetingFieldSymbol)volatileFld).RetargetingModule);
             Assert.Same(c1Assembly, ((RetargetingFieldSymbol)volatileFld).UnderlyingField.ContainingAssembly);
 
-            MethodSymbol m1 = modifiers.GetMembers("F1").OfType<MethodSymbol>().Single();
+            MethodSymbol m1 = modifiers.GetMembersAsImmutable("F1").OfType<MethodSymbol>().Single();
 
             Assert.Equal(0, m1.ReturnTypeWithAnnotations.CustomModifiers.Length);
             Assert.True(!m1.ExplicitInterfaceImplementations.IsDefault);

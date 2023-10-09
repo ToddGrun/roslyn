@@ -55,7 +55,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                             {
                                 RoslynParallel.For(
                                     0,
-                                    members.Length,
+                                    members.Count,
                                     UICultureUtilities.WithCurrentUICulture<int>(i => ForceCompleteMemberByLocation(locationOpt, members[i], cancellationToken)),
                                     cancellationToken);
 

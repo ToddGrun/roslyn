@@ -15,6 +15,7 @@ using Roslyn.Utilities;
 using System.Diagnostics;
 using System.Globalization;
 using System.Threading;
+using Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE;
 
 namespace Microsoft.CodeAnalysis.CSharp.Symbols.Retargeting
 {
@@ -70,14 +71,16 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Retargeting
             }
         }
 
-        public override ImmutableArray<Symbol> GetMembers()
+        public override ArrayWrapper<Symbol> GetMembers()
         {
-            return RetargetMembers(_underlyingNamespace.GetMembers());
+            using var members = _underlyingNamespace.GetMembers();
+
+            return RetargetMembers(members);
         }
 
-        private ImmutableArray<Symbol> RetargetMembers(ImmutableArray<Symbol> underlyingMembers)
+        private ArrayWrapper<Symbol> RetargetMembers(ArrayWrapper<Symbol> underlyingMembers)
         {
-            var builder = ArrayBuilder<Symbol>.GetInstance(underlyingMembers.Length);
+            ArrayBuilder<Symbol> builder = null;
 
             foreach (Symbol s in underlyingMembers)
             {
@@ -87,35 +90,44 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Retargeting
                     continue;
                 }
 
+                builder ??= ArrayBuilder<Symbol>.GetInstance();
                 builder.Add(this.RetargetingTranslator.Retarget(s));
             }
 
-            return builder.ToImmutableAndFree();
+            return new ArrayWrapper<Symbol>(builder);
         }
 
-        internal override ImmutableArray<Symbol> GetMembersUnordered()
+        internal override ArrayWrapper<Symbol> GetMembersUnordered()
         {
-            return RetargetMembers(_underlyingNamespace.GetMembersUnordered());
+            using var members = _underlyingNamespace.GetMembersUnordered();
+
+            return RetargetMembers(members);
         }
 
-        public override ImmutableArray<Symbol> GetMembers(ReadOnlyMemory<char> name)
+        public override ArrayWrapper<Symbol> GetMembers(ReadOnlyMemory<char> name)
         {
-            return RetargetMembers(_underlyingNamespace.GetMembers(name));
+            using var members = _underlyingNamespace.GetMembers(name);
+
+            return RetargetMembers(members);
         }
 
-        internal override ImmutableArray<NamedTypeSymbol> GetTypeMembersUnordered()
+        internal override ArrayWrapper<NamedTypeSymbol> GetTypeMembersUnordered()
         {
-            return RetargetTypeMembers(_underlyingNamespace.GetTypeMembersUnordered());
+            using var members = _underlyingNamespace.GetTypeMembersUnordered();
+
+            return RetargetTypeMembers(members);
         }
 
-        public override ImmutableArray<NamedTypeSymbol> GetTypeMembers()
+        public override ArrayWrapper<NamedTypeSymbol> GetTypeMembers()
         {
-            return RetargetTypeMembers(_underlyingNamespace.GetTypeMembers());
+            using var members = _underlyingNamespace.GetTypeMembers();
+
+            return RetargetTypeMembers(members);
         }
 
-        private ImmutableArray<NamedTypeSymbol> RetargetTypeMembers(ImmutableArray<NamedTypeSymbol> underlyingMembers)
+        private ArrayWrapper<NamedTypeSymbol> RetargetTypeMembers(ArrayWrapper<NamedTypeSymbol> underlyingMembers)
         {
-            var builder = ArrayBuilder<NamedTypeSymbol>.GetInstance(underlyingMembers.Length);
+            var builder = ArrayBuilder<NamedTypeSymbol>.GetInstance(underlyingMembers.Count);
 
             foreach (NamedTypeSymbol t in underlyingMembers)
             {
@@ -129,17 +141,21 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Retargeting
                 builder.Add(this.RetargetingTranslator.Retarget(t, RetargetOptions.RetargetPrimitiveTypesByName));
             }
 
-            return builder.ToImmutableAndFree();
+            return new ArrayWrapper<NamedTypeSymbol>(builder);
         }
 
-        public override ImmutableArray<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name)
+        public override ArrayWrapper<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name)
         {
-            return RetargetTypeMembers(_underlyingNamespace.GetTypeMembers(name));
+            using var members = _underlyingNamespace.GetTypeMembers(name);
+
+            return RetargetTypeMembers(members);
         }
 
-        public override ImmutableArray<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name, int arity)
+        public override ArrayWrapper<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name, int arity)
         {
-            return RetargetTypeMembers(_underlyingNamespace.GetTypeMembers(name, arity));
+            using var members = _underlyingNamespace.GetTypeMembers(name, arity);
+
+            return RetargetTypeMembers(members);
         }
 
         public override Symbol ContainingSymbol

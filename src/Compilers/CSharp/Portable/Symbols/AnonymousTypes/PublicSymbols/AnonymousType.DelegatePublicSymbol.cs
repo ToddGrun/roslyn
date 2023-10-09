@@ -5,6 +5,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE;
 using Microsoft.CodeAnalysis.PooledObjects;
 using Roslyn.Utilities;
 
@@ -40,13 +41,13 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
             public override IEnumerable<string> MemberNames => GetMembers().SelectAsArray(member => member.Name);
 
-            public override ImmutableArray<Symbol> GetMembers()
+            public override ArrayWrapper<Symbol> GetMembers()
             {
                 if (_lazyMembers.IsDefault)
                 {
                     ImmutableInterlocked.InterlockedInitialize(ref _lazyMembers, CreateMembers());
                 }
-                return _lazyMembers;
+                return new ArrayWrapper<Symbol>(_lazyMembers);
             }
 
             private ImmutableArray<Symbol> CreateMembers()
@@ -68,7 +69,17 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 return ImmutableArray.Create<Symbol>(constructor, invokeMethod);
             }
 
-            public override ImmutableArray<Symbol> GetMembers(string name) => GetMembers().WhereAsArray((member, name) => member.Name == name, name);
+            public override ArrayWrapper<Symbol> GetMembers(string name)
+            {
+                var builder = ArrayBuilder<Symbol>.GetInstance();
+                foreach (var member in GetMembers())
+                {
+                    if (member.Name == name)
+                        builder.Add(member);
+                }
+
+                return new ArrayWrapper<Symbol>(builder);
+            }
 
             public override bool IsImplicitlyDeclared => true;
 

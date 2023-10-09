@@ -59,16 +59,16 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE
             "https://github.com/dotnet/roslyn/issues/23582",
             Constraint = "Provide " + nameof(ArrayBuilder<Symbol>) + " capacity to reduce number of allocations.",
             AllowGenericEnumeration = false)]
-        public sealed override ImmutableArray<Symbol> GetMembers()
+        public sealed override ArrayWrapper<Symbol> GetMembers()
         {
             EnsureAllMembersLoaded();
 
-            var memberTypes = GetMemberTypesPrivate();
+            using var memberTypes = GetMemberTypesPrivate();
 
             if (lazyNamespaces.Count == 0)
-                return StaticCast<Symbol>.From(memberTypes);
+                return ArrayWrapper<Symbol>.CastUp<Symbol, NamedTypeSymbol>(memberTypes);
 
-            var builder = ArrayBuilder<Symbol>.GetInstance(memberTypes.Length + lazyNamespaces.Count);
+            var builder = ArrayBuilder<Symbol>.GetInstance(memberTypes.Count + lazyNamespaces.Count);
 
             builder.AddRange(memberTypes);
             foreach (var pair in lazyNamespaces)
@@ -76,10 +76,10 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE
                 builder.Add(pair.Value);
             }
 
-            return builder.ToImmutableAndFree();
+            return new ArrayWrapper<Symbol>(builder);
         }
 
-        private ImmutableArray<NamedTypeSymbol> GetMemberTypesPrivate()
+        private ArrayWrapper<NamedTypeSymbol> GetMemberTypesPrivate()
         {
             //assume that EnsureAllMembersLoaded() has initialize lazyTypes
             if (_lazyFlattenedTypes.IsDefault)
@@ -88,57 +88,47 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE
                 ImmutableInterlocked.InterlockedExchange(ref _lazyFlattenedTypes, flattened);
             }
 
-            return StaticCast<NamedTypeSymbol>.From(_lazyFlattenedTypes);
+            return new ArrayWrapper<NamedTypeSymbol>(StaticCast<NamedTypeSymbol>.From(_lazyFlattenedTypes));
         }
 
-        public sealed override ImmutableArray<Symbol> GetMembers(ReadOnlyMemory<char> name)
+        public sealed override ArrayWrapper<Symbol> GetMembers(ReadOnlyMemory<char> name)
         {
             EnsureAllMembersLoaded();
 
-            PENestedNamespaceSymbol ns = null;
-            ImmutableArray<PENamedTypeSymbol> t;
+            var builder = ArrayBuilder<Symbol>.GetInstance();
 
-            if (lazyNamespaces.TryGetValue(name, out ns))
-            {
-                if (lazyTypes.TryGetValue(name, out t))
-                {
-                    // TODO - Eliminate the copy by storing all members and type members instead of non-type and type members?
-                    return StaticCast<Symbol>.From(t).Add(ns);
-                }
-                else
-                {
-                    return ImmutableArray.Create<Symbol>(ns);
-                }
-            }
-            else if (lazyTypes.TryGetValue(name, out t))
-            {
-                return StaticCast<Symbol>.From(t);
-            }
+            if (lazyTypes.TryGetValue(name, out var t))
+                builder.AddRange(t);
 
-            return ImmutableArray<Symbol>.Empty;
+            if (lazyNamespaces.TryGetValue(name, out var ns))
+                builder.Add(ns);
+
+            return new ArrayWrapper<Symbol>(builder);
         }
 
-        public sealed override ImmutableArray<NamedTypeSymbol> GetTypeMembers()
+        public sealed override ArrayWrapper<NamedTypeSymbol> GetTypeMembers()
         {
             EnsureAllMembersLoaded();
 
             return GetMemberTypesPrivate();
         }
 
-        public sealed override ImmutableArray<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name)
+        public sealed override ArrayWrapper<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name)
         {
             EnsureAllMembersLoaded();
 
             ImmutableArray<PENamedTypeSymbol> t;
 
             return lazyTypes.TryGetValue(name, out t)
-                ? StaticCast<NamedTypeSymbol>.From(t)
-                : ImmutableArray<NamedTypeSymbol>.Empty;
+                ? new ArrayWrapper<NamedTypeSymbol>(StaticCast<NamedTypeSymbol>.From(t))
+                : ArrayWrapper<NamedTypeSymbol>.Empty;
         }
 
-        public sealed override ImmutableArray<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name, int arity)
+        public sealed override ArrayWrapper<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name, int arity)
         {
-            return GetTypeMembers(name).WhereAsArray((type, arity) => type.Arity == arity, arity);
+            using var members = GetTypeMembers(name);
+
+            return members.WhereAsArrayWrapper((type, arity) => type.Arity == arity, arity);
         }
 
         public sealed override ImmutableArray<Location> Locations

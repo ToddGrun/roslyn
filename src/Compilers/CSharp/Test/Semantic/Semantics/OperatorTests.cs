@@ -3199,7 +3199,7 @@ class C
             // the operators given to the comment that follows the use of the operator.
 
             var compilation = CreateCompilation(source, options: TestOptions.ReleaseDll);
-            var method = (SourceMemberMethodSymbol)compilation.GlobalNamespace.GetTypeMembers("C").Single().GetMembers("M").Single();
+            var method = (SourceMemberMethodSymbol)compilation.GlobalNamespace.GetTypeMembers("C").Single().GetMembersAsImmutable("M").Single();
             var diagnostics = BindingDiagnosticBag.GetInstance(withDiagnostics: true, withDependencies: false);
             var block = MethodCompiler.BindSynthesizedMethodBody(method, new TypeCompilationState(method.ContainingType, compilation, null), diagnostics);
             diagnostics.Free();
@@ -6930,7 +6930,7 @@ class Program
             var comp = CreateCompilation(source);
             comp.VerifyDiagnostics();
 
-            var expectedOperator = comp.GlobalNamespace.GetMember<NamedTypeSymbol>("S1").GetMembers(WellKnownMemberNames.EqualityOperatorName).
+            var expectedOperator = comp.GlobalNamespace.GetMember<NamedTypeSymbol>("S1").GetMembersAsImmutable(WellKnownMemberNames.EqualityOperatorName).
                 OfType<MethodSymbol>().Single(m => m.ParameterTypesWithAnnotations[0].Equals(m.ParameterTypesWithAnnotations[1], TypeCompareKind.ConsiderEverything));
 
             var tree = comp.SyntaxTrees.Single();

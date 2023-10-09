@@ -33,7 +33,7 @@ class A {
             var comp = CreateCompilation(text);
             var global = comp.GlobalNamespace;
             var a = global.GetTypeMembers("A", 0).Single();
-            var m = a.GetMembers("M").Single() as MethodSymbol;
+            var m = a.GetMembersAsImmutable("M").Single() as MethodSymbol;
             Assert.NotNull(m);
             Assert.True(m.ReturnsVoid);
             var x = m.Parameters[0];
@@ -138,7 +138,7 @@ class A {
             var comp = CreateCompilation(text);
             var global = comp.GlobalNamespace;
             var a = global.GetTypeMembers("A", 0).Single();
-            var m = a.GetMembers("M").Single() as MethodSymbol;
+            var m = a.GetMembersAsImmutable("M").Single() as MethodSymbol;
             Assert.NotNull(m);
             Assert.True(m.ReturnsVoid);
             Assert.Equal(MethodKind.Ordinary, m.MethodKind);
@@ -165,9 +165,9 @@ interface B {
             var comp = CreateCompilation(text);
             var global = comp.GlobalNamespace;
             var a = global.GetTypeMembers("A", 0).Single();
-            var m1 = a.GetMembers("M1").Single() as MethodSymbol;
+            var m1 = a.GetMembersAsImmutable("M1").Single() as MethodSymbol;
             var b = global.GetTypeMembers("B", 0).Single();
-            var m2 = b.GetMembers("M2").Single() as MethodSymbol;
+            var m2 = b.GetMembersAsImmutable("M2").Single() as MethodSymbol;
             Assert.Equal(Accessibility.Private, m1.DeclaredAccessibility);
             Assert.Equal(Accessibility.Public, m2.DeclaredAccessibility);
         }
@@ -188,7 +188,7 @@ public class MyList<T>
             var global = comp.GlobalNamespace;
             var mylist = global.GetTypeMembers("MyList", 1).Single();
             var t1 = mylist.TypeParameters[0];
-            var add = mylist.GetMembers("Add").Single() as MethodSymbol;
+            var add = mylist.GetMembersAsImmutable("Add").Single() as MethodSymbol;
             var element = add.Parameters[0];
             var t2 = element.Type;
             Assert.Equal(t1, t2);
@@ -209,7 +209,7 @@ public partial class A {
             var comp = CreateCompilation(text);
             var global = comp.GlobalNamespace;
             var a = global.GetTypeMembers("A", 0).Single();
-            var m = a.GetMembers("M");
+            var m = a.GetMembersAsImmutable("M");
             Assert.Equal(1, m.Length);
             Assert.Equal(1, m.First().Locations.Length);
         }
@@ -228,7 +228,7 @@ public partial class A {
             var comp = CreateCompilation(text);
             var global = comp.GlobalNamespace;
             var a = global.GetTypeMembers("A", 0).Single();
-            var m = (MethodSymbol)a.GetMembers("M").Single();
+            var m = (MethodSymbol)a.GetMembersAsImmutable("M").Single();
             Assert.True(m.IsPartialDefinition());
             var returnSyntax = m.ExtractReturnTypeSyntax();
 
@@ -256,7 +256,7 @@ public partial class A {
             var comp = CreateCompilation(text);
             var global = comp.GlobalNamespace;
             var a = global.GetTypeMembers("A", 0).Single();
-            var m = (MethodSymbol)a.GetMembers("M").Single();
+            var m = (MethodSymbol)a.GetMembersAsImmutable("M").Single();
             Assert.True(m.IsPartialDefinition());
             var returnSyntax = m.ExtractReturnTypeSyntax();
 
@@ -281,7 +281,7 @@ public partial class A {
             var comp = CreateCompilation(text);
             var global = comp.GlobalNamespace;
             var a = global.GetTypeMembers("A", 0).Single();
-            var m = (MethodSymbol)a.GetMembers("M").Single();
+            var m = (MethodSymbol)a.GetMembersAsImmutable("M").Single();
             Assert.True(m.IsPartialImplementation());
             var returnSyntax = m.ExtractReturnTypeSyntax();
 
@@ -302,7 +302,7 @@ public partial class A {
             var comp = CreateCompilation(text);
             var global = comp.GlobalNamespace;
             var a = global.GetTypeMembers("A", 0).Single();
-            var m = (MethodSymbol)a.GetMembers("M").Single();
+            var m = (MethodSymbol)a.GetMembersAsImmutable("M").Single();
             Assert.True(m.IsPartialDefinition());
             var returnSyntax = m.ExtractReturnTypeSyntax();
 
@@ -324,7 +324,7 @@ public class A {
             var comp = CreateCompilation(text);
             var global = comp.GlobalNamespace;
             var a = global.GetTypeMembers("A", 0).Single();
-            var m = a.GetMembers("M").Single() as MethodSymbol;
+            var m = a.GetMembersAsImmutable("M").Single() as MethodSymbol;
             Assert.Equal("System.String A.M(System.Int32 x)", m.ToTestDisplayString());
         }
 
@@ -340,7 +340,7 @@ public interface A {
             var comp = CreateCompilation(text);
             var global = comp.GlobalNamespace;
             var a = global.GetTypeMembers("A", 0).Single();
-            var m = a.GetMembers("M").Single() as MethodSymbol;
+            var m = a.GetMembersAsImmutable("M").Single() as MethodSymbol;
             var t = m.TypeParameters[0];
             Assert.Equal(t, m.Parameters[0].Type);
             Assert.Equal(t, m.ReturnType);
@@ -357,7 +357,7 @@ public interface A {
             var comp = CreateCompilation(text);
             var global = comp.GlobalNamespace;
             var a = global.GetTypeMembers("A", 0).Single();
-            var m = a.GetMembers("M").Single() as MethodSymbol;
+            var m = a.GetMembersAsImmutable("M").Single() as MethodSymbol;
             var p1 = m.Parameters[0];
             var p2 = m.Parameters[1];
             Assert.Equal(RefKind.Ref, p1.RefKind);
@@ -368,8 +368,8 @@ public interface A {
             Assert.True(refP.IsReferenceType);
             Assert.False(refP.IsValueType);
             Assert.Equal("Object", refP.BaseType().Name);
-            Assert.Equal(2, refP.GetMembers().Length); // M + generated constructor.
-            Assert.Equal(1, refP.GetMembers("M").Length);
+            Assert.Equal(2, refP.GetMembersAsImmutable().Length); // M + generated constructor.
+            Assert.Equal(1, refP.GetMembersAsImmutable("M").Length);
 
             var outP = p2.Type;
             Assert.Equal(TypeKind.Struct, outP.TypeKind);
@@ -401,7 +401,7 @@ public interface A {
             var comp = CreateCompilationWithMscorlib45(text);
             var global = comp.GlobalNamespace;
             var a = global.GetTypeMembers("A", 0).Single();
-            var m = a.GetMembers("M").Single() as MethodSymbol;
+            var m = a.GetMembersAsImmutable("M").Single() as MethodSymbol;
             Assert.Equal(RefKind.Ref, m.RefKind);
             Assert.Equal(TypeKind.Struct, m.ReturnType.TypeKind);
             Assert.False(m.ReturnType.IsReferenceType);
@@ -424,7 +424,7 @@ public interface A {
 
             var comp = CreateCompilation(text);
             var classTest = comp.GlobalNamespace.GetTypeMembers("Test", 0).Single();
-            var members = classTest.GetMembers();
+            var members = classTest.GetMembersAsImmutable();
             Assert.Equal(2, members.Length);
         }
 
@@ -443,7 +443,7 @@ public interface A {
 
             var comp = CreateCompilation(text);
             var classTest = comp.GlobalNamespace.GetTypeMembers("Test", 0).Single();
-            var method = classTest.GetMembers("MethodWithRefOutArray").Single() as MethodSymbol;
+            var method = classTest.GetMembersAsImmutable("MethodWithRefOutArray").Single() as MethodSymbol;
             Assert.Equal(classTest, method.ContainingSymbol);
             Assert.Equal(SymbolKind.Method, method.Kind);
             Assert.True(method.IsDefinition);
@@ -507,8 +507,8 @@ namespace NS.NS1
 
             var comp = CreateCompilation(new[] { text1, text2 });
             Assert.Equal(0, comp.GetDeclarationDiagnostics().Count());
-            var ns = comp.GlobalNamespace.GetMembers("NS").Single() as NamespaceSymbol;
-            var ns1 = ns.GetMembers("NS1").Single() as NamespaceSymbol;
+            var ns = comp.GlobalNamespace.GetMembersAsImmutable("NS").Single() as NamespaceSymbol;
+            var ns1 = ns.GetMembersAsImmutable("NS1").Single() as NamespaceSymbol;
 
             var classImpl = ns1.GetTypeMembers("Impl", 0).Single() as NamedTypeSymbol;
             Assert.Equal(3, classImpl.Interfaces().Length);
@@ -519,14 +519,14 @@ namespace NS.NS1
             Assert.Equal("I1", itfc.Name);
 
             // explicit interface member names include the explicit interface
-            var mems = classImpl.GetMembers("M");
+            var mems = classImpl.GetMembersAsImmutable("M");
             Assert.Equal(0, mems.Length);
             //var mem1 = mems.First() as MethodSymbol;
             // not impl
             // Assert.Equal(MethodKind.ExplicitInterfaceImplementation, mem1.MethodKind);
             // Assert.Equal(1, mem1.ExplicitInterfaceImplementation.Count());
 
-            var mem1 = classImpl.GetMembers("M22").Single() as MethodSymbol;
+            var mem1 = classImpl.GetMembersAsImmutable("M22").Single() as MethodSymbol;
             // not impl
             // Assert.Equal(0, mem1.ExplicitInterfaceImplementation.Count());
             var param = mem1.Parameters.First() as ParameterSymbol;
@@ -537,7 +537,7 @@ namespace NS.NS1
             Assert.Equal(1, structImpl.Interfaces().Length);
             itfc = structImpl.Interfaces().First() as NamedTypeSymbol;
             Assert.Equal("NS.IGoo<T>", itfc.ToTestDisplayString());
-            //var mem2 = structImpl.GetMembers("M").Single() as MethodSymbol;
+            //var mem2 = structImpl.GetMembersAsImmutable("M").Single() as MethodSymbol;
             // not impl
             // Assert.Equal(1, mem2.ExplicitInterfaceImplementation.Count());
         }
@@ -583,12 +583,12 @@ namespace N1.N2  {
 
             var comp = CreateCompilationWithMscorlib45(new[] { text, text1, text2 });
             Assert.Equal(0, comp.GetDiagnostics().Count());
-            var ns = comp.GlobalNamespace.GetMembers("N1").Single() as NamespaceSymbol;
-            var ns1 = ns.GetMembers("N2").Single() as NamespaceSymbol;
+            var ns = comp.GlobalNamespace.GetMembersAsImmutable("N1").Single() as NamespaceSymbol;
+            var ns1 = ns.GetMembersAsImmutable("N2").Single() as NamespaceSymbol;
 
             #region "Bbc"
             var type1 = ns1.GetTypeMembers("Bbc", 0).Single() as NamedTypeSymbol;
-            var mems = type1.GetMembers();
+            var mems = type1.GetMembersAsImmutable();
             Assert.Equal(7, mems.Length);
             // var sorted = mems.Orderby(m => m.Name).ToArray();
             var sorted = (from m in mems
@@ -649,7 +649,7 @@ namespace N1.N2  {
             #region "Abc"
             var type2 = type1.BaseType();
             Assert.Equal("Abc", type2.Name);
-            mems = type2.GetMembers();
+            mems = type2.GetMembersAsImmutable();
 
             Assert.Equal(8, mems.Length);
             sorted = (from m in mems
@@ -776,12 +776,12 @@ namespace N1.N2  {
             //}
             //Assert.Equal("Errs", errs);
 
-            var ns = comp.GlobalNamespace.GetMembers("N1").Single() as NamespaceSymbol;
-            var ns1 = ns.GetMembers("N2").Single() as NamespaceSymbol;
+            var ns = comp.GlobalNamespace.GetMembersAsImmutable("N1").Single() as NamespaceSymbol;
+            var ns1 = ns.GetMembersAsImmutable("N2").Single() as NamespaceSymbol;
 
             #region "Bbc"
             var type1 = ns1.GetTypeMembers("Bbc", 0).Single() as NamedTypeSymbol;
-            var mems = type1.GetMembers();
+            var mems = type1.GetMembersAsImmutable();
             Assert.Equal(7, mems.Length);
             // var sorted = mems.Orderby(m => m.Name).ToArray();
             var sorted = (from m in mems
@@ -842,7 +842,7 @@ namespace N1.N2  {
             #region "Abc"
             var type2 = type1.BaseType();
             Assert.Equal("Abc", type2.Name);
-            mems = type2.GetMembers();
+            mems = type2.GetMembersAsImmutable();
             Assert.Equal(8, mems.Length);
             sorted = (from m in mems
                       orderby m.Name
@@ -955,18 +955,18 @@ namespace NS  {
             // Not impl errors
             // Assert.Equal(0, comp.GetDiagnostics().Count());
 
-            var ns = comp.GlobalNamespace.GetMembers("NS").Single() as NamespaceSymbol;
+            var ns = comp.GlobalNamespace.GetMembersAsImmutable("NS").Single() as NamespaceSymbol;
 
             var type1 = (ns.GetTypeMembers("Test").Single() as NamedTypeSymbol).GetTypeMembers("C", 0).Single() as NamedTypeSymbol;
             Assert.Equal(Accessibility.Public, type1.DeclaredAccessibility);
 
-            var mems = type1.GetMembers();
+            var mems = type1.GetMembersAsImmutable();
             Assert.Equal(2, mems.Length);
 
-            var mems1 = type1.BaseType().GetMembers();
+            var mems1 = type1.BaseType().GetMembersAsImmutable();
             Assert.Equal(4, mems1.Length);
 
-            var mems2 = type1.BaseType().BaseType().GetMembers();
+            var mems2 = type1.BaseType().BaseType().GetMembersAsImmutable();
             Assert.Equal(3, mems2.Length);
 
             var list = new List<Symbol>();
@@ -1065,17 +1065,17 @@ namespace NS  {
             //}
             //Assert.Equal(String.Empty, errs);
 
-            var ns = comp.GlobalNamespace.GetMembers("NS").Single() as NamespaceSymbol;
+            var ns = comp.GlobalNamespace.GetMembersAsImmutable("NS").Single() as NamespaceSymbol;
             var type1 = (ns.GetTypeMembers("Test").Single() as NamedTypeSymbol).GetTypeMembers("C", 0).Single() as NamedTypeSymbol;
             Assert.Equal(Accessibility.Public, type1.DeclaredAccessibility);
 
-            var mems = type1.GetMembers();
+            var mems = type1.GetMembersAsImmutable();
             Assert.Equal(2, mems.Length);
 
-            var mems1 = type1.BaseType().GetMembers();
+            var mems1 = type1.BaseType().GetMembersAsImmutable();
             Assert.Equal(4, mems1.Length);
 
-            var mems2 = type1.BaseType().BaseType().GetMembers();
+            var mems2 = type1.BaseType().BaseType().GetMembersAsImmutable();
             Assert.Equal(3, mems2.Length);
 
             var list = new List<Symbol>();
@@ -1162,7 +1162,7 @@ namespace NS
             var comp = CreateCompilation(new[] { text, text1, text2 });
             Assert.Equal(0, comp.GetDiagnostics().Count());
 
-            var ns = comp.GlobalNamespace.GetMembers("NS").Single() as NamespaceSymbol;
+            var ns = comp.GlobalNamespace.GetMembersAsImmutable("NS").Single() as NamespaceSymbol;
 
             var type1 = ns.GetTypeMembers("PS", 0).Single() as NamedTypeSymbol;
             // Bug
@@ -1171,7 +1171,7 @@ namespace NS
             Assert.False(type1.IsReferenceType);
             Assert.True(type1.IsValueType);
 
-            var mems = type1.GetMembers();
+            var mems = type1.GetMembersAsImmutable();
             Assert.Equal(5, mems.Length);
             var sorted = (from m in mems
                           orderby m.Name
@@ -1208,7 +1208,7 @@ namespace NS
             Assert.False(type2.IsValueType);
             Assert.True(type2.IsReferenceType);
 
-            mems = type2.GetMembers();
+            mems = type2.GetMembersAsImmutable();
             // Assert.Equal(3, mems.Count());
             sorted = (from m in mems
                       orderby m.Name
@@ -1256,7 +1256,7 @@ namespace NS
             var comp = CreateCompilation(text);
             Assert.Equal(0, comp.GetDiagnostics().Count());
 
-            var ns = comp.GlobalNamespace.GetMembers("NS").Single() as NamespaceSymbol;
+            var ns = comp.GlobalNamespace.GetMembersAsImmutable("NS").Single() as NamespaceSymbol;
             var type1 = ns.GetTypeMembers("PC", 0).Single() as NamedTypeSymbol;
 
             Assert.Equal(Accessibility.Public, type1.DeclaredAccessibility);
@@ -1264,7 +1264,7 @@ namespace NS
             Assert.True(type1.IsReferenceType);
             Assert.False(type1.IsValueType);
 
-            var mems = type1.GetMembers();
+            var mems = type1.GetMembersAsImmutable();
             // Bug: actual 5
             Assert.Equal(3, mems.Length);
             var sorted = (from m in mems
@@ -1323,8 +1323,8 @@ public class DerivedClass : Interface3Derived
 
             var comp = CreateCompilation(text);
 
-            var derivedClass = (NamedTypeSymbol)comp.SourceModule.GlobalNamespace.GetMembers("DerivedClass")[0];
-            var members = derivedClass.GetMembers();
+            var derivedClass = (NamedTypeSymbol)comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("DerivedClass")[0];
+            var members = derivedClass.GetMembersAsImmutable();
             Assert.Equal(3, members.Length);
         }
 
@@ -1351,14 +1351,14 @@ public class C : B<int, long>
 
             var comp = CreateCompilation(text);
 
-            var classB = (NamedTypeSymbol)comp.GlobalNamespace.GetMembers("B").Single();
+            var classB = (NamedTypeSymbol)comp.GlobalNamespace.GetMembersAsImmutable("B").Single();
 
             var classBTypeArguments = classB.TypeArguments();
             Assert.Equal(2, classBTypeArguments.Length);
             Assert.Equal("Q", classBTypeArguments[0].Name);
             Assert.Equal("R", classBTypeArguments[1].Name);
 
-            var classBMethodM = (MethodSymbol)classB.GetMembers().Single(sym => sym.Name.EndsWith("M", StringComparison.Ordinal));
+            var classBMethodM = (MethodSymbol)classB.GetMembersAsImmutable().Single(sym => sym.Name.EndsWith("M", StringComparison.Ordinal));
             var classBMethodMTypeParameters = classBMethodM.TypeParameters;
             Assert.Equal(1, classBMethodMTypeParameters.Length);
             Assert.Equal("S", classBMethodMTypeParameters[0].Name);
@@ -1369,7 +1369,7 @@ public class C : B<int, long>
             Assert.Equal(classBTypeArguments[1], classBMethodMParameters[1].Type);
             Assert.Equal(classBMethodMTypeParameters[0], classBMethodMParameters[2].Type);
 
-            var classC = (NamedTypeSymbol)comp.GlobalNamespace.GetMembers("C").Single();
+            var classC = (NamedTypeSymbol)comp.GlobalNamespace.GetMembersAsImmutable("C").Single();
 
             var classCBase = classC.BaseType();
             Assert.Equal(classB, classCBase.ConstructedFrom);
@@ -1379,7 +1379,7 @@ public class C : B<int, long>
             Assert.Equal(SpecialType.System_Int32, classCBaseTypeArguments[0].SpecialType);
             Assert.Equal(SpecialType.System_Int64, classCBaseTypeArguments[1].SpecialType);
 
-            var classCBaseMethodM = (MethodSymbol)classCBase.GetMembers().Single(sym => sym.Name.EndsWith("M", StringComparison.Ordinal));
+            var classCBaseMethodM = (MethodSymbol)classCBase.GetMembersAsImmutable().Single(sym => sym.Name.EndsWith("M", StringComparison.Ordinal));
             Assert.NotEqual(classBMethodM, classCBaseMethodM);
 
             var classCBaseMethodMTypeParameters = classCBaseMethodM.TypeParameters;
@@ -1407,7 +1407,7 @@ public class C : B<int, long>
 ";
             var comp = CreateEmptyCompilation(text);
             var c = comp.GlobalNamespace.GetTypeMembers("C").Single();
-            var f1 = c.GetMembers("F1").Single() as MethodSymbol;
+            var f1 = c.GetMembersAsImmutable("F1").Single() as MethodSymbol;
             Assert.Equal("void C.F1(params System.Int32[missing][] a)", f1.ToTestDisplayString());
         }
 
@@ -1427,7 +1427,7 @@ public class C : B<int, long>
             NamedTypeSymbol nts = comp.Assembly.GlobalNamespace.GetTypeMembers()[0];
             Assert.Equal("AA", nts.ToTestDisplayString());
             Assert.Empty(comp.GetDeclarationDiagnostics());
-            Assert.Equal("System.Int32 AA.Method1(__arglist)", nts.GetMembers("Method1").Single().ToTestDisplayString());
+            Assert.Equal("System.Int32 AA.Method1(__arglist)", nts.GetMembersAsImmutable("Method1").Single().ToTestDisplayString());
         }
 
         [WorkItem(537877, "http://vstfdevdiv:8080/DevDiv2/DevDiv/_workitems/edit/537877")]
@@ -1461,9 +1461,9 @@ namespace N2
             var comp = CreateCompilation(text);
             Assert.Equal(0, comp.GetDeclarationDiagnostics().Count());
 
-            var ns = comp.GlobalNamespace.GetMembers("N2").Single() as NamespaceSymbol;
+            var ns = comp.GlobalNamespace.GetMembersAsImmutable("N2").Single() as NamespaceSymbol;
             var type1 = ns.GetTypeMembers("ExpImpl", 0).Single() as NamedTypeSymbol;
-            var m1 = type1.GetMembers().FirstOrDefault() as MethodSymbol;
+            var m1 = type1.GetMembersAsImmutable().FirstOrDefault() as MethodSymbol;
             Assert.Equal("System.Int32 N2.ExpImpl.N1.I1.Method()", m1.ToTestDisplayString());
             var em1 = m1.ExplicitInterfaceImplementations.First() as MethodSymbol;
             Assert.Equal("System.Int32 N1.I1.Method()", em1.ToTestDisplayString());
@@ -1499,7 +1499,7 @@ namespace N2
             var comp = CreateCompilation(text);
             Assert.Equal(0, comp.GetDeclarationDiagnostics().Count());
 
-            var n2 = comp.GlobalNamespace.GetMembers("N2").Single() as NamespaceSymbol;
+            var n2 = comp.GlobalNamespace.GetMembersAsImmutable("N2").Single() as NamespaceSymbol;
             var test = n2.GetTypeMembers("Test").Single() as NamedTypeSymbol;
             var bt = test.Interfaces().Single() as NamedTypeSymbol;
             Assert.Equal("N1.I1", bt.ToTestDisplayString());
@@ -1564,7 +1564,7 @@ class Test
             var comp = CreateCompilation(text);
 
             var test = comp.GlobalNamespace.GetTypeMembers("Test").Single() as NamedTypeSymbol;
-            var members = test.GetMembers("M1");
+            var members = test.GetMembersAsImmutable("M1");
 
             Assert.Equal(2, members.Length);
             Assert.Equal("System.Int32 Test.M1()", members[0].ToTestDisplayString());
@@ -1593,7 +1593,7 @@ class B : A
 
             var a = comp.GlobalNamespace.GetTypeMembers("A").Single() as NamedTypeSymbol;
             var b = comp.GlobalNamespace.GetTypeMembers("B").Single() as NamedTypeSymbol;
-            var f = b.GetMembers("F").Single() as MethodSymbol;
+            var f = b.GetMembersAsImmutable("F").Single() as MethodSymbol;
             Assert.True(f.IsOverride);
             var f2 = f.OverriddenMethod;
             Assert.NotNull(f2);
@@ -1615,7 +1615,7 @@ class C1 : @int, @void
 }
 ";
             var comp = CreateCompilation(Parse(text));
-            NamedTypeSymbol c1 = (NamedTypeSymbol)comp.SourceModule.GlobalNamespace.GetMembers("C1").Single();
+            NamedTypeSymbol c1 = (NamedTypeSymbol)comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("C1").Single();
             // Per explanation from NGafter:
             //
             // We intentionally escape keywords that appear in the type qualification of the interface name
@@ -1624,7 +1624,7 @@ class C1 : @int, @void
             // abbreviated names for the built-in types, but since we may want to use these names in
             // diagnostics the @-escaped version is preferred.
             //
-            MethodSymbol mreturn = (MethodSymbol)c1.GetMembers("@void.return").Single();
+            MethodSymbol mreturn = (MethodSymbol)c1.GetMembersAsImmutable("@void.return").Single();
             Assert.Equal("@void.return", mreturn.Name);
             Assert.Equal("C1.@void.@return(@void)", mreturn.ToString());
             NamedTypeSymbol rvoid = (NamedTypeSymbol)mreturn.ReturnType;
@@ -1639,9 +1639,9 @@ class C1 : @int, @void
                 new SymbolDisplayFormat(
                     parameterOptions: SymbolDisplayParameterOptions.IncludeName,
                     miscellaneousOptions: SymbolDisplayMiscellaneousOptions.EscapeKeywordIdentifiers)));
-            MethodSymbol mfloat = (MethodSymbol)c1.GetMembers("float").Single();
+            MethodSymbol mfloat = (MethodSymbol)c1.GetMembersAsImmutable("float").Single();
             Assert.Equal("float", mfloat.Name);
-            Assert.Empty(c1.GetMembers("@float"));
+            Assert.Empty(c1.GetMembersAsImmutable("@float"));
         }
 
         [Fact]
@@ -1666,13 +1666,13 @@ class C : I
             var @interface = (NamedTypeSymbol)globalNamespace.GetTypeMembers("I").Single();
             Assert.Equal(TypeKind.Interface, @interface.TypeKind);
 
-            var interfaceMethod = (MethodSymbol)@interface.GetMembers("Method").Single();
+            var interfaceMethod = (MethodSymbol)@interface.GetMembersAsImmutable("Method").Single();
 
             var @class = (NamedTypeSymbol)globalNamespace.GetTypeMembers("C").Single();
             Assert.Equal(TypeKind.Class, @class.TypeKind);
             Assert.True(@class.Interfaces().Contains(@interface));
 
-            var classMethod = (MethodSymbol)@class.GetMembers("I.Method").Single();
+            var classMethod = (MethodSymbol)@class.GetMembersAsImmutable("I.Method").Single();
             Assert.Equal(MethodKind.ExplicitInterfaceImplementation, classMethod.MethodKind);
 
             var explicitImpl = classMethod.ExplicitInterfaceImplementations.Single();
@@ -1705,18 +1705,18 @@ class F : System.IFormattable
             var comp = CreateCompilation(Parse(text));
 
             var globalNamespace = comp.GlobalNamespace;
-            var systemNamespace = (NamespaceSymbol)globalNamespace.GetMembers("System").Single();
+            var systemNamespace = (NamespaceSymbol)globalNamespace.GetMembersAsImmutable("System").Single();
 
             var @interface = (NamedTypeSymbol)systemNamespace.GetTypeMembers("IFormattable").Single();
             Assert.Equal(TypeKind.Interface, @interface.TypeKind);
 
-            var interfaceMethod = (MethodSymbol)@interface.GetMembers("ToString").Single();
+            var interfaceMethod = (MethodSymbol)@interface.GetMembersAsImmutable("ToString").Single();
 
             var @class = (NamedTypeSymbol)globalNamespace.GetTypeMembers("F").Single();
             Assert.Equal(TypeKind.Class, @class.TypeKind);
             Assert.True(@class.Interfaces().Contains(@interface));
 
-            var classMethod = (MethodSymbol)@class.GetMembers("System.IFormattable.ToString").Single();
+            var classMethod = (MethodSymbol)@class.GetMembersAsImmutable("System.IFormattable.ToString").Single();
             Assert.Equal(MethodKind.ExplicitInterfaceImplementation, classMethod.MethodKind);
 
             var explicitImpl = classMethod.ExplicitInterfaceImplementations.Single();
@@ -1755,14 +1755,14 @@ class C : I
             var @interface = (NamedTypeSymbol)globalNamespace.GetTypeMembers("I").Single();
             Assert.Equal(TypeKind.Interface, @interface.TypeKind);
 
-            var interfaceMethod = (MethodSymbol)@interface.GetMembers("Method").Single();
+            var interfaceMethod = (MethodSymbol)@interface.GetMembersAsImmutable("Method").Single();
             Assert.Equal(RefKind.Ref, interfaceMethod.RefKind);
 
             var @class = (NamedTypeSymbol)globalNamespace.GetTypeMembers("C").Single();
             Assert.Equal(TypeKind.Class, @class.TypeKind);
             Assert.True(@class.Interfaces().Contains(@interface));
 
-            var classMethod = (MethodSymbol)@class.GetMembers("I.Method").Single();
+            var classMethod = (MethodSymbol)@class.GetMembersAsImmutable("I.Method").Single();
             Assert.Equal(MethodKind.ExplicitInterfaceImplementation, classMethod.MethodKind);
             Assert.Equal(RefKind.Ref, classMethod.RefKind);
 
@@ -1801,12 +1801,12 @@ class IC : Namespace.I<int>
             var comp = CreateCompilation(Parse(text));
 
             var globalNamespace = comp.GlobalNamespace;
-            var systemNamespace = (NamespaceSymbol)globalNamespace.GetMembers("Namespace").Single();
+            var systemNamespace = (NamespaceSymbol)globalNamespace.GetMembersAsImmutable("Namespace").Single();
 
             var @interface = (NamedTypeSymbol)systemNamespace.GetTypeMembers("I", 1).Single();
             Assert.Equal(TypeKind.Interface, @interface.TypeKind);
 
-            var interfaceMethod = (MethodSymbol)@interface.GetMembers("Method").Single();
+            var interfaceMethod = (MethodSymbol)@interface.GetMembersAsImmutable("Method").Single();
 
             var @class = (NamedTypeSymbol)globalNamespace.GetTypeMembers("IC").Single();
             Assert.Equal(TypeKind.Class, @class.TypeKind);
@@ -1814,9 +1814,9 @@ class IC : Namespace.I<int>
             var substitutedInterface = @class.Interfaces().Single();
             Assert.Equal(@interface, substitutedInterface.ConstructedFrom);
 
-            var substitutedInterfaceMethod = (MethodSymbol)substitutedInterface.GetMembers("Method").Single();
+            var substitutedInterfaceMethod = (MethodSymbol)substitutedInterface.GetMembersAsImmutable("Method").Single();
 
-            var classMethod = (MethodSymbol)@class.GetMembers("Namespace.I<System.Int32>.Method").Single();
+            var classMethod = (MethodSymbol)@class.GetMembersAsImmutable("Namespace.I<System.Int32>.Method").Single();
             Assert.Equal(MethodKind.ExplicitInterfaceImplementation, classMethod.MethodKind);
 
             var explicitImpl = classMethod.ExplicitInterfaceImplementations.Single();
@@ -1855,10 +1855,10 @@ class C
 
             var @class = (NamedTypeSymbol)comp.GlobalNamespace.GetTypeMembers("C").Single();
 
-            var method1 = (SourceMemberMethodSymbol)@class.GetMembers("Method1").Single();
-            var method2 = (SourceMemberMethodSymbol)@class.GetMembers("Method2").Single();
-            var method3 = (SourceMemberMethodSymbol)@class.GetMembers("Method3").Single();
-            var method4 = (SourceMemberMethodSymbol)@class.GetMembers("Method4").Single();
+            var method1 = (SourceMemberMethodSymbol)@class.GetMembersAsImmutable("Method1").Single();
+            var method2 = (SourceMemberMethodSymbol)@class.GetMembersAsImmutable("Method2").Single();
+            var method3 = (SourceMemberMethodSymbol)@class.GetMembersAsImmutable("Method3").Single();
+            var method4 = (SourceMemberMethodSymbol)@class.GetMembersAsImmutable("Method4").Single();
 
             Assert.True(method1.IsVirtual);
             Assert.True(method2.IsVirtual);
@@ -2063,7 +2063,7 @@ public class C
             var parenPos = source.IndexOf('(');
 
             var comp = CreateCompilation(source);
-            var symbol = comp.GlobalNamespace.GetMember<NamedTypeSymbol>("C").GetMembers(WellKnownMemberNames.UnaryPlusOperatorName).Single();
+            var symbol = comp.GlobalNamespace.GetMember<NamedTypeSymbol>("C").GetMembersAsImmutable(WellKnownMemberNames.UnaryPlusOperatorName).Single();
             var span = symbol.Locations.Single().SourceSpan;
             Assert.Equal(keywordPos, span.Start);
             Assert.Equal(parenPos, span.End);
@@ -2084,7 +2084,7 @@ public class C
             var parenPos = source.IndexOf('(');
 
             var comp = CreateCompilation(source);
-            var symbol = comp.GlobalNamespace.GetMember<NamedTypeSymbol>("C").GetMembers(WellKnownMemberNames.ExplicitConversionName).Single();
+            var symbol = comp.GlobalNamespace.GetMember<NamedTypeSymbol>("C").GetMembersAsImmutable(WellKnownMemberNames.ExplicitConversionName).Single();
             var span = symbol.Locations.Single().SourceSpan;
             Assert.Equal(keywordPos, span.Start);
             Assert.Equal(parenPos, span.End);

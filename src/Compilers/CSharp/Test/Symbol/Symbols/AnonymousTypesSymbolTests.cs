@@ -986,7 +986,7 @@ class Query
         private void TestAnonymousTypeSymbols(ModuleSymbol module, params TypeDescr[] typeDescrs)
         {
             int cnt = typeDescrs.Length;
-            Assert.Equal(0, module.GlobalNamespace.GetMembers("<>f__AnonymousType" + cnt.ToString()).Length);
+            Assert.Equal(0, module.GlobalNamespace.GetMembersAsImmutable("<>f__AnonymousType" + cnt.ToString()).Length);
 
             //  test template classes
             for (int i = 0; i < cnt; i++)
@@ -1027,7 +1027,7 @@ class Query
             Assert.Equal(0, type.Interfaces().Length);
 
             //  test non-existing members
-            Assert.Equal(0, type.GetMembers("doesnotexist").Length);
+            Assert.Equal(0, type.GetMembersAsImmutable("doesnotexist").Length);
 
             TestAttributeOnSymbol(
                 type,
@@ -1078,7 +1078,7 @@ class Query
 
         private T GetMemberByName<T>(NamedTypeSymbol type, string name) where T : Symbol
         {
-            foreach (var symbol in type.GetMembers(name))
+            foreach (var symbol in type.GetMembersAsImmutable(name))
             {
                 if (symbol is T)
                 {
@@ -1679,7 +1679,7 @@ class Program
             var comp = CreateCompilation(tree);
             var model = comp.GetSemanticModel(tree);
             var programType = (NamedTypeSymbol)(comp.GlobalNamespace.GetTypeMembers("Program").Single());
-            var mainMethod = (MethodSymbol)(programType.GetMembers("Main").Single());
+            var mainMethod = (MethodSymbol)(programType.GetMembersAsImmutable("Main").Single());
             var mainSyntax = mainMethod.DeclaringSyntaxReferences.Single().GetSyntax() as MethodDeclarationSyntax;
             var mainBlock = mainSyntax.Body;
             var statement1 = mainBlock.Statements[0] as LocalDeclarationStatementSyntax;

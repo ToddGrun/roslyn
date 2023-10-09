@@ -68,26 +68,26 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
 }
 ");
 
-            _acmeNamespace = (NamespaceSymbol)_compilation.GlobalNamespace.GetMembers("Acme").Single();
+            _acmeNamespace = (NamespaceSymbol)_compilation.GlobalNamespace.GetMembersAsImmutable("Acme").Single();
             _widgetClass = _acmeNamespace.GetTypeMembers("Widget").Single();
         }
 
         [Fact]
         public void TestMethodInStruct()
         {
-            Assert.Equal("M:Acme.ValueType.M(System.Int32)", _acmeNamespace.GetTypeMembers("ValueType").Single().GetMembers("M").Single().GetDocumentationCommentId());
+            Assert.Equal("M:Acme.ValueType.M(System.Int32)", _acmeNamespace.GetTypeMembers("ValueType").Single().GetMembersAsImmutable("M").Single().GetDocumentationCommentId());
         }
 
         [Fact]
         public void TestNestedClass()
         {
-            Assert.Equal("M:Acme.Widget.NestedClass.M(System.Int32)", _widgetClass.GetTypeMembers("NestedClass").Single().GetMembers("M").Single().GetDocumentationCommentId());
+            Assert.Equal("M:Acme.Widget.NestedClass.M(System.Int32)", _widgetClass.GetTypeMembers("NestedClass").Single().GetMembersAsImmutable("M").Single().GetDocumentationCommentId());
         }
 
         [Fact]
         public void TestStaticMethod()
         {
-            var m0 = _widgetClass.GetMembers("M0").Single();
+            var m0 = _widgetClass.GetMembersAsImmutable("M0").Single();
             Assert.Equal("M:Acme.Widget.M0", m0.GetDocumentationCommentId());
             Assert.Equal(
 @"<member name=""M:Acme.Widget.M0"">
@@ -99,97 +99,97 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
         [Fact]
         public void TestMethodWithRefAndOut()
         {
-            Assert.Equal("M:Acme.Widget.M1(System.Char,System.Single@,Acme.ValueType@)", _widgetClass.GetMembers("M1").Single().GetDocumentationCommentId());
+            Assert.Equal("M:Acme.Widget.M1(System.Char,System.Single@,Acme.ValueType@)", _widgetClass.GetMembersAsImmutable("M1").Single().GetDocumentationCommentId());
         }
 
         [Fact]
         public void TestMethodWithArrays1()
         {
-            Assert.Equal("M:Acme.Widget.M2(System.Int16[],System.Int32[0:,0:],System.Int64[][])", _widgetClass.GetMembers("M2").Single().GetDocumentationCommentId());
+            Assert.Equal("M:Acme.Widget.M2(System.Int16[],System.Int32[0:,0:],System.Int64[][])", _widgetClass.GetMembersAsImmutable("M2").Single().GetDocumentationCommentId());
         }
 
         [Fact]
         public void TestMethodWithArrays2()
         {
-            Assert.Equal("M:Acme.Widget.M3(System.Int64[][],Acme.Widget[0:,0:,0:][])", _widgetClass.GetMembers("M3").Single().GetDocumentationCommentId());
+            Assert.Equal("M:Acme.Widget.M3(System.Int64[][],Acme.Widget[0:,0:,0:][])", _widgetClass.GetMembersAsImmutable("M3").Single().GetDocumentationCommentId());
         }
 
         [Fact]
         public void TestUnsafe1()
         {
-            Assert.Equal("M:Acme.Widget.M4(System.Char*,Color**)", _widgetClass.GetMembers("M4").Single().GetDocumentationCommentId());
+            Assert.Equal("M:Acme.Widget.M4(System.Char*,Color**)", _widgetClass.GetMembersAsImmutable("M4").Single().GetDocumentationCommentId());
         }
 
         [Fact]
         public void TestUnsafe2()
         {
-            Assert.Equal("M:Acme.Widget.M5(System.Void*,System.Double*[0:,0:][])", _widgetClass.GetMembers("M5").Single().GetDocumentationCommentId());
+            Assert.Equal("M:Acme.Widget.M5(System.Void*,System.Double*[0:,0:][])", _widgetClass.GetMembersAsImmutable("M5").Single().GetDocumentationCommentId());
         }
 
         [Fact]
         public void TestParams()
         {
-            Assert.Equal("M:Acme.Widget.M6(System.Int32,System.Object[])", _widgetClass.GetMembers("M6").Single().GetDocumentationCommentId());
+            Assert.Equal("M:Acme.Widget.M6(System.Int32,System.Object[])", _widgetClass.GetMembersAsImmutable("M6").Single().GetDocumentationCommentId());
         }
 
         [Fact]
         public void TestTupleLength7()
         {
             Assert.Equal("M:Acme.Widget.M7(System.ValueTuple{System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int16})",
-                _widgetClass.GetMembers("M7").Single().GetDocumentationCommentId());
+                _widgetClass.GetMembersAsImmutable("M7").Single().GetDocumentationCommentId());
         }
 
         [Fact]
         public void TestTupleLength8()
         {
             Assert.Equal("M:Acme.Widget.M8(System.ValueTuple{System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int16,System.ValueTuple{System.Int32}})",
-                _widgetClass.GetMembers("M8").Single().GetDocumentationCommentId());
+                _widgetClass.GetMembersAsImmutable("M8").Single().GetDocumentationCommentId());
         }
 
         [Fact]
         public void TestTupleLength9()
         {
             Assert.Equal("M:Acme.Widget.M9(System.ValueTuple{System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int16,System.ValueTuple{System.ValueTuple{System.String,System.String}}})",
-                _widgetClass.GetMembers("M9").Single().GetDocumentationCommentId());
+                _widgetClass.GetMembersAsImmutable("M9").Single().GetDocumentationCommentId());
         }
 
         [Fact]
         public void TestTupleLength2()
         {
             Assert.Equal("M:Acme.Widget.M10(System.ValueTuple{System.Int32,System.Int16},System.Tuple{System.Int32,System.Int16})",
-                _widgetClass.GetMembers("M10").Single().GetDocumentationCommentId());
+                _widgetClass.GetMembersAsImmutable("M10").Single().GetDocumentationCommentId());
         }
 
         [Fact]
         public void TestMethodInGenericClass()
         {
-            Assert.Equal("M:Acme.MyList`1.Test(`0)", _acmeNamespace.GetTypeMembers("MyList", 1).Single().GetMembers("Test").Single().GetDocumentationCommentId());
+            Assert.Equal("M:Acme.MyList`1.Test(`0)", _acmeNamespace.GetTypeMembers("MyList", 1).Single().GetMembersAsImmutable("Test").Single().GetDocumentationCommentId());
         }
 
         [WorkItem(766313, "http://vstfdevdiv:8080/DevDiv2/DevDiv/_workitems/edit/766313")]
         [Fact]
         public void TestMethodWithGenericDeclaringTypeAsParameter()
         {
-            Assert.Equal("M:Acme.MyList`1.Zip(Acme.MyList{`0})", _acmeNamespace.GetTypeMembers("MyList", 1).Single().GetMembers("Zip").Single().GetDocumentationCommentId());
+            Assert.Equal("M:Acme.MyList`1.Zip(Acme.MyList{`0})", _acmeNamespace.GetTypeMembers("MyList", 1).Single().GetMembersAsImmutable("Zip").Single().GetDocumentationCommentId());
         }
 
         [WorkItem(766313, "http://vstfdevdiv:8080/DevDiv2/DevDiv/_workitems/edit/766313")]
         [Fact]
         public void TestMethodWithGenericDeclaringTypeAsTypeParameter()
         {
-            Assert.Equal("M:Acme.MyList`1.ReallyZip(Acme.MyList{Acme.MyList{`0}})", _acmeNamespace.GetTypeMembers("MyList", 1).Single().GetMembers("ReallyZip").Single().GetDocumentationCommentId());
+            Assert.Equal("M:Acme.MyList`1.ReallyZip(Acme.MyList{Acme.MyList{`0}})", _acmeNamespace.GetTypeMembers("MyList", 1).Single().GetMembersAsImmutable("ReallyZip").Single().GetDocumentationCommentId());
         }
 
         [Fact]
         public void TestMethodWithClosedGenericParameter()
         {
-            Assert.Equal("M:Acme.UseList.Process(Acme.MyList{System.Int32})", _acmeNamespace.GetTypeMembers("UseList").Single().GetMembers("Process").Single().GetDocumentationCommentId());
+            Assert.Equal("M:Acme.UseList.Process(Acme.MyList{System.Int32})", _acmeNamespace.GetTypeMembers("UseList").Single().GetMembersAsImmutable("Process").Single().GetDocumentationCommentId());
         }
 
         [Fact]
         public void TestGenericMethod()
         {
-            Assert.Equal("M:Acme.UseList.GetValues``1(``0)", _acmeNamespace.GetTypeMembers("UseList").Single().GetMembers("GetValues").Single().GetDocumentationCommentId());
+            Assert.Equal("M:Acme.UseList.GetValues``1(``0)", _acmeNamespace.GetTypeMembers("UseList").Single().GetMembersAsImmutable("GetValues").Single().GetDocumentationCommentId());
         }
 
         [Fact]
@@ -204,7 +204,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
 }");
             var type = compilation.Assembly.GlobalNamespace.GetMember<NamedTypeSymbol>("C");
             type = (NamedTypeSymbol)type.GetMember<FieldSymbol>("F").Type;
-            var members = type.GetMembers();
+            var members = type.GetMembersAsImmutable();
             Assert.InRange(members.Length, 1, int.MaxValue);
             foreach (var member in members)
             {
@@ -216,7 +216,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
         [Fact, WorkItem(530924, "http://vstfdevdiv:8080/DevDiv2/DevDiv/_workitems/edit/530924")]
         public void TestConversionOperator()
         {
-            Assert.Equal("M:Acme.ValueType.op_Explicit(System.Byte)~Acme.ValueType", _acmeNamespace.GetTypeMembers("ValueType").Single().GetMembers("op_Explicit").Single().GetDocumentationCommentId());
+            Assert.Equal("M:Acme.ValueType.op_Explicit(System.Byte)~Acme.ValueType", _acmeNamespace.GetTypeMembers("ValueType").Single().GetMembersAsImmutable("op_Explicit").Single().GetDocumentationCommentId());
         }
 
         [WorkItem(4699, "https://github.com/dotnet/roslyn/issues/4699")]

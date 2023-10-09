@@ -348,9 +348,9 @@ class C<T> : I<T>
 ";
             var comp = CreateCompilation(source);
             var type = comp.GlobalNamespace.GetMember<NamedTypeSymbol>("C");
-            var method = type.GetMembersUnordered().OfType<MethodSymbol>().Single(m => m.MethodKind == MethodKind.ExplicitInterfaceImplementation);
-            var property = type.GetMembersUnordered().OfType<PropertySymbol>().Single();
-            var @event = type.GetMembersUnordered().OfType<EventSymbol>().Single();
+            var method = type.GetMembersUnorderedAsImmutable().OfType<MethodSymbol>().Single(m => m.MethodKind == MethodKind.ExplicitInterfaceImplementation);
+            var property = type.GetMembersUnorderedAsImmutable().OfType<PropertySymbol>().Single();
+            var @event = type.GetMembersUnorderedAsImmutable().OfType<EventSymbol>().Single();
             Assert.Equal("M:C`1.I{T}#M", method.GetDocumentationCommentId());
             Assert.Equal("P:C`1.I{T}#P", property.GetDocumentationCommentId());
             Assert.Equal("E:C`1.I{T}#E", @event.GetDocumentationCommentId());

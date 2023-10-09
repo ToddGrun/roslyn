@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Threading;
+using Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE;
 using Microsoft.CodeAnalysis.PooledObjects;
 using Roslyn.Utilities;
 
@@ -133,13 +134,13 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
         public override TResult Accept<TResult>(CSharpSymbolVisitor<TResult> visitor) => throw ExceptionUtilities.Unreachable();
 
-        public override ImmutableArray<Symbol> GetMembers() => throw ExceptionUtilities.Unreachable();
+        public override ArrayWrapper<Symbol> GetMembers() => throw ExceptionUtilities.Unreachable();
 
-        public override ImmutableArray<Symbol> GetMembers(string name) => throw ExceptionUtilities.Unreachable();
+        public override ArrayWrapper<Symbol> GetMembers(string name) => throw ExceptionUtilities.Unreachable();
 
-        public override ImmutableArray<NamedTypeSymbol> GetTypeMembers() => throw ExceptionUtilities.Unreachable();
+        public override ArrayWrapper<NamedTypeSymbol> GetTypeMembers() => throw ExceptionUtilities.Unreachable();
 
-        public override ImmutableArray<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name) => throw ExceptionUtilities.Unreachable();
+        public override ArrayWrapper<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name) => throw ExceptionUtilities.Unreachable();
 
         protected override ISymbol CreateISymbol() => throw ExceptionUtilities.Unreachable();
 

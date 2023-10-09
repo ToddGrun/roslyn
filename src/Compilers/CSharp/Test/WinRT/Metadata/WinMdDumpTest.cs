@@ -51,7 +51,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata
                 memberIndent = indent;
             }
 
-            foreach (var member in container.GetMembers().OrderBy(m => m.Name, System.StringComparer.InvariantCulture))
+            foreach (var member in container.GetMembersAsImmutable().OrderBy(m => m.Name, System.StringComparer.InvariantCulture))
             {
                 switch (member.Kind)
                 {

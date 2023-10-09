@@ -48,7 +48,7 @@ class C
             void validator(ModuleSymbol m)
             {
                 var c = m.GlobalNamespace.GetTypeMember("C");
-                var opSymbol = c.GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).First();
+                var opSymbol = c.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).First();
 
                 Assert.Equal(MethodKind.UserDefinedOperator, opSymbol.MethodKind);
                 Assert.Equal(name, opSymbol.Name);
@@ -81,7 +81,7 @@ class C
             void validator(ModuleSymbol m)
             {
                 var c = m.GlobalNamespace.GetTypeMember("C");
-                var opSymbols = c.GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).ToArray();
+                var opSymbols = c.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).ToArray();
                 Assert.Equal(2, opSymbols.Length);
 
                 Assert.Equal(MethodKind.UserDefinedOperator, opSymbols[0].MethodKind);
@@ -115,7 +115,7 @@ struct C
             void validator(ModuleSymbol m)
             {
                 var c = m.GlobalNamespace.GetTypeMember("C");
-                var opSymbols = c.GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).ToArray();
+                var opSymbols = c.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).ToArray();
 
                 Assert.Equal(MethodKind.UserDefinedOperator, opSymbols[0].MethodKind);
                 Assert.Equal(MethodKind.UserDefinedOperator, opSymbols[1].MethodKind);
@@ -162,7 +162,7 @@ struct C
             }
 
             var c = compilation1.SourceModule.GlobalNamespace.GetTypeMember("C");
-            var opSymbols = c.GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).ToArray();
+            var opSymbols = c.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).ToArray();
             Assert.Equal(2, opSymbols.Length);
 
             Assert.Equal(MethodKind.UserDefinedOperator, opSymbols[0].MethodKind);
@@ -353,7 +353,7 @@ class C
                 );
 
             var c = compilation1.SourceModule.GlobalNamespace.GetTypeMember("C");
-            var opSymbol = c.GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
+            var opSymbol = c.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
             Assert.Equal("C.operator checked " + op + "(C, C)", opSymbol.ToDisplayString());
         }
 
@@ -378,7 +378,7 @@ class C
                 );
 
             var c = compilation1.SourceModule.GlobalNamespace.GetTypeMember("C");
-            var opSymbol = c.GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
+            var opSymbol = c.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
             Assert.Equal("C.operator checked " + op + "()", opSymbol.ToDisplayString());
         }
 
@@ -454,7 +454,7 @@ class C
                 );
 
             var c = compilation1.SourceModule.GlobalNamespace.GetTypeMember("C");
-            var opSymbol = c.GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
+            var opSymbol = c.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
             Assert.Equal("C.operator +(C)", opSymbol.ToDisplayString());
             Assert.Equal("op_UnaryPlus", opSymbol.Name);
         }
@@ -481,7 +481,7 @@ class C
                 );
 
             var c = compilation1.SourceModule.GlobalNamespace.GetTypeMember("C");
-            var opSymbol = c.GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
+            var opSymbol = c.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
             Assert.Equal("C.operator +(C)", opSymbol.ToDisplayString());
             Assert.Equal("op_UnaryPlus", opSymbol.Name);
         }
@@ -512,7 +512,7 @@ class C
             compilation.VerifyDiagnostics();
 
             var crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
-            var expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).First();
+            var expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).First();
             var actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
             Assert.Equal(expectedSymbol, actualSymbol);
 
@@ -530,7 +530,7 @@ class C
                 );
 
             crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
-            expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).First();
+            expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).First();
             actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
             Assert.Equal(expectedSymbol, actualSymbol);
 
@@ -538,7 +538,7 @@ class C
             compilation.VerifyDiagnostics();
 
             crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
-            expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).First();
+            expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).First();
             actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
             Assert.Equal(expectedSymbol, actualSymbol);
         }
@@ -684,7 +684,7 @@ class C
             compilation.GetDiagnostics().Where(d => d.Code is not (int)ErrorCode.ERR_CheckedOperatorNeedsMatch).Verify();
 
             var crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
-            var expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
+            var expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
             var actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
             Assert.Equal(expectedSymbol, actualSymbol);
 
@@ -702,7 +702,7 @@ class C
                 );
 
             crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
-            expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
+            expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
             actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
             Assert.Equal(expectedSymbol, actualSymbol);
 
@@ -710,7 +710,7 @@ class C
             compilation.GetDiagnostics().Where(d => d.Code is not (int)ErrorCode.ERR_CheckedOperatorNeedsMatch).Verify();
 
             crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
-            expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
+            expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
             actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
             Assert.Equal(expectedSymbol, actualSymbol);
         }
@@ -807,7 +807,7 @@ class C
             compilation.VerifyDiagnostics(expected);
 
             var crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
-            var expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
+            var expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
             var actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
             Assert.Equal(expectedSymbol, actualSymbol);
 
@@ -815,7 +815,7 @@ class C
             compilation.VerifyDiagnostics(expected);
 
             crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
-            expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
+            expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
             actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
             Assert.Equal(expectedSymbol, actualSymbol);
 
@@ -823,7 +823,7 @@ class C
             compilation.VerifyDiagnostics(expected);
 
             crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
-            expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
+            expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
             actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
             Assert.Equal(expectedSymbol, actualSymbol);
         }
@@ -856,7 +856,7 @@ class C
             compilation.VerifyDiagnostics(expected);
 
             var crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
-            var expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
+            var expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
             var actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
             Assert.Equal(expectedSymbol, actualSymbol);
 
@@ -864,7 +864,7 @@ class C
             compilation.VerifyDiagnostics(expected);
 
             crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
-            expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
+            expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
             actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
             Assert.Equal(expectedSymbol, actualSymbol);
 
@@ -872,7 +872,7 @@ class C
             compilation.VerifyDiagnostics(expected);
 
             crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
-            expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
+            expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
             actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
             Assert.Equal(expectedSymbol, actualSymbol);
         }
@@ -901,7 +901,7 @@ class C
                     );
 
                 var c = compilation1.SourceModule.GlobalNamespace.GetTypeMember("C");
-                var opSymbol = c.GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
+                var opSymbol = c.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
 
                 Assert.Equal(MethodKind.UserDefinedOperator, opSymbol.MethodKind);
                 Assert.Equal(name, opSymbol.Name);
@@ -935,7 +935,7 @@ class C
                     );
 
                 var c = compilation1.SourceModule.GlobalNamespace.GetTypeMember("C");
-                var opSymbols = c.GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).ToArray();
+                var opSymbols = c.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).ToArray();
                 Assert.Equal(2, opSymbols.Length);
 
                 var opSymbol1 = opSymbols[0];
@@ -978,7 +978,7 @@ class C
                 );
 
             var c = compilation1.SourceModule.GlobalNamespace.GetTypeMember("C");
-            var opSymbols = c.GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).ToArray();
+            var opSymbols = c.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).ToArray();
             Assert.Equal(2, opSymbols.Length);
 
             Assert.Equal(MethodKind.UserDefinedOperator, opSymbols[0].MethodKind);
@@ -1014,7 +1014,7 @@ class C
                 );
 
             var c = compilation1.SourceModule.GlobalNamespace.GetTypeMember("C");
-            var opSymbols = c.GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).ToArray();
+            var opSymbols = c.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).ToArray();
             Assert.Equal(3, opSymbols.Length);
 
             Assert.Equal(MethodKind.UserDefinedOperator, opSymbols[0].MethodKind);
@@ -1265,7 +1265,7 @@ class C
             void validator(ModuleSymbol m)
             {
                 var c = m.GlobalNamespace.GetTypeMember("C");
-                var opSymbol = c.GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).First();
+                var opSymbol = c.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).First();
 
                 Assert.Equal(MethodKind.UserDefinedOperator, opSymbol.MethodKind);
                 Assert.Equal(name, opSymbol.Name);
@@ -1299,7 +1299,7 @@ class C
             void validator(ModuleSymbol m)
             {
                 var c = m.GlobalNamespace.GetTypeMember("C");
-                var opSymbols = c.GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).ToArray();
+                var opSymbols = c.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).ToArray();
                 Assert.Equal(2, opSymbols.Length);
 
                 Assert.Equal(MethodKind.UserDefinedOperator, opSymbols[0].MethodKind);
@@ -1334,7 +1334,7 @@ struct C
             void validator(ModuleSymbol m)
             {
                 var c = m.GlobalNamespace.GetTypeMember("C");
-                var opSymbols = c.GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).ToArray();
+                var opSymbols = c.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).ToArray();
 
                 Assert.Equal(MethodKind.UserDefinedOperator, opSymbols[0].MethodKind);
                 Assert.Equal(MethodKind.UserDefinedOperator, opSymbols[1].MethodKind);
@@ -1368,7 +1368,7 @@ struct C
                 );
 
             var c = compilation1.SourceModule.GlobalNamespace.GetTypeMember("C");
-            var opSymbols = c.GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).ToArray();
+            var opSymbols = c.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).ToArray();
             Assert.Equal(2, opSymbols.Length);
 
             Assert.Equal(MethodKind.UserDefinedOperator, opSymbols[0].MethodKind);
@@ -1523,7 +1523,7 @@ class C
                 );
 
             var c = compilation1.SourceModule.GlobalNamespace.GetTypeMember("C");
-            var opSymbol = c.GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
+            var opSymbol = c.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
             Assert.Equal("C.operator checked " + op + "(C)", opSymbol.ToDisplayString());
         }
 
@@ -1550,7 +1550,7 @@ class C
                 );
 
             var c = compilation1.SourceModule.GlobalNamespace.GetTypeMember("C");
-            var opSymbol = c.GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
+            var opSymbol = c.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
             Assert.Equal("C.operator checked " + op + "()", opSymbol.ToDisplayString());
         }
 
@@ -1632,7 +1632,7 @@ class C
                 );
 
             var c = compilation1.SourceModule.GlobalNamespace.GetTypeMember("C");
-            var opSymbol = c.GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
+            var opSymbol = c.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
             Assert.Equal("C.operator checked +(C, C)", opSymbol.ToDisplayString());
             Assert.Equal("op_CheckedAddition", opSymbol.Name);
         }
@@ -1659,7 +1659,7 @@ class C
                 );
 
             var c = compilation1.SourceModule.GlobalNamespace.GetTypeMember("C");
-            var opSymbol = c.GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
+            var opSymbol = c.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
             Assert.Equal("C.operator +(C, C)", opSymbol.ToDisplayString());
             Assert.Equal("op_Addition", opSymbol.Name);
         }
@@ -1692,7 +1692,7 @@ class C
             compilation.VerifyDiagnostics();
 
             var crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
-            var expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).First();
+            var expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).First();
             var actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
             Assert.Equal(expectedSymbol, actualSymbol);
 
@@ -1711,7 +1711,7 @@ class C
                 );
 
             crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
-            expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).First();
+            expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).First();
             actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
             Assert.Equal(expectedSymbol, actualSymbol);
 
@@ -1719,7 +1719,7 @@ class C
             compilation.VerifyDiagnostics();
 
             crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
-            expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).First();
+            expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).First();
             actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
             Assert.Equal(expectedSymbol, actualSymbol);
         }
@@ -1815,7 +1815,7 @@ class C
                 );
 
             var crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
-            var expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
+            var expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
             var actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
             Assert.Equal(expectedSymbol, actualSymbol);
 
@@ -1833,7 +1833,7 @@ class C
                 );
 
             crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
-            expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
+            expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
             actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
             Assert.Equal(expectedSymbol, actualSymbol);
 
@@ -1848,7 +1848,7 @@ class C
                 );
 
             crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
-            expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
+            expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
             actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
             Assert.Equal(expectedSymbol, actualSymbol);
         }
@@ -1881,7 +1881,7 @@ class C
             compilation.VerifyDiagnostics(expected);
 
             var crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
-            var expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
+            var expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
             var actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
             Assert.Equal(expectedSymbol, actualSymbol);
 
@@ -1889,7 +1889,7 @@ class C
             compilation.VerifyDiagnostics(expected);
 
             crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
-            expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
+            expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
             actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
             Assert.Equal(expectedSymbol, actualSymbol);
 
@@ -1897,7 +1897,7 @@ class C
             compilation.VerifyDiagnostics(expected);
 
             crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
-            expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
+            expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
             actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
             Assert.Equal(expectedSymbol, actualSymbol);
         }
@@ -1925,7 +1925,7 @@ class C
             compilation.GetDiagnostics().Where(d => d.Code is not (int)ErrorCode.ERR_CheckedOperatorNeedsMatch).Verify();
 
             var crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
-            var expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
+            var expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
             var actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
             Assert.Equal(expectedSymbol, actualSymbol);
 
@@ -1943,7 +1943,7 @@ class C
                 );
 
             crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
-            expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
+            expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
             actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
             Assert.Equal(expectedSymbol, actualSymbol);
 
@@ -1951,7 +1951,7 @@ class C
             compilation.GetDiagnostics().Where(d => d.Code is not (int)ErrorCode.ERR_CheckedOperatorNeedsMatch).Verify();
 
             crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
-            expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
+            expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
             actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
             Assert.Equal(expectedSymbol, actualSymbol);
         }
@@ -2050,7 +2050,7 @@ class C
             compilation.GetDiagnostics().Where(d => d.Code is not (int)ErrorCode.ERR_CheckedOperatorNeedsMatch).Verify(expected);
 
             var crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
-            var expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
+            var expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
             var actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
             Assert.Equal(expectedSymbol, actualSymbol);
 
@@ -2068,7 +2068,7 @@ class C
                 );
 
             crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
-            expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
+            expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
             actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
             Assert.Equal(expectedSymbol, actualSymbol);
 
@@ -2076,7 +2076,7 @@ class C
             compilation.GetDiagnostics().Where(d => d.Code is not (int)ErrorCode.ERR_CheckedOperatorNeedsMatch).Verify(expected);
 
             crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
-            expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
+            expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
             actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
             Assert.Equal(expectedSymbol, actualSymbol);
         }
@@ -2109,7 +2109,7 @@ class C
             compilation.VerifyDiagnostics(expected);
 
             var crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
-            var expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
+            var expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
             var actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
             Assert.Equal(expectedSymbol, actualSymbol);
 
@@ -2117,7 +2117,7 @@ class C
             compilation.VerifyDiagnostics(expected);
 
             crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
-            expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
+            expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
             actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
             Assert.Equal(expectedSymbol, actualSymbol);
 
@@ -2125,7 +2125,7 @@ class C
             compilation.VerifyDiagnostics(expected);
 
             crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
-            expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
+            expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
             actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
             Assert.Equal(expectedSymbol, actualSymbol);
         }
@@ -2178,7 +2178,7 @@ class C
                 }
 
                 var c = compilation1.SourceModule.GlobalNamespace.GetTypeMember("C");
-                var opSymbol = c.GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
+                var opSymbol = c.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
 
                 Assert.Equal(MethodKind.UserDefinedOperator, opSymbol.MethodKind);
                 Assert.Equal(name, opSymbol.Name);
@@ -2223,7 +2223,7 @@ class C
                 );
 
             var c = compilation1.SourceModule.GlobalNamespace.GetTypeMember("C");
-            var opSymbols = c.GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).ToArray();
+            var opSymbols = c.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).ToArray();
             Assert.Equal(2, opSymbols.Length);
 
             Assert.Equal(MethodKind.UserDefinedOperator, opSymbols[0].MethodKind);
@@ -2438,7 +2438,7 @@ class C
                 );
 
             var c = compilation1.SourceModule.GlobalNamespace.GetTypeMember("C");
-            var opSymbol = c.GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
+            var opSymbol = c.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
             Assert.Equal("C.operator checked +()", opSymbol.ToDisplayString());
             Assert.Equal("op_CheckedAddition", opSymbol.Name);
         }
@@ -2465,7 +2465,7 @@ class C
                 );
 
             var c = compilation1.SourceModule.GlobalNamespace.GetTypeMember("C");
-            var opSymbol = c.GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
+            var opSymbol = c.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
             Assert.Equal("C.operator +()", opSymbol.ToDisplayString());
             Assert.Equal("op_Addition", opSymbol.Name);
         }
@@ -2499,7 +2499,7 @@ class C
             void validator(ModuleSymbol m)
             {
                 var c = m.GlobalNamespace.GetTypeMember("C");
-                var opSymbol = c.GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).First();
+                var opSymbol = c.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).First();
 
                 Assert.Equal(MethodKind.Conversion, opSymbol.MethodKind);
                 Assert.Equal("op_CheckedExplicit", opSymbol.Name);
@@ -2535,7 +2535,7 @@ class C1
             void validator(ModuleSymbol m)
             {
                 var c = m.GlobalNamespace.GetTypeMember("C");
-                var opSymbols = c.GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).ToArray();
+                var opSymbols = c.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).ToArray();
                 Assert.Equal(2, opSymbols.Length);
 
                 Assert.Equal(MethodKind.Conversion, opSymbols[0].MethodKind);
@@ -2575,7 +2575,7 @@ struct C1
             void validator(ModuleSymbol m)
             {
                 var c = m.GlobalNamespace.GetTypeMember("C");
-                var opSymbols = c.GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).ToArray();
+                var opSymbols = c.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).ToArray();
 
                 Assert.Equal(MethodKind.Conversion, opSymbols[0].MethodKind);
                 Assert.Equal(MethodKind.Conversion, opSymbols[1].MethodKind);
@@ -2614,7 +2614,7 @@ struct C1
                 );
 
             var c = compilation1.SourceModule.GlobalNamespace.GetTypeMember("C");
-            var opSymbols = c.GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).ToArray();
+            var opSymbols = c.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).ToArray();
             Assert.Equal(2, opSymbols.Length);
 
             Assert.Equal(MethodKind.Conversion, opSymbols[0].MethodKind);
@@ -2755,7 +2755,7 @@ class C
                 );
 
             var c = compilation1.SourceModule.GlobalNamespace.GetTypeMember("C");
-            var opSymbol = c.GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
+            var opSymbol = c.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
             Assert.Equal("C.explicit operator checked int(C, C)", opSymbol.ToDisplayString());
         }
 
@@ -2778,7 +2778,7 @@ class C
                 );
 
             var c = compilation1.SourceModule.GlobalNamespace.GetTypeMember("C");
-            var opSymbol = c.GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
+            var opSymbol = c.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
             Assert.Equal("C.explicit operator checked int()", opSymbol.ToDisplayString());
         }
 
@@ -2851,7 +2851,7 @@ class C
             compilation.VerifyDiagnostics();
 
             var crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
-            var expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).First();
+            var expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).First();
             var actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
             Assert.Equal(expectedSymbol, actualSymbol);
 
@@ -2869,7 +2869,7 @@ class C
                 );
 
             crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
-            expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).First();
+            expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).First();
             actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
             Assert.Equal(expectedSymbol, actualSymbol);
 
@@ -2877,7 +2877,7 @@ class C
             compilation.VerifyDiagnostics();
 
             crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
-            expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).First();
+            expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).First();
             actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
             Assert.Equal(expectedSymbol, actualSymbol);
         }
@@ -3017,7 +3017,7 @@ class C
             compilation.GetDiagnostics().Where(d => d.Code is not (int)ErrorCode.ERR_CheckedOperatorNeedsMatch).Verify();
 
             var crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
-            var expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
+            var expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
             var actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
             Assert.Equal(expectedSymbol, actualSymbol);
 
@@ -3035,7 +3035,7 @@ class C
                 );
 
             crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
-            expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
+            expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
             actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
             Assert.Equal(expectedSymbol, actualSymbol);
 
@@ -3043,7 +3043,7 @@ class C
             compilation.GetDiagnostics().Where(d => d.Code is not (int)ErrorCode.ERR_CheckedOperatorNeedsMatch).Verify();
 
             crefSyntax = CrefTests.GetCrefSyntaxes(compilation).Single();
-            expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
+            expectedSymbol = compilation.SourceModule.GlobalNamespace.GetTypeMember("C").GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
             actualSymbol = CrefTests.GetReferencedSymbol(crefSyntax, compilation);
             Assert.Equal(expectedSymbol, actualSymbol);
         }
@@ -3185,7 +3185,7 @@ class C
                     );
 
                 var c = compilation1.SourceModule.GlobalNamespace.GetTypeMember("C");
-                var opSymbol = c.GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
+                var opSymbol = c.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
 
                 Assert.Equal(MethodKind.Conversion, opSymbol.MethodKind);
                 Assert.Equal("op_Implicit", opSymbol.Name);
@@ -3217,7 +3217,7 @@ class C
                 );
 
             var c = compilation1.SourceModule.GlobalNamespace.GetTypeMember("C");
-            var opSymbols = c.GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).ToArray();
+            var opSymbols = c.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).ToArray();
             Assert.Equal(2, opSymbols.Length);
 
             Assert.Equal(MethodKind.Conversion, opSymbols[0].MethodKind);

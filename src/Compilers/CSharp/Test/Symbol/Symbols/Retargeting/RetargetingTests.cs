@@ -1263,7 +1263,7 @@ public class C
             Assert.Equal(a.Name, b.Name);
             CheckSymbols(a.BaseType(), b.BaseType(), false);
             CheckSymbols(a.Interfaces(), b.Interfaces(), false);
-            CheckSymbols(a.GetMembers(), b.GetMembers(), true);
+            CheckSymbols(a.GetMembersAsImmutable(), b.GetMembersAsImmutable(), true);
         }
 
         public void CheckTypeParameters(TypeParameterSymbol a, TypeParameterSymbol b)

@@ -1251,7 +1251,7 @@ namespace N
 ";
             var comp = CreateEmptyCompilation(text);
             var global = comp.GlobalNamespace;
-            var n = global.GetMembers("N").OfType<NamespaceSymbol>().Single();
+            var n = global.GetMembersAsImmutable("N").OfType<NamespaceSymbol>().Single();
             var c = n.GetTypeMembers("C", 0).Single();
             var a = c.GetTypeMembers("A", 1).Single();
             var b = a.GetTypeMembers("B", 1).Single();
@@ -1276,8 +1276,8 @@ namespace N2 {
 ";
             var comp = CreateEmptyCompilation(text);
             var global = comp.GlobalNamespace;
-            var n1 = global.GetMembers("N1").Single() as NamespaceSymbol;
-            var n2 = global.GetMembers("N2").Single() as NamespaceSymbol;
+            var n1 = global.GetMembersAsImmutable("N1").Single() as NamespaceSymbol;
+            var n2 = global.GetMembersAsImmutable("N2").Single() as NamespaceSymbol;
             var a = n1.GetTypeMembers("A", 0).Single();
             var b = n2.GetTypeMembers("B", 0).Single();
             Assert.Equal(a, b.BaseType());
@@ -1298,8 +1298,8 @@ namespace N2 {
 ";
             var comp = CreateEmptyCompilation(text);
             var global = comp.GlobalNamespace;
-            var n1 = global.GetMembers("N1").Single() as NamespaceSymbol;
-            var n2 = global.GetMembers("N2").Single() as NamespaceSymbol;
+            var n1 = global.GetMembersAsImmutable("N1").Single() as NamespaceSymbol;
+            var n2 = global.GetMembersAsImmutable("N2").Single() as NamespaceSymbol;
             var a = n1.GetTypeMembers("A", 1).Single();
             var b = n2.GetTypeMembers("B", 0).Single();
             var bt = b.BaseType();
@@ -1317,7 +1317,7 @@ namespace N { class C {} }
 class D : global::N.C {}";
             var comp = CreateEmptyCompilation(text);
             var global = comp.GlobalNamespace;
-            var d = global.GetMembers("D").Single() as NamedTypeSymbol;
+            var d = global.GetMembersAsImmutable("D").Single() as NamedTypeSymbol;
             Assert.NotEqual(SymbolKind.ErrorType, d.BaseType().Kind);
         }
 
@@ -1377,8 +1377,8 @@ partial class Broken {
 ";
             var comp = CreateEmptyCompilation(new[] { text1, text2 });
             var global = comp.GlobalNamespace;
-            var n1 = global.GetMembers("N1").Single() as NamespaceSymbol;
-            var n2 = global.GetMembers("N2").Single() as NamespaceSymbol;
+            var n1 = global.GetMembersAsImmutable("N1").Single() as NamespaceSymbol;
+            var n2 = global.GetMembersAsImmutable("N2").Single() as NamespaceSymbol;
             var a = n1.GetTypeMembers("A", 0).Single();
             var b = n2.GetTypeMembers("B", 0).Single();
             var x = global.GetTypeMembers("X", 0).Single();
@@ -1437,10 +1437,10 @@ namespace @if
     public class @float : @int<@break>, @if.@break { }
 }";
             var comp = CreateCompilation(Parse(text));
-            NamespaceSymbol nif = (NamespaceSymbol)comp.SourceModule.GlobalNamespace.GetMembers("if").Single();
+            NamespaceSymbol nif = (NamespaceSymbol)comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("if").Single();
             Assert.Equal("if", nif.Name);
             Assert.Equal("@if", nif.ToString());
-            NamedTypeSymbol cfloat = (NamedTypeSymbol)nif.GetMembers("float").Single();
+            NamedTypeSymbol cfloat = (NamedTypeSymbol)nif.GetMembersAsImmutable("float").Single();
             Assert.Equal("float", cfloat.Name);
             Assert.Equal("@if.@float", cfloat.ToString());
             NamedTypeSymbol cint = cfloat.BaseType();
@@ -1462,10 +1462,10 @@ namespace @if
     public class @float : @int<@break> : @if.@break { }
 }";
             var comp = CreateCompilation(Parse(text));
-            NamespaceSymbol nif = (NamespaceSymbol)comp.SourceModule.GlobalNamespace.GetMembers("if").Single();
+            NamespaceSymbol nif = (NamespaceSymbol)comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("if").Single();
             Assert.Equal("if", nif.Name);
             Assert.Equal("@if", nif.ToString());
-            NamedTypeSymbol cfloat = (NamedTypeSymbol)nif.GetMembers("float").Single();
+            NamedTypeSymbol cfloat = (NamedTypeSymbol)nif.GetMembersAsImmutable("float").Single();
             Assert.Equal("float", cfloat.Name);
             Assert.Equal("@if.@float", cfloat.ToString());
             NamedTypeSymbol cint = cfloat.BaseType();
@@ -1520,8 +1520,8 @@ class B : A<B.Y.Error>
             {
                 var comp = CreateCompilation(text);
 
-                var classB = (NamedTypeSymbol)comp.SourceModule.GlobalNamespace.GetMembers("B")[0];
-                var classY = (NamedTypeSymbol)classB.GetMembers("Y")[0];
+                var classB = (NamedTypeSymbol)comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("B")[0];
+                var classY = (NamedTypeSymbol)classB.GetMembersAsImmutable("Y")[0];
 
                 var baseB = classB.BaseType();
                 Assert.Equal("A<B.Y.Error>", baseB.ToTestDisplayString());
@@ -1536,8 +1536,8 @@ class B : A<B.Y.Error>
             {
                 var comp = CreateCompilation(text);
 
-                var classB = (NamedTypeSymbol)comp.SourceModule.GlobalNamespace.GetMembers("B")[0];
-                var classY = (NamedTypeSymbol)classB.GetMembers("Y")[0];
+                var classB = (NamedTypeSymbol)comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("B")[0];
+                var classY = (NamedTypeSymbol)classB.GetMembersAsImmutable("Y")[0];
 
                 var baseY = classY.BaseType();
                 Assert.Equal("X", baseY.ToTestDisplayString());

@@ -262,7 +262,7 @@ namespace NA
                 new[] { SyntaxFactory.ParseSyntaxTree(code) },
                 options: TestOptions.ReleaseDll);
 
-            Assert.Equal(SymbolKind.NamedType, comp.GlobalNamespace.GetMembers()[0].Kind);
+            Assert.Equal(SymbolKind.NamedType, comp.GlobalNamespace.GetMembersAsImmutable()[0].Kind);
         }
 
         [ConditionalFact(typeof(NoIOperationValidation), typeof(NoUsedAssembliesValidation))]
@@ -301,7 +301,7 @@ public class B
             Assert.Equal(1, countedTree.AccessCount);
 
             // Now bind the members.
-            var method = (MethodSymbol)type.GetMembers().First();
+            var method = (MethodSymbol)type.GetMembersAsImmutable().First();
             Assert.Equal(1, countedTree.AccessCount);
 
             // Once we have the method, we shouldn't need to go back to syntax again.
@@ -345,7 +345,7 @@ public class b
             var interfaces = type.Interfaces();
             Assert.Equal(1, countedTree.AccessCount);
 
-            var method = (MethodSymbol)type.GetMembers().First();
+            var method = (MethodSymbol)type.GetMembersAsImmutable().First();
             Assert.Equal(1, countedTree.AccessCount);
 
             var returnType = method.ReturnTypeWithAnnotations;

@@ -29,7 +29,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
         {
             var module0 = assembly.Modules[0];
 
-            var system = (from n in module0.GlobalNamespace.GetMembers()
+            var system = (from n in module0.GlobalNamespace.GetMembersAsImmutable()
                           where n.Name.Equals("System")
                           select n).Cast<NamespaceSymbol>().Single();
 
@@ -57,7 +57,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
 
             Assert.Equal(TypeKind.Delegate, func.TypeKind);
 
-            var collections = (from n in system.GetMembers()
+            var collections = (from n in system.GetMembersAsImmutable()
                                where n.Name.Equals("Collections")
                                select n).Cast<NamespaceSymbol>().Single();
 

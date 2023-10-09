@@ -835,7 +835,7 @@ public record struct S2 : I
                 "readonly System.Boolean S.Equals(System.Object obj)",
                 "readonly System.Boolean S.Equals(S other)",
                 "S..ctor()" },
-                comp.GetMember<NamedTypeSymbol>("S").GetMembers().ToTestDisplayStrings());
+                comp.GetMember<NamedTypeSymbol>("S").GetMembersAsImmutable().ToTestDisplayStrings());
         }
 
         [Fact]
@@ -1991,7 +1991,7 @@ record struct C(int X, int X)
                 "System.Int32 C.X { get; set; }"
             };
             AssertEx.Equal(expectedMembers,
-                comp.GetMember<NamedTypeSymbol>("C").GetMembers().OfType<PropertySymbol>().ToTestDisplayStrings());
+                comp.GetMember<NamedTypeSymbol>("C").GetMembersAsImmutable().OfType<PropertySymbol>().ToTestDisplayStrings());
 
             var expectedMemberNames = new[] {
                 ".ctor",
@@ -2037,7 +2037,7 @@ record struct C(int X, int Y)
                 Diagnostic(ErrorCode.ERR_MemberReserved, "Y").WithArguments("set_Y", "C").WithLocation(2, 28)
                 );
 
-            var actualMembers = comp.GetMember<NamedTypeSymbol>("C").GetMembers().ToTestDisplayStrings();
+            var actualMembers = comp.GetMember<NamedTypeSymbol>("C").GetMembersAsImmutable().ToTestDisplayStrings();
             var expectedMembers = new[]
             {
                 "C..ctor(System.Int32 X, System.Int32 Y)",
@@ -3203,7 +3203,7 @@ namespace System.Runtime.CompilerServices
     <param name=""I1"">Description for I1</param>
 </member>
 ", cMember.GetDocumentationCommentXml());
-            var constructor = cMember.GetMembers(".ctor").OfType<SynthesizedPrimaryConstructor>().Single();
+            var constructor = cMember.GetMembersAsImmutable(".ctor").OfType<SynthesizedPrimaryConstructor>().Single();
             Assert.Equal(
 @"<member name=""M:C.#ctor(System.Int32)"">
     <summary>Summary</summary>
@@ -3213,7 +3213,7 @@ namespace System.Runtime.CompilerServices
 
             Assert.Equal("", constructor.GetParameters()[0].GetDocumentationCommentXml());
 
-            var property = cMember.GetMembers("I1").Single();
+            var property = cMember.GetMembersAsImmutable("I1").Single();
             AssertEx.Equal(
 @"<member name=""P:C.I1"">
     <summary>Description for I1</summary>
@@ -3748,7 +3748,7 @@ record struct C()
                 "readonly System.Int32 C.GetHashCode()",
                 "readonly System.Boolean C.Equals(System.Object obj)",
                 "readonly System.Boolean C.Equals(C other)" },
-                comp.GetMember<NamedTypeSymbol>("C").GetMembers().ToTestDisplayStrings());
+                comp.GetMember<NamedTypeSymbol>("C").GetMembersAsImmutable().ToTestDisplayStrings());
         }
 
         [Fact]
@@ -10461,7 +10461,7 @@ public readonly record struct Test(
                 var field1 = @class.GetMember<FieldSymbol>("<P1>k__BackingField");
                 AssertEx.SetEqual(new[] { "A" }, getAttributeStrings(field1));
 
-                var param1 = @class.GetMembers(".ctor").OfType<MethodSymbol>().Where(m => m.Parameters.AsSingleton()?.Name == "P1").Single().Parameters[0];
+                var param1 = @class.GetMembersAsImmutable(".ctor").OfType<MethodSymbol>().Where(m => m.Parameters.AsSingleton()?.Name == "P1").Single().Parameters[0];
                 AssertEx.SetEqual(new[] { "C", "D" }, getAttributeStrings(param1));
             };
 

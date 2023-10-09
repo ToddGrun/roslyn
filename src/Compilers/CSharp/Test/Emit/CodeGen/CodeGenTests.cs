@@ -13061,7 +13061,7 @@ enum " + "\u0915\u094d\u200d\u0937" + @"
 ";
             var comp = CreateCompilationWithILAndMscorlib40("", il);
             var @enum = comp.GlobalNamespace.GetMember<NamedTypeSymbol>("E");
-            var field = @enum.GetMembers().OfType<FieldSymbol>().Single();
+            var field = @enum.GetMembersAsImmutable().OfType<FieldSymbol>().Single();
             Assert.False(field.CanBeReferencedByName);
         }
 

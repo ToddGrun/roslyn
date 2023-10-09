@@ -27,7 +27,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
 
         private void TestTypeAccessibilityHelper(ModuleSymbol module0)
         {
-            var system = (from n in module0.GlobalNamespace.GetMembers()
+            var system = (from n in module0.GlobalNamespace.GetMembersAsImmutable()
                           where n.Kind == SymbolKind.Namespace && n.Name.Equals("System")
                           select n).Cast<NamespaceSymbol>().Single();
 
@@ -67,15 +67,15 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
 
             Assert.Equal(Accessibility.Public, contextForm.DeclaredAccessibility);
 
-            var runtime = (from t in system.GetMembers()
+            var runtime = (from t in system.GetMembersAsImmutable()
                            where t.Kind == SymbolKind.Namespace && t.Name.Equals("Runtime")
                            select t).Cast<NamespaceSymbol>().Single();
 
-            var remoting = (from t in runtime.GetMembers()
+            var remoting = (from t in runtime.GetMembersAsImmutable()
                             where t.Kind == SymbolKind.Namespace && t.Name.Equals("Remoting")
                             select t).Cast<NamespaceSymbol>().Single();
 
-            var messaging = (from t in remoting.GetMembers()
+            var messaging = (from t in remoting.GetMembersAsImmutable()
                              where t.Kind == SymbolKind.Namespace && t.Name.Equals("Messaging")
                              select t).Cast<NamespaceSymbol>().Single();
 
@@ -89,11 +89,11 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
 
             Assert.Equal(Accessibility.Protected, serializedArg.DeclaredAccessibility);
 
-            var security = (from t in system.GetMembers()
+            var security = (from t in system.GetMembersAsImmutable()
                             where t.Kind == SymbolKind.Namespace && t.Name.Equals("Security")
                             select t).Cast<NamespaceSymbol>().Single();
 
-            var accessControl = (from t in security.GetMembers()
+            var accessControl = (from t in security.GetMembersAsImmutable()
                                  where t.Kind == SymbolKind.Namespace && t.Name.Equals("AccessControl")
                                  select t).Cast<NamespaceSymbol>().Single();
 

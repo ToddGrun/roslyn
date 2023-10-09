@@ -288,13 +288,13 @@ class C
         private static SourceNamedTypeSymbol CompileAndExtractTypeSymbol(string source)
         {
             var compilation = CreateCompilation(source);
-            var typeSymbol = (SourceNamedTypeSymbol)compilation.GlobalNamespace.GetMembers("C").Single();
+            var typeSymbol = (SourceNamedTypeSymbol)compilation.GlobalNamespace.GetMembersAsImmutable("C").Single();
             return typeSymbol;
         }
 
         private static bool HasSynthesizedStaticConstructor(NamedTypeSymbol typeSymbol)
         {
-            foreach (var member in typeSymbol.GetMembers(WellKnownMemberNames.StaticConstructorName))
+            foreach (var member in typeSymbol.GetMembersAsImmutable(WellKnownMemberNames.StaticConstructorName))
             {
                 if (member.IsImplicitlyDeclared)
                 {

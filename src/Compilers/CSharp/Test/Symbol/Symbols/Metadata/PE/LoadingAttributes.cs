@@ -381,7 +381,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             //    End Function
             //End Class
 
-            var c1 = (NamedTypeSymbol)assemblies[0].Modules[0].GlobalNamespace.GetMembers("C1").Single();
+            var c1 = (NamedTypeSymbol)assemblies[0].Modules[0].GlobalNamespace.GetMembersAsImmutable("C1").Single();
             c1.GetAttributes().First().VerifyValue(0, TypedConstantKind.Primitive, "C1");
 
             var property1 = (PropertySymbol)c1.GetMember("Property1");
@@ -426,7 +426,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             //    <AType(GetType(List(Of KeyValuePair(Of String, C1.InnerC1(of integer).InnerC2(of string, string)))))>
             //    Public L5 As List(Of KeyValuePair(Of String, C1.InnerC1(of integer).InnerC2(of string, string)))
 
-            var c2 = (NamedTypeSymbol)assemblies[0].Modules[0].GlobalNamespace.GetMembers("C2").Single();
+            var c2 = (NamedTypeSymbol)assemblies[0].Modules[0].GlobalNamespace.GetMembersAsImmutable("C2").Single();
 
             var l = (FieldSymbol)c2.GetMember("L1");
             l.GetAttributes().First().VerifyValue(0, TypedConstantKind.Type, "System.Collections.Generic.List<>");
@@ -1196,8 +1196,8 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
                 Net40.mscorlib
             });
 
-            var corsysNS = assemblies[2].GlobalNamespace.GetMembers("System").Single() as NamespaceSymbol;
-            var diagNS = corsysNS.GetMembers("Diagnostics").Single() as NamespaceSymbol;
+            var corsysNS = assemblies[2].GlobalNamespace.GetMembersAsImmutable("System").Single() as NamespaceSymbol;
+            var diagNS = corsysNS.GetMembersAsImmutable("Diagnostics").Single() as NamespaceSymbol;
 
             var sysNS = (NamespaceSymbol)assemblies[0].GlobalNamespace.GetMember("System");
             var linqNS = (NamespaceSymbol)sysNS.GetMember("Linq");
@@ -1230,7 +1230,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             var secondNS = (NamespaceSymbol)sysNS.GetMember("Configuration");
             var type01 = (NamedTypeSymbol)secondNS.GetTypeMembers("SchemeSettingElement").Single();
 
-            var mems = type01.GetMembers("GenericUriParserOptions");
+            var mems = type01.GetMembersAsImmutable("GenericUriParserOptions");
             var prop = mems.First() as PropertySymbol;
             if (prop == null)
             {

@@ -14,6 +14,7 @@ using System.Runtime.InteropServices;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp.Emit;
 using Microsoft.CodeAnalysis.PooledObjects;
+using Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE;
 
 namespace Microsoft.CodeAnalysis.CSharp.Symbols
 {
@@ -132,15 +133,15 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
         protected override NamedTypeSymbol WithTupleDataCore(TupleExtraData newData) => throw ExceptionUtilities.Unreachable();
 
-        public override ImmutableArray<Symbol> GetMembers() => Constructors.CastArray<Symbol>();
+        public override ArrayWrapper<Symbol> GetMembers() => new ArrayWrapper<Symbol>(Constructors.CastArray<Symbol>());
 
-        public override ImmutableArray<Symbol> GetMembers(string name) => name == WellKnownMemberNames.InstanceConstructorName ? Constructors.CastArray<Symbol>() : ImmutableArray<Symbol>.Empty;
+        public override ArrayWrapper<Symbol> GetMembers(string name) => name == WellKnownMemberNames.InstanceConstructorName ? new ArrayWrapper<Symbol>(Constructors.CastArray<Symbol>()) : ArrayWrapper<Symbol>.Empty;
 
-        public override ImmutableArray<NamedTypeSymbol> GetTypeMembers() => ImmutableArray<NamedTypeSymbol>.Empty;
+        public override ArrayWrapper<NamedTypeSymbol> GetTypeMembers() => ArrayWrapper<NamedTypeSymbol>.Empty;
 
-        public override ImmutableArray<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name) => ImmutableArray<NamedTypeSymbol>.Empty;
+        public override ArrayWrapper<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name) => ArrayWrapper<NamedTypeSymbol>.Empty;
 
-        public override ImmutableArray<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name, int arity) => ImmutableArray<NamedTypeSymbol>.Empty;
+        public override ArrayWrapper<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name, int arity) => ArrayWrapper<NamedTypeSymbol>.Empty;
 
         internal override ImmutableArray<string> GetAppliedConditionalSymbols() => ImmutableArray<string>.Empty;
 
@@ -148,15 +149,15 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
         internal override NamedTypeSymbol GetDeclaredBaseType(ConsList<TypeSymbol> basesBeingResolved) => _baseType;
 
-        internal override ImmutableArray<NamedTypeSymbol> GetDeclaredInterfaces(ConsList<TypeSymbol> basesBeingResolved) => ImmutableArray<NamedTypeSymbol>.Empty;
+        internal override ArrayWrapper<NamedTypeSymbol> GetDeclaredInterfaces(ConsList<TypeSymbol> basesBeingResolved) => ArrayWrapper<NamedTypeSymbol>.Empty;
 
-        internal override ImmutableArray<Symbol> GetEarlyAttributeDecodingMembers() => GetMembers();
+        internal override ArrayWrapper<Symbol> GetEarlyAttributeDecodingMembers() => GetMembers();
 
-        internal override ImmutableArray<Symbol> GetEarlyAttributeDecodingMembers(string name) => GetMembers(name);
+        internal override ArrayWrapper<Symbol> GetEarlyAttributeDecodingMembers(string name) => GetMembers(name);
 
         internal override IEnumerable<FieldSymbol> GetFieldsToEmit() => SpecializedCollections.EmptyEnumerable<FieldSymbol>();
 
-        internal override ImmutableArray<NamedTypeSymbol> GetInterfacesToEmit() => ImmutableArray<NamedTypeSymbol>.Empty;
+        internal override ArrayWrapper<NamedTypeSymbol> GetInterfacesToEmit() => ArrayWrapper<NamedTypeSymbol>.Empty;
 
         internal override IEnumerable<SecurityAttribute> GetSecurityInformation() => null;
 

@@ -124,7 +124,7 @@ Base()
             comp = CreateCompilation(src1, options: TestOptions.ReleaseDll);
             comp.VerifyEmitDiagnostics();
 
-            var members = comp.GetTypeByMetadataName("Point").GetMembers();
+            var members = comp.GetTypeByMetadataName("Point").GetMembersAsImmutable();
 
             switch (keyword)
             {
@@ -818,7 +818,7 @@ C(int x, int y);
 
             var c = comp.GlobalNamespace.GetTypeMember("C");
 
-            Assert.All(c.GetMembers(), m => Assert.True(m is MethodSymbol { MethodKind: MethodKind.Constructor }));
+            Assert.All(c.GetMembersAsImmutable(), m => Assert.True(m is MethodSymbol { MethodKind: MethodKind.Constructor }));
             Assert.IsType<SynthesizedPrimaryConstructor>(c.InstanceConstructors[0]);
 
             switch (c.TypeKind)
@@ -6060,7 +6060,7 @@ public " + keyword + @" C(int I1);
     <param name=""I1"">Description for I1</param>
 </member>
 ", cMember.GetDocumentationCommentXml());
-            var constructor = cMember.GetMembers(".ctor").OfType<SynthesizedPrimaryConstructor>().Single();
+            var constructor = cMember.GetMembersAsImmutable(".ctor").OfType<SynthesizedPrimaryConstructor>().Single();
             Assert.Equal(
 @"<member name=""M:C.#ctor(System.Int32)"">
     <summary>Summary</summary>
@@ -6180,7 +6180,7 @@ public " + keyword + @" C(int I1);
             comp.VerifyDiagnostics();
 
             var cMember = comp.GetMember<NamedTypeSymbol>("C");
-            var constructor = cMember.GetMembers(".ctor").OfType<SynthesizedPrimaryConstructor>().Single();
+            var constructor = cMember.GetMembersAsImmutable(".ctor").OfType<SynthesizedPrimaryConstructor>().Single();
             Assert.Equal(
 @"<member name=""M:C.#ctor(System.Int32)"">
     <summary>Summary <paramref name=""I1""/></summary>
@@ -6262,7 +6262,7 @@ public " + keyword + @" C(int I1)
 </member>
 ", cMember.GetDocumentationCommentXml());
 
-            var constructor = cMember.GetMembers(".ctor").OfType<SynthesizedPrimaryConstructor>().Single();
+            var constructor = cMember.GetMembersAsImmutable(".ctor").OfType<SynthesizedPrimaryConstructor>().Single();
             Assert.Equal(
 @"<member name=""M:C.#ctor(System.Int32)"">
     <summary>Summary</summary>
@@ -6272,7 +6272,7 @@ public " + keyword + @" C(int I1)
 
             Assert.Equal("", constructor.GetParameters()[0].GetDocumentationCommentXml());
 
-            var property = cMember.GetMembers("I1").Single();
+            var property = cMember.GetMembersAsImmutable("I1").Single();
             Assert.Equal(
 @"<member name=""P:C.I1"">
     <summary>Property summary</summary>
@@ -6299,7 +6299,7 @@ public " + keyword + @" C();
 </member>
 ", cMember.GetDocumentationCommentXml());
 
-            var constructor = cMember.GetMembers(".ctor").OfType<MethodSymbol>().Where(m => m.Parameters.IsEmpty).Single();
+            var constructor = cMember.GetMembersAsImmutable(".ctor").OfType<MethodSymbol>().Where(m => m.Parameters.IsEmpty).Single();
             Assert.Equal(
 @"<member name=""M:C.#ctor"">
     <summary>Summary</summary>
@@ -6330,7 +6330,7 @@ public partial " + keyword + @" C(int I1);
 </member>
 ", c.GetDocumentationCommentXml());
 
-            var cConstructor = c.GetMembers(".ctor").OfType<SynthesizedPrimaryConstructor>().Single();
+            var cConstructor = c.GetMembersAsImmutable(".ctor").OfType<SynthesizedPrimaryConstructor>().Single();
             Assert.Equal(
 @"<member name=""M:C.#ctor(System.Int32)"">
     <summary>Summary</summary>
@@ -6364,7 +6364,7 @@ public partial " + keyword + @" D;
 </member>
 ", d.GetDocumentationCommentXml());
 
-            var dConstructor = d.GetMembers(".ctor").OfType<SynthesizedPrimaryConstructor>().Single();
+            var dConstructor = d.GetMembersAsImmutable(".ctor").OfType<SynthesizedPrimaryConstructor>().Single();
             Assert.Equal(
 @"<member name=""M:D.#ctor(System.Int32)"">
     <summary>Summary</summary>
@@ -6405,7 +6405,7 @@ public partial " + keyword + @" E;
 </member>
 ", e.GetDocumentationCommentXml());
 
-            var eConstructor = e.GetMembers(".ctor").OfType<SynthesizedPrimaryConstructor>().Single();
+            var eConstructor = e.GetMembersAsImmutable(".ctor").OfType<SynthesizedPrimaryConstructor>().Single();
             Assert.Equal("", eConstructor.GetDocumentationCommentXml());
             Assert.Equal("", eConstructor.GetParameters()[0].GetDocumentationCommentXml());
         }
@@ -6440,7 +6440,7 @@ public partial " + keyword + @" E(int I1);
 </member>
 ", e.GetDocumentationCommentXml());
 
-            var eConstructor = e.GetMembers(".ctor").OfType<SynthesizedPrimaryConstructor>().Single();
+            var eConstructor = e.GetMembersAsImmutable(".ctor").OfType<SynthesizedPrimaryConstructor>().Single();
             Assert.Equal("", eConstructor.GetDocumentationCommentXml());
             Assert.Equal("", eConstructor.GetParameters()[0].GetDocumentationCommentXml());
         }
@@ -6479,7 +6479,7 @@ public partial " + keyword + @" C(int I1);
 </member>
 ", c.GetDocumentationCommentXml());
 
-            var cConstructor = c.GetMembers(".ctor").OfType<SynthesizedPrimaryConstructor>().Single();
+            var cConstructor = c.GetMembersAsImmutable(".ctor").OfType<SynthesizedPrimaryConstructor>().Single();
             Assert.Equal(1, cConstructor.DeclaringSyntaxReferences.Count());
             Assert.Equal("", cConstructor.GetDocumentationCommentXml());
             Assert.Equal("", cConstructor.GetParameters()[0].GetDocumentationCommentXml());
@@ -6512,7 +6512,7 @@ public partial " + keyword + @" D(int I1);
 </member>
 ", d.GetDocumentationCommentXml());
 
-            var dConstructor = d.GetMembers(".ctor").OfType<SynthesizedPrimaryConstructor>().Single();
+            var dConstructor = d.GetMembersAsImmutable(".ctor").OfType<SynthesizedPrimaryConstructor>().Single();
             Assert.Equal(
 @"<member name=""M:D.#ctor(System.Int32)"">
     <summary>Summary</summary>
@@ -6557,7 +6557,7 @@ public partial " + keyword + @" E(int I1);
 </member>
 ", e.GetDocumentationCommentXml());
 
-            var eConstructor = e.GetMembers(".ctor").OfType<SynthesizedPrimaryConstructor>().Single();
+            var eConstructor = e.GetMembersAsImmutable(".ctor").OfType<SynthesizedPrimaryConstructor>().Single();
             Assert.Equal(1, eConstructor.DeclaringSyntaxReferences.Count());
             Assert.Equal(
 @"<member name=""M:E.#ctor(System.Int32)"">
@@ -6601,7 +6601,7 @@ public partial " + keyword + @" E(string S1);
 </member>
 ", e.GetDocumentationCommentXml());
 
-            var eConstructor = e.GetMembers(".ctor").OfType<SynthesizedPrimaryConstructor>().Single();
+            var eConstructor = e.GetMembersAsImmutable(".ctor").OfType<SynthesizedPrimaryConstructor>().Single();
             Assert.Equal(1, eConstructor.DeclaringSyntaxReferences.Count());
             Assert.Equal("", eConstructor.GetDocumentationCommentXml());
             Assert.Equal("", eConstructor.GetParameters()[0].GetDocumentationCommentXml());
@@ -6641,7 +6641,7 @@ public partial " + keyword + @" E(string S1);
 </member>
 ", e.GetDocumentationCommentXml());
 
-            var eConstructor = e.GetMembers(".ctor").OfType<SynthesizedPrimaryConstructor>().Single();
+            var eConstructor = e.GetMembersAsImmutable(".ctor").OfType<SynthesizedPrimaryConstructor>().Single();
             Assert.Equal(1, eConstructor.DeclaringSyntaxReferences.Count());
             Assert.Equal(
 @"<member name=""M:E.#ctor(System.Int32)"">
@@ -6677,7 +6677,7 @@ public class Outer
 </member>
 ", cMember.GetDocumentationCommentXml());
 
-            var constructor = cMember.GetMembers(".ctor").OfType<SynthesizedPrimaryConstructor>().Single();
+            var constructor = cMember.GetMembersAsImmutable(".ctor").OfType<SynthesizedPrimaryConstructor>().Single();
             Assert.Equal(
 @"<member name=""M:Outer.C.#ctor(System.Int32)"">
     <summary>Summary</summary>
@@ -6731,7 +6731,7 @@ public " + keyword + @" Outer(object O1)
                 );
 
             var cMember = comp.GetMember<NamedTypeSymbol>("Outer.C");
-            var constructor = cMember.GetMembers(".ctor").OfType<SynthesizedPrimaryConstructor>().Single();
+            var constructor = cMember.GetMembersAsImmutable(".ctor").OfType<SynthesizedPrimaryConstructor>().Single();
             Assert.Equal(
 @"<member name=""M:Outer.C.#ctor(System.Int32)"">
     <summary>Summary</summary>
@@ -15681,7 +15681,7 @@ class C1 (int p1)
             CompileAndVerify(comp,
                 symbolValidator: (m) =>
                 {
-                    var attr = m.GlobalNamespace.GetTypeMember("C1").GetMembers().OfType<FieldSymbol>().Single().GetAttributes();
+                    var attr = m.GlobalNamespace.GetTypeMember("C1").GetMembersAsImmutable().OfType<FieldSymbol>().Single().GetAttributes();
                     Assert.Equal(2, attr.Length);
                     Assert.Equal("System.Runtime.CompilerServices.CompilerGeneratedAttribute", attr[0].ToString());
                     Assert.Equal("System.Diagnostics.DebuggerBrowsableAttribute(System.Diagnostics.DebuggerBrowsableState.Never)", attr[1].ToString());
@@ -15703,7 +15703,7 @@ class C1 (nint p1)
             CompileAndVerify(comp,
                 symbolValidator: (m) =>
                 {
-                    var attr = m.GlobalNamespace.GetTypeMember("C1").GetMembers().OfType<FieldSymbol>().Single().GetAttributes();
+                    var attr = m.GlobalNamespace.GetTypeMember("C1").GetMembersAsImmutable().OfType<FieldSymbol>().Single().GetAttributes();
                     Assert.Equal(3, attr.Length);
                     Assert.Equal("System.Runtime.CompilerServices.NativeIntegerAttribute", attr[0].ToString());
                 }
@@ -15724,7 +15724,7 @@ class C1 ((int i1, int i2) p1)
             CompileAndVerify(comp,
                 symbolValidator: (m) =>
                 {
-                    var attr = m.GlobalNamespace.GetTypeMember("C1").GetMembers().OfType<FieldSymbol>().Single().GetAttributes();
+                    var attr = m.GlobalNamespace.GetTypeMember("C1").GetMembersAsImmutable().OfType<FieldSymbol>().Single().GetAttributes();
                     Assert.Equal(3, attr.Length);
                     Assert.Equal("System.Runtime.CompilerServices.TupleElementNamesAttribute({\"i1\", \"i2\"})", attr[0].ToString());
                 }
@@ -15745,7 +15745,7 @@ class C1 (dynamic p1)
             CompileAndVerify(comp,
                 symbolValidator: (m) =>
                 {
-                    var attr = m.GlobalNamespace.GetTypeMember("C1").GetMembers().OfType<FieldSymbol>().Single().GetAttributes();
+                    var attr = m.GlobalNamespace.GetTypeMember("C1").GetMembersAsImmutable().OfType<FieldSymbol>().Single().GetAttributes();
                     Assert.Equal(3, attr.Length);
                     Assert.Equal("System.Runtime.CompilerServices.DynamicAttribute", attr[0].ToString());
                 }
@@ -16844,7 +16844,7 @@ public partial struct S
 
             void validate2(ModuleSymbol m)
             {
-                var fields = m.GlobalNamespace.GetTypeMember("S").GetMembers().OfType<FieldSymbol>().ToArray();
+                var fields = m.GlobalNamespace.GetTypeMember("S").GetMembersAsImmutable().OfType<FieldSymbol>().ToArray();
                 Assert.Equal(2, fields.Length);
                 Assert.Equal("<x>P", fields[0].Name);
                 Assert.Equal("Y", fields[1].Name);
@@ -16852,7 +16852,7 @@ public partial struct S
 
             void validate3(ModuleSymbol m)
             {
-                var fields = m.GlobalNamespace.GetTypeMember("S").GetMembers().OfType<FieldSymbol>().ToArray();
+                var fields = m.GlobalNamespace.GetTypeMember("S").GetMembersAsImmutable().OfType<FieldSymbol>().ToArray();
                 Assert.Equal(2, fields.Length);
                 Assert.Equal("Y", fields[0].Name);
                 Assert.Equal("<x>P", fields[1].Name);
@@ -16887,7 +16887,7 @@ public partial struct S
 
             void validate2(ModuleSymbol m)
             {
-                Assert.Equal(1, m.GlobalNamespace.GetTypeMember("S").GetMembers().OfType<FieldSymbol>().Count());
+                Assert.Equal(1, m.GlobalNamespace.GetTypeMember("S").GetMembersAsImmutable().OfType<FieldSymbol>().Count());
             }
         }
 
@@ -16920,7 +16920,7 @@ public partial struct S
 
             void validate2(ModuleSymbol m)
             {
-                var fields = m.GlobalNamespace.GetTypeMember("S").GetMembers().OfType<FieldSymbol>().ToArray();
+                var fields = m.GlobalNamespace.GetTypeMember("S").GetMembersAsImmutable().OfType<FieldSymbol>().ToArray();
                 Assert.Equal(2, fields.Length);
                 Assert.Equal("<x>P", fields[0].Name);
                 Assert.Equal("Y", fields[1].Name);
@@ -18557,7 +18557,7 @@ class C1(int x, int y)
                              symbolValidator: (m) =>
                                               {
                                                   var c1 = m.GlobalNamespace.GetTypeMember("C1");
-                                                  AssertEx.Equal(new[] { "<x>P", "<y>P" }, c1.GetMembers().OfType<FieldSymbol>().Select(f => f.Name));
+                                                  AssertEx.Equal(new[] { "<x>P", "<y>P" }, c1.GetMembersAsImmutable().OfType<FieldSymbol>().Select(f => f.Name));
                                               });
         }
 
@@ -18578,7 +18578,7 @@ class C1(int x, int y)
                              symbolValidator: (m) =>
                              {
                                  var c1 = m.GlobalNamespace.GetTypeMember("C1");
-                                 AssertEx.Equal(new[] { "<x>P", "<y>P", "a" }, c1.GetMembers().OfType<FieldSymbol>().Select(f => f.Name));
+                                 AssertEx.Equal(new[] { "<x>P", "<y>P", "a" }, c1.GetMembersAsImmutable().OfType<FieldSymbol>().Select(f => f.Name));
                              });
         }
 
@@ -18604,7 +18604,7 @@ partial class C1(int x, int y)
                              symbolValidator: (m) =>
                              {
                                  var c1 = m.GlobalNamespace.GetTypeMember("C1");
-                                 AssertEx.Equal(new[] { "b", "<x>P", "<y>P", "a" }, c1.GetMembers().OfType<FieldSymbol>().Select(f => f.Name));
+                                 AssertEx.Equal(new[] { "b", "<x>P", "<y>P", "a" }, c1.GetMembersAsImmutable().OfType<FieldSymbol>().Select(f => f.Name));
                              });
         }
 
@@ -18630,7 +18630,7 @@ partial class C1
                              symbolValidator: (m) =>
                              {
                                  var c1 = m.GlobalNamespace.GetTypeMember("C1");
-                                 AssertEx.Equal(new[] { "<x>P", "<y>P", "a", "b" }, c1.GetMembers().OfType<FieldSymbol>().Select(f => f.Name));
+                                 AssertEx.Equal(new[] { "<x>P", "<y>P", "a", "b" }, c1.GetMembersAsImmutable().OfType<FieldSymbol>().Select(f => f.Name));
                              });
         }
 
@@ -18661,7 +18661,7 @@ partial class C1
                              symbolValidator: (m) =>
                              {
                                  var c1 = m.GlobalNamespace.GetTypeMember("C1");
-                                 AssertEx.Equal(new[] { "b", "<x>P", "<y>P", "a", "c" }, c1.GetMembers().OfType<FieldSymbol>().Select(f => f.Name));
+                                 AssertEx.Equal(new[] { "b", "<x>P", "<y>P", "a", "c" }, c1.GetMembersAsImmutable().OfType<FieldSymbol>().Select(f => f.Name));
                              });
         }
 

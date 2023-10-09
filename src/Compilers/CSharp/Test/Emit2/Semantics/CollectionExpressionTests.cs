@@ -8294,8 +8294,8 @@ static class Program
 
             static void compareMembers(NamedTypeSymbol sourceType, NamedTypeSymbol synthesizedType, string memberName)
             {
-                var sourceMember = sourceType.GetMembers(memberName).Single();
-                var synthesizedMember = synthesizedType.GetMembers(memberName).Single();
+                var sourceMember = sourceType.GetMembersAsImmutable(memberName).Single();
+                var synthesizedMember = synthesizedType.GetMembersAsImmutable(memberName).Single();
                 Assert.Equal(sourceMember.IsAbstract, synthesizedMember.IsAbstract);
                 Assert.Equal(sourceMember.IsVirtual, synthesizedMember.IsVirtual);
                 Assert.Equal(sourceMember.IsOverride, synthesizedMember.IsOverride);

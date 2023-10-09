@@ -1196,8 +1196,8 @@ namespace Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator
             NamespaceSymbol? namespaceSymbol = globalNamespace;
             foreach (var name in namespaceName.Split('.'))
             {
-                var members = namespaceSymbol.GetMembers(name);
-                namespaceSymbol = (members.Length == 1) ? members[0] as NamespaceSymbol : null;
+                using var members = namespaceSymbol.GetMembers(name);
+                namespaceSymbol = (members.Count == 1) ? members[0] as NamespaceSymbol : null;
 
                 if (namespaceSymbol is null)
                 {

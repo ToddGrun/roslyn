@@ -58,18 +58,18 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
         {
             var module0 = assembly.Modules[0];
 
-            var sys = module0.GlobalNamespace.GetMembers("System");
-            var collections = ((NamespaceSymbol)sys[0]).GetMembers("Collections");
-            var generic = ((NamespaceSymbol)collections[0]).GetMembers("Generic");
-            var dictionary = ((NamespaceSymbol)generic[0]).GetMembers("Dictionary");
+            var sys = module0.GlobalNamespace.GetMembersAsImmutable("System");
+            var collections = ((NamespaceSymbol)sys[0]).GetMembersAsImmutable("Collections");
+            var generic = ((NamespaceSymbol)collections[0]).GetMembersAsImmutable("Generic");
+            var dictionary = ((NamespaceSymbol)generic[0]).GetMembersAsImmutable("Dictionary");
             var @base = ((NamedTypeSymbol)dictionary[0]).BaseType();
 
             AssertBaseType(@base, "System.Object");
             Assert.Null(@base.BaseType());
 
-            var concurrent = ((NamespaceSymbol)collections[0]).GetMembers("Concurrent");
+            var concurrent = ((NamespaceSymbol)collections[0]).GetMembersAsImmutable("Concurrent");
 
-            var orderablePartitioners = ((NamespaceSymbol)concurrent[0]).GetMembers("OrderablePartitioner");
+            var orderablePartitioners = ((NamespaceSymbol)concurrent[0]).GetMembersAsImmutable("OrderablePartitioner");
             NamedTypeSymbol orderablePartitioner = null;
 
             foreach (var p in orderablePartitioners)
@@ -88,7 +88,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             AssertBaseType(@base, "System.Collections.Concurrent.Partitioner<TSource>");
             Assert.Same(((NamedTypeSymbol)@base).TypeArguments()[0], orderablePartitioner.TypeParameters[0]);
 
-            var partitioners = ((NamespaceSymbol)concurrent[0]).GetMembers("Partitioner");
+            var partitioners = ((NamespaceSymbol)concurrent[0]).GetMembersAsImmutable("Partitioner");
             NamedTypeSymbol partitioner = null;
 
             foreach (var p in partitioners)
@@ -134,7 +134,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             AssertBaseType(varTC8.BaseType(), "C1<System.Type>");
             AssertBaseType(varTC9.BaseType(), "TC6<TC6_T1>");
 
-            var varCorTypes = module2.GlobalNamespace.GetMembers("CorTypes").OfType<NamespaceSymbol>().Single();
+            var varCorTypes = module2.GlobalNamespace.GetMembersAsImmutable("CorTypes").OfType<NamespaceSymbol>().Single();
 
             var varCorTypes_Derived = varCorTypes.GetTypeMembers("Derived").Single();
             AssertBaseType(varCorTypes_Derived.BaseType(),
@@ -162,7 +162,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             var module1 = assemblies[0].Modules[0];
             var module2 = assemblies[1].Modules[0];
 
-            var varCorTypes = module2.GlobalNamespace.GetMembers("CorTypes").OfType<NamespaceSymbol>().Single();
+            var varCorTypes = module2.GlobalNamespace.GetMembersAsImmutable("CorTypes").OfType<NamespaceSymbol>().Single();
 
             var varCorTypes_Derived = varCorTypes.GetTypeMembers("Derived").Single();
             AssertBaseType(varCorTypes_Derived.BaseType(),

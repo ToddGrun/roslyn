@@ -1820,13 +1820,13 @@ namespace A
             });
             var tree1 = comp1.SyntaxTrees.Single();
 
-            var implicitTypeCount1 = comp1.GlobalNamespace.GetMember<NamespaceSymbol>("A").GetMembers(TypeSymbol.ImplicitTypeName).Length;
+            var implicitTypeCount1 = comp1.GlobalNamespace.GetMember<NamespaceSymbol>("A").GetMembersAsImmutable(TypeSymbol.ImplicitTypeName).Length;
             Assert.Equal(1, implicitTypeCount1);
 
             var tree2 = tree1.WithInsertAt(text1.Length, text2);
             var comp2 = comp1.ReplaceSyntaxTree(tree1, tree2);
 
-            var implicitTypeCount2 = comp2.GlobalNamespace.GetMember<NamespaceSymbol>("A").GetMembers(TypeSymbol.ImplicitTypeName).Length;
+            var implicitTypeCount2 = comp2.GlobalNamespace.GetMember<NamespaceSymbol>("A").GetMembersAsImmutable(TypeSymbol.ImplicitTypeName).Length;
             Assert.Equal(1, implicitTypeCount2);
         }
 
@@ -1866,17 +1866,17 @@ internal class C
 
             // All
             var mainAll = CreateCompilation(mainSource, new[] { moduleRef }, options: TestOptions.ReleaseDll.WithMetadataImportOptions(MetadataImportOptions.All));
-            var mAll = mainAll.GlobalNamespace.GetMember<NamedTypeSymbol>("C").GetMembers("m");
+            var mAll = mainAll.GlobalNamespace.GetMember<NamedTypeSymbol>("C").GetMembersAsImmutable("m");
             Assert.Equal(1, mAll.Length);
 
             // Internal
             var mainInternal = CreateCompilation(mainSource, new[] { moduleRef }, options: TestOptions.ReleaseDll.WithMetadataImportOptions(MetadataImportOptions.Internal));
-            var mInternal = mainInternal.GlobalNamespace.GetMember<NamedTypeSymbol>("C").GetMembers("m");
+            var mInternal = mainInternal.GlobalNamespace.GetMember<NamedTypeSymbol>("C").GetMembersAsImmutable("m");
             Assert.Equal(0, mInternal.Length);
 
             // Public
             var mainPublic = CreateCompilation(mainSource, new[] { moduleRef }, options: TestOptions.ReleaseDll.WithMetadataImportOptions(MetadataImportOptions.Public));
-            var mPublic = mainPublic.GlobalNamespace.GetMember<NamedTypeSymbol>("C").GetMembers("m");
+            var mPublic = mainPublic.GlobalNamespace.GetMember<NamedTypeSymbol>("C").GetMembersAsImmutable("m");
             Assert.Equal(0, mPublic.Length);
         }
 
@@ -2137,11 +2137,11 @@ public class Source
             var compilation = CSharpCompilation.Create("test", references: new[] { md.GetReference() });
 
             // Use the Compilation once to force lazy initialization of the underlying MetadataReader
-            compilation.GetTypeByMetadataName("System.Int32").GetMembers();
+            compilation.GetTypeByMetadataName("System.Int32").GetMembersAsImmutable();
 
             md.Dispose();
 
-            Assert.Throws<ObjectDisposedException>(() => compilation.GetTypeByMetadataName("System.Int64").GetMembers());
+            Assert.Throws<ObjectDisposedException>(() => compilation.GetTypeByMetadataName("System.Int64").GetMembersAsImmutable());
         }
 
         [WorkItem(43, "https://roslyn.codeplex.com/workitem/43")]

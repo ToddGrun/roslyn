@@ -519,8 +519,8 @@ public class Derived : Base
             Func<int, Func<MethodSymbol, bool>> hasCustomModifierCount = c => m => m.CustomModifierCount() == c;
 
             var baseClass = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("Base");
-            var baseMethod1 = baseClass.GetMembers("Foo").Cast<MethodSymbol>().Where(hasCustomModifierCount(1)).Single();
-            var baseMethod2 = baseClass.GetMembers("Foo").Cast<MethodSymbol>().Where(hasCustomModifierCount(2)).Single();
+            var baseMethod1 = baseClass.GetMembersAsImmutable("Foo").Cast<MethodSymbol>().Where(hasCustomModifierCount(1)).Single();
+            var baseMethod2 = baseClass.GetMembersAsImmutable("Foo").Cast<MethodSymbol>().Where(hasCustomModifierCount(2)).Single();
 
             var derivedClass = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("Derived");
             var derivedMethod = derivedClass.GetMember<MethodSymbol>("Foo");
@@ -574,8 +574,8 @@ public class Derived : Base
             Func<int, Func<MethodSymbol, bool>> hasCustomModifierCount = c => m => m.CustomModifierCount() == c;
 
             var baseClass = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("Base");
-            var baseMethod1 = baseClass.GetMembers("Foo").Cast<MethodSymbol>().Where(hasCustomModifierCount(1)).Single();
-            var baseMethod2 = baseClass.GetMembers("Foo").Cast<MethodSymbol>().Where(hasCustomModifierCount(2)).Single();
+            var baseMethod1 = baseClass.GetMembersAsImmutable("Foo").Cast<MethodSymbol>().Where(hasCustomModifierCount(1)).Single();
+            var baseMethod2 = baseClass.GetMembersAsImmutable("Foo").Cast<MethodSymbol>().Where(hasCustomModifierCount(2)).Single();
 
             var derivedClass = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("Derived");
             var derivedMethod = derivedClass.GetMember<MethodSymbol>("Foo");
@@ -639,8 +639,8 @@ public class Derived : Base
             Func<int, Func<PropertySymbol, bool>> hasCustomModifierCount = c => p => p.CustomModifierCount() == c;
 
             var baseClass = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("Base");
-            var baseProperty1 = baseClass.GetMembers("P").Cast<PropertySymbol>().Where(hasCustomModifierCount(1)).Single();
-            var baseProperty2 = baseClass.GetMembers("P").Cast<PropertySymbol>().Where(hasCustomModifierCount(2)).Single();
+            var baseProperty1 = baseClass.GetMembersAsImmutable("P").Cast<PropertySymbol>().Where(hasCustomModifierCount(1)).Single();
+            var baseProperty2 = baseClass.GetMembersAsImmutable("P").Cast<PropertySymbol>().Where(hasCustomModifierCount(2)).Single();
 
             var derivedClass = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("Derived");
             var derivedProperty = derivedClass.GetMember<PropertySymbol>("P");
@@ -707,8 +707,8 @@ public class Derived : Base
             Func<int, Func<PropertySymbol, bool>> hasCustomModifierCount = c => p => p.CustomModifierCount() == c;
 
             var baseClass = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("Base");
-            var baseProperty1 = baseClass.GetMembers("P").Cast<PropertySymbol>().Where(hasCustomModifierCount(1)).Single();
-            var baseProperty2 = baseClass.GetMembers("P").Cast<PropertySymbol>().Where(hasCustomModifierCount(2)).Single();
+            var baseProperty1 = baseClass.GetMembersAsImmutable("P").Cast<PropertySymbol>().Where(hasCustomModifierCount(1)).Single();
+            var baseProperty2 = baseClass.GetMembersAsImmutable("P").Cast<PropertySymbol>().Where(hasCustomModifierCount(2)).Single();
 
             var derivedClass = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("Derived");
             var derivedProperty = derivedClass.GetMember<PropertySymbol>("P");
@@ -931,8 +931,8 @@ public class Derived : Base
             Func<int, Func<EventSymbol, bool>> hasCustomModifierCount = c => e => e.Type.CustomModifierCount() == c;
 
             var baseClass = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("Base");
-            var baseEvent1 = baseClass.GetMembers("E").Cast<EventSymbol>().Where(hasCustomModifierCount(1)).Single();
-            var baseEvent2 = baseClass.GetMembers("E").Cast<EventSymbol>().Where(hasCustomModifierCount(2)).Single();
+            var baseEvent1 = baseClass.GetMembersAsImmutable("E").Cast<EventSymbol>().Where(hasCustomModifierCount(1)).Single();
+            var baseEvent2 = baseClass.GetMembersAsImmutable("E").Cast<EventSymbol>().Where(hasCustomModifierCount(2)).Single();
 
             var derivedClass = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("Derived");
             var derivedEvent = derivedClass.GetMember<EventSymbol>("E");
@@ -1014,8 +1014,8 @@ public class Derived : Base
             Func<int, Func<EventSymbol, bool>> hasCustomModifierCount = c => e => e.Type.CustomModifierCount() == c;
 
             var baseClass = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("Base");
-            var baseEvent1 = baseClass.GetMembers("E").Cast<EventSymbol>().Where(hasCustomModifierCount(1)).Single();
-            var baseEvent2 = baseClass.GetMembers("E").Cast<EventSymbol>().Where(hasCustomModifierCount(2)).Single();
+            var baseEvent1 = baseClass.GetMembersAsImmutable("E").Cast<EventSymbol>().Where(hasCustomModifierCount(1)).Single();
+            var baseEvent2 = baseClass.GetMembersAsImmutable("E").Cast<EventSymbol>().Where(hasCustomModifierCount(2)).Single();
 
             var derivedClass = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("Derived");
             var derivedEvent = derivedClass.GetMember<EventSymbol>("E");

@@ -112,7 +112,7 @@ class C
 
             var global = comp.GlobalNamespace;
             var c = global.GetTypeMembers("C", 0).Single() as NamedTypeSymbol;
-            var field = c.GetMembers("field").Single() as FieldSymbol;
+            var field = c.GetMembersAsImmutable("field").Single() as FieldSymbol;
             var neti = field.Type as NamedTypeSymbol;
             Assert.Equal(SpecialType.System_Int32, neti.TypeArguments()[0].SpecialType);
         }
@@ -142,17 +142,17 @@ class C1<C1T1, C1T2>
 
             Assert.Equal("C1<System.Byte, System.Char>", c1OfByteChar.ToTestDisplayString());
 
-            var c1OfByteChar_c2 = (NamedTypeSymbol)(c1OfByteChar.GetMembers()[0]);
+            var c1OfByteChar_c2 = (NamedTypeSymbol)(c1OfByteChar.GetMembersAsImmutable()[0]);
             var c1OfByteChar_c2OfIntInt = c1OfByteChar_c2.Construct(_int, _int);
 
             Assert.Equal("C1<System.Byte, System.Char>.C2<System.Int32, System.Int32>", c1OfByteChar_c2OfIntInt.ToTestDisplayString());
 
-            var c1OfByteChar_c2OfIntInt_c3 = (NamedTypeSymbol)(c1OfByteChar_c2OfIntInt.GetMembers()[0]);
+            var c1OfByteChar_c2OfIntInt_c3 = (NamedTypeSymbol)(c1OfByteChar_c2OfIntInt.GetMembersAsImmutable()[0]);
             var c1OfByteChar_c2OfIntInt_c3OfIntByte = c1OfByteChar_c2OfIntInt_c3.Construct(_int, _byte);
 
             Assert.Equal("C1<System.Byte, System.Char>.C2<System.Int32, System.Int32>.C3<System.Int32, System.Byte>", c1OfByteChar_c2OfIntInt_c3OfIntByte.ToTestDisplayString());
 
-            var v1 = c1OfByteChar_c2OfIntInt_c3OfIntByte.GetMembers().OfType<FieldSymbol>().First();
+            var v1 = c1OfByteChar_c2OfIntInt_c3OfIntByte.GetMembersAsImmutable().OfType<FieldSymbol>().First();
             var type = v1.TypeWithAnnotations;
 
             Assert.Equal("C1<System.Int32, System.Byte>.C2<System.Byte, System.Byte>.C3<System.Char, System.Byte>", type.Type.ToTestDisplayString());
@@ -184,7 +184,7 @@ class C1<C1T1, C1T2>
             var c1OfByteChar = C1.Construct(_byte, _char);
 
             Assert.Equal("C1<System.Byte, System.Char>", c1OfByteChar.ToTestDisplayString());
-            var c1OfByteChar_c2 = (NamedTypeSymbol)(c1OfByteChar.GetMembers()[0]);
+            var c1OfByteChar_c2 = (NamedTypeSymbol)(c1OfByteChar.GetMembersAsImmutable()[0]);
             Assert.Throws<ArgumentException>(() =>
             {
                 var c1OfByteChar_c2OfIntInt = c1OfByteChar_c2.Construct(_byte, _char, _int, _int);

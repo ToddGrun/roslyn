@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
+using Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.PooledObjects;
 using Microsoft.CodeAnalysis.Symbols;
@@ -107,7 +108,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// </summary>
         /// <returns>An ImmutableArray containing all the members of this symbol. If this symbol has no members,
         /// returns an empty ImmutableArray. Never returns null.</returns>
-        public abstract ImmutableArray<Symbol> GetMembers();
+        public abstract ArrayWrapper<Symbol> GetMembers();
 
         /// <summary>
         /// Get all the members of this symbol. The members may not be in a particular order, and the order
@@ -115,12 +116,15 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// </summary>
         /// <returns>An ImmutableArray containing all the members of this symbol. If this symbol has no members,
         /// returns an empty ImmutableArray. Never returns null.</returns>
-        internal virtual ImmutableArray<Symbol> GetMembersUnordered()
+        internal virtual ArrayWrapper<Symbol> GetMembersUnordered()
         {
             // Default implementation is to use ordered version. When performance indicates, we specialize to have
             // separate implementation.
 
-            return GetMembers().ConditionallyDeOrder();
+            var result = GetMembers();
+            result.ConditionallyDeOrder();
+
+            return result;
         }
 
         /// <summary>
@@ -128,7 +132,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// </summary>
         /// <returns>An ImmutableArray containing all the members of this symbol with the given name. If there are
         /// no members with this name, returns an empty ImmutableArray. Never returns null.</returns>
-        public abstract ImmutableArray<Symbol> GetMembers(string name);
+
+        public abstract ArrayWrapper<Symbol> GetMembers(string name);
 
         /// <summary>
         /// Get all the members of this symbol that are types. The members may not be in a particular order, and the order
@@ -136,12 +141,15 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// </summary>
         /// <returns>An ImmutableArray containing all the types that are members of this symbol. If this symbol has no type members,
         /// returns an empty ImmutableArray. Never returns null.</returns>
-        internal virtual ImmutableArray<NamedTypeSymbol> GetTypeMembersUnordered()
+        internal virtual ArrayWrapper<NamedTypeSymbol> GetTypeMembersUnordered()
         {
             // Default implementation is to use ordered version. When performance indicates, we specialize to have
             // separate implementation.
+            var members = GetTypeMembers();
 
-            return GetTypeMembers().ConditionallyDeOrder();
+            members.ConditionallyDeOrder();
+
+            return members;
         }
 
         /// <summary>
@@ -149,7 +157,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// </summary>
         /// <returns>An ImmutableArray containing all the types that are members of this symbol. If this symbol has no type members,
         /// returns an empty ImmutableArray. Never returns null.</returns>
-        public abstract ImmutableArray<NamedTypeSymbol> GetTypeMembers();
+        public abstract ArrayWrapper<NamedTypeSymbol> GetTypeMembers();
 
         /// <summary>
         /// Get all the members of this symbol that are types that have a particular name, of any arity.
@@ -157,7 +165,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// <returns>An ImmutableArray containing all the types that are members of this symbol with the given name.
         /// If this symbol has no type members with this name,
         /// returns an empty ImmutableArray. Never returns null.</returns>
-        public ImmutableArray<NamedTypeSymbol> GetTypeMembers(string name)
+        public ArrayWrapper<NamedTypeSymbol> GetTypeMembers(string name)
             => GetTypeMembers(name.AsMemory());
 
         /// <summary>
@@ -166,18 +174,20 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// <returns>An IEnumerable containing all the types that are members of this symbol with the given name and arity.
         /// If this symbol has no type members with this name and arity,
         /// returns an empty IEnumerable. Never returns null.</returns>
-        public ImmutableArray<NamedTypeSymbol> GetTypeMembers(string name, int arity)
+        public ArrayWrapper<NamedTypeSymbol> GetTypeMembers(string name, int arity)
             => GetTypeMembers(name.AsMemory(), arity);
 
         /// <inheritdoc cref="GetTypeMembers(string)"/>
-        public abstract ImmutableArray<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name);
+        public abstract ArrayWrapper<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name);
 
         /// <inheritdoc cref="GetTypeMembers(string, int)"/>
-        public virtual ImmutableArray<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name, int arity)
+        public virtual ArrayWrapper<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name, int arity)
         {
             // default implementation does a post-filter. We can override this if its a performance burden, but 
             // experience is that it won't be.
-            return GetTypeMembers(name).WhereAsArray(static (t, arity) => t.Arity == arity, arity);
+            using var members = GetTypeMembers(name);
+
+            return members.WhereAsArrayWrapper(static (t, arity) => t.Arity == arity, arity);
         }
 
         /// <summary>
@@ -266,7 +276,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
             NamedTypeSymbol? namedType = null;
 
-            ImmutableArray<NamedTypeSymbol> namespaceOrTypeMembers;
+            ArrayWrapper<NamedTypeSymbol> namespaceOrTypeMembers;
             bool isTopLevel = scope.IsNamespace;
 
             Debug.Assert(!isTopLevel || scope.ToDisplayString(SymbolDisplayFormat.QualifiedNameOnlyFormat) == emittedTypeName.NamespaceName);

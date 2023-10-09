@@ -7,6 +7,7 @@
 using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp.Symbols;
+using Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE;
 using Microsoft.CodeAnalysis.PooledObjects;
 using Roslyn.Utilities;
 
@@ -35,7 +36,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Test.Utilities
 
         public override bool VisitNamespace(NamespaceSymbol symbol)
         {
-            return VisitList(symbol.GetMembers());
+            using var members = symbol.GetMembers();
+            return VisitList(members);
         }
 
         public override bool VisitNamedType(NamedTypeSymbol symbol)
@@ -46,7 +48,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Test.Utilities
             {
                 return true;
             }
-            return VisitList(symbol.GetMembers());
+            using var members = symbol.GetMembers();
+            return VisitList(members);
         }
 
         public override bool VisitMethod(MethodSymbol symbol)
@@ -72,7 +75,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Test.Utilities
             return AddIfUsesIsNullable(symbol, symbol.TypeWithAnnotations, inProgress: null);
         }
 
-        private bool VisitList<TSymbol>(ImmutableArray<TSymbol> symbols) where TSymbol : Symbol
+        private bool VisitList<TSymbol>(ArrayWrapper<TSymbol> symbols) where TSymbol : Symbol
         {
             bool result = false;
             foreach (var symbol in symbols)

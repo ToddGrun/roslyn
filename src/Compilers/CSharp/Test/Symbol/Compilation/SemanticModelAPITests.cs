@@ -466,7 +466,7 @@ class A : L
             var b = global.GetTypeMembers("B", 0).Single();
             var r = b.GetTypeMembers("R", 0).Single();
             var q = r.GetTypeMembers("Q", 0).Single();
-            var v = a.GetMembers("v").Single() as FieldSymbol;
+            var v = a.GetMembersAsImmutable("v").Single() as FieldSymbol;
             var s = v.Type;
             Assert.Equal("B.R.Q.S", s.ToTestDisplayString());
             var sbase = s.BaseType();
@@ -838,7 +838,7 @@ public class A
 ";
             var tree = Parse(text);
             var comp = CreateCompilation(tree);
-            var mems = comp.SourceModule.GlobalNamespace.GetMembers();
+            var mems = comp.SourceModule.GlobalNamespace.GetMembersAsImmutable();
 
             var typeA = mems.Where(s => s.Name == "A").Select(s => s);
             Assert.Equal(1, typeA.Count());
@@ -1273,7 +1273,7 @@ class Test
             Assert.True(aliasTarget.IsGlobalNamespace);
             Assert.Null(aliasTarget.ContainingNamespace);
 
-            Assert.Equal(0, comp2.GlobalNamespace.GetMembers("X").Length); //Doesn't contain the alias target namespace as a child.
+            Assert.Equal(0, comp2.GlobalNamespace.GetMembersAsImmutable("X").Length); //Doesn't contain the alias target namespace as a child.
 
             var aliasQualifiedSyntax = tree.GetCompilationUnitRoot().DescendantNodes().OfType<AliasQualifiedNameSyntax>().Single();
             Assert.Equal(aliasSymbol, model.GetAliasInfo(aliasQualifiedSyntax.Alias));
@@ -4374,10 +4374,10 @@ namespace N
             int positionInN = text.IndexOf("in N");
 
             var globalNs = compilation.GlobalNamespace;
-            var classA = (NamedTypeSymbol)globalNs.GetMembers("A").Single();
-            var fieldX = (IFieldSymbol)classA.GetMembers("X").Single().ISymbol;
-            var fieldY = (IFieldSymbol)classA.GetMembers("Y").Single().ISymbol;
-            var fieldZ = (IFieldSymbol)classA.GetMembers("Z").Single().ISymbol;
+            var classA = (NamedTypeSymbol)globalNs.GetMembersAsImmutable("A").Single();
+            var fieldX = (IFieldSymbol)classA.GetMembersAsImmutable("X").Single().ISymbol;
+            var fieldY = (IFieldSymbol)classA.GetMembersAsImmutable("Y").Single().ISymbol;
+            var fieldZ = (IFieldSymbol)classA.GetMembersAsImmutable("Z").Single().ISymbol;
 
             Assert.True(semanticModel.IsAccessible(positionInN, fieldX));
             Assert.False(semanticModel.IsAccessible(positionInN, fieldY));
@@ -4449,7 +4449,7 @@ public partial class C
 
 ";
             var comp = CreateCompilation(source);
-            var method = (IMethodSymbol)comp.GetTypeByMetadataName("C").GetMembers("M").Single().GetPublicSymbol();
+            var method = (IMethodSymbol)comp.GetTypeByMetadataName("C").GetMembersAsImmutable("M").Single().GetPublicSymbol();
             var attribute = method.GetAttributes().Single();
             Assert.Equal("DEBUG", attribute.ConstructorArguments[0].Value);
 

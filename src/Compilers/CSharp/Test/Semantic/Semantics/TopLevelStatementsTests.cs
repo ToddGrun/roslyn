@@ -31,7 +31,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
         private static bool IsNullableAnalysisEnabled(CSharpCompilation compilation)
         {
             var type = compilation.GlobalNamespace.GetTypeMember("Program");
-            var methods = type.GetMembers().OfType<SynthesizedSimpleProgramEntryPointSymbol>();
+            var methods = type.GetMembersAsImmutable().OfType<SynthesizedSimpleProgramEntryPointSymbol>();
             return methods.Any(m => m.IsNullableAnalysisEnabled());
         }
 
@@ -9062,11 +9062,11 @@ System.Console.WriteLine(""Hi!"");
 
                 if (fromSource)
                 {
-                    Assert.Equal(new[] { "<top-level-statements-entry-point>", "Program..ctor()" }, program.GetMembers().ToTestDisplayStrings());
+                    Assert.Equal(new[] { "<top-level-statements-entry-point>", "Program..ctor()" }, program.GetMembersAsImmutable().ToTestDisplayStrings());
                 }
                 else
                 {
-                    Assert.Equal(new[] { "void Program.<Main>$(System.String[] args)", "Program..ctor()" }, program.GetMembers().ToTestDisplayStrings());
+                    Assert.Equal(new[] { "void Program.<Main>$(System.String[] args)", "Program..ctor()" }, program.GetMembersAsImmutable().ToTestDisplayStrings());
                 }
             }
         }
@@ -9498,7 +9498,7 @@ partial class Program
                     Assert.Equal(new[] { "<top-level-statements-entry-point>", "System.Int32 Program.<Property>k__BackingField",
                             "System.Int32 Program.Property { get; set; }", "System.Int32 Program.Property.get",
                             "void Program.Property.set", "Program..ctor()" },
-                        field.ContainingType.GetMembers().ToTestDisplayStrings());
+                        field.ContainingType.GetMembersAsImmutable().ToTestDisplayStrings());
                 }
                 else
                 {
@@ -9507,7 +9507,7 @@ partial class Program
                     Assert.Equal(new[] { "System.Int32 Program.<Property>k__BackingField", "void Program.<Main>$(System.String[] args)",
                             "System.Int32 Program.Property.get", "void Program.Property.set",
                             "Program..ctor()", "System.Int32 Program.Property { get; set; }" },
-                        field.ContainingType.GetMembers().ToTestDisplayStrings());
+                        field.ContainingType.GetMembersAsImmutable().ToTestDisplayStrings());
                 }
             }
         }

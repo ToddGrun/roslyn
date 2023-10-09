@@ -1449,14 +1449,14 @@ class Program
             {
                 NamespaceSymbol globalNS = module.GlobalNamespace;
 
-                Assert.Equal(1, globalNS.GetMembers("X").Length);
-                Assert.Equal(1, globalNS.GetMembers("A").Length);
-                Assert.Equal(1, globalNS.GetMembers("Program").Length);
+                Assert.Equal(1, globalNS.GetMembersAsImmutable("X").Length);
+                Assert.Equal(1, globalNS.GetMembersAsImmutable("A").Length);
+                Assert.Equal(1, globalNS.GetMembersAsImmutable("Program").Length);
 
-                Assert.Empty(globalNS.GetMembers("Y"));
-                Assert.Empty(globalNS.GetMembers("Z"));
-                Assert.Empty(globalNS.GetMembers("StaticZ"));
-                Assert.Empty(globalNS.GetMembers("B"));
+                Assert.Empty(globalNS.GetMembersAsImmutable("Y"));
+                Assert.Empty(globalNS.GetMembersAsImmutable("Z"));
+                Assert.Empty(globalNS.GetMembersAsImmutable("StaticZ"));
+                Assert.Empty(globalNS.GetMembersAsImmutable("B"));
             };
 
             CompileAndVerify(source, sourceSymbolValidator: validator, symbolValidator: validator);
@@ -2005,7 +2005,7 @@ class Program
             var comp = CreateCompilationWithMscorlib40AndSystemCore(source);
             comp.VerifyDiagnostics();
 
-            var ms = comp.GlobalNamespace.GetTypeMembers("Program").Single().GetMembers("M").OfType<MethodSymbol>();
+            var ms = comp.GlobalNamespace.GetTypeMembers("Program").Single().GetMembersAsImmutable("M").OfType<MethodSymbol>();
             var m = ms.Where(mm => mm.Parameters[0].Type.SpecialType == SpecialType.System_Int32).Single();
 
             var tree = comp.SyntaxTrees.Single();
@@ -2036,7 +2036,7 @@ class Program
             var comp = CreateCompilationWithMscorlib40AndSystemCore(source);
             comp.VerifyDiagnostics();
 
-            var m = comp.GlobalNamespace.GetTypeMembers("Program").Single().GetMembers("M").Single();
+            var m = comp.GlobalNamespace.GetTypeMembers("Program").Single().GetMembersAsImmutable("M").Single();
 
             var tree = comp.SyntaxTrees.Single();
             var model = comp.GetSemanticModel(tree);
@@ -2066,7 +2066,7 @@ class Program
             var comp = CreateCompilationWithMscorlib40AndSystemCore(source);
             comp.VerifyDiagnostics();
 
-            var m = comp.GlobalNamespace.GetTypeMembers("Program").Single().GetMembers("M").Single();
+            var m = comp.GlobalNamespace.GetTypeMembers("Program").Single().GetMembersAsImmutable("M").Single();
 
             var tree = comp.SyntaxTrees.Single();
             var model = comp.GetSemanticModel(tree);

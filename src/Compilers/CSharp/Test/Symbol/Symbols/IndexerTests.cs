@@ -136,7 +136,7 @@ class C : IB, IC
             CheckIndexer(type.Indexers.Single(), true, true, SpecialType.System_Object, SpecialType.System_String);
 
             type = globalNamespace.GetMember<NamedTypeSymbol>("A");
-            var typeAProperties = type.GetMembers().Where(m => m.Kind == SymbolKind.Property).Cast<PropertySymbol>().ToArray();
+            var typeAProperties = type.GetMembersAsImmutable().Where(m => m.Kind == SymbolKind.Property).Cast<PropertySymbol>().ToArray();
             Assert.Equal(3, typeAProperties.Length);
             CheckIndexer(typeAProperties[0], true, true, SpecialType.System_Object, SpecialType.System_String);
             CheckIndexer(typeAProperties[1], true, false, SpecialType.System_Object, SpecialType.System_String);
@@ -1166,9 +1166,9 @@ class C : I
                     Assert.True(@class.IsFromCompilation(compilation));
                 }
 
-                var classEventImpl = @class.GetMembers().Where(m => m.GetExplicitInterfaceImplementations().Contains(interfaceEvent)).Single();
-                var classPropertyImpl = @class.GetMembers().Where(m => m.GetExplicitInterfaceImplementations().Contains(interfaceProperty)).Single();
-                var classIndexerImpl = @class.GetMembers().Where(m => m.GetExplicitInterfaceImplementations().Contains(interfaceIndexer)).Single();
+                var classEventImpl = @class.GetMembersAsImmutable().Where(m => m.GetExplicitInterfaceImplementations().Contains(interfaceEvent)).Single();
+                var classPropertyImpl = @class.GetMembersAsImmutable().Where(m => m.GetExplicitInterfaceImplementations().Contains(interfaceProperty)).Single();
+                var classIndexerImpl = @class.GetMembersAsImmutable().Where(m => m.GetExplicitInterfaceImplementations().Contains(interfaceIndexer)).Single();
 
                 Assert.False(classEventImpl.CanBeReferencedByName);
                 Assert.False(classPropertyImpl.CanBeReferencedByName);
@@ -1228,7 +1228,7 @@ public class C : I
                 var classC = globalNamespace.GetMember<NamedTypeSymbol>("C");
                 Assert.Equal(0, classC.Indexers.Length); //excludes explicit implementations
 
-                var classCIndexer = classC.GetMembers().Where(s => s.Kind == SymbolKind.Property).Single();
+                var classCIndexer = classC.GetMembersAsImmutable().Where(s => s.Kind == SymbolKind.Property).Single();
                 Assert.Equal("I.this[]", classCIndexer.Name); //interface name + WellKnownMemberNames.Indexer
                 Assert.True(classCIndexer.IsIndexer()); //since declared with IndexerDeclarationSyntax
             };
@@ -1240,7 +1240,7 @@ public class C : I
                 var classC = globalNamespace.GetMember<NamedTypeSymbol>("C");
                 Assert.Equal(0, classC.Indexers.Length); //excludes explicit implementations
 
-                var classCIndexer = classC.GetMembers().Where(s => s.Kind == SymbolKind.Property).Single();
+                var classCIndexer = classC.GetMembersAsImmutable().Where(s => s.Kind == SymbolKind.Property).Single();
                 Assert.Equal("I.Item", classCIndexer.Name); //name does not reflect WellKnownMemberNames.Indexer
                 Assert.False(classCIndexer.IsIndexer()); //not the default member of C
             };
@@ -2400,7 +2400,7 @@ struct Test
 ";
             var comp = CreateCompilation(text);
             NamedTypeSymbol type01 = comp.SourceModule.GlobalNamespace.GetTypeMembers("Test").Single();
-            var indexer = type01.GetMembers(WellKnownMemberNames.Indexer).Single() as PropertySymbol;
+            var indexer = type01.GetMembersAsImmutable(WellKnownMemberNames.Indexer).Single() as PropertySymbol;
             Assert.NotNull(indexer.GetMethod);
             Assert.False(indexer.GetMethod.Parameters.IsEmpty);
             // VB is SynthesizedParameterSymbol; C# is SourceComplexParameterSymbol
@@ -2555,11 +2555,11 @@ partial class C
 }
 ";
             var compilation = CreateCompilation(new string[] { text1, text2 });
-            Assert.True(((TypeSymbol)compilation.GlobalNamespace.GetTypeMembers("C").Single()).GetMembers().Any(x => x.IsIndexer()));
+            Assert.True(((TypeSymbol)compilation.GlobalNamespace.GetTypeMembers("C").Single()).GetMembersAsImmutable().Any(x => x.IsIndexer()));
 
             //test with text inputs reversed in case syntax ordering predicate ever changes.
             compilation = CreateCompilation(new string[] { text2, text1 });
-            Assert.True(((TypeSymbol)compilation.GlobalNamespace.GetTypeMembers("C").Single()).GetMembers().Any(x => x.IsIndexer()));
+            Assert.True(((TypeSymbol)compilation.GlobalNamespace.GetTypeMembers("C").Single()).GetMembersAsImmutable().Any(x => x.IsIndexer()));
         }
 
         [WorkItem(543957, "http://vstfdevdiv:8080/DevDiv2/DevDiv/_workitems/edit/543957")]

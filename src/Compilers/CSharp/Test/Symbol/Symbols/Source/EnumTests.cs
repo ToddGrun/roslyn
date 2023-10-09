@@ -754,8 +754,8 @@ partial class EnumPartial
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "M").WithArguments("EnumPartial.M")
                 );
 
-            var classEnum = comp.SourceModule.GlobalNamespace.GetMembers("EnumPartial").Single() as NamedTypeSymbol;
-            var member = classEnum.GetMembers("M").Single() as FieldSymbol;
+            var classEnum = comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("EnumPartial").Single() as NamedTypeSymbol;
+            var member = classEnum.GetMembersAsImmutable("M").Single() as FieldSymbol;
             Assert.Equal(TypeKind.Enum, member.Type.TypeKind);
         }
 
@@ -1010,7 +1010,7 @@ class C<T> { enum E4 : T { } }
             Assert.NotNull(type);
             Assert.Equal(underlyingType, type.SpecialType);
 
-            var fields = symEnum.GetMembers().OfType<FieldSymbol>().Cast<Symbol>().ToList();
+            var fields = symEnum.GetMembersAsImmutable().OfType<FieldSymbol>().Cast<Symbol>().ToList();
 
             Assert.Equal(expectedEnumValues.Length, fields.Count);
             var count = 0;
@@ -1031,7 +1031,7 @@ class C<T> { enum E4 : T { } }
             {
                 Assert.True(currentSymbol is NamespaceOrTypeSymbol, string.Format("{0} does not have members", currentSymbol.ToTestDisplayString()));
                 var currentContainer = (NamespaceOrTypeSymbol)currentSymbol;
-                var members = currentContainer.GetMembers(name);
+                var members = currentContainer.GetMembersAsImmutable(name);
                 Assert.True(members.Length > 0, string.Format("No members named {0} inside {1}", name, currentSymbol.ToTestDisplayString()));
                 Assert.True(members.Length <= 1, string.Format("Multiple members named {0} inside {1}", name, currentSymbol.ToTestDisplayString()));
                 currentSymbol = members.First();

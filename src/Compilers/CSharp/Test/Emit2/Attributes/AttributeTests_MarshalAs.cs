@@ -31,9 +31,9 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
                 var compilation = CreateEmptyCompilation(new SyntaxTree[0], new[] { assembly.GetReference() },
                     options: TestOptions.DebugDll.WithMetadataImportOptions(MetadataImportOptions.All));
 
-                foreach (NamedTypeSymbol type in compilation.GlobalNamespace.GetMembers().Where(s => s.Kind == SymbolKind.NamedType))
+                foreach (NamedTypeSymbol type in compilation.GlobalNamespace.GetMembersAsImmutable().Where(s => s.Kind == SymbolKind.NamedType))
                 {
-                    var fields = type.GetMembers().Where(s => s.Kind == SymbolKind.Field);
+                    var fields = type.GetMembersAsImmutable().Where(s => s.Kind == SymbolKind.Field);
                     foreach (FieldSymbol field in fields)
                     {
                         Assert.Null(field.MarshallingInformation);
@@ -65,9 +65,9 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
                     new[] { assembly.GetReference() },
                     options: TestOptions.ReleaseDll.WithMetadataImportOptions(MetadataImportOptions.All));
 
-                foreach (NamedTypeSymbol type in compilation.GlobalNamespace.GetMembers().Where(s => s.Kind == SymbolKind.NamedType))
+                foreach (NamedTypeSymbol type in compilation.GlobalNamespace.GetMembersAsImmutable().Where(s => s.Kind == SymbolKind.NamedType))
                 {
-                    var methods = type.GetMembers().Where(s => s.Kind == SymbolKind.Method);
+                    var methods = type.GetMembersAsImmutable().Where(s => s.Kind == SymbolKind.Method);
                     foreach (MethodSymbol method in methods)
                     {
                         foreach (ParameterSymbol parameter in method.Parameters)

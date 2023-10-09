@@ -11,6 +11,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using Microsoft.CodeAnalysis.CSharp.Emit;
+using Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE;
 using Microsoft.CodeAnalysis.PooledObjects;
 using Roslyn.Utilities;
 using ReferenceEqualityComparer = Roslyn.Utilities.ReferenceEqualityComparer;
@@ -146,9 +147,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             return _unbound ? null : Map.SubstituteNamedType(OriginalDefinition.GetDeclaredBaseType(basesBeingResolved));
         }
 
-        internal sealed override ImmutableArray<NamedTypeSymbol> GetDeclaredInterfaces(ConsList<TypeSymbol> basesBeingResolved)
+        internal sealed override ArrayWrapper<NamedTypeSymbol> GetDeclaredInterfaces(ConsList<TypeSymbol> basesBeingResolved)
         {
-            return _unbound ? ImmutableArray<NamedTypeSymbol>.Empty : Map.SubstituteNamedTypes(OriginalDefinition.GetDeclaredInterfaces(basesBeingResolved));
+            using var declaredInterfaces = OriginalDefinition.GetDeclaredInterfaces(basesBeingResolved);
+
+            return _unbound ? ArrayWrapper<NamedTypeSymbol>.Empty : new ArrayWrapper<NamedTypeSymbol>(Map.SubstituteNamedTypes(declaredInterfaces.ToImmutableArray()));
         }
 
         internal sealed override NamedTypeSymbol BaseTypeNoUseSiteDiagnostics
@@ -176,7 +179,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             return _unbound ? ImmutableArray<NamedTypeSymbol>.Empty : Map.SubstituteNamedTypes(OriginalDefinition.InterfacesNoUseSiteDiagnostics(basesBeingResolved));
         }
 
-        internal override ImmutableArray<NamedTypeSymbol> GetInterfacesToEmit()
+        internal override ArrayWrapper<NamedTypeSymbol> GetInterfacesToEmit()
         {
             throw ExceptionUtilities.Unreachable();
         }
@@ -206,33 +209,41 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             return OriginalDefinition.GetAttributes();
         }
 
-        internal sealed override ImmutableArray<NamedTypeSymbol> GetTypeMembersUnordered()
+        internal sealed override ArrayWrapper<NamedTypeSymbol> GetTypeMembersUnordered()
         {
-            return OriginalDefinition.GetTypeMembersUnordered().SelectAsArray((t, self) => t.AsMember(self), this);
+            using var members = OriginalDefinition.GetTypeMembersUnordered();
+
+            return members.SelectAsArrayWrapper((t, self) => t.AsMember(self), this);
         }
 
-        public sealed override ImmutableArray<NamedTypeSymbol> GetTypeMembers()
+        public sealed override ArrayWrapper<NamedTypeSymbol> GetTypeMembers()
         {
-            return OriginalDefinition.GetTypeMembers().SelectAsArray((t, self) => t.AsMember(self), this);
+            using var members = OriginalDefinition.GetTypeMembers();
+
+            return members.SelectAsArrayWrapper((t, self) => t.AsMember(self), this);
         }
 
-        public sealed override ImmutableArray<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name)
+        public sealed override ArrayWrapper<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name)
         {
-            return OriginalDefinition.GetTypeMembers(name).SelectAsArray((t, self) => t.AsMember(self), this);
+            using var members = OriginalDefinition.GetTypeMembers(name);
+
+            return members.SelectAsArrayWrapper((t, self) => t.AsMember(self), this);
         }
 
-        public sealed override ImmutableArray<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name, int arity)
+        public sealed override ArrayWrapper<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name, int arity)
         {
-            return OriginalDefinition.GetTypeMembers(name, arity).SelectAsArray((t, self) => t.AsMember(self), this);
+            using var members = OriginalDefinition.GetTypeMembers(name, arity);
+
+            return members.SelectAsArrayWrapper((t, self) => t.AsMember(self), this);
         }
 
         internal sealed override bool HasDeclaredRequiredMembers => !_unbound && OriginalDefinition.HasDeclaredRequiredMembers;
 
-        public sealed override ImmutableArray<Symbol> GetMembers()
+        public sealed override ArrayWrapper<Symbol> GetMembers()
         {
             if (!_lazyMembers.IsDefault)
             {
-                return _lazyMembers;
+                return new ArrayWrapper<Symbol>(_lazyMembers);
             }
 
             var builder = ArrayBuilder<Symbol>.GetInstance();
@@ -260,7 +271,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
             var result = builder.ToImmutableAndFree();
             ImmutableInterlocked.InterlockedInitialize(ref _lazyMembers, result);
-            return _lazyMembers;
+            return new ArrayWrapper<Symbol>(_lazyMembers);
         }
 
         private ArrayBuilder<Symbol> AddOrWrapTupleMembersIfNecessary(ArrayBuilder<Symbol> builder)
@@ -284,7 +295,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             return builder;
         }
 
-        internal sealed override ImmutableArray<Symbol> GetMembersUnordered()
+        internal sealed override ArrayWrapper<Symbol> GetMembersUnordered()
         {
             var builder = ArrayBuilder<Symbol>.GetInstance();
 
@@ -308,39 +319,47 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
             builder = AddOrWrapTupleMembersIfNecessary(builder);
 
-            return builder.ToImmutableAndFree();
+            return new ArrayWrapper<Symbol>(builder);
         }
 
-        public sealed override ImmutableArray<Symbol> GetMembers(string name)
+        public sealed override ArrayWrapper<Symbol> GetMembers(string name)
         {
-            if (_unbound) return StaticCast<Symbol>.From(GetTypeMembers(name));
+            //ImmutableArray<NamedTypeSymbol> temp = ImmutableArray<NamedTypeSymbol>.Empty;
+            //var a = StaticCast<Symbol>.From(temp);
 
-            ImmutableArray<Symbol> result;
-            var cache = _lazyMembersByNameCache;
-            if (cache != null && cache.TryGetValue(name, out result))
+            if (_unbound)
             {
-                return result;
+                using var members = GetTypeMembers(name);
+
+                return ArrayWrapper<Symbol>.CastUp<Symbol, NamedTypeSymbol>(members);
+            }
+
+            var cache = _lazyMembersByNameCache;
+            if (cache != null && cache.TryGetValue(name, out var result))
+            {
+                return new ArrayWrapper<Symbol>(result);
             }
 
             return GetMembersWorker(name);
         }
 
-        private ImmutableArray<Symbol> GetMembersWorker(string name)
+        private ArrayWrapper<Symbol> GetMembersWorker(string name)
         {
             if (IsTupleType)
             {
-                var result = GetMembers().WhereAsArray((m, name) => m.Name == name, name);
+                using var members = GetMembers();
+                var result = GetMembers().ToImmutableArray().WhereAsArray((m, name) => m.Name == name, name);
                 cacheResult(result);
-                return result;
+                return new ArrayWrapper<Symbol>(result);
             }
 
             var originalMembers = OriginalDefinition.GetMembers(name);
-            if (originalMembers.IsDefaultOrEmpty)
+            if (originalMembers.Count == 0)
             {
                 return originalMembers;
             }
 
-            var builder = ArrayBuilder<Symbol>.GetInstance(originalMembers.Length);
+            var builder = ArrayBuilder<Symbol>.GetInstance(originalMembers.Count);
             foreach (var t in originalMembers)
             {
                 builder.Add(t.SymbolAsMember(this));
@@ -348,7 +367,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
             var substitutedMembers = builder.ToImmutableAndFree();
             cacheResult(substitutedMembers);
-            return substitutedMembers;
+            return new ArrayWrapper<Symbol>(substitutedMembers);
 
             void cacheResult(ImmutableArray<Symbol> result)
             {
@@ -384,14 +403,17 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             throw ExceptionUtilities.Unreachable();
         }
 
-        internal override ImmutableArray<Symbol> GetEarlyAttributeDecodingMembers()
+        internal override ArrayWrapper<Symbol> GetEarlyAttributeDecodingMembers()
         {
-            return _unbound
-                ? GetMembers()
-                : OriginalDefinition.GetEarlyAttributeDecodingMembers().SelectAsArray(s_symbolAsMemberFunc, this);
+            if (_unbound)
+                return GetMembers();
+
+            using var members = OriginalDefinition.GetEarlyAttributeDecodingMembers();
+
+            return members.SelectAsArrayWrapper(s_symbolAsMemberFunc, this);
         }
 
-        internal override ImmutableArray<Symbol> GetEarlyAttributeDecodingMembers(string name)
+        internal override ArrayWrapper<Symbol> GetEarlyAttributeDecodingMembers(string name)
         {
             if (_unbound) return GetMembers(name);
 
@@ -401,7 +423,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 builder.Add(t.SymbolAsMember(this));
             }
 
-            return builder.ToImmutableAndFree();
+            return new ArrayWrapper<Symbol>(builder);
         }
 
         public sealed override NamedTypeSymbol EnumUnderlyingType

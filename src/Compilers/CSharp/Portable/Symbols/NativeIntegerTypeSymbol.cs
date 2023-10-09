@@ -8,6 +8,7 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE;
 using Microsoft.CodeAnalysis.PooledObjects;
 using Roslyn.Utilities;
 
@@ -66,15 +67,16 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// Specifically, we expose public, non-generic instance and static methods and properties
         /// other than those named above.
         /// </summary>
-        public override ImmutableArray<Symbol> GetMembers()
+        public override ArrayWrapper<Symbol> GetMembers()
         {
             if (_lazyMembers.IsDefault)
             {
-                ImmutableInterlocked.InterlockedInitialize(ref _lazyMembers, makeMembers(_underlyingType.GetMembers()));
+                using var underlyingTypeMembers = _underlyingType.GetMembers();
+                ImmutableInterlocked.InterlockedInitialize(ref _lazyMembers, makeMembers(underlyingTypeMembers));
             }
-            return _lazyMembers;
+            return new ArrayWrapper<Symbol>(_lazyMembers);
 
-            ImmutableArray<Symbol> makeMembers(ImmutableArray<Symbol> underlyingMembers)
+            ImmutableArray<Symbol> makeMembers(ArrayWrapper<Symbol> underlyingMembers)
             {
                 var builder = ArrayBuilder<Symbol>.GetInstance();
                 foreach (var underlyingMember in underlyingMembers)
@@ -137,25 +139,37 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
         }
 
-        public override ImmutableArray<Symbol> GetMembers(string name) => GetMembers().WhereAsArray((member, name) => member.Name == name, name);
+        public override ArrayWrapper<Symbol> GetMembers(string name)
+        {
+            var builder = ArrayBuilder<Symbol>.GetInstance();
+            using var members = GetMembers();
 
-        public override ImmutableArray<NamedTypeSymbol> GetTypeMembers() => ImmutableArray<NamedTypeSymbol>.Empty;
+            foreach (var member in members)
+            {
+                if (member.Name == name)
+                    builder.Add(member);
+            }
 
-        public override ImmutableArray<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name) => ImmutableArray<NamedTypeSymbol>.Empty;
+            return new ArrayWrapper<Symbol>(builder);
+        }
 
-        public override ImmutableArray<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name, int arity) => ImmutableArray<NamedTypeSymbol>.Empty;
+        public override ArrayWrapper<NamedTypeSymbol> GetTypeMembers() => ArrayWrapper<NamedTypeSymbol>.Empty;
+
+        public override ArrayWrapper<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name) => ArrayWrapper<NamedTypeSymbol>.Empty;
+
+        public override ArrayWrapper<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name, int arity) => ArrayWrapper<NamedTypeSymbol>.Empty;
 
         internal override NamedTypeSymbol GetDeclaredBaseType(ConsList<TypeSymbol> basesBeingResolved) => _underlyingType.GetDeclaredBaseType(basesBeingResolved);
 
-        internal override ImmutableArray<NamedTypeSymbol> GetDeclaredInterfaces(ConsList<TypeSymbol> basesBeingResolved) => GetInterfaces(basesBeingResolved);
+        internal override ArrayWrapper<NamedTypeSymbol> GetDeclaredInterfaces(ConsList<TypeSymbol> basesBeingResolved) => new ArrayWrapper<NamedTypeSymbol>(GetInterfaces(basesBeingResolved));
 
-        internal override ImmutableArray<Symbol> GetEarlyAttributeDecodingMembers() => throw ExceptionUtilities.Unreachable();
+        internal override ArrayWrapper<Symbol> GetEarlyAttributeDecodingMembers() => throw ExceptionUtilities.Unreachable();
 
-        internal override ImmutableArray<Symbol> GetEarlyAttributeDecodingMembers(string name) => throw ExceptionUtilities.Unreachable();
+        internal override ArrayWrapper<Symbol> GetEarlyAttributeDecodingMembers(string name) => throw ExceptionUtilities.Unreachable();
 
         internal override IEnumerable<FieldSymbol> GetFieldsToEmit() => throw ExceptionUtilities.Unreachable();
 
-        internal override ImmutableArray<NamedTypeSymbol> GetInterfacesToEmit() => throw ExceptionUtilities.Unreachable();
+        internal override ArrayWrapper<NamedTypeSymbol> GetInterfacesToEmit() => throw ExceptionUtilities.Unreachable();
 
         internal override ImmutableArray<NamedTypeSymbol> InterfacesNoUseSiteDiagnostics(ConsList<TypeSymbol>? basesBeingResolved = null) => GetInterfaces(basesBeingResolved);
 

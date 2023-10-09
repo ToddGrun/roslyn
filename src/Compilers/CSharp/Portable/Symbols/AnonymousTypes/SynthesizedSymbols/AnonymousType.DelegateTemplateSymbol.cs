@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using Microsoft.CodeAnalysis.CSharp.Emit;
+using Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE;
 using Microsoft.CodeAnalysis.PooledObjects;
 using Roslyn.Utilities;
 
@@ -216,13 +217,24 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
             internal override bool HasDeclaredRequiredMembers => false;
 
-            public override ImmutableArray<Symbol> GetMembers() => _members;
+            public override ArrayWrapper<Symbol> GetMembers() => new ArrayWrapper<Symbol>(_members);
 
-            public override ImmutableArray<Symbol> GetMembers(string name) => GetMembers().WhereAsArray((member, name) => member.Name == name, name);
+            public override ArrayWrapper<Symbol> GetMembers(string name)
+            {
+                var builder = ArrayBuilder<Symbol>.GetInstance();
+
+                foreach (var member in GetMembers())
+                {
+                    if (member.Name == name)
+                        builder.Add(member);
+                }
+
+                return new ArrayWrapper<Symbol>(builder);
+            }
 
             internal override IEnumerable<FieldSymbol> GetFieldsToEmit() => SpecializedCollections.EmptyEnumerable<FieldSymbol>();
 
-            internal override ImmutableArray<NamedTypeSymbol> GetInterfacesToEmit() => ImmutableArray<NamedTypeSymbol>.Empty;
+            internal override ArrayWrapper<NamedTypeSymbol> GetInterfacesToEmit() => ArrayWrapper<NamedTypeSymbol>.Empty;
 
             internal override ImmutableArray<NamedTypeSymbol> InterfacesNoUseSiteDiagnostics(ConsList<TypeSymbol>? basesBeingResolved = null) => ImmutableArray<NamedTypeSymbol>.Empty;
 

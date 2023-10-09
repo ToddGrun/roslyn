@@ -1468,7 +1468,7 @@ class C : I
     //         public void M2(object p, ref string p, ref string p, params ulong[] p) { p = null; }
     Diagnostic(ErrorCode.ERR_AmbigMember, "p").WithArguments("object p", "ref string p").WithLocation(10, 82)
                 );
-            var ns = comp.SourceModule.GlobalNamespace.GetMembers("NS").Single() as NamespaceSymbol;
+            var ns = comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("NS").Single() as NamespaceSymbol;
             // TODO...
         }
 
@@ -1494,7 +1494,7 @@ class C : I
                 new ErrorDescription { Code = (int)ErrorCode.ERR_DuplicateNameInNS, Line = 10, Column = 15 },
                 new ErrorDescription { Code = (int)ErrorCode.ERR_DuplicateNameInNS, Line = 11, Column = 15 });
 
-            var ns = comp.SourceModule.GlobalNamespace.GetMembers("NS").Single() as NamespaceSymbol;
+            var ns = comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("NS").Single() as NamespaceSymbol;
             // TODO...
         }
 
@@ -1513,7 +1513,7 @@ class C : I
                 new ErrorDescription { Code = (int)ErrorCode.ERR_DuplicateNameInNS, Line = 4, Column = 11 },
                 new ErrorDescription { Code = (int)ErrorCode.ERR_DuplicateNameInNS, Line = 7, Column = 18 });
 
-            var ns = comp.SourceModule.GlobalNamespace.GetMembers("NS").Single() as NamespaceSymbol;
+            var ns = comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("NS").Single() as NamespaceSymbol;
         }
 
         [Fact]
@@ -1531,7 +1531,7 @@ class C : I
                 new ErrorDescription { Code = (int)ErrorCode.ERR_DuplicateNameInNS, Line = 4, Column = 15 },
                 new ErrorDescription { Code = (int)ErrorCode.ERR_DuplicateNameInNS, Line = 7, Column = 19 });
 
-            var ns = comp.SourceModule.GlobalNamespace.GetMembers("NS").Single() as NamespaceSymbol;
+            var ns = comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("NS").Single() as NamespaceSymbol;
         }
 
         [Fact]
@@ -1544,7 +1544,7 @@ class C : I
 }";
             var comp = DiagnosticsUtils.VerifyErrorsAndGetCompilationWithMscorlib(text);
 
-            var ns = comp.SourceModule.GlobalNamespace.GetMembers("NS").Single() as NamespaceSymbol;
+            var ns = comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("NS").Single() as NamespaceSymbol;
         }
 
         [Fact]
@@ -1570,7 +1570,7 @@ class C : I
                 );
 
             var classA = comp.SourceModule.GlobalNamespace.GetTypeMembers("A").Single() as NamedTypeSymbol;
-            var ns = classA.GetMembers("n");
+            var ns = classA.GetMembersAsImmutable("n");
             Assert.Equal(2, ns.Length);
             foreach (var n in ns)
             {
@@ -2328,19 +2328,19 @@ class B : A
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "foundNamespaceInsteadOfType").WithArguments("NS.Bar.foundNamespaceInsteadOfType")
                 );
 
-            var ns = comp.SourceModule.GlobalNamespace.GetMembers("NS").Single() as NamespaceSymbol;
+            var ns = comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("NS").Single() as NamespaceSymbol;
             var baseType = ns.GetTypeMembers("A").Single().BaseType();
             Assert.Equal("Goo", baseType.Name);
             Assert.Equal(TypeKind.Error, baseType.TypeKind);
             Assert.Null(baseType.BaseType());
 
             var type2 = ns.GetTypeMembers("Bar").Single() as NamedTypeSymbol;
-            var mem1 = type2.GetMembers("foundNamespaceInsteadOfType").Single() as FieldSymbol;
+            var mem1 = type2.GetMembersAsImmutable("foundNamespaceInsteadOfType").Single() as FieldSymbol;
             Assert.Equal("Goo", mem1.Type.Name);
             Assert.Equal(TypeKind.Error, mem1.Type.TypeKind);
 
             var type3 = ns.GetTypeMembers("S").Single() as NamedTypeSymbol;
-            var mem2 = type3.GetMembers("Goo").Single() as MethodSymbol;
+            var mem2 = type3.GetMembersAsImmutable("Goo").Single() as MethodSymbol;
             var param = mem2.Parameters[0];
             Assert.Equal("Goo", param.Type.Name);
             Assert.Equal(TypeKind.Error, param.Type.TypeKind);
@@ -2450,7 +2450,7 @@ class Test
                 new ErrorDescription { Code = (int)ErrorCode.ERR_StaticConstParam, Line = 10, Column = 16 },
                 new ErrorDescription { Code = (int)ErrorCode.ERR_StaticConstParam, Line = 11, Column = 16 });
 
-            var ns = comp.SourceModule.GlobalNamespace.GetMembers("NS").Single() as NamespaceSymbol;
+            var ns = comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("NS").Single() as NamespaceSymbol;
             // TODO...
         }
 
@@ -2540,7 +2540,7 @@ namespace NS
                 //     using NS.S;
                 Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using NS.S;"));
 
-            var ns = comp.SourceModule.GlobalNamespace.GetMembers("NS").Single() as NamespaceSymbol;
+            var ns = comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("NS").Single() as NamespaceSymbol;
             // TODO...
         }
 
@@ -2569,7 +2569,7 @@ namespace NS
                 new ErrorDescription { Code = (int)ErrorCode.ERR_CircularBase, Line = 8, Column = 18 }, // Roslyn extra
                 new ErrorDescription { Code = (int)ErrorCode.ERR_CircularBase, Line = 9, Column = 18 });
 
-            var ns = comp.SourceModule.GlobalNamespace.GetMembers("NS").Single() as NamespaceSymbol;
+            var ns = comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("NS").Single() as NamespaceSymbol;
             var baseType = (NamedTypeSymbol)ns.GetTypeMembers("A").Single().BaseType();
             Assert.Null(baseType.BaseType());
             Assert.Equal("B", baseType.Name);
@@ -3072,7 +3072,7 @@ Diagnostic(ErrorCode.ERR_MustHaveOpTF, "f && f").WithArguments("MyClass.operator
             var comp = DiagnosticsUtils.VerifyErrorsAndGetCompilationWithMscorlib(text,
                 new ErrorDescription { Code = (int)ErrorCode.ERR_BadVarargs, Line = 5, Column = 28 });
 
-            var ns = comp.SourceModule.GlobalNamespace.GetMembers("NS").Single() as NamespaceSymbol;
+            var ns = comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("NS").Single() as NamespaceSymbol;
             // TODO...
         }
 
@@ -3346,13 +3346,13 @@ public class MyClass2 : MyClass
                 new ErrorDescription { Code = (int)ErrorCode.ERR_SingleTypeNameNotFound, Line = 11, Column = 19 },
                 new ErrorDescription { Code = (int)ErrorCode.ERR_SingleTypeNameNotFound, Line = 12, Column = 14 });
 
-            var ns = comp.SourceModule.GlobalNamespace.GetMembers("NS").Single() as NamespaceSymbol;
+            var ns = comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("NS").Single() as NamespaceSymbol;
             var type1 = ns.GetTypeMembers("IGoo").Single() as NamedTypeSymbol;
             // bug: expected 1 but error symbol
             // Assert.Equal(1, type1.Interfaces().Count());
 
             var type2 = ns.GetTypeMembers("IBar").Single() as NamedTypeSymbol;
-            var mem1 = type2.GetMembers().First() as MethodSymbol;
+            var mem1 = type2.GetMembersAsImmutable().First() as MethodSymbol;
             //ErrorTypes now appear as though they are declared in the global namespace. 
             Assert.Equal("System.String NS.IBar.M(ref NoType p1, out NoType p2, params NOType[] ary)", mem1.ToTestDisplayString());
             var param = mem1.Parameters[0] as ParameterSymbol;
@@ -3368,10 +3368,10 @@ public class MyClass2 : MyClass
             Assert.Equal("CNotExist", base1.Name);
 
             var type4 = ns.GetTypeMembers("S").Single() as NamedTypeSymbol;
-            var mem2 = type4.GetMembers("field").First() as FieldSymbol;
+            var mem2 = type4.GetMembersAsImmutable("field").First() as FieldSymbol;
             Assert.Equal(TypeKind.Error, mem2.Type.TypeKind);
             Assert.Equal("NoType", mem2.Type.Name);
-            var mem3 = type4.GetMembers("M").Single() as MethodSymbol;
+            var mem3 = type4.GetMembersAsImmutable("M").Single() as MethodSymbol;
             Assert.Equal(TypeKind.Error, mem3.ReturnType.TypeKind);
             Assert.Equal("NoType", mem3.ReturnType.Name);
         }
@@ -3560,7 +3560,7 @@ class BAttribute : System.Attribute { }
                 new ErrorDescription { Code = (int)ErrorCode.ERR_MissingPartial, Line = 6, Column = 16 },
                 new ErrorDescription { Code = (int)ErrorCode.ERR_MissingPartial, Line = 13, Column = 15 });
 
-            var ns = comp.SourceModule.GlobalNamespace.GetMembers("NS").Single() as NamespaceSymbol;
+            var ns = comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("NS").Single() as NamespaceSymbol;
             // TODO...
         }
 
@@ -3582,7 +3582,7 @@ class BAttribute : System.Attribute { }
                 new ErrorDescription { Code = (int)ErrorCode.ERR_PartialTypeKindConflict, Line = 5, Column = 20 },
                 new ErrorDescription { Code = (int)ErrorCode.ERR_PartialTypeKindConflict, Line = 6, Column = 23 });
 
-            var ns = comp.SourceModule.GlobalNamespace.GetMembers("NS").Single() as NamespaceSymbol;
+            var ns = comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("NS").Single() as NamespaceSymbol;
             // TODO...
         }
 
@@ -3618,7 +3618,7 @@ class BAttribute : System.Attribute { }
                 Diagnostic(ErrorCode.ERR_PartialModifierConflict, "S").WithArguments("NS.A.S").WithLocation(12, 32)
                 );
 
-            var ns = comp.SourceModule.GlobalNamespace.GetMembers("NS").Single() as NamespaceSymbol;
+            var ns = comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("NS").Single() as NamespaceSymbol;
             // TODO...
         }
 
@@ -3640,7 +3640,7 @@ class BAttribute : System.Attribute { }
             var comp = DiagnosticsUtils.VerifyErrorsAndGetCompilationWithMscorlib(text,
                 new ErrorDescription { Code = (int)ErrorCode.ERR_PartialMultipleBases, Line = 5, Column = 19 });
 
-            var ns = comp.SourceModule.GlobalNamespace.GetMembers("NS").Single() as NamespaceSymbol;
+            var ns = comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("NS").Single() as NamespaceSymbol;
             var type1 = ns.GetTypeMembers("C").Single() as NamedTypeSymbol;
             var base1 = type1.BaseType();
             Assert.Null(base1.BaseType());
@@ -3687,7 +3687,7 @@ class BAttribute : System.Attribute { }
                 new ErrorDescription { Code = (int)ErrorCode.ERR_BaseClassMustBeFirst, Line = 18, Column = 22 },
                 new ErrorDescription { Code = (int)ErrorCode.ERR_DuplicateInterfaceInBaseList, Line = 20, Column = 23 });
 
-            var ns = comp.SourceModule.GlobalNamespace.GetMembers("NS").Single() as NamespaceSymbol;
+            var ns = comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("NS").Single() as NamespaceSymbol;
         }
 
         [Fact]
@@ -3715,7 +3715,7 @@ class BAttribute : System.Attribute { }
                 new ErrorDescription { Code = (int)ErrorCode.ERR_PartialWrongTypeParams, Line = 9, Column = 24 },
                 new ErrorDescription { Code = (int)ErrorCode.ERR_PartialWrongTypeParams, Line = 13, Column = 32 });
 
-            var ns = comp.SourceModule.GlobalNamespace.GetMembers("NS").Single() as NamespaceSymbol;
+            var ns = comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("NS").Single() as NamespaceSymbol;
             var type1 = ns.GetTypeMembers("C").Single() as NamedTypeSymbol;
             Assert.Equal(1, type1.TypeParameters.Length);
             var param = type1.TypeParameters[0];
@@ -3741,10 +3741,10 @@ class BAttribute : System.Attribute { }
                 Diagnostic(ErrorCode.WRN_PartialMethodTypeDifference, "F").WithArguments("void MyClass.F<T, U>(T t)", "void MyClass.F<T, U>(T tt)").WithLocation(6, 22)
                 );
 
-            var ns = comp.SourceModule.GlobalNamespace.GetMembers("NS").Single() as NamespaceSymbol;
+            var ns = comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("NS").Single() as NamespaceSymbol;
             var type1 = ns.GetTypeMembers("MyClass").Single() as NamedTypeSymbol;
             Assert.Equal(0, type1.TypeParameters.Length);
-            var f = type1.GetMembers("F").Single() as MethodSymbol;
+            var f = type1.GetMembersAsImmutable("F").Single() as MethodSymbol;
             Assert.Equal("T t", f.Parameters[0].ToTestDisplayString());
         }
 
@@ -3766,10 +3766,10 @@ class BAttribute : System.Attribute { }
                 Diagnostic(ErrorCode.WRN_PartialMethodTypeDifference, "F").WithArguments("void MyClass.F<T, U>(T t)", "void MyClass.F<U, T>(U u)").WithLocation(6, 22)
                 );
 
-            var ns = comp.SourceModule.GlobalNamespace.GetMembers("NS").Single() as NamespaceSymbol;
+            var ns = comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("NS").Single() as NamespaceSymbol;
             var type1 = ns.GetTypeMembers("MyClass").Single() as NamedTypeSymbol;
             Assert.Equal(0, type1.TypeParameters.Length);
-            var f = type1.GetMembers("F").Single() as MethodSymbol;
+            var f = type1.GetMembersAsImmutable("F").Single() as MethodSymbol;
             Assert.Equal(2, f.TypeParameters.Length);
             var param1 = f.TypeParameters[0];
             var param2 = f.TypeParameters[1];
@@ -3930,7 +3930,7 @@ namespace N
                 Diagnostic(ErrorCode.ERR_ImportedCircularBase, "I3").WithArguments("I2")
                 );
 
-            var ns = comp.SourceModule.GlobalNamespace.GetMembers("NS").Single() as NamespaceSymbol;
+            var ns = comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("NS").Single() as NamespaceSymbol;
             // TODO...
         }
 
@@ -4358,7 +4358,7 @@ public class A { }
                 new ErrorDescription { Code = (int)ErrorCode.ERR_BadArity, Line = 17, Column = 9 },
                 new ErrorDescription { Code = (int)ErrorCode.ERR_BadArity, Line = 18, Column = 16 });
 
-            var ns = comp.SourceModule.GlobalNamespace.GetMembers("NS").Single() as NamespaceSymbol;
+            var ns = comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("NS").Single() as NamespaceSymbol;
             // TODO...
         }
 
@@ -4738,7 +4738,7 @@ public class NormalType
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "field").WithArguments("NS.S.field")
                 );
 
-            var ns = comp.SourceModule.GlobalNamespace.GetMembers("NS").Single() as NamespaceSymbol;
+            var ns = comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("NS").Single() as NamespaceSymbol;
             // TODO...
         }
 
@@ -5396,7 +5396,7 @@ abstract class B2 : IB
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "field").WithArguments("NS.Test.field")
                 );
 
-            var ns = comp.SourceModule.GlobalNamespace.GetMembers("NS").Single() as NamespaceSymbol;
+            var ns = comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("NS").Single() as NamespaceSymbol;
             // TODO...
         }
 
@@ -5538,7 +5538,7 @@ namespace NS
                 // new ErrorDescription { Code = (int)ErrorCode.ERR_SameFullNameNsAgg, Line = 9, Column = 28 }, // Dev10 one error
                 new ErrorDescription { Code = (int)ErrorCode.ERR_SameFullNameNsAgg, Line = 12, Column = 19 });
 
-            var ns = comp.SourceModule.GlobalNamespace.GetMembers("NS").Single() as NamespaceSymbol;
+            var ns = comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("NS").Single() as NamespaceSymbol;
             // TODO...
         }
 
@@ -5581,7 +5581,7 @@ namespace NS
                 //             Console.WriteLine(typeof(Util.A));   // CS0438
                 Diagnostic(ErrorCode.ERR_SameFullNameThisAggThisNs, "Util").WithArguments("ErrTestMod01.netmodule", "NS.Util", "ErrTestMod02.netmodule", "NS.Util"));
 
-            var ns = comp.SourceModule.GlobalNamespace.GetMembers("NS").Single() as NamespaceSymbol;
+            var ns = comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("NS").Single() as NamespaceSymbol;
             // TODO...
         }
 
@@ -7444,7 +7444,7 @@ extern alias FT1;
                 // (15,28): error CS07: Static class 'NS.Derived' cannot derive from type 'NS.StaticClass'. Static classes must derive from object.
                 Diagnostic(ErrorCode.ERR_StaticDerivedFromNonObject, "StaticClass").WithArguments("NS.Derived", "NS.StaticClass"));
 
-            var ns = comp.SourceModule.GlobalNamespace.GetMembers("NS").Single() as NamespaceSymbol;
+            var ns = comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("NS").Single() as NamespaceSymbol;
             // TODO...
         }
 
@@ -8065,7 +8065,7 @@ class MyClass : I
                 //         public abstract event System.Action X { add => throw null; remove => throw null; }
                 Diagnostic(ErrorCode.ERR_AbstractEventHasAccessors, "{").WithArguments("NS.clx.X").WithLocation(10, 47));
 
-            var ns = comp.SourceModule.GlobalNamespace.GetMembers("NS").Single() as NamespaceSymbol;
+            var ns = comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("NS").Single() as NamespaceSymbol;
             // TODO...
         }
 
@@ -8170,7 +8170,7 @@ Diagnostic(ErrorCode.ERR_ConcreteMissingBody, "M3").WithArguments("NS.clx<T>.M3(
                 new ErrorDescription { Code = (int)ErrorCode.ERR_AbstractAndSealed, Line = 15, Column = 50 },
                 new ErrorDescription { Code = (int)ErrorCode.ERR_AbstractAndSealed, Line = 16, Column = 61 });
 
-            var ns = comp.SourceModule.GlobalNamespace.GetMembers("NS").Single() as NamespaceSymbol;
+            var ns = comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("NS").Single() as NamespaceSymbol;
             // TODO...
         }
 
@@ -8203,9 +8203,9 @@ Diagnostic(ErrorCode.ERR_ConcreteMissingBody, "M3").WithArguments("NS.clx<T>.M3(
                 //         virtual abstract public event System.Action E;
                 Diagnostic(ErrorCode.ERR_AbstractNotVirtual, "E").WithArguments("event", "NS.clx.E").WithLocation(8, 53));
 
-            var nsNamespace = comp.SourceModule.GlobalNamespace.GetMembers("NS").Single() as NamespaceSymbol;
-            var clxClass = nsNamespace.GetMembers("clx").Single() as NamedTypeSymbol;
-            Assert.Equal(9, clxClass.GetMembers().Length);
+            var nsNamespace = comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("NS").Single() as NamespaceSymbol;
+            var clxClass = nsNamespace.GetMembersAsImmutable("clx").Single() as NamedTypeSymbol;
+            Assert.Equal(9, clxClass.GetMembersAsImmutable().Length);
         }
 
         [Fact]
@@ -8636,7 +8636,7 @@ class C
                 new ErrorDescription { Code = (int)ErrorCode.ERR_StaticConstructorWithAccessModifiers, Line = 15, Column = 23 },
                 new ErrorDescription { Code = (int)ErrorCode.ERR_StaticConstructorWithAccessModifiers, Line = 19, Column = 29 });
 
-            var ns = comp.SourceModule.GlobalNamespace.GetMembers("NS").Single() as NamespaceSymbol;
+            var ns = comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("NS").Single() as NamespaceSymbol;
             // TODO...
         }
 
@@ -9132,7 +9132,7 @@ struct S6<T>
                 Diagnostic(ErrorCode.ERR_FeatureNotAvailableInVersion7, "E").WithArguments("default interface implementation", "8.0").WithLocation(8, 22)
                 );
 
-            var ns = comp.SourceModule.GlobalNamespace.GetMembers("NS").Single() as NamespaceSymbol;
+            var ns = comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("NS").Single() as NamespaceSymbol;
         }
 
         [Fact]
@@ -9162,7 +9162,7 @@ struct S6<T>
                 Diagnostic(ErrorCode.ERR_InterfacesCantContainFields, "field3").WithLocation(7, 21)
                 );
 
-            var ns = comp.SourceModule.GlobalNamespace.GetMembers("NS").Single() as NamespaceSymbol;
+            var ns = comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("NS").Single() as NamespaceSymbol;
             // TODO...
         }
 
@@ -9182,7 +9182,7 @@ struct S6<T>
                 new ErrorDescription { Code = (int)ErrorCode.ERR_InterfacesCantContainConstructors, Line = 5, Column = 17 },
                 new ErrorDescription { Code = (int)ErrorCode.ERR_InterfacesCantContainConstructors, Line = 6, Column = 19 });
 
-            var ns = comp.SourceModule.GlobalNamespace.GetMembers("NS").Single() as NamespaceSymbol;
+            var ns = comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("NS").Single() as NamespaceSymbol;
             // TODO...
         }
 
@@ -9206,7 +9206,7 @@ struct S6<T>
                 new ErrorDescription { Code = (int)ErrorCode.ERR_NonInterfaceInInterfaceList, Line = 5, Column = 31 },
                 new ErrorDescription { Code = (int)ErrorCode.ERR_NonInterfaceInInterfaceList, Line = 7, Column = 26 });
 
-            var ns = comp.SourceModule.GlobalNamespace.GetMembers("NS").Single() as NamespaceSymbol;
+            var ns = comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("NS").Single() as NamespaceSymbol;
             // TODO...
         }
 
@@ -9229,7 +9229,7 @@ struct S6<T>
                 new ErrorDescription { Code = (int)ErrorCode.ERR_DuplicateInterfaceInBaseList, Line = 5, Column = 28 },
                 new ErrorDescription { Code = (int)ErrorCode.ERR_DuplicateInterfaceInBaseList, Line = 8, Column = 28 });
 
-            var ns = comp.SourceModule.GlobalNamespace.GetMembers("NS").Single() as NamespaceSymbol;
+            var ns = comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("NS").Single() as NamespaceSymbol;
             // TODO...
         }
 
@@ -9255,7 +9255,7 @@ struct S6<T>
                 new ErrorDescription { Code = (int)ErrorCode.ERR_CycleInInterfaceInheritance, Line = 8, Column = 15 }, // Extra
                 new ErrorDescription { Code = (int)ErrorCode.ERR_CycleInInterfaceInheritance, Line = 9, Column = 15 });
 
-            var ns = comp.SourceModule.GlobalNamespace.GetMembers("NS").Single() as NamespaceSymbol;
+            var ns = comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("NS").Single() as NamespaceSymbol;
             // TODO...
         }
 
@@ -9285,7 +9285,7 @@ struct S6<T>
                 Diagnostic(ErrorCode.ERR_SemicolonExpected, "}").WithLocation(14, 39)
                 );
 
-            var ns = comp.SourceModule.GlobalNamespace.GetMembers("NS").Single() as NamespaceSymbol;
+            var ns = comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("NS").Single() as NamespaceSymbol;
             // TODO...
         }
 
@@ -9303,7 +9303,7 @@ struct S6<T>
             var comp = DiagnosticsUtils.VerifyErrorsAndGetCompilationWithMscorlib(text,
                 new ErrorDescription { Code = (int)ErrorCode.ERR_BadMemberFlag, Line = 5, Column = 18 });
 
-            var ns = comp.SourceModule.GlobalNamespace.GetMembers("NS").Single() as NamespaceSymbol;
+            var ns = comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("NS").Single() as NamespaceSymbol;
             // TODO...
         }
 
@@ -10996,7 +10996,7 @@ namespace NS
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "field").WithArguments("NS.S.field")
                 );
 
-            var ns = comp.SourceModule.GlobalNamespace.GetMembers("NS").Single() as NamespaceSymbol;
+            var ns = comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("NS").Single() as NamespaceSymbol;
             // TODO...
         }
 
@@ -11424,7 +11424,7 @@ class Class2 { }
                 new ErrorDescription { Code = (int)ErrorCode.ERR_VirtualPrivate, Line = 9, Column = 30 },
                 new ErrorDescription { Code = (int)ErrorCode.ERR_VirtualPrivate, Line = 10, Column = 19 });
 
-            var ns = comp.SourceModule.GlobalNamespace.GetMembers("x").Single() as NamespaceSymbol;
+            var ns = comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("x").Single() as NamespaceSymbol;
             // TODO...
         }
 
@@ -12314,7 +12314,7 @@ class TestClass
                 Diagnostic(ErrorCode.WRN_UnassignedInternalField, "Field2").WithArguments("NS.Goo.SGoo.Field2", "")
                 );
 
-            var ns = comp.SourceModule.GlobalNamespace.GetMembers("NS").Single() as NamespaceSymbol;
+            var ns = comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("NS").Single() as NamespaceSymbol;
             // TODO...
         }
 
@@ -12490,7 +12490,7 @@ class C5<T> where T : I
                 Diagnostic(ErrorCode.WRN_UnassignedInternalField, "field").WithArguments("NS.Goo<T>.SGoo.field", "null")
                 );
 
-            var ns = comp.SourceModule.GlobalNamespace.GetMembers("NS").Single() as NamespaceSymbol;
+            var ns = comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("NS").Single() as NamespaceSymbol;
             // TODO...
         }
 
@@ -12644,7 +12644,7 @@ class C : I
                 new ErrorDescription { Code = (int)ErrorCode.ERR_DerivingFromATyVar, Line = 7, Column = 27 },
                 new ErrorDescription { Code = (int)ErrorCode.ERR_DerivingFromATyVar, Line = 9, Column = 30 });
 
-            var ns = comp.SourceModule.GlobalNamespace.GetMembers("NS").Single() as NamespaceSymbol;
+            var ns = comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("NS").Single() as NamespaceSymbol;
             // TODO...
         }
 
@@ -12693,7 +12693,7 @@ class C : I
                 new ErrorDescription { Code = (int)ErrorCode.WRN_TypeParameterSameAsOuterTypeParameter, Line = 10, Column = 28, IsWarning = true },
                 new ErrorDescription { Code = (int)ErrorCode.WRN_TypeParameterSameAsOuterTypeParameter, Line = 12, Column = 25, IsWarning = true });
 
-            var ns = comp.SourceModule.GlobalNamespace.GetMembers("NS").Single() as NamespaceSymbol;
+            var ns = comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("NS").Single() as NamespaceSymbol;
             // TODO...
         }
 
@@ -13022,7 +13022,7 @@ public partial class C
                 //         T field;
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "field").WithArguments("NS.Bar<T>.field"));
 
-            var ns = comp.SourceModule.GlobalNamespace.GetMembers("NS").Single() as NamespaceSymbol;
+            var ns = comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("NS").Single() as NamespaceSymbol;
             // TODO...
         }
 
@@ -13052,7 +13052,7 @@ public partial class C
                 new ErrorDescription { Code = (int)ErrorCode.ERR_StaticBaseClass, Line = 7, Column = 18 },
                 new ErrorDescription { Code = (int)ErrorCode.ERR_StaticBaseClass, Line = 15, Column = 18 });
 
-            var ns = comp.SourceModule.GlobalNamespace.GetMembers("NS").Single() as NamespaceSymbol;
+            var ns = comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("NS").Single() as NamespaceSymbol;
             // TODO...
         }
 
@@ -13082,7 +13082,7 @@ public partial class C
                 new ErrorDescription { Code = (int)ErrorCode.ERR_ConstructorInStaticClass, Line = 10, Column = 22 },
                 new ErrorDescription { Code = (int)ErrorCode.ERR_ConstructorInStaticClass, Line = 11, Column = 22 });
 
-            var ns = comp.SourceModule.GlobalNamespace.GetMembers("NS").Single() as NamespaceSymbol;
+            var ns = comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("NS").Single() as NamespaceSymbol;
             // TODO...
         }
 
@@ -13443,7 +13443,7 @@ static class S
                 new ErrorDescription { Code = (int)ErrorCode.ERR_ArrayOfStaticClass, Line = 14, Column = 26 },
                 new ErrorDescription { Code = (int)ErrorCode.ERR_ArrayOfStaticClass, Line = 15, Column = 26 });
 
-            var ns = comp.SourceModule.GlobalNamespace.GetMembers("NS").Single() as NamespaceSymbol;
+            var ns = comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("NS").Single() as NamespaceSymbol;
             // TODO...
         }
 
@@ -13491,7 +13491,7 @@ static class S
                 // (14,16): warning CS0169: The field 'NS.Test.Z' is never used
                 //         D<int> Z;
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "Z").WithArguments("NS.Test.Z"));
-            var ns = comp.SourceModule.GlobalNamespace.GetMembers("NS").Single() as NamespaceSymbol;
+            var ns = comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("NS").Single() as NamespaceSymbol;
             // TODO...
         }
 
@@ -14528,7 +14528,7 @@ class A : IFace<int>
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "myStaticField").WithArguments("NS.Test.myStaticField")
                 );
 
-            var ns = comp.SourceModule.GlobalNamespace.GetMembers("NS").Single() as NamespaceSymbol;
+            var ns = comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("NS").Single() as NamespaceSymbol;
             // TODO...
         }
 
@@ -14650,7 +14650,7 @@ namespace TestNamespace
                 new ErrorDescription { Code = (int)ErrorCode.ERR_ProtectedInStatic, Line = 5, Column = 33 },
                 new ErrorDescription { Code = (int)ErrorCode.ERR_ProtectedInStatic, Line = 6, Column = 40 });
 
-            var ns = comp.SourceModule.GlobalNamespace.GetMembers("NS").Single() as NamespaceSymbol;
+            var ns = comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("NS").Single() as NamespaceSymbol;
             // TODO...
         }
 
@@ -15065,7 +15065,7 @@ namespace NS
                 //     using O = System.Object;
                 Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using O = System.Object;"));
 
-            var ns = comp.SourceModule.GlobalNamespace.GetMembers("NS").Single() as NamespaceSymbol;
+            var ns = comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("NS").Single() as NamespaceSymbol;
         }
 
         [WorkItem(537684, "http://vstfdevdiv:8080/DevDiv2/DevDiv/_workitems/edit/537684")]
@@ -15111,8 +15111,8 @@ namespace NS
                 //     using ns = namespace2;
                 Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using ns = namespace2;").WithLocation(14, 5));
 
-            var ns = comp.SourceModule.GlobalNamespace.GetMembers("NS").Single() as NamespaceSymbol;
-            var type1 = ns.GetMembers("C").Single() as NamedTypeSymbol;
+            var ns = comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("NS").Single() as NamespaceSymbol;
+            var type1 = ns.GetMembersAsImmutable("C").Single() as NamedTypeSymbol;
             var b = type1.BaseType();
         }
 
@@ -16862,7 +16862,7 @@ class A {
 
             CSharpCompilation comp = CreateCompilation(text);
             var classA = (NamedTypeSymbol)comp.GlobalNamespace.GetTypeMembers("A").Single();
-            var fieldSym = (FieldSymbol)classA.GetMembers("n").Single();
+            var fieldSym = (FieldSymbol)classA.GetMembersAsImmutable("n").Single();
             var fieldType = fieldSym.TypeWithAnnotations;
 
             Assert.Equal(SymbolKind.ErrorType, fieldType.Type.Kind);
@@ -16889,7 +16889,7 @@ class A : C {
             var classA = (NamedTypeSymbol)comp.GlobalNamespace.GetTypeMembers("A").Single();
             var classC = (NamedTypeSymbol)comp.GlobalNamespace.GetTypeMembers("C").Single();
             var classB = (NamedTypeSymbol)classC.GetTypeMembers("B").Single();
-            var fieldSym = (FieldSymbol)classA.GetMembers("n").Single();
+            var fieldSym = (FieldSymbol)classA.GetMembersAsImmutable("n").Single();
             var fieldType = fieldSym.Type;
 
             Assert.Equal(SymbolKind.ErrorType, fieldType.Kind);
@@ -16922,11 +16922,11 @@ class A : C {
 
             CSharpCompilation comp = CreateCompilation(text);
             var classA = (NamedTypeSymbol)comp.GlobalNamespace.GetTypeMembers("A").Single();
-            var ns1 = (NamespaceSymbol)comp.GlobalNamespace.GetMembers("N1").Single();
-            var ns2 = (NamespaceSymbol)comp.GlobalNamespace.GetMembers("N2").Single();
+            var ns1 = (NamespaceSymbol)comp.GlobalNamespace.GetMembersAsImmutable("N1").Single();
+            var ns2 = (NamespaceSymbol)comp.GlobalNamespace.GetMembersAsImmutable("N2").Single();
             var classBinN1 = (NamedTypeSymbol)ns1.GetTypeMembers("B").Single();
             var classBinN2 = (NamedTypeSymbol)ns2.GetTypeMembers("B").Single();
-            var fieldSym = (FieldSymbol)classA.GetMembers("n").Single();
+            var fieldSym = (FieldSymbol)classA.GetMembersAsImmutable("n").Single();
             var fieldType = fieldSym.Type;
 
             Assert.Equal(SymbolKind.ErrorType, fieldType.Kind);
@@ -16988,7 +16988,7 @@ namespace testns
                 Diagnostic(ErrorCode.HDN_UnusedUsingDirective, "using Goo.Bar;"));
 
             // TODO...
-            // var ns = comp.SourceModule.GlobalNamespace.GetMembers("NS").Single() as NamespaceSymbol;
+            // var ns = comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("NS").Single() as NamespaceSymbol;
         }
 
         [Fact]
@@ -17621,7 +17621,7 @@ namespace SA
                 Diagnostic(ErrorCode.WRN_UnreferencedFieldAssg, "var").WithArguments("SA.Test.var")
                 );
 
-            var ns = comp.SourceModule.GlobalNamespace.GetMembers("SA").Single() as NamespaceSymbol;
+            var ns = comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("SA").Single() as NamespaceSymbol;
             // TODO...
         }
 
@@ -17658,7 +17658,7 @@ namespace SA
                 //         Class1 cls;
                 Diagnostic(ErrorCode.WRN_UnreferencedField, "cls").WithArguments("SA.Test.cls"));
 
-            var ns = comp.SourceModule.GlobalNamespace.GetMembers("SA").Single() as NamespaceSymbol;
+            var ns = comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("SA").Single() as NamespaceSymbol;
             // TODO...
         }
 
@@ -17901,7 +17901,7 @@ namespace SA
                 //         AppCS.App app = null;
                 Diagnostic(ErrorCode.WRN_UnreferencedFieldAssg, "app").WithArguments("SA.Test.app"));
 
-            var ns = comp.SourceModule.GlobalNamespace.GetMembers("SA").Single() as NamespaceSymbol;
+            var ns = comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("SA").Single() as NamespaceSymbol;
             // TODO...
         }
 
@@ -19378,10 +19378,10 @@ namespace B
 }";
             var comp = DiagnosticsUtils.VerifyErrorsAndGetCompilationWithMscorlib(text);
 
-            var b = comp.SourceModule.GlobalNamespace.GetMembers("B").Single() as NamespaceSymbol;
-            var test = b.GetMembers("Test").Single() as NamedTypeSymbol;
-            var nsa = test.GetMembers("NSA").Single() as NamedTypeSymbol;
-            Assert.Equal(2, nsa.GetMembers().Length);
+            var b = comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("B").Single() as NamespaceSymbol;
+            var test = b.GetMembersAsImmutable("Test").Single() as NamedTypeSymbol;
+            var nsa = test.GetMembersAsImmutable("NSA").Single() as NamedTypeSymbol;
+            Assert.Equal(2, nsa.GetMembersAsImmutable().Length);
         }
 
         [WorkItem(538218, "http://vstfdevdiv:8080/DevDiv2/DevDiv/_workitems/edit/538218")]
@@ -19393,7 +19393,7 @@ interface B : A<B.Garbage> { }";
             var comp = DiagnosticsUtils.VerifyErrorsAndGetCompilationWithMscorlib(text,
                 new ErrorDescription { Code = (int)ErrorCode.ERR_DottedTypeNameNotFoundInAgg, Line = 2, Column = 19 });
 
-            var b = comp.SourceModule.GlobalNamespace.GetMembers("B").Single() as NamespaceSymbol;
+            var b = comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("B").Single() as NamespaceSymbol;
         }
 
         [WorkItem(538150, "http://vstfdevdiv:8080/DevDiv2/DevDiv/_workitems/edit/538150")]
@@ -19424,9 +19424,9 @@ namespace NS
                 Diagnostic(ErrorCode.WRN_UnassignedInternalField, "MyMeth").WithArguments("NS.MyType.MyMeth", "0")
                 );
 
-            var ns = comp.SourceModule.GlobalNamespace.GetMembers("NS").Single() as NamespaceSymbol;
-            var type1 = ns.GetMembers("MyType").Single() as NamedTypeSymbol;
-            Assert.Equal(4, type1.GetMembers().Length); // constructor included
+            var ns = comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("NS").Single() as NamespaceSymbol;
+            var type1 = ns.GetMembersAsImmutable("MyType").Single() as NamedTypeSymbol;
+            Assert.Equal(4, type1.GetMembersAsImmutable().Length); // constructor included
         }
 
         [Fact]

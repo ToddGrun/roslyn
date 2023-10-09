@@ -136,7 +136,7 @@ namespace Microsoft.CodeAnalysis.CSharp
 
             foreach (var typeOrNamespace in this.GetUsings(basesBeingResolved))
             {
-                ImmutableArray<Symbol> candidates = Binder.GetCandidateMembers(typeOrNamespace.NamespaceOrType, name, options, originalBinder: originalBinder);
+                using var candidates = Binder.GetCandidateMembers(typeOrNamespace.NamespaceOrType, name, options, originalBinder: originalBinder);
                 foreach (Symbol symbol in candidates)
                 {
                     if (!IsValidLookupCandidateInUsings(symbol))

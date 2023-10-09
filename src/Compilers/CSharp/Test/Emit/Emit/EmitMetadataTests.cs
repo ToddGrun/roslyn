@@ -326,8 +326,8 @@ abstract public class B : I2, I3
                 Assert.Same(i2, interfaces[0]);
                 Assert.Same(i3, interfaces[1]);
 
-                Assert.Equal(1, i2.GetMembers("M2").Length);
-                Assert.Equal(1, i3.GetMembers("M3").Length);
+                Assert.Equal(1, i2.GetMembersAsImmutable("M2").Length);
+                Assert.Equal(1, i3.GetMembersAsImmutable("M3").Length);
             });
         }
 
@@ -845,7 +845,7 @@ class C : I
             Func<bool, Action<ModuleSymbol>> validator = isFromSource => module =>
             {
                 var type = module.GlobalNamespace.GetTypeMembers("C").Single();
-                var members = type.GetMembers();
+                var members = type.GetMembersAsImmutable();
 
                 // Ensure member names are unique.
                 var memberNames = members.Select(member => member.Name).Distinct().ToList();
@@ -1329,7 +1329,7 @@ class C : B<string>
             {
                 var type = module.GlobalNamespace.GetTypeMembers("E").Single();
                 CheckEnumType(type, Accessibility.Internal, SpecialType.System_Int32);
-                Assert.Equal(1, type.GetMembers().Length);
+                Assert.Equal(1, type.GetMembersAsImmutable().Length);
             };
             CompileAndVerify(source: source, sourceSymbolValidator: validator, symbolValidator: validator);
         }
@@ -1354,7 +1354,7 @@ class C : B<string>
                 var type = module.GlobalNamespace.GetTypeMembers("E").Single();
                 CheckEnumType(type, Accessibility.Internal, SpecialType.System_Int16);
 
-                Assert.Equal(8, type.GetMembers().Length);
+                Assert.Equal(8, type.GetMembersAsImmutable().Length);
                 CheckEnumConstant(type, "A", (short)0);
                 CheckEnumConstant(type, "B", (short)2);
                 CheckEnumConstant(type, "C", (short)3);
@@ -2127,8 +2127,8 @@ public static class C
                 Assert.True(classC.IsStatic, "Expected C to be static");
                 Assert.False(classC.IsAbstract, "Expected C to be non-abstract"); //even though it is abstract in metadata
                 Assert.False(classC.IsSealed, "Expected C to be non-sealed"); //even though it is sealed in metadata
-                Assert.Equal(0, classC.GetMembers(WellKnownMemberNames.InstanceConstructorName).Length); //since C is static
-                Assert.Equal(0, classC.GetMembers(WellKnownMemberNames.StaticConstructorName).Length); //since we don't import private members
+                Assert.Equal(0, classC.GetMembersAsImmutable(WellKnownMemberNames.InstanceConstructorName).Length); //since C is static
+                Assert.Equal(0, classC.GetMembersAsImmutable(WellKnownMemberNames.StaticConstructorName).Length); //since we don't import private members
             });
         }
 

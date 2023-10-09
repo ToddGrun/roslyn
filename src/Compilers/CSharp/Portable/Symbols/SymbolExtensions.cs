@@ -8,6 +8,7 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE;
 using Roslyn.Utilities;
 
 using static System.Linq.ImmutableArrayExtensions;
@@ -700,7 +701,23 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             return symbols.SelectAsArray(p => p.GetPublicSymbol<TISymbol>());
         }
 
+        private static ArrayWrapper<TISymbol> GetPublicSymbols<TISymbol>(this ArrayWrapper<Symbol> symbols)
+            where TISymbol : class, ISymbol
+        {
+            if (symbols.Count == 0)
+            {
+                return ArrayWrapper<TISymbol>.Empty;
+            }
+
+            return symbols.SelectAsArrayWrapper(p => p.GetPublicSymbol<TISymbol>());
+        }
+
         internal static ImmutableArray<ISymbol> GetPublicSymbols(this ImmutableArray<Symbol> symbols)
+        {
+            return GetPublicSymbols<ISymbol>(symbols);
+        }
+
+        internal static ArrayWrapper<ISymbol> GetPublicSymbols(this ArrayWrapper<Symbol> symbols)
         {
             return GetPublicSymbols<ISymbol>(symbols);
         }
@@ -718,6 +735,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         internal static ImmutableArray<INamedTypeSymbol> GetPublicSymbols(this ImmutableArray<NamedTypeSymbol> symbols)
         {
             return GetPublicSymbols<INamedTypeSymbol>(StaticCast<Symbol>.From(symbols));
+        }
+
+        internal static ArrayWrapper<INamedTypeSymbol> GetPublicSymbols(this ArrayWrapper<NamedTypeSymbol> symbols)
+        {
+            return GetPublicSymbols<INamedTypeSymbol>(symbols);
         }
 
         internal static ImmutableArray<ILocalSymbol> GetPublicSymbols(this ImmutableArray<LocalSymbol> symbols)

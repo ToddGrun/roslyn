@@ -31,13 +31,13 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             var @interface = (NamedTypeSymbol)globalNamespace.GetTypeMembers("Interface").Single();
             Assert.Equal(TypeKind.Interface, @interface.TypeKind);
 
-            var interfaceProperty = (PropertySymbol)@interface.GetMembers("Property").Single();
+            var interfaceProperty = (PropertySymbol)@interface.GetMembersAsImmutable("Property").Single();
 
             var @class = (NamedTypeSymbol)globalNamespace.GetTypeMembers("Class").Single();
             Assert.Equal(TypeKind.Class, @class.TypeKind);
             Assert.True(@class.Interfaces().Contains(@interface));
 
-            var classProperty = (PropertySymbol)@class.GetMembers("Interface.Property").Single();
+            var classProperty = (PropertySymbol)@class.GetMembersAsImmutable("Interface.Property").Single();
 
             var explicitImpl = classProperty.ExplicitInterfaceImplementations.Single();
             Assert.Equal(interfaceProperty, explicitImpl);
@@ -58,7 +58,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             var @interface = (NamedTypeSymbol)globalNamespace.GetTypeMembers("IGeneric").Single();
             Assert.Equal(TypeKind.Interface, @interface.TypeKind);
 
-            var interfaceProperty = (PropertySymbol)@interface.GetMembers("Property").Single();
+            var interfaceProperty = (PropertySymbol)@interface.GetMembersAsImmutable("Property").Single();
 
             var @class = (NamedTypeSymbol)globalNamespace.GetTypeMembers("Generic").Single();
             Assert.Equal(TypeKind.Class, @class.TypeKind);
@@ -66,10 +66,10 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             var substitutedInterface = @class.Interfaces().Single();
             Assert.Equal(@interface, substitutedInterface.ConstructedFrom);
 
-            var substitutedInterfaceProperty = (PropertySymbol)substitutedInterface.GetMembers("Property").Single();
+            var substitutedInterfaceProperty = (PropertySymbol)substitutedInterface.GetMembersAsImmutable("Property").Single();
             Assert.Equal(interfaceProperty, substitutedInterfaceProperty.OriginalDefinition);
 
-            var classProperty = (PropertySymbol)@class.GetMembers("IGeneric<S>.Property").Single();
+            var classProperty = (PropertySymbol)@class.GetMembersAsImmutable("IGeneric<S>.Property").Single();
 
             var explicitImpl = classProperty.ExplicitInterfaceImplementations.Single();
             Assert.Equal(substitutedInterfaceProperty, explicitImpl);
@@ -90,7 +90,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             var @interface = (NamedTypeSymbol)globalNamespace.GetTypeMembers("IGeneric").Single();
             Assert.Equal(TypeKind.Interface, @interface.TypeKind);
 
-            var interfaceProperty = (PropertySymbol)@interface.GetMembers("Property").Single();
+            var interfaceProperty = (PropertySymbol)@interface.GetMembersAsImmutable("Property").Single();
 
             var @class = (NamedTypeSymbol)globalNamespace.GetTypeMembers("Constructed").Single();
             Assert.Equal(TypeKind.Class, @class.TypeKind);
@@ -98,10 +98,10 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             var substitutedInterface = @class.Interfaces().Single();
             Assert.Equal(@interface, substitutedInterface.ConstructedFrom);
 
-            var substitutedInterfaceProperty = (PropertySymbol)substitutedInterface.GetMembers("Property").Single();
+            var substitutedInterfaceProperty = (PropertySymbol)substitutedInterface.GetMembersAsImmutable("Property").Single();
             Assert.Equal(interfaceProperty, substitutedInterfaceProperty.OriginalDefinition);
 
-            var classProperty = (PropertySymbol)@class.GetMembers("IGeneric<System.Int32>.Property").Single();
+            var classProperty = (PropertySymbol)@class.GetMembersAsImmutable("IGeneric<System.Int32>.Property").Single();
 
             var explicitImpl = classProperty.ExplicitInterfaceImplementations.Single();
             Assert.Equal(substitutedInterfaceProperty, explicitImpl);
@@ -126,7 +126,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             var defInterface = (NamedTypeSymbol)globalNamespace.GetTypeMembers("Interface").Single();
             Assert.Equal(TypeKind.Interface, defInterface.TypeKind);
 
-            var defInterfaceProperty = (PropertySymbol)defInterface.GetMembers("Property").Single();
+            var defInterfaceProperty = (PropertySymbol)defInterface.GetMembersAsImmutable("Property").Single();
 
             var refInterface = (NamedTypeSymbol)globalNamespace.GetTypeMembers("IGenericInterface").Single();
             Assert.Equal(TypeKind.Interface, defInterface.TypeKind);
@@ -140,7 +140,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             Assert.Contains(defInterface, classInterfacesConstructedFrom);
             Assert.Contains(refInterface, classInterfacesConstructedFrom);
 
-            var classProperty = (PropertySymbol)@class.GetMembers("Interface.Property").Single();
+            var classProperty = (PropertySymbol)@class.GetMembersAsImmutable("Interface.Property").Single();
 
             var explicitImpl = classProperty.ExplicitInterfaceImplementations.Single();
             Assert.Equal(defInterfaceProperty, explicitImpl);
@@ -167,7 +167,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             Assert.Equal(1, outerInterface.Arity);
             Assert.Equal(TypeKind.Interface, outerInterface.TypeKind);
 
-            var outerInterfaceProperty = outerInterface.GetMembers().Single(m => m.Kind == SymbolKind.Property);
+            var outerInterfaceProperty = outerInterface.GetMembersAsImmutable().Single(m => m.Kind == SymbolKind.Property);
 
             var outerClass = (NamedTypeSymbol)globalNamespace.GetTypeMembers("Outer").Single();
             Assert.Equal(1, outerClass.Arity);
@@ -177,7 +177,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             Assert.Equal(1, innerInterface.Arity);
             Assert.Equal(TypeKind.Interface, innerInterface.TypeKind);
 
-            var innerInterfaceProperty = innerInterface.GetMembers().Single(m => m.Kind == SymbolKind.Property);
+            var innerInterfaceProperty = innerInterface.GetMembersAsImmutable().Single(m => m.Kind == SymbolKind.Property);
 
             var innerClass1 = (NamedTypeSymbol)outerClass.GetTypeMembers("Inner1").Single();
             CheckInnerClassHelper(innerClass1, "IGeneric2<A>.Property", outerInterfaceProperty);
@@ -200,7 +200,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             Assert.Equal(TypeKind.Class, innerClass.TypeKind);
             Assert.Equal(@interface, innerClass.Interfaces().Single().ConstructedFrom);
 
-            var innerClassProperty = (PropertySymbol)innerClass.GetMembers(methodName).Single();
+            var innerClassProperty = (PropertySymbol)innerClass.GetMembersAsImmutable(methodName).Single();
             var innerClassImplementingProperty = innerClassProperty.ExplicitInterfaceImplementations.Single();
             Assert.Equal(interfaceProperty, innerClassImplementingProperty.OriginalDefinition);
             Assert.Equal(@interface, innerClassImplementingProperty.ContainingType.ConstructedFrom);
@@ -229,11 +229,11 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             var @interface = (NamedTypeSymbol)globalNamespace.GetTypeMembers("Interface").Single();
             Assert.Equal(TypeKind.Interface, @interface.TypeKind);
 
-            var interfaceProperty1 = (PropertySymbol)@interface.GetMembers("Property1").Single();
-            var interfaceProperty2 = (PropertySymbol)@interface.GetMembers("Property2").Single();
-            var interfaceProperty3 = (PropertySymbol)@interface.GetMembers("Property3").Single();
-            var interfaceProperty4 = (PropertySymbol)@interface.GetMembers("Property4").Single();
-            var interfaceProperty5 = (PropertySymbol)@interface.GetMembers("Property5").Single();
+            var interfaceProperty1 = (PropertySymbol)@interface.GetMembersAsImmutable("Property1").Single();
+            var interfaceProperty2 = (PropertySymbol)@interface.GetMembersAsImmutable("Property2").Single();
+            var interfaceProperty3 = (PropertySymbol)@interface.GetMembersAsImmutable("Property3").Single();
+            var interfaceProperty4 = (PropertySymbol)@interface.GetMembersAsImmutable("Property4").Single();
+            var interfaceProperty5 = (PropertySymbol)@interface.GetMembersAsImmutable("Property5").Single();
 
             Assert.NotNull(interfaceProperty1.GetMethod);
             Assert.NotNull(interfaceProperty1.SetMethod);
@@ -253,8 +253,8 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             var @class = (NamedTypeSymbol)globalNamespace.GetTypeMembers("Class").Single();
             Assert.Equal(TypeKind.Class, @class.TypeKind);
 
-            var classProperty1 = (PropertySymbol)@class.GetMembers("Property1").Single();
-            var classProperty2 = (PropertySymbol)@class.GetMembers("Property2").Single();
+            var classProperty1 = (PropertySymbol)@class.GetMembersAsImmutable("Property1").Single();
+            var classProperty2 = (PropertySymbol)@class.GetMembersAsImmutable("Property2").Single();
 
             Assert.NotNull(classProperty1.GetMethod);
             Assert.NotNull(classProperty1.SetMethod);

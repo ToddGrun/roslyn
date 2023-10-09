@@ -255,11 +255,11 @@ class C
 
                 Assert.Equal(ToTestString(srcType.BaseType()), ToTestString(peType.BaseType()));
 
-                var srcMembers = srcType.GetMembers()
+                var srcMembers = srcType.GetMembersAsImmutable()
                     .Where(m => !m.Name.Contains("k__BackingField"))
                     .Select(ToTestString)
                     .ToList();
-                var peMembers = peType.GetMembers()
+                var peMembers = peType.GetMembersAsImmutable()
                     .Select(ToTestString)
                     .ToList();
 

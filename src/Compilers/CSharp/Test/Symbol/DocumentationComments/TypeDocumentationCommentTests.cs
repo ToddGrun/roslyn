@@ -43,7 +43,7 @@ namespace Acme
 	}
 }");
 
-            _acmeNamespace = (NamespaceSymbol)_compilation.GlobalNamespace.GetMembers("Acme").Single();
+            _acmeNamespace = (NamespaceSymbol)_compilation.GlobalNamespace.GetMembersAsImmutable("Acme").Single();
             _widgetClass = _acmeNamespace.GetTypeMembers("Widget").Single();
         }
 
@@ -88,7 +88,7 @@ namespace Acme
         [Fact]
         public void TestNestedInterface()
         {
-            Assert.Equal("T:Acme.Widget.IMenuItem", _widgetClass.GetMembers("IMenuItem").Single().GetDocumentationCommentId());
+            Assert.Equal("T:Acme.Widget.IMenuItem", _widgetClass.GetMembersAsImmutable("IMenuItem").Single().GetDocumentationCommentId());
         }
 
         [Fact]

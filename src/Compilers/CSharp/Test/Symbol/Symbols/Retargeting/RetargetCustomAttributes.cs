@@ -88,10 +88,10 @@ class TestClass
                 newMsCorLib_debuggerTypeProxyAttributeType = c2MscorlibAssemblyRef.GetTypeByMetadataName("System.Diagnostics.DebuggerTypeProxyAttribute");
                 Assert.NotSame(oldMsCorLib_debuggerTypeProxyAttributeType, newMsCorLib_debuggerTypeProxyAttributeType);
 
-                oldMsCorLib_debuggerTypeProxyAttributeCtor = (MethodSymbol)oldMsCorLib_debuggerTypeProxyAttributeType.GetMembers(".ctor").Single(
+                oldMsCorLib_debuggerTypeProxyAttributeCtor = (MethodSymbol)oldMsCorLib_debuggerTypeProxyAttributeType.GetMembersAsImmutable(".ctor").Single(
                     m => ((MethodSymbol)m).ParameterCount == 1 && TypeSymbol.Equals(((MethodSymbol)m).GetParameterType(0), oldMsCorLib_systemType, TypeCompareKind.ConsiderEverything2));
 
-                newMsCorLib_debuggerTypeProxyAttributeCtor = (MethodSymbol)newMsCorLib_debuggerTypeProxyAttributeType.GetMembers(".ctor").Single(
+                newMsCorLib_debuggerTypeProxyAttributeCtor = (MethodSymbol)newMsCorLib_debuggerTypeProxyAttributeType.GetMembersAsImmutable(".ctor").Single(
                     m => ((MethodSymbol)m).ParameterCount == 1 && TypeSymbol.Equals(((MethodSymbol)m).GetParameterType(0), newMsCorLib_systemType, TypeCompareKind.ConsiderEverything2));
 
                 Assert.NotSame(oldMsCorLib_debuggerTypeProxyAttributeCtor, newMsCorLib_debuggerTypeProxyAttributeCtor);
@@ -205,7 +205,7 @@ class TestClass
         {
             Test01 test = new Test01();
             var testClass = test.c2.Compilation.GlobalNamespace.GetTypeMembers("TestClass").Single();
-            FieldSymbol testField = testClass.GetMembers("testField").OfType<FieldSymbol>().Single();
+            FieldSymbol testField = testClass.GetMembersAsImmutable("testField").OfType<FieldSymbol>().Single();
             Assert.IsType<RetargetingFieldSymbol>(testField);
             test.TestAttributeRetargeting(testField);
         }
@@ -215,7 +215,7 @@ class TestClass
         {
             Test01 test = new Test01();
             var testClass = test.c2.Compilation.GlobalNamespace.GetTypeMembers("TestClass").Single();
-            PropertySymbol testProperty = testClass.GetMembers("TestProperty").OfType<PropertySymbol>().Single();
+            PropertySymbol testProperty = testClass.GetMembersAsImmutable("TestProperty").OfType<PropertySymbol>().Single();
             Assert.IsType<RetargetingPropertySymbol>(testProperty);
             test.TestAttributeRetargeting(testProperty);
 
@@ -229,7 +229,7 @@ class TestClass
         {
             Test01 test = new Test01();
             var testClass = test.c2.Compilation.GlobalNamespace.GetTypeMembers("TestClass").Single();
-            MethodSymbol testMethod = testClass.GetMembers("TestMethod").OfType<MethodSymbol>().Single();
+            MethodSymbol testMethod = testClass.GetMembersAsImmutable("TestMethod").OfType<MethodSymbol>().Single();
             Assert.IsType<RetargetingMethodSymbol>(testMethod);
             test.TestAttributeRetargeting(testMethod);
         }
@@ -239,7 +239,7 @@ class TestClass
         {
             Test01 test = new Test01();
             var testClass = test.c2.Compilation.GlobalNamespace.GetTypeMembers("TestClass").Single();
-            MethodSymbol testMethod = testClass.GetMembers("TestMethod").OfType<MethodSymbol>().Single();
+            MethodSymbol testMethod = testClass.GetMembersAsImmutable("TestMethod").OfType<MethodSymbol>().Single();
             Assert.IsType<RetargetingMethodSymbol>(testMethod);
             TypeParameterSymbol testTypeParameter = testMethod.TypeParameters[0];
             Assert.IsType<RetargetingTypeParameterSymbol>(testTypeParameter);
@@ -251,7 +251,7 @@ class TestClass
         {
             Test01 test = new Test01();
             var testClass = test.c2.Compilation.GlobalNamespace.GetTypeMembers("TestClass").Single();
-            MethodSymbol testMethod = testClass.GetMembers("TestMethod").OfType<MethodSymbol>().Single();
+            MethodSymbol testMethod = testClass.GetMembersAsImmutable("TestMethod").OfType<MethodSymbol>().Single();
             Assert.IsType<RetargetingMethodSymbol>(testMethod);
             ParameterSymbol testParameter = testMethod.Parameters[0];
             Assert.IsType<RetargetingMethodParameterSymbol>(testParameter);
@@ -263,7 +263,7 @@ class TestClass
         {
             Test01 test = new Test01();
             var testClass = test.c2.Compilation.GlobalNamespace.GetTypeMembers("TestClass").Single();
-            MethodSymbol testMethod = testClass.GetMembers("TestMethod").OfType<MethodSymbol>().Single();
+            MethodSymbol testMethod = testClass.GetMembersAsImmutable("TestMethod").OfType<MethodSymbol>().Single();
             Assert.IsType<RetargetingMethodSymbol>(testMethod);
             test.TestAttributeRetargeting_ReturnTypeAttributes(testMethod);
         }

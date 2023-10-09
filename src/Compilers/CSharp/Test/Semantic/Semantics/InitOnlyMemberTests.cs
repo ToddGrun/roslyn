@@ -398,7 +398,7 @@ public class C
                 Diagnostic(ErrorCode.ERR_DuplicateAccessor, "init").WithLocation(6, 51)
                 );
 
-            var members = ((NamedTypeSymbol)comp.GlobalNamespace.GetMember("C")).GetMembers();
+            var members = ((NamedTypeSymbol)comp.GlobalNamespace.GetMember("C")).GetMembersAsImmutable();
             AssertEx.SetEqual(members.ToTestDisplayStrings(),
                 new[] {
                     "System.String C.Property { set; }",
@@ -1448,7 +1448,7 @@ public class C
                 bool isSource = !(m is PEModuleSymbol);
                 var c = (NamedTypeSymbol)m.GlobalNamespace.GetMember("C");
 
-                var property = (PropertySymbol)c.GetMembers("Property").Single();
+                var property = (PropertySymbol)c.GetMembersAsImmutable("Property").Single();
                 Assert.Equal("System.String C.Property { get; init; }", property.ToTestDisplayString());
                 Assert.Equal(0, property.CustomModifierCount());
                 var propertyAttributes = property.GetAttributes().Select(a => a.ToString());
@@ -1485,7 +1485,7 @@ public class C
                     AssertEx.Equal(new[] { "System.Runtime.CompilerServices.CompilerGeneratedAttribute" }, setterAttributes);
                 }
 
-                var backingField = (FieldSymbol)c.GetMembers("<Property>k__BackingField").Single();
+                var backingField = (FieldSymbol)c.GetMembersAsImmutable("<Property>k__BackingField").Single();
                 var backingFieldAttributes = backingField.GetAttributes().Select(a => a.ToString());
                 Assert.True(backingField.IsReadOnly);
                 if (isSource)
@@ -2421,7 +2421,7 @@ public class C
                 Diagnostic(ErrorCode.ERR_AddOrRemoveExpected, "init").WithLocation(6, 9)
                 );
 
-            var members = ((NamedTypeSymbol)comp.GlobalNamespace.GetMember("C")).GetMembers();
+            var members = ((NamedTypeSymbol)comp.GlobalNamespace.GetMember("C")).GetMembersAsImmutable();
             AssertEx.SetEqual(members.ToTestDisplayStrings(), new[] {
                 "event System.Action C.Event",
                 "C..ctor()"
@@ -2532,7 +2532,7 @@ public record C(int i)
             var comp = CreateCompilation(new[] { source, IsExternalInitTypeDefinition }, parseOptions: TestOptions.Regular9);
             comp.VerifyDiagnostics();
 
-            var cMembers = comp.GlobalNamespace.GetMember<NamedTypeSymbol>("C").GetMembers();
+            var cMembers = comp.GlobalNamespace.GetMember<NamedTypeSymbol>("C").GetMembersAsImmutable();
             AssertEx.SetEqual(new[] {
                 "C C." + WellKnownMemberNames.CloneMethodName + "()",
                 "System.Type C.EqualityContract.get",
@@ -4136,7 +4136,7 @@ public class C
             Assert.False(localFunctionSymbol.GetPublicSymbol().IsInitOnly);
 
             var delegateSyntax = tree.GetRoot().DescendantNodes().OfType<DelegateDeclarationSyntax>().Single();
-            var delegateMemberSymbols = model.GetDeclaredSymbol(delegateSyntax).GetSymbol<SourceNamedTypeSymbol>().GetMembers();
+            var delegateMemberSymbols = model.GetDeclaredSymbol(delegateSyntax).GetSymbol<SourceNamedTypeSymbol>().GetMembersAsImmutable();
             Assert.True(delegateMemberSymbols.All(m => m is SourceDelegateMethodSymbol));
             foreach (var member in delegateMemberSymbols)
             {

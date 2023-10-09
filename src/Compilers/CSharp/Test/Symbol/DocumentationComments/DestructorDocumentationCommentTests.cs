@@ -31,19 +31,19 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
 }
 ");
 
-            _acmeNamespace = (NamespaceSymbol)_compilation.GlobalNamespace.GetMembers("Acme").Single();
+            _acmeNamespace = (NamespaceSymbol)_compilation.GlobalNamespace.GetMembersAsImmutable("Acme").Single();
             _widgetClass = _acmeNamespace.GetTypeMembers("Widget").Single();
         }
 
         [Fact]
         public void TestDestructor()
         {
-            Assert.Equal("M:Acme.Widget.Finalize", _widgetClass.GetMembers("Finalize").Single().GetDocumentationCommentId());
+            Assert.Equal("M:Acme.Widget.Finalize", _widgetClass.GetMembersAsImmutable("Finalize").Single().GetDocumentationCommentId());
             Assert.Equal(
 @"<member name=""M:Acme.Widget.Finalize"">
     <summary>Destructor Documentation</summary>
 </member>
-", _widgetClass.GetMembers("Finalize").Single().GetDocumentationCommentXml());
+", _widgetClass.GetMembersAsImmutable("Finalize").Single().GetDocumentationCommentXml());
         }
     }
 }

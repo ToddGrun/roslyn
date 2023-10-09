@@ -12,17 +12,25 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.PublicModel
 
         ImmutableArray<ISymbol> INamespaceOrTypeSymbol.GetMembers()
         {
-            return UnderlyingNamespaceOrTypeSymbol.GetMembers().GetPublicSymbols();
+            using var members = UnderlyingNamespaceOrTypeSymbol.GetMembers();
+            using var publicSymbols = members.GetPublicSymbols();
+
+            return publicSymbols.ToImmutableArray();
         }
 
         ImmutableArray<ISymbol> INamespaceOrTypeSymbol.GetMembers(string name)
         {
-            return UnderlyingNamespaceOrTypeSymbol.GetMembers(name).GetPublicSymbols();
+            using var members = UnderlyingNamespaceOrTypeSymbol.GetMembers(name);
+            using var publicSymbols = members.GetPublicSymbols();
+
+            return publicSymbols.ToImmutableArray();
         }
 
         ImmutableArray<INamedTypeSymbol> INamespaceOrTypeSymbol.GetTypeMembers()
         {
-            return UnderlyingNamespaceOrTypeSymbol.GetTypeMembers().GetPublicSymbols();
+            using var members = UnderlyingNamespaceOrTypeSymbol.GetTypeMembers();
+
+            return members.GetPublicSymbols();
         }
 
         ImmutableArray<INamedTypeSymbol> INamespaceOrTypeSymbol.GetTypeMembers(string name)

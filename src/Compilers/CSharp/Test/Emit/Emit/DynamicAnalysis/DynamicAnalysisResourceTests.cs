@@ -10,6 +10,7 @@ using System.Linq;
 using System.Reflection.PortableExecutable;
 using Microsoft.CodeAnalysis.CSharp.Symbols;
 using Microsoft.CodeAnalysis.CSharp.Test.Utilities;
+using Microsoft.CodeAnalysis.CSharp.UnitTests;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.CodeAnalysis.PooledObjects;
 using Microsoft.CodeAnalysis.Test.Utilities;
@@ -1026,7 +1027,7 @@ class C
             void validator(ModuleSymbol module)
             {
                 var type = module.ContainingAssembly.GetTypeByMetadataName("C");
-                Assert.Empty(type.GetMembers(".cctor"));
+                Assert.Empty(type.GetMembersAsImmutable(".cctor"));
             }
         }
 

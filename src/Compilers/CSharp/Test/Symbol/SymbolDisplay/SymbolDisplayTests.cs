@@ -1892,7 +1892,7 @@ class C
 
             TestSymbolDescription(
                 text,
-                global => global.GetTypeMembers("C", 0).Single().GetMembers("P").Single(),
+                global => global.GetTypeMembers("C", 0).Single().GetMembersAsImmutable("P").Single(),
                 format,
                 "Int32 P { get; }",
                 SymbolDisplayPartKind.StructName,
@@ -1908,7 +1908,7 @@ class C
 
             TestSymbolDescription(
                 text,
-                global => global.GetTypeMembers("C", 0).Single().GetMembers("Q").Single(),
+                global => global.GetTypeMembers("C", 0).Single().GetMembersAsImmutable("Q").Single(),
                 format,
                 "Object Q { set; }",
                 SymbolDisplayPartKind.ClassName,
@@ -1924,7 +1924,7 @@ class C
 
             TestSymbolDescription(
                 text,
-                global => global.GetTypeMembers("C", 0).Single().GetMembers("R").Single(),
+                global => global.GetTypeMembers("C", 0).Single().GetMembersAsImmutable("R").Single(),
                 format,
                 "Object R { get; set; }",
                 SymbolDisplayPartKind.ClassName,
@@ -2487,25 +2487,25 @@ abstract class C
 
             TestSymbolDescription(
                 text,
-                global => global.GetTypeMembers("I", 0).Single().GetMembers("P").Single(),
+                global => global.GetTypeMembers("I", 0).Single().GetMembersAsImmutable("P").Single(),
                 format,
                 "int P { get; }");
 
             TestSymbolDescription(
                 text,
-                global => global.GetTypeMembers("I", 0).Single().GetMembers("F").Single(),
+                global => global.GetTypeMembers("I", 0).Single().GetMembersAsImmutable("F").Single(),
                 format,
                 "object F()");
 
             TestSymbolDescription(
                 text,
-                global => global.GetTypeMembers("C", 0).Single().GetMembers("F").Single(),
+                global => global.GetTypeMembers("C", 0).Single().GetMembersAsImmutable("F").Single(),
                 format,
                 "public abstract object F()");
 
             TestSymbolDescription(
                 text,
-                global => global.GetTypeMembers("C", 0).Single().GetTypeMembers("I", 0).Single().GetMembers("M").Single(),
+                global => global.GetTypeMembers("C", 0).Single().GetTypeMembers("I", 0).Single().GetMembersAsImmutable("M").Single(),
                 format,
                 "void M()");
         }
@@ -2961,7 +2961,7 @@ class C1 {
 ";
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
-                ((FieldSymbol)global.GetTypeMembers("C1").Single().GetMembers("goo").Single()).Type;
+                ((FieldSymbol)global.GetTypeMembers("C1").Single().GetMembersAsImmutable("goo").Single()).Type;
 
             var format = SymbolDisplayFormat.MinimallyQualifiedFormat;
 
@@ -3383,7 +3383,7 @@ class C1 {
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
             {
-                var field = global.GetTypeMembers("Test", 0).Single().GetMembers("field").Single() as FieldSymbol;
+                var field = global.GetTypeMembers("Test", 0).Single().GetMembersAsImmutable("field").Single() as FieldSymbol;
                 return field.Type;
             };
 
@@ -3437,7 +3437,7 @@ class C1 {
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
             {
-                var field = global.GetTypeMembers("Test", 0).Single().GetMembers("field").Single() as FieldSymbol;
+                var field = global.GetTypeMembers("Test", 0).Single().GetMembersAsImmutable("field").Single() as FieldSymbol;
                 return field.Type;
             };
 
@@ -3489,7 +3489,7 @@ class C1 {
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
             {
-                var field = global.GetTypeMembers("Test", 0).Single().GetMembers("field2").Single() as FieldSymbol;
+                var field = global.GetTypeMembers("Test", 0).Single().GetMembersAsImmutable("field2").Single() as FieldSymbol;
                 return field.Type;
             };
 
@@ -7990,7 +7990,7 @@ class A {
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
                 ((FieldSymbol)global.GetTypeMembers("A", 0).Single()
-                .GetMembers("f").Single()).Type;
+                .GetMembersAsImmutable("f").Single()).Type;
 
             var format = new SymbolDisplayFormat();
 
@@ -8011,7 +8011,7 @@ class A {
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
                 ((FieldSymbol)global.GetTypeMembers("A", 0).Single()
-                .GetMembers("f").Single()).Type;
+                .GetMembersAsImmutable("f").Single()).Type;
 
             var format = new SymbolDisplayFormat();
 
@@ -8032,7 +8032,7 @@ class A {
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
                 ((FieldSymbol)global.GetTypeMembers("A", 0).Single()
-                .GetMembers("f").Single()).Type;
+                .GetMembersAsImmutable("f").Single()).Type;
 
             var format = new SymbolDisplayFormat();
 
@@ -8053,7 +8053,7 @@ class A {
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
                 ((FieldSymbol)global.GetTypeMembers("A", 0).Single()
-                .GetMembers("f").Single()).Type;
+                .GetMembersAsImmutable("f").Single()).Type;
 
             var format = new SymbolDisplayFormat();
 

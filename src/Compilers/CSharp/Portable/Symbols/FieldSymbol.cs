@@ -10,6 +10,7 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Microsoft.CodeAnalysis.CSharp.Emit;
+using Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE;
 using Microsoft.CodeAnalysis.RuntimeMembers;
 using Microsoft.CodeAnalysis.Symbols;
 using Roslyn.Utilities;
@@ -492,7 +493,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
                 WellKnownMember wellKnownMember = NamedTypeSymbol.GetTupleTypeMember(arity, tupleElementPosition);
                 MemberDescriptor descriptor = WellKnownMembers.GetDescriptor(wellKnownMember);
-                Symbol found = CSharpCompilation.GetRuntimeMember(ImmutableArray.Create<Symbol>(this), descriptor, CSharpCompilation.SpecialMembersSignatureComparer.Instance,
+                Symbol found = CSharpCompilation.GetRuntimeMember(ArrayWrapper<Symbol>.Create(this), descriptor, CSharpCompilation.SpecialMembersSignatureComparer.Instance,
                     accessWithinOpt: null); // force lookup of public members only
 
                 return found is not null

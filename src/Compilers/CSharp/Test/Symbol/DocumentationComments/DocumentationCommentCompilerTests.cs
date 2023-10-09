@@ -6234,7 +6234,7 @@ public class C { }
                 AssertEx.None(module.GetReferencedAssemblies(), id => id.Name.Contains("GeneralPia"));
 
                 // No type embedded.
-                Assert.Equal(0, module.GlobalNamespace.GetMembers("FooStruct").Length);
+                Assert.Equal(0, module.GlobalNamespace.GetMembersAsImmutable("FooStruct").Length);
             };
 
             // Don't embed.

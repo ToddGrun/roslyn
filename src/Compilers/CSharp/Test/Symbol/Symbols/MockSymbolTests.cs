@@ -144,10 +144,10 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
                 throw new InvalidOperationException("Unexpected symbol kind");
             }
 
-            if (sym is NamespaceOrTypeSymbol namespaceOrType && namespaceOrType.GetMembers().Any())
+            if (sym is NamespaceOrTypeSymbol namespaceOrType && namespaceOrType.GetMembersAsImmutable().Any())
             {
                 builder.AppendLine(" { ");
-                var q = from c in namespaceOrType.GetMembers()
+                var q = from c in namespaceOrType.GetMembersAsImmutable()
                         orderby c.Name
                         select c;
 

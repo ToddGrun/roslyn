@@ -284,14 +284,14 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
 
             var asm1classC = asm1.GlobalNamespace.GetTypeMembers("C").Single();
 
-            var asm1m1 = asm1classC.GetMembers("M1").OfType<MethodSymbol>().Single();
-            var asm1m2 = asm1classC.GetMembers("M2").OfType<MethodSymbol>().Single();
-            var asm1m3 = asm1classC.GetMembers("M3").OfType<MethodSymbol>().Single();
-            var asm1m4 = asm1classC.GetMembers("M4").OfType<MethodSymbol>().Single();
-            var asm1m5 = asm1classC.GetMembers("M5").OfType<MethodSymbol>().Single();
-            var asm1m6 = asm1classC.GetMembers("M6").OfType<MethodSymbol>().Single();
-            var asm1m7 = asm1classC.GetMembers("M7").OfType<MethodSymbol>().Single();
-            var asm1m8 = asm1classC.GetMembers("M8").OfType<MethodSymbol>().Single();
+            var asm1m1 = asm1classC.GetMembersAsImmutable("M1").OfType<MethodSymbol>().Single();
+            var asm1m2 = asm1classC.GetMembersAsImmutable("M2").OfType<MethodSymbol>().Single();
+            var asm1m3 = asm1classC.GetMembersAsImmutable("M3").OfType<MethodSymbol>().Single();
+            var asm1m4 = asm1classC.GetMembersAsImmutable("M4").OfType<MethodSymbol>().Single();
+            var asm1m5 = asm1classC.GetMembersAsImmutable("M5").OfType<MethodSymbol>().Single();
+            var asm1m6 = asm1classC.GetMembersAsImmutable("M6").OfType<MethodSymbol>().Single();
+            var asm1m7 = asm1classC.GetMembersAsImmutable("M7").OfType<MethodSymbol>().Single();
+            var asm1m8 = asm1classC.GetMembersAsImmutable("M8").OfType<MethodSymbol>().Single();
 
             Assert.NotEqual(asm1m2.ReturnType, asm1m1.ReturnType);
             Assert.NotEqual(asm1m3.ReturnType, asm1m1.ReturnType);
@@ -307,8 +307,8 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
 
             var asm2classC = asm2.GlobalNamespace.GetTypeMembers("C").Single();
 
-            var asm2m1 = asm2classC.GetMembers("M1").OfType<MethodSymbol>().Single();
-            var asm2m4 = asm2classC.GetMembers("M4").OfType<MethodSymbol>().Single();
+            var asm2m1 = asm2classC.GetMembersAsImmutable("M1").OfType<MethodSymbol>().Single();
+            var asm2m4 = asm2classC.GetMembersAsImmutable("M4").OfType<MethodSymbol>().Single();
 
             Assert.Equal(asm2m1.ReturnType, asm1m1.ReturnType);
 

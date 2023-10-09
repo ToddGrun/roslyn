@@ -34,11 +34,11 @@ class Class2
             var global = comp.GlobalNamespace;
 
             var class1 = global.GetTypeMembers("Class1").Single();
-            var class1Method1 = (MethodSymbol)class1.GetMembers("Method1").Single();
-            var class1Method2 = (MethodSymbol)class1.GetMembers("Method2").Single();
+            var class1Method1 = (MethodSymbol)class1.GetMembersAsImmutable("Method1").Single();
+            var class1Method2 = (MethodSymbol)class1.GetMembersAsImmutable("Method2").Single();
 
             var class2 = global.GetTypeMembers("Class2").Single();
-            var class2Method1 = (MethodSymbol)class2.GetMembers("Method1").Single();
+            var class2Method1 = (MethodSymbol)class2.GetMembersAsImmutable("Method1").Single();
 
             Assert.Equal(class1Method1, class1Method1);
 
@@ -81,18 +81,18 @@ class Derived2 : Base<int>
             var global = comp.GlobalNamespace;
 
             var baseClass = global.GetTypeMembers("Base").Single();
-            var baseClassMethod1 = (MethodSymbol)baseClass.GetMembers("Method").First();
-            var baseClassMethod2 = (MethodSymbol)baseClass.GetMembers("Method").Last();
+            var baseClassMethod1 = (MethodSymbol)baseClass.GetMembersAsImmutable("Method").First();
+            var baseClassMethod2 = (MethodSymbol)baseClass.GetMembersAsImmutable("Method").Last();
 
             var derivedClass1 = global.GetTypeMembers("Derived1").Single();
             var substitutedBaseClass = derivedClass1.BaseType();
-            var substitutedBaseClassMethod1 = (MethodSymbol)substitutedBaseClass.GetMembers("Method").First();
-            var substitutedBaseClassMethod2 = (MethodSymbol)substitutedBaseClass.GetMembers("Method").Last();
+            var substitutedBaseClassMethod1 = (MethodSymbol)substitutedBaseClass.GetMembersAsImmutable("Method").First();
+            var substitutedBaseClassMethod2 = (MethodSymbol)substitutedBaseClass.GetMembersAsImmutable("Method").Last();
 
             var derivedClass2 = global.GetTypeMembers("Derived2").Single();
             var constructedBaseClass = derivedClass2.BaseType();
-            var constructedBaseClassMethod1 = (MethodSymbol)constructedBaseClass.GetMembers("Method").First();
-            var constructedBaseClassMethod2 = (MethodSymbol)constructedBaseClass.GetMembers("Method").Last();
+            var constructedBaseClassMethod1 = (MethodSymbol)constructedBaseClass.GetMembersAsImmutable("Method").First();
+            var constructedBaseClassMethod2 = (MethodSymbol)constructedBaseClass.GetMembersAsImmutable("Method").Last();
 
             //different type args
             Assert.NotEqual(baseClassMethod1, substitutedBaseClassMethod1);
@@ -141,18 +141,18 @@ class Derived2 : Base<int>
             var global = comp.GlobalNamespace;
 
             var baseClass = global.GetTypeMembers("Base").Single();
-            var baseClassMethod1 = (MethodSymbol)baseClass.GetMembers("Method").First();
-            var baseClassMethod2 = (MethodSymbol)baseClass.GetMembers("Method").Last();
+            var baseClassMethod1 = (MethodSymbol)baseClass.GetMembersAsImmutable("Method").First();
+            var baseClassMethod2 = (MethodSymbol)baseClass.GetMembersAsImmutable("Method").Last();
 
             var derivedClass1 = global.GetTypeMembers("Derived1").Single();
             var substitutedBaseClass = derivedClass1.BaseType();
-            var substitutedBaseClassMethod1 = (MethodSymbol)substitutedBaseClass.GetMembers("Method").First();
-            var substitutedBaseClassMethod2 = (MethodSymbol)substitutedBaseClass.GetMembers("Method").Last();
+            var substitutedBaseClassMethod1 = (MethodSymbol)substitutedBaseClass.GetMembersAsImmutable("Method").First();
+            var substitutedBaseClassMethod2 = (MethodSymbol)substitutedBaseClass.GetMembersAsImmutable("Method").Last();
 
             var derivedClass2 = global.GetTypeMembers("Derived2").Single();
             var constructedBaseClass = derivedClass2.BaseType();
-            var constructedBaseClassMethod1 = (MethodSymbol)constructedBaseClass.GetMembers("Method").First();
-            var constructedBaseClassMethod2 = (MethodSymbol)constructedBaseClass.GetMembers("Method").Last();
+            var constructedBaseClassMethod1 = (MethodSymbol)constructedBaseClass.GetMembersAsImmutable("Method").First();
+            var constructedBaseClassMethod2 = (MethodSymbol)constructedBaseClass.GetMembersAsImmutable("Method").Last();
 
             //different type args
             Assert.NotEqual(baseClassMethod1, substitutedBaseClassMethod1);

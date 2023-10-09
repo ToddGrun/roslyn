@@ -2016,7 +2016,7 @@ class Program
                 ToArray();
 
             var containingType = fieldReferences[0].ContainingType;
-            var fieldMembers = containingType.GetMembers().WhereAsArray(m => m.Kind == SymbolKind.Field);
+            var fieldMembers = containingType.GetMembersAsImmutable().WhereAsArray(m => m.Kind == SymbolKind.Field);
             var expectedMembers = new[]
             {
                 "System.Object R<System.Object>.F1",
@@ -2265,7 +2265,7 @@ public class B
 
             static void verifyFields(NamedTypeSymbol type, string[] expectedFields)
             {
-                var actualFields = type.GetMembers().OfType<FieldSymbol>().Select(f => f.ToTestDisplayString()).ToList();
+                var actualFields = type.GetMembersAsImmutable().OfType<FieldSymbol>().Select(f => f.ToTestDisplayString()).ToList();
                 AssertEx.Equal(actualFields, expectedFields);
             }
         }
@@ -26094,7 +26094,7 @@ $@".assembly extern mscorlib {{ .ver 4:0:0:0 .publickeytoken = (B7 7A 5C 56 19 3
 
             Assert.Equal(supportsRefFields, comp.SourceAssembly.RuntimeSupportsByRefFields);
 
-            var runtimeFeature = (FieldSymbol)comp.GetMember<NamedTypeSymbol>("System.Runtime.CompilerServices.RuntimeFeature").GetMembers("ByRefFields").SingleOrDefault();
+            var runtimeFeature = (FieldSymbol)comp.GetMember<NamedTypeSymbol>("System.Runtime.CompilerServices.RuntimeFeature").GetMembersAsImmutable("ByRefFields").SingleOrDefault();
             Assert.Equal(supportsRefFields, runtimeFeature is { });
             if (supportsRefFields)
             {

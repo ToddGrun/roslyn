@@ -3039,8 +3039,8 @@ class Test
             var reference = compVerifier.Compilation.EmitToImageReference();
             var comp = CSharpCompilation.Create("Name", references: new[] { reference }, options: TestOptions.ReleaseDll.WithMetadataImportOptions(MetadataImportOptions.Internal));
 
-            var pid = ((NamedTypeSymbol)comp.GlobalNamespace.GetMembers().Single(s => s.Name.StartsWith("<PrivateImplementationDetails>", StringComparison.Ordinal)));
-            var member = pid.GetMembers(PrivateImplementationDetails.SynthesizedStringHashFunctionName).Single();
+            var pid = ((NamedTypeSymbol)comp.GlobalNamespace.GetMembersAsImmutable().Single(s => s.Name.StartsWith("<PrivateImplementationDetails>", StringComparison.Ordinal)));
+            var member = pid.GetMembersAsImmutable(PrivateImplementationDetails.SynthesizedStringHashFunctionName).Single();
             Assert.Equal(Accessibility.Internal, member.DeclaredAccessibility);
 
             compVerifier = CompileAndVerify(text, options: TestOptions.ReleaseExe.WithModuleName("MODULE"), expectedOutput: "True");

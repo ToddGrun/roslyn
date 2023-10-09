@@ -256,7 +256,7 @@ class C
             Assert.Equal("(x, y) = new C()", deconstruction.ToString());
             var deconstructionInfo = model.GetDeconstructionInfo(deconstruction);
 
-            var firstDeconstructMethod = ((CSharpCompilation)comp.Compilation).GetTypeByMetadataName("C").GetMembers(WellKnownMemberNames.DeconstructMethodName)
+            var firstDeconstructMethod = ((CSharpCompilation)comp.Compilation).GetTypeByMetadataName("C").GetMembersAsImmutable(WellKnownMemberNames.DeconstructMethodName)
                 .OfType<SourceOrdinaryMethodSymbol>().Where(m => m.ParameterCount == 2).Single();
             Assert.Equal(firstDeconstructMethod.GetPublicSymbol(), deconstructionInfo.Method);
 

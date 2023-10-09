@@ -573,7 +573,7 @@ class Program
                 references: new MetadataReference[] { MetadataReference.CreateFromStream(comp1.EmitToStream()) },
                 expectedOutput: "12", verify: Verification.Fails).Compilation;
 
-            var f = (FieldSymbol)comp2.GlobalNamespace.GetTypeMembers("S")[0].GetMembers("x")[0];
+            var f = (FieldSymbol)comp2.GlobalNamespace.GetTypeMembers("S")[0].GetMembersAsImmutable("x")[0];
             Assert.Equal("x", f.Name);
             Assert.True(f.IsFixedSizeBuffer);
             Assert.Equal("int*", f.TypeWithAnnotations.ToString());

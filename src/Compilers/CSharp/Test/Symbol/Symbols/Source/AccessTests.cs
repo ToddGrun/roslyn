@@ -27,7 +27,7 @@ namespace A {}
             var tree = Parse(text);
             var comp = CreateCompilation(tree);
             var global = comp.GlobalNamespace;
-            var a = global.GetMembers("A").Single() as NamespaceSymbol;
+            var a = global.GetMembersAsImmutable("A").Single() as NamespaceSymbol;
             Assert.Equal(Accessibility.Public, a.DeclaredAccessibility);
             var errs = comp.GetSemanticModel(tree).GetDeclarationDiagnostics();
             Assert.Equal(0, errs.Count());
@@ -44,7 +44,7 @@ public namespace A {}
             var tree = Parse(text);
             var comp = CreateCompilation(tree);
             var global = comp.GlobalNamespace;
-            var a = global.GetMembers("A").Single() as NamespaceSymbol;
+            var a = global.GetMembersAsImmutable("A").Single() as NamespaceSymbol;
             var errs = tree.GetDiagnostics();
             Assert.Equal(0, errs.Count());
 
@@ -70,7 +70,7 @@ namespace X {
             var tree = Parse(text);
             var comp = CreateCompilation(tree);
             var global = comp.GlobalNamespace;
-            var a = global.GetMembers("A").Single() as NamespaceSymbol;
+            var a = global.GetMembersAsImmutable("A").Single() as NamespaceSymbol;
             var errs = comp.GetSemanticModel(tree).GetDeclarationDiagnostics();
             Assert.Equal(0, errs.Count());
         }
@@ -93,7 +93,7 @@ namespace X {
             var tree = Parse(text);
             var comp = CreateCompilation(tree);
             var global = comp.GlobalNamespace;
-            var a = global.GetMembers("A").Single() as NamespaceSymbol;
+            var a = global.GetMembersAsImmutable("A").Single() as NamespaceSymbol;
             var errs = comp.GetSemanticModel(tree).GetDeclarationDiagnostics();
             Assert.Equal(6, errs.Count());
         }

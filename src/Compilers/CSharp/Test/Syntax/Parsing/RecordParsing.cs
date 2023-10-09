@@ -339,7 +339,7 @@ class C
                 Diagnostic(ErrorCode.ERR_UnexpectedParameterList, "(int x, int y)").WithLocation(1, 12)
                 );
 
-            Assert.Empty(comp.GetTypeByMetadataName("P").GetMembers());
+            Assert.Empty(comp.GetTypeByMetadataName("P").GetMembersAsImmutable());
             Assert.Null(((SourceMemberContainerTypeSymbol)comp.GetTypeByMetadataName("P")).PrimaryConstructor);
 
             UsingNode(text);

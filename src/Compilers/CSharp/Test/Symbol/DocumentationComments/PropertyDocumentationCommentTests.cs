@@ -32,7 +32,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
 }
 ");
 
-            _acmeNamespace = (NamespaceSymbol)_compilation.GlobalNamespace.GetMembers("Acme").Single();
+            _acmeNamespace = (NamespaceSymbol)_compilation.GlobalNamespace.GetMembersAsImmutable("Acme").Single();
             _widgetClass = _acmeNamespace.GetTypeMembers("Widget").Single();
         }
 
@@ -41,7 +41,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
         {
             Assert.Equal("P:Acme.Widget.Width",
                 _acmeNamespace.GetTypeMembers("Widget").Single()
-                    .GetMembers("Width").Single().GetDocumentationCommentId());
+                    .GetMembersAsImmutable("Width").Single().GetDocumentationCommentId());
         }
 
         [Fact]
@@ -49,7 +49,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
         {
             Assert.Equal("P:Acme.Widget.Item(System.Int32)",
                 _acmeNamespace.GetTypeMembers("Widget").Single()
-                    .GetMembers("this[]")[0].GetDocumentationCommentId());
+                    .GetMembersAsImmutable("this[]")[0].GetDocumentationCommentId());
         }
 
         [Fact]
@@ -57,7 +57,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
         {
             Assert.Equal("P:Acme.Widget.Item(System.String,System.Int32)",
                 _acmeNamespace.GetTypeMembers("Widget").Single()
-                    .GetMembers("this[]")[1].GetDocumentationCommentId());
+                    .GetMembersAsImmutable("this[]")[1].GetDocumentationCommentId());
         }
     }
 }

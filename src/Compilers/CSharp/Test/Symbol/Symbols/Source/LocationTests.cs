@@ -25,17 +25,17 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
             // 012345678901234567890123456789012345678901234567890123456789012345678901234567890
             var comp = CreateEmptyCompilation(text, new[] { MscorlibRef });
             var global = comp.GlobalNamespace;
-            var n = global.GetMembers("N").Single() as NamespaceSymbol;
+            var n = global.GetMembersAsImmutable("N").Single() as NamespaceSymbol;
             AssertPos(n, 10, 1);
-            var s = n.GetMembers("S").Single() as NamespaceSymbol;
+            var s = n.GetMembersAsImmutable("S").Single() as NamespaceSymbol;
             AssertPos(s, 12, 1);
             var c = s.GetTypeMembers("C", 0).Single() as NamedTypeSymbol;
             AssertPos(c, 20, 1);
             var obj = c.BaseType();
             Assert.Equal("MetadataFile(CommonLanguageRuntimeLibrary)", obj.Locations[0].ToString());
-            var f = c.GetMembers("F").Single() as FieldSymbol;
+            var f = c.GetMembersAsImmutable("F").Single() as FieldSymbol;
             AssertPos(f, 26, 1);
-            var m = c.GetMembers("M").Single() as MethodSymbol;
+            var m = c.GetMembersAsImmutable("M").Single() as MethodSymbol;
             AssertPos(m, 34, 1);
             var p = m.Parameters[0];
             AssertPos(p, 40, 1);

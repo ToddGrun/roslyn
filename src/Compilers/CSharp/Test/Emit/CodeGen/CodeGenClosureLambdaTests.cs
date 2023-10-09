@@ -3960,7 +3960,7 @@ public class C
                     "C.<>c__1<TG>",
                     "C.<>c__2<TF1, TF2>",
                     "C.<>c__3<TG1, TG2>"
-                }, c.GetMembers().Where(member => member.Kind == SymbolKind.NamedType).Select(member => member.ToString()));
+                }, c.GetMembersAsImmutable().Where(member => member.Kind == SymbolKind.NamedType).Select(member => member.ToString()));
 
                 var c0 = c.GetMember<NamedTypeSymbol>("<>c__0");
                 AssertEx.SetEqual(new[]
@@ -3970,7 +3970,7 @@ public class C
                     "C.<>c__0<TF>.<>c__0()",
                     "C.<>c__0<TF>.<>c__0()",
                     "C.<>c__0<TF>.<F>b__0_0()",
-                }, c0.GetMembers().Select(member => member.ToString()));
+                }, c0.GetMembersAsImmutable().Select(member => member.ToString()));
 
                 var c1 = c.GetMember<NamedTypeSymbol>("<>c__1");
                 AssertEx.SetEqual(new[]
@@ -3980,7 +3980,7 @@ public class C
                     "C.<>c__1<TG>.<>c__1()",
                     "C.<>c__1<TG>.<>c__1()",
                     "C.<>c__1<TG>.<G>b__1_0()",
-                }, c1.GetMembers().Select(member => member.ToString()));
+                }, c1.GetMembersAsImmutable().Select(member => member.ToString()));
 
                 var c2 = c.GetMember<NamedTypeSymbol>("<>c__2");
                 AssertEx.SetEqual(new[]
@@ -3990,7 +3990,7 @@ public class C
                     "C.<>c__2<TF1, TF2>.<>c__2()",
                     "C.<>c__2<TF1, TF2>.<>c__2()",
                     "C.<>c__2<TF1, TF2>.<F>b__2_0(TF1)",
-                }, c2.GetMembers().Select(member => member.ToString()));
+                }, c2.GetMembersAsImmutable().Select(member => member.ToString()));
 
                 var c3 = c.GetMember<NamedTypeSymbol>("<>c__3");
                 AssertEx.SetEqual(new[]
@@ -4000,7 +4000,7 @@ public class C
                     "C.<>c__3<TG1, TG2>.<>c__3()",
                     "C.<>c__3<TG1, TG2>.<>c__3()",
                     "C.<>c__3<TG1, TG2>.<G>b__3_0(TG1)",
-                }, c3.GetMembers().Select(member => member.ToString()));
+                }, c3.GetMembersAsImmutable().Select(member => member.ToString()));
             });
         }
 
@@ -4029,7 +4029,7 @@ public class C
                 {
                     "C.<>c__0<TF>",
                     "C.<>c__1<TG>",
-                }, c.GetMembers().Where(member => member.Kind == SymbolKind.NamedType).Select(member => member.ToString()));
+                }, c.GetMembersAsImmutable().Where(member => member.Kind == SymbolKind.NamedType).Select(member => member.ToString()));
             });
         }
 
@@ -4078,7 +4078,7 @@ public class C
                     "C.<G>b__1_0<TG>()",
                     "C.<F>b__2_0<TF1, TF2>(TF1)",
                     "C.<G>b__3_0<TG1, TG2>(TG1)",
-                }, c.GetMembers().Select(member => member.ToString()));
+                }, c.GetMembersAsImmutable().Select(member => member.ToString()));
             });
         }
 
@@ -4252,7 +4252,7 @@ class Program
 
     static void Main()
     {
-        foreach (var member in typeof(D1).GetMembers(
+        foreach (var member in typeof(D1).GetMembersAsImmutable(
             System.Reflection.BindingFlags.DeclaredOnly |
             System.Reflection.BindingFlags.Public |
             System.Reflection.BindingFlags.Instance).OrderBy(m=>m.MetadataToken))
@@ -4652,7 +4652,7 @@ class Test
         var total = 0;
         if (nested.Length > 0 && nested[0].Name.StartsWith(""<>c__DisplayClass"", StringComparison.Ordinal))
         {
-            foreach (MemberInfo mi in nested[0].GetMembers(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance))
+            foreach (MemberInfo mi in nested[0].GetMembersAsImmutable(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance))
             {
                 var ca = mi.GetCustomAttributes(typeof(CompilerGeneratedAttribute), false);
                 foreach (var a in ca) Console.WriteLine(mi + "": "" + a);

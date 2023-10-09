@@ -38,7 +38,7 @@ $@"namespace Test {ob}
                 {
                     var actualMembers =
                         m.GlobalNamespace.GetMember<NamespaceSymbol>("Test").
-                        GetMember<NamedTypeSymbol>("voidDelegate").GetMembers().ToArray();
+                        GetMember<NamedTypeSymbol>("voidDelegate").GetMembersAsImmutable().ToArray();
 
                     AssertEx.SetEqual(actualMembers.Select(s => s.Name), expectedMembers);
                 };
@@ -234,7 +234,7 @@ class Test
                     return false;
                 }
 
-                foreach (var member in fieldType.GetMembers())
+                foreach (var member in fieldType.GetMembersAsImmutable())
                 {
                     switch (member.Name)
                     {
@@ -252,7 +252,7 @@ class Test
             Action<ModuleSymbol> validator = module =>
             {
                 var type = module.GlobalNamespace.GetMember<NamedTypeSymbol>("Test");
-                var fields = type.GetMembers();
+                var fields = type.GetMembersAsImmutable();
 
                 foreach (var field in fields)
                 {

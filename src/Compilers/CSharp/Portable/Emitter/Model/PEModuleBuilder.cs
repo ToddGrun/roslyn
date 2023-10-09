@@ -16,6 +16,7 @@ using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeGen;
 using Microsoft.CodeAnalysis.CSharp.Symbols;
+using Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.CodeAnalysis.PooledObjects;
 using Roslyn.Utilities;
@@ -767,8 +768,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Emit
                             builder.Add(new Cci.ExportedType(type.GetCciAdapter(), parentIndex, isForwarder: true));
 
                             // Iterate backwards so they get popped in forward order.
-                            ImmutableArray<NamedTypeSymbol> nested = type.GetTypeMembers(); // Ordered.
-                            for (int i = nested.Length - 1; i >= 0; i--)
+                            using ArrayWrapper<NamedTypeSymbol> nested = type.GetTypeMembers(); // Ordered.
+                            for (int i = nested.Count - 1; i >= 0; i--)
                             {
                                 stack.Push((nested[i], index));
                             }

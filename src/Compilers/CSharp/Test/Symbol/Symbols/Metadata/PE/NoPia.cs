@@ -30,14 +30,14 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             var localTypes1 = assemblies[0].Modules[0];
             var localTypes2 = assemblies[1].Modules[0];
 
-            Assert.Equal(0, localTypes1.GlobalNamespace.GetMembers("I1").Length);
-            Assert.Equal(0, localTypes1.GlobalNamespace.GetMembers("S1").Length);
-            Assert.Equal(0, localTypes1.GlobalNamespace.GetMembers("NS1").OfType<NamespaceSymbol>().Single().
+            Assert.Equal(0, localTypes1.GlobalNamespace.GetMembersAsImmutable("I1").Length);
+            Assert.Equal(0, localTypes1.GlobalNamespace.GetMembersAsImmutable("S1").Length);
+            Assert.Equal(0, localTypes1.GlobalNamespace.GetMembersAsImmutable("NS1").OfType<NamespaceSymbol>().Single().
                                         GetTypeMembers().Length);
 
-            Assert.Equal(0, localTypes2.GlobalNamespace.GetMembers("I1").Length);
-            Assert.Equal(0, localTypes2.GlobalNamespace.GetMembers("S1").Length);
-            Assert.Equal(0, localTypes2.GlobalNamespace.GetMembers("NS1").OfType<NamespaceSymbol>().Single().
+            Assert.Equal(0, localTypes2.GlobalNamespace.GetMembersAsImmutable("I1").Length);
+            Assert.Equal(0, localTypes2.GlobalNamespace.GetMembersAsImmutable("S1").Length);
+            Assert.Equal(0, localTypes2.GlobalNamespace.GetMembersAsImmutable("NS1").OfType<NamespaceSymbol>().Single().
                                         GetTypeMembers().Length);
         }
 
@@ -59,7 +59,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
 
             var varI1 = pia1_1.GlobalNamespace.GetTypeMembers("I1").Single();
             var varS1 = pia1_1.GlobalNamespace.GetTypeMembers("S1").Single();
-            var varNS1 = pia1_1.GlobalNamespace.GetMembers("NS1").OfType<NamespaceSymbol>().Single();
+            var varNS1 = pia1_1.GlobalNamespace.GetMembersAsImmutable("NS1").OfType<NamespaceSymbol>().Single();
             var varI2 = varNS1.GetTypeMembers("I2").Single();
             var varS2 = varNS1.GetTypeMembers("S2").Single();
 
@@ -72,8 +72,8 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             MethodSymbol test1;
             MethodSymbol test2;
 
-            test1 = classLocalTypes1.GetMembers("Test1").OfType<MethodSymbol>().Single();
-            test2 = classLocalTypes2.GetMembers("Test2").OfType<MethodSymbol>().Single();
+            test1 = classLocalTypes1.GetMembersAsImmutable("Test1").OfType<MethodSymbol>().Single();
+            test2 = classLocalTypes2.GetMembersAsImmutable("Test2").OfType<MethodSymbol>().Single();
 
             ImmutableArray<ParameterSymbol> param;
 
@@ -105,8 +105,8 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             classLocalTypes1 = localTypes1_2.GlobalNamespace.GetTypeMembers("LocalTypes1").Single();
             classLocalTypes2 = localTypes2_2.GlobalNamespace.GetTypeMembers("LocalTypes2").Single();
 
-            test1 = classLocalTypes1.GetMembers("Test1").OfType<MethodSymbol>().Single();
-            test2 = classLocalTypes2.GetMembers("Test2").OfType<MethodSymbol>().Single();
+            test1 = classLocalTypes1.GetMembersAsImmutable("Test1").OfType<MethodSymbol>().Single();
+            test2 = classLocalTypes2.GetMembersAsImmutable("Test2").OfType<MethodSymbol>().Single();
 
             param = test1.Parameters;
 
@@ -138,13 +138,13 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             classLocalTypes1 = localTypes1_3.GlobalNamespace.GetTypeMembers("LocalTypes1").Single();
             classLocalTypes2 = localTypes2_3.GlobalNamespace.GetTypeMembers("LocalTypes2").Single();
 
-            test1 = classLocalTypes1.GetMembers("Test1").OfType<MethodSymbol>().Single();
-            test2 = classLocalTypes2.GetMembers("Test2").OfType<MethodSymbol>().Single();
+            test1 = classLocalTypes1.GetMembersAsImmutable("Test1").OfType<MethodSymbol>().Single();
+            test2 = classLocalTypes2.GetMembersAsImmutable("Test2").OfType<MethodSymbol>().Single();
 
             param = test1.Parameters;
 
             Assert.Same(pia1_3.GlobalNamespace.GetTypeMembers("I1").Single(), param[0].Type);
-            Assert.Same(pia1_3.GlobalNamespace.GetMembers("NS1").OfType<NamespaceSymbol>().Single().GetTypeMembers("I2").Single(), param[1].Type);
+            Assert.Same(pia1_3.GlobalNamespace.GetMembersAsImmutable("NS1").OfType<NamespaceSymbol>().Single().GetTypeMembers("I2").Single(), param[1].Type);
 
             // This tests that we cannot find canonical type for an embedded structure if we don't know
             // whether it is a structure because we can't find definition of the base class. Mscorlib is
@@ -192,8 +192,8 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             classLocalTypes1 = localTypes1_5.GlobalNamespace.GetTypeMembers("LocalTypes1").Single();
             classLocalTypes2 = localTypes2_5.GlobalNamespace.GetTypeMembers("LocalTypes2").Single();
 
-            test1 = classLocalTypes1.GetMembers("Test1").OfType<MethodSymbol>().Single();
-            test2 = classLocalTypes2.GetMembers("Test2").OfType<MethodSymbol>().Single();
+            test1 = classLocalTypes1.GetMembersAsImmutable("Test1").OfType<MethodSymbol>().Single();
+            test2 = classLocalTypes2.GetMembersAsImmutable("Test2").OfType<MethodSymbol>().Single();
 
             param = test1.Parameters;
 
@@ -229,8 +229,8 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             classLocalTypes1 = localTypes1_6.GlobalNamespace.GetTypeMembers("LocalTypes1").Single();
             classLocalTypes2 = localTypes2_6.GlobalNamespace.GetTypeMembers("LocalTypes2").Single();
 
-            test1 = classLocalTypes1.GetMembers("Test1").OfType<MethodSymbol>().Single();
-            test2 = classLocalTypes2.GetMembers("Test2").OfType<MethodSymbol>().Single();
+            test1 = classLocalTypes1.GetMembersAsImmutable("Test1").OfType<MethodSymbol>().Single();
+            test2 = classLocalTypes2.GetMembersAsImmutable("Test2").OfType<MethodSymbol>().Single();
 
             param = test1.Parameters;
 
@@ -260,8 +260,8 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             classLocalTypes1 = localTypes1_7.GlobalNamespace.GetTypeMembers("LocalTypes1").Single();
             classLocalTypes2 = localTypes2_7.GlobalNamespace.GetTypeMembers("LocalTypes2").Single();
 
-            test1 = classLocalTypes1.GetMembers("Test1").OfType<MethodSymbol>().Single();
-            test2 = classLocalTypes2.GetMembers("Test2").OfType<MethodSymbol>().Single();
+            test1 = classLocalTypes1.GetMembersAsImmutable("Test1").OfType<MethodSymbol>().Single();
+            test2 = classLocalTypes2.GetMembersAsImmutable("Test2").OfType<MethodSymbol>().Single();
 
             param = test1.Parameters;
 
@@ -294,8 +294,8 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             classLocalTypes1 = localTypes1_8.GlobalNamespace.GetTypeMembers("LocalTypes1").Single();
             classLocalTypes2 = localTypes2_8.GlobalNamespace.GetTypeMembers("LocalTypes2").Single();
 
-            test1 = classLocalTypes1.GetMembers("Test1").OfType<MethodSymbol>().Single();
-            test2 = classLocalTypes2.GetMembers("Test2").OfType<MethodSymbol>().Single();
+            test1 = classLocalTypes1.GetMembersAsImmutable("Test1").OfType<MethodSymbol>().Single();
+            test2 = classLocalTypes2.GetMembersAsImmutable("Test2").OfType<MethodSymbol>().Single();
 
             param = test1.Parameters;
 
@@ -400,7 +400,7 @@ public class LocalTypes2
 
             var varI1 = pia1_1.GlobalNamespace.GetTypeMembers("I1").Single();
             var varS1 = pia1_1.GlobalNamespace.GetTypeMembers("S1").Single();
-            var varNS1 = pia1_1.GlobalNamespace.GetMembers("NS1").OfType<NamespaceSymbol>().Single();
+            var varNS1 = pia1_1.GlobalNamespace.GetMembersAsImmutable("NS1").OfType<NamespaceSymbol>().Single();
             var varI2 = varNS1.GetTypeMembers("I2").Single();
             var varS2 = varNS1.GetTypeMembers("S2").Single();
 
@@ -413,8 +413,8 @@ public class LocalTypes2
             MethodSymbol test1;
             MethodSymbol test2;
 
-            test1 = classLocalTypes1.GetMembers("Test1").OfType<MethodSymbol>().Single();
-            test2 = classLocalTypes2.GetMembers("Test2").OfType<MethodSymbol>().Single();
+            test1 = classLocalTypes1.GetMembersAsImmutable("Test1").OfType<MethodSymbol>().Single();
+            test2 = classLocalTypes2.GetMembersAsImmutable("Test2").OfType<MethodSymbol>().Single();
 
             ImmutableArray<ParameterSymbol> param;
 
@@ -446,8 +446,8 @@ public class LocalTypes2
             classLocalTypes1 = localTypes1_2.GlobalNamespace.GetTypeMembers("LocalTypes1").Single();
             classLocalTypes2 = localTypes2_2.GlobalNamespace.GetTypeMembers("LocalTypes2").Single();
 
-            test1 = classLocalTypes1.GetMembers("Test1").OfType<MethodSymbol>().Single();
-            test2 = classLocalTypes2.GetMembers("Test2").OfType<MethodSymbol>().Single();
+            test1 = classLocalTypes1.GetMembersAsImmutable("Test1").OfType<MethodSymbol>().Single();
+            test2 = classLocalTypes2.GetMembersAsImmutable("Test2").OfType<MethodSymbol>().Single();
 
             param = test1.Parameters;
 
@@ -478,8 +478,8 @@ public class LocalTypes2
             classLocalTypes1 = localTypes1_3.GlobalNamespace.GetTypeMembers("LocalTypes1").Single();
             classLocalTypes2 = localTypes2_3.GlobalNamespace.GetTypeMembers("LocalTypes2").Single();
 
-            test1 = classLocalTypes1.GetMembers("Test1").OfType<MethodSymbol>().Single();
-            test2 = classLocalTypes2.GetMembers("Test2").OfType<MethodSymbol>().Single();
+            test1 = classLocalTypes1.GetMembersAsImmutable("Test1").OfType<MethodSymbol>().Single();
+            test2 = classLocalTypes2.GetMembersAsImmutable("Test2").OfType<MethodSymbol>().Single();
 
             param = test1.Parameters;
 
@@ -518,8 +518,8 @@ public class LocalTypes2
             classLocalTypes1 = localTypes1_5.GlobalNamespace.GetTypeMembers("LocalTypes1").Single();
             classLocalTypes2 = localTypes2_5.GlobalNamespace.GetTypeMembers("LocalTypes2").Single();
 
-            test1 = classLocalTypes1.GetMembers("Test1").OfType<MethodSymbol>().Single();
-            test2 = classLocalTypes2.GetMembers("Test2").OfType<MethodSymbol>().Single();
+            test1 = classLocalTypes1.GetMembersAsImmutable("Test1").OfType<MethodSymbol>().Single();
+            test2 = classLocalTypes2.GetMembersAsImmutable("Test2").OfType<MethodSymbol>().Single();
 
             param = test1.Parameters;
 
@@ -563,8 +563,8 @@ public class LocalTypes2
             classLocalTypes1 = localTypes1_6.GlobalNamespace.GetTypeMembers("LocalTypes1").Single();
             classLocalTypes2 = localTypes2_6.GlobalNamespace.GetTypeMembers("LocalTypes2").Single();
 
-            test1 = classLocalTypes1.GetMembers("Test1").OfType<MethodSymbol>().Single();
-            test2 = classLocalTypes2.GetMembers("Test2").OfType<MethodSymbol>().Single();
+            test1 = classLocalTypes1.GetMembersAsImmutable("Test1").OfType<MethodSymbol>().Single();
+            test2 = classLocalTypes2.GetMembersAsImmutable("Test2").OfType<MethodSymbol>().Single();
 
             param = test1.Parameters;
 
@@ -594,8 +594,8 @@ public class LocalTypes2
             classLocalTypes1 = localTypes1_7.GlobalNamespace.GetTypeMembers("LocalTypes1").Single();
             classLocalTypes2 = localTypes2_7.GlobalNamespace.GetTypeMembers("LocalTypes2").Single();
 
-            test1 = classLocalTypes1.GetMembers("Test1").OfType<MethodSymbol>().Single();
-            test2 = classLocalTypes2.GetMembers("Test2").OfType<MethodSymbol>().Single();
+            test1 = classLocalTypes1.GetMembersAsImmutable("Test1").OfType<MethodSymbol>().Single();
+            test2 = classLocalTypes2.GetMembersAsImmutable("Test2").OfType<MethodSymbol>().Single();
 
             param = test1.Parameters;
 
@@ -630,8 +630,8 @@ public class LocalTypes2
             classLocalTypes1 = localTypes1_8.GlobalNamespace.GetTypeMembers("LocalTypes1").Single();
             classLocalTypes2 = localTypes2_8.GlobalNamespace.GetTypeMembers("LocalTypes2").Single();
 
-            test1 = classLocalTypes1.GetMembers("Test1").OfType<MethodSymbol>().Single();
-            test2 = classLocalTypes2.GetMembers("Test2").OfType<MethodSymbol>().Single();
+            test1 = classLocalTypes1.GetMembersAsImmutable("Test1").OfType<MethodSymbol>().Single();
+            test2 = classLocalTypes2.GetMembersAsImmutable("Test2").OfType<MethodSymbol>().Single();
 
             param = test1.Parameters;
 
@@ -714,15 +714,15 @@ public class LocalTypes2
             var asmLocalTypes3 = assemblies[0];
             var localTypes3 = asmLocalTypes3.GlobalNamespace.GetTypeMembers("LocalTypes3").Single();
 
-            Assert.NotEqual(SymbolKind.ErrorType, localTypes3.GetMembers("Test1").OfType<MethodSymbol>().Single().ReturnType.Kind);
-            Assert.NotEqual(SymbolKind.ErrorType, localTypes3.GetMembers("Test2").OfType<MethodSymbol>().Single().ReturnType.Kind);
-            Assert.Equal(SymbolKind.ErrorType, localTypes3.GetMembers("Test3").OfType<MethodSymbol>().Single().ReturnType.Kind);
+            Assert.NotEqual(SymbolKind.ErrorType, localTypes3.GetMembersAsImmutable("Test1").OfType<MethodSymbol>().Single().ReturnType.Kind);
+            Assert.NotEqual(SymbolKind.ErrorType, localTypes3.GetMembersAsImmutable("Test2").OfType<MethodSymbol>().Single().ReturnType.Kind);
+            Assert.Equal(SymbolKind.ErrorType, localTypes3.GetMembersAsImmutable("Test3").OfType<MethodSymbol>().Single().ReturnType.Kind);
 
-            NoPiaIllegalGenericInstantiationSymbol illegal = (NoPiaIllegalGenericInstantiationSymbol)localTypes3.GetMembers("Test3").OfType<MethodSymbol>().Single().ReturnType;
+            NoPiaIllegalGenericInstantiationSymbol illegal = (NoPiaIllegalGenericInstantiationSymbol)localTypes3.GetMembersAsImmutable("Test3").OfType<MethodSymbol>().Single().ReturnType;
             Assert.Equal("C31<I1>.I31<C33>", illegal.UnderlyingSymbol.ToTestDisplayString());
 
-            Assert.NotEqual(SymbolKind.ErrorType, localTypes3.GetMembers("Test4").OfType<MethodSymbol>().Single().ReturnType.Kind);
-            Assert.IsType<NoPiaIllegalGenericInstantiationSymbol>(localTypes3.GetMembers("Test5").OfType<MethodSymbol>().Single().ReturnType);
+            Assert.NotEqual(SymbolKind.ErrorType, localTypes3.GetMembersAsImmutable("Test4").OfType<MethodSymbol>().Single().ReturnType.Kind);
+            Assert.IsType<NoPiaIllegalGenericInstantiationSymbol>(localTypes3.GetMembersAsImmutable("Test5").OfType<MethodSymbol>().Single().ReturnType);
 
             assemblies = MetadataTestHelpers.GetSymbolsForReferences(new[]
                                 {
@@ -733,12 +733,12 @@ public class LocalTypes2
 
             localTypes3 = assemblies[0].GlobalNamespace.GetTypeMembers("LocalTypes3").Single();
 
-            Assert.NotEqual(SymbolKind.ErrorType, localTypes3.GetMembers("Test1").OfType<MethodSymbol>().Single().ReturnType.Kind);
-            Assert.NotEqual(SymbolKind.ErrorType, localTypes3.GetMembers("Test2").OfType<MethodSymbol>().Single().ReturnType.Kind);
-            Assert.IsType<NoPiaIllegalGenericInstantiationSymbol>(localTypes3.GetMembers("Test3").OfType<MethodSymbol>().Single().ReturnType);
-            Assert.NotEqual(SymbolKind.ErrorType, localTypes3.GetMembers("Test4").OfType<MethodSymbol>().Single().ReturnType.Kind);
-            Assert.IsType<NoPiaIllegalGenericInstantiationSymbol>(localTypes3.GetMembers("Test5").OfType<MethodSymbol>().Single().ReturnType);
-            Assert.IsType<NoPiaIllegalGenericInstantiationSymbol>(localTypes3.GetMembers("Test6").OfType<MethodSymbol>().Single().ReturnType);
+            Assert.NotEqual(SymbolKind.ErrorType, localTypes3.GetMembersAsImmutable("Test1").OfType<MethodSymbol>().Single().ReturnType.Kind);
+            Assert.NotEqual(SymbolKind.ErrorType, localTypes3.GetMembersAsImmutable("Test2").OfType<MethodSymbol>().Single().ReturnType.Kind);
+            Assert.IsType<NoPiaIllegalGenericInstantiationSymbol>(localTypes3.GetMembersAsImmutable("Test3").OfType<MethodSymbol>().Single().ReturnType);
+            Assert.NotEqual(SymbolKind.ErrorType, localTypes3.GetMembersAsImmutable("Test4").OfType<MethodSymbol>().Single().ReturnType.Kind);
+            Assert.IsType<NoPiaIllegalGenericInstantiationSymbol>(localTypes3.GetMembersAsImmutable("Test5").OfType<MethodSymbol>().Single().ReturnType);
+            Assert.IsType<NoPiaIllegalGenericInstantiationSymbol>(localTypes3.GetMembersAsImmutable("Test6").OfType<MethodSymbol>().Single().ReturnType);
         }
 
         [ConditionalFact(typeof(DesktopOnly))]
@@ -767,7 +767,7 @@ public class LocalTypes2
 
             var varI5_1 = pia5Asm1.GlobalNamespace.GetTypeMembers("I5").Single();
 
-            Assert.IsType<NoPiaIllegalGenericInstantiationSymbol>(varI5_1.GetMembers("Foo").OfType<MethodSymbol>().Single().ReturnType);
+            Assert.IsType<NoPiaIllegalGenericInstantiationSymbol>(varI5_1.GetMembersAsImmutable("Foo").OfType<MethodSymbol>().Single().ReturnType);
 
             var tc2 = CSharpCompilation.Create("C1", references: new MetadataReference[] { mscorlibRef, pia5Ref });
 
@@ -777,7 +777,7 @@ public class LocalTypes2
             Assert.NotSame(pia5Asm1, pia5Asm2);
 
             var varI5_2 = pia5Asm2.GlobalNamespace.GetTypeMembers("I5").Single();
-            Assert.NotEqual(SymbolKind.ErrorType, varI5_2.GetMembers("Foo").OfType<MethodSymbol>().Single().ReturnType.Kind);
+            Assert.NotEqual(SymbolKind.ErrorType, varI5_2.GetMembersAsImmutable("Foo").OfType<MethodSymbol>().Single().ReturnType.Kind);
 
             var tc3 = CSharpCompilation.Create("C1", references: new MetadataReference[] { mscorlibRef, library2Ref, pia5Link, pia1Ref });
 
@@ -790,8 +790,8 @@ public class LocalTypes2
             Assert.Same(pia5Asm1, pia5Asm3);
 
             var varI7_3 = library2Asm3.GlobalNamespace.GetTypeMembers("I7").Single();
-            Assert.IsType<NoPiaIllegalGenericInstantiationSymbol>(varI7_3.GetMembers("Foo").OfType<MethodSymbol>().Single().ReturnType);
-            Assert.NotEqual(SymbolKind.ErrorType, varI7_3.GetMembers("Bar").OfType<MethodSymbol>().Single().ReturnType.Kind);
+            Assert.IsType<NoPiaIllegalGenericInstantiationSymbol>(varI7_3.GetMembersAsImmutable("Foo").OfType<MethodSymbol>().Single().ReturnType);
+            Assert.NotEqual(SymbolKind.ErrorType, varI7_3.GetMembersAsImmutable("Bar").OfType<MethodSymbol>().Single().ReturnType.Kind);
 
             var tc4 = CSharpCompilation.Create("C1", references: new MetadataReference[] { mscorlibRef, library2Ref, pia5Ref, pia1Ref });
 
@@ -806,8 +806,8 @@ public class LocalTypes2
             Assert.NotSame(library2Asm3, library2Asm4);
 
             var varI7_4 = library2Asm4.GlobalNamespace.GetTypeMembers("I7").Single();
-            Assert.NotEqual(SymbolKind.ErrorType, varI7_4.GetMembers("Foo").OfType<MethodSymbol>().Single().ReturnType.Kind);
-            Assert.NotEqual(SymbolKind.ErrorType, varI7_4.GetMembers("Bar").OfType<MethodSymbol>().Single().ReturnType.Kind);
+            Assert.NotEqual(SymbolKind.ErrorType, varI7_4.GetMembersAsImmutable("Foo").OfType<MethodSymbol>().Single().ReturnType.Kind);
+            Assert.NotEqual(SymbolKind.ErrorType, varI7_4.GetMembersAsImmutable("Bar").OfType<MethodSymbol>().Single().ReturnType.Kind);
 
             var tc5 = CSharpCompilation.Create("C1", references: new MetadataReference[] { mscorlibRef, library2Ref, pia5Link, pia1Link });
 
@@ -824,8 +824,8 @@ public class LocalTypes2
             Assert.NotSame(library2Asm5, library2Asm4);
 
             var varI7_5 = library2Asm5.GlobalNamespace.GetTypeMembers("I7").Single();
-            Assert.IsType<NoPiaIllegalGenericInstantiationSymbol>(varI7_5.GetMembers("Foo").OfType<MethodSymbol>().Single().ReturnType);
-            Assert.IsType<NoPiaIllegalGenericInstantiationSymbol>(varI7_5.GetMembers("Bar").OfType<MethodSymbol>().Single().ReturnType);
+            Assert.IsType<NoPiaIllegalGenericInstantiationSymbol>(varI7_5.GetMembersAsImmutable("Foo").OfType<MethodSymbol>().Single().ReturnType);
+            Assert.IsType<NoPiaIllegalGenericInstantiationSymbol>(varI7_5.GetMembersAsImmutable("Bar").OfType<MethodSymbol>().Single().ReturnType);
 
             var tc6 = CSharpCompilation.Create("C1", references: new MetadataReference[] { mscorlibRef, library2Ref, pia5Link, pia1Ref });
 
@@ -854,8 +854,8 @@ public class LocalTypes2
             Assert.NotSame(library2Asm7, library2Asm5);
 
             var varI7_7 = library2Asm7.GlobalNamespace.GetTypeMembers("I7").Single();
-            Assert.IsType<NoPiaIllegalGenericInstantiationSymbol>(varI7_7.GetMembers("Foo").OfType<MethodSymbol>().Single().ReturnType);
-            Assert.NotEqual(SymbolKind.ErrorType, varI7_7.GetMembers("Bar").OfType<MethodSymbol>().Single().ReturnType.Kind);
+            Assert.IsType<NoPiaIllegalGenericInstantiationSymbol>(varI7_7.GetMembersAsImmutable("Foo").OfType<MethodSymbol>().Single().ReturnType);
+            Assert.NotEqual(SymbolKind.ErrorType, varI7_7.GetMembersAsImmutable("Bar").OfType<MethodSymbol>().Single().ReturnType.Kind);
 
             GC.KeepAlive(tc1);
             GC.KeepAlive(tc2);
@@ -1015,15 +1015,15 @@ public class C33
             var asmLocalTypes3 = assemblies[1];
             var localTypes3 = asmLocalTypes3.GlobalNamespace.GetTypeMembers("LocalTypes3").Single();
 
-            Assert.NotEqual(SymbolKind.ErrorType, localTypes3.GetMembers("Test1").OfType<MethodSymbol>().Single().ReturnType.Kind);
-            Assert.NotEqual(SymbolKind.ErrorType, localTypes3.GetMembers("Test2").OfType<MethodSymbol>().Single().ReturnType.Kind);
-            Assert.Equal(SymbolKind.ErrorType, localTypes3.GetMembers("Test3").OfType<MethodSymbol>().Single().ReturnType.Kind);
+            Assert.NotEqual(SymbolKind.ErrorType, localTypes3.GetMembersAsImmutable("Test1").OfType<MethodSymbol>().Single().ReturnType.Kind);
+            Assert.NotEqual(SymbolKind.ErrorType, localTypes3.GetMembersAsImmutable("Test2").OfType<MethodSymbol>().Single().ReturnType.Kind);
+            Assert.Equal(SymbolKind.ErrorType, localTypes3.GetMembersAsImmutable("Test3").OfType<MethodSymbol>().Single().ReturnType.Kind);
 
-            NoPiaIllegalGenericInstantiationSymbol illegal = (NoPiaIllegalGenericInstantiationSymbol)localTypes3.GetMembers("Test3").OfType<MethodSymbol>().Single().ReturnType;
+            NoPiaIllegalGenericInstantiationSymbol illegal = (NoPiaIllegalGenericInstantiationSymbol)localTypes3.GetMembersAsImmutable("Test3").OfType<MethodSymbol>().Single().ReturnType;
             Assert.Equal("C31<I1>.I31<C33>", illegal.UnderlyingSymbol.ToTestDisplayString());
 
-            Assert.NotEqual(SymbolKind.ErrorType, localTypes3.GetMembers("Test4").OfType<MethodSymbol>().Single().ReturnType.Kind);
-            Assert.IsType<NoPiaIllegalGenericInstantiationSymbol>(localTypes3.GetMembers("Test5").OfType<MethodSymbol>().Single().ReturnType);
+            Assert.NotEqual(SymbolKind.ErrorType, localTypes3.GetMembersAsImmutable("Test4").OfType<MethodSymbol>().Single().ReturnType.Kind);
+            Assert.IsType<NoPiaIllegalGenericInstantiationSymbol>(localTypes3.GetMembersAsImmutable("Test5").OfType<MethodSymbol>().Single().ReturnType);
 
             assemblies = MetadataTestHelpers.GetSymbolsForReferences(new[]
                                 {
@@ -1034,12 +1034,12 @@ public class C33
 
             localTypes3 = assemblies[2].GlobalNamespace.GetTypeMembers("LocalTypes3").Single();
 
-            Assert.NotEqual(SymbolKind.ErrorType, localTypes3.GetMembers("Test1").OfType<MethodSymbol>().Single().ReturnType.Kind);
-            Assert.NotEqual(SymbolKind.ErrorType, localTypes3.GetMembers("Test2").OfType<MethodSymbol>().Single().ReturnType.Kind);
-            Assert.IsType<NoPiaIllegalGenericInstantiationSymbol>(localTypes3.GetMembers("Test3").OfType<MethodSymbol>().Single().ReturnType);
-            Assert.NotEqual(SymbolKind.ErrorType, localTypes3.GetMembers("Test4").OfType<MethodSymbol>().Single().ReturnType.Kind);
-            Assert.IsType<NoPiaIllegalGenericInstantiationSymbol>(localTypes3.GetMembers("Test5").OfType<MethodSymbol>().Single().ReturnType);
-            Assert.IsType<NoPiaIllegalGenericInstantiationSymbol>(localTypes3.GetMembers("Test6").OfType<MethodSymbol>().Single().ReturnType);
+            Assert.NotEqual(SymbolKind.ErrorType, localTypes3.GetMembersAsImmutable("Test1").OfType<MethodSymbol>().Single().ReturnType.Kind);
+            Assert.NotEqual(SymbolKind.ErrorType, localTypes3.GetMembersAsImmutable("Test2").OfType<MethodSymbol>().Single().ReturnType.Kind);
+            Assert.IsType<NoPiaIllegalGenericInstantiationSymbol>(localTypes3.GetMembersAsImmutable("Test3").OfType<MethodSymbol>().Single().ReturnType);
+            Assert.NotEqual(SymbolKind.ErrorType, localTypes3.GetMembersAsImmutable("Test4").OfType<MethodSymbol>().Single().ReturnType.Kind);
+            Assert.IsType<NoPiaIllegalGenericInstantiationSymbol>(localTypes3.GetMembersAsImmutable("Test5").OfType<MethodSymbol>().Single().ReturnType);
+            Assert.IsType<NoPiaIllegalGenericInstantiationSymbol>(localTypes3.GetMembersAsImmutable("Test6").OfType<MethodSymbol>().Single().ReturnType);
         }
 
         [Fact]
@@ -1134,7 +1134,7 @@ public interface I7
 
             var varI5_1 = pia5Asm1.GlobalNamespace.GetTypeMembers("I5").Single();
 
-            Assert.IsType<NoPiaIllegalGenericInstantiationSymbol>(varI5_1.GetMembers("Foo").OfType<MethodSymbol>().Single().ReturnType);
+            Assert.IsType<NoPiaIllegalGenericInstantiationSymbol>(varI5_1.GetMembersAsImmutable("Foo").OfType<MethodSymbol>().Single().ReturnType);
 
             var tc2 = CSharpCompilation.Create("C1", new SyntaxTree[0], new MetadataReference[] { mscorlibRef, pia5Ref });
 
@@ -1144,7 +1144,7 @@ public interface I7
             Assert.NotSame(pia5Asm1, pia5Asm2);
 
             var varI5_2 = pia5Asm2.GlobalNamespace.GetTypeMembers("I5").Single();
-            Assert.NotEqual(SymbolKind.ErrorType, varI5_2.GetMembers("Foo").OfType<MethodSymbol>().Single().ReturnType.Kind);
+            Assert.NotEqual(SymbolKind.ErrorType, varI5_2.GetMembersAsImmutable("Foo").OfType<MethodSymbol>().Single().ReturnType.Kind);
 
             var tc3 = CSharpCompilation.Create("C1", new SyntaxTree[0], new MetadataReference[] { mscorlibRef, library2Ref, pia5Link, pia1Ref });
 
@@ -1157,8 +1157,8 @@ public interface I7
             Assert.Same(pia5Asm1, pia5Asm3);
 
             var varI7_3 = library2Asm3.GlobalNamespace.GetTypeMembers("I7").Single();
-            Assert.IsType<NoPiaIllegalGenericInstantiationSymbol>(varI7_3.GetMembers("Foo").OfType<MethodSymbol>().Single().ReturnType);
-            Assert.NotEqual(SymbolKind.ErrorType, varI7_3.GetMembers("Bar").OfType<MethodSymbol>().Single().ReturnType.Kind);
+            Assert.IsType<NoPiaIllegalGenericInstantiationSymbol>(varI7_3.GetMembersAsImmutable("Foo").OfType<MethodSymbol>().Single().ReturnType);
+            Assert.NotEqual(SymbolKind.ErrorType, varI7_3.GetMembersAsImmutable("Bar").OfType<MethodSymbol>().Single().ReturnType.Kind);
 
             var tc4 = CSharpCompilation.Create("C1", new SyntaxTree[0], new MetadataReference[] { mscorlibRef, library2Ref, pia5Ref, pia1Ref });
 
@@ -1173,8 +1173,8 @@ public interface I7
             Assert.NotSame(library2Asm3, library2Asm4);
 
             var varI7_4 = library2Asm4.GlobalNamespace.GetTypeMembers("I7").Single();
-            Assert.NotEqual(SymbolKind.ErrorType, varI7_4.GetMembers("Foo").OfType<MethodSymbol>().Single().ReturnType.Kind);
-            Assert.NotEqual(SymbolKind.ErrorType, varI7_4.GetMembers("Bar").OfType<MethodSymbol>().Single().ReturnType.Kind);
+            Assert.NotEqual(SymbolKind.ErrorType, varI7_4.GetMembersAsImmutable("Foo").OfType<MethodSymbol>().Single().ReturnType.Kind);
+            Assert.NotEqual(SymbolKind.ErrorType, varI7_4.GetMembersAsImmutable("Bar").OfType<MethodSymbol>().Single().ReturnType.Kind);
 
             var tc5 = CSharpCompilation.Create("C1", new SyntaxTree[0], new MetadataReference[] { mscorlibRef, library2Ref, pia5Link, pia1Link });
 
@@ -1191,8 +1191,8 @@ public interface I7
             Assert.NotSame(library2Asm5, library2Asm4);
 
             var varI7_5 = library2Asm5.GlobalNamespace.GetTypeMembers("I7").Single();
-            Assert.IsType<NoPiaIllegalGenericInstantiationSymbol>(varI7_5.GetMembers("Foo").OfType<MethodSymbol>().Single().ReturnType);
-            Assert.IsType<NoPiaIllegalGenericInstantiationSymbol>(varI7_5.GetMembers("Bar").OfType<MethodSymbol>().Single().ReturnType);
+            Assert.IsType<NoPiaIllegalGenericInstantiationSymbol>(varI7_5.GetMembersAsImmutable("Foo").OfType<MethodSymbol>().Single().ReturnType);
+            Assert.IsType<NoPiaIllegalGenericInstantiationSymbol>(varI7_5.GetMembersAsImmutable("Bar").OfType<MethodSymbol>().Single().ReturnType);
 
             var tc6 = CSharpCompilation.Create("C1", new SyntaxTree[0], new MetadataReference[] { mscorlibRef, library2Ref, pia5Link, pia1Ref });
 
@@ -1221,8 +1221,8 @@ public interface I7
             Assert.NotSame(library2Asm7, library2Asm5);
 
             var varI7_7 = library2Asm7.GlobalNamespace.GetTypeMembers("I7").Single();
-            Assert.IsType<NoPiaIllegalGenericInstantiationSymbol>(varI7_7.GetMembers("Foo").OfType<MethodSymbol>().Single().ReturnType);
-            Assert.NotEqual(SymbolKind.ErrorType, varI7_7.GetMembers("Bar").OfType<MethodSymbol>().Single().ReturnType.Kind);
+            Assert.IsType<NoPiaIllegalGenericInstantiationSymbol>(varI7_7.GetMembersAsImmutable("Foo").OfType<MethodSymbol>().Single().ReturnType);
+            Assert.NotEqual(SymbolKind.ErrorType, varI7_7.GetMembersAsImmutable("Bar").OfType<MethodSymbol>().Single().ReturnType.Kind);
 
             GC.KeepAlive(tc1);
             GC.KeepAlive(tc2);
@@ -1233,7 +1233,7 @@ public interface I7
             GC.KeepAlive(tc7);
 
             var varI5 = varC_Pia5.SourceModule.GlobalNamespace.GetTypeMembers("I5").Single();
-            var varI5_Foo = varI5.GetMembers("Foo").OfType<MethodSymbol>().Single();
+            var varI5_Foo = varI5.GetMembersAsImmutable("Foo").OfType<MethodSymbol>().Single();
             var varI6 = varC_Pia5.SourceModule.GlobalNamespace.GetTypeMembers("I6").Single();
 
             Assert.NotEqual(SymbolKind.ErrorType, varI5.Kind);
@@ -1243,8 +1243,8 @@ public interface I7
             Assert.Equal("System.Collections.Generic.List<I6>", varI5_Foo.ReturnType.ToTestDisplayString());
 
             var varI7 = varC_Library2.SourceModule.GlobalNamespace.GetTypeMembers("I7").Single();
-            var varI7_Foo = varI7.GetMembers("Foo").OfType<MethodSymbol>().Single();
-            var varI7_Bar = varI7.GetMembers("Bar").OfType<MethodSymbol>().Single();
+            var varI7_Foo = varI7.GetMembersAsImmutable("Foo").OfType<MethodSymbol>().Single();
+            var varI7_Bar = varI7.GetMembersAsImmutable("Bar").OfType<MethodSymbol>().Single();
 
             Assert.NotEqual(SymbolKind.ErrorType, varI7_Foo.ReturnType.Kind);
             Assert.NotEqual(SymbolKind.ErrorType, ((NamedTypeSymbol)varI7_Foo.ReturnType).TypeArguments()[0].Kind);

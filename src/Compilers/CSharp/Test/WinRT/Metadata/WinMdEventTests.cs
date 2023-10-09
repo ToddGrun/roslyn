@@ -2851,8 +2851,8 @@ class C : Interface<int>
             Assert.True(interfaceWinRTEvent.IsWindowsRuntimeEvent);
 
             var implementingType = comp.GlobalNamespace.GetMember<NamedTypeSymbol>("C");
-            var implementingNormalEvent = implementingType.GetMembers().OfType<EventSymbol>().Single(e => e.Name.Contains("Normal"));
-            var implementingWinRTEvent = implementingType.GetMembers().OfType<EventSymbol>().Single(e => e.Name.Contains("WinRT"));
+            var implementingNormalEvent = implementingType.GetMembersAsImmutable().OfType<EventSymbol>().Single(e => e.Name.Contains("Normal"));
+            var implementingWinRTEvent = implementingType.GetMembersAsImmutable().OfType<EventSymbol>().Single(e => e.Name.Contains("WinRT"));
 
             Assert.IsType<SourceCustomEventSymbol>(implementingNormalEvent);
             Assert.IsType<SourceCustomEventSymbol>(implementingWinRTEvent);
@@ -2875,8 +2875,8 @@ class C : Interface<int>
             retargetingAssembly.SetCorLibrary(comp.Assembly.CorLibrary);
 
             var retargetingType = retargetingAssembly.GlobalNamespace.GetMember<NamedTypeSymbol>("C");
-            var retargetingNormalEvent = retargetingType.GetMembers().OfType<EventSymbol>().Single(e => e.Name.Contains("Normal"));
-            var retargetingWinRTEvent = retargetingType.GetMembers().OfType<EventSymbol>().Single(e => e.Name.Contains("WinRT"));
+            var retargetingNormalEvent = retargetingType.GetMembersAsImmutable().OfType<EventSymbol>().Single(e => e.Name.Contains("Normal"));
+            var retargetingWinRTEvent = retargetingType.GetMembersAsImmutable().OfType<EventSymbol>().Single(e => e.Name.Contains("WinRT"));
 
             Assert.IsType<RetargetingEventSymbol>(retargetingNormalEvent);
             Assert.IsType<RetargetingEventSymbol>(retargetingWinRTEvent);
@@ -3094,8 +3094,8 @@ class C : Interface
                 comp.VerifyDiagnostics();
 
                 var @class = comp.GlobalNamespace.GetMember<NamedTypeSymbol>("C");
-                var normalEvent = @class.GetMembers().OfType<EventSymbol>().Single(e => e.Name.Contains("Normal"));
-                var winRTEvent = @class.GetMembers().OfType<EventSymbol>().Single(e => e.Name.Contains("WinRT"));
+                var normalEvent = @class.GetMembersAsImmutable().OfType<EventSymbol>().Single(e => e.Name.Contains("Normal"));
+                var winRTEvent = @class.GetMembersAsImmutable().OfType<EventSymbol>().Single(e => e.Name.Contains("WinRT"));
 
                 Assert.False(normalEvent.IsWindowsRuntimeEvent);
                 Assert.True(winRTEvent.IsWindowsRuntimeEvent);

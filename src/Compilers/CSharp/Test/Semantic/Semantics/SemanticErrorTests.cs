@@ -3248,7 +3248,7 @@ public class MyClass : Outer.base1
 }
 ";
             var comp = CreateCompilation(text);
-            var type1 = comp.SourceModule.GlobalNamespace.GetMembers("MyClass").Single() as NamedTypeSymbol;
+            var type1 = comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("MyClass").Single() as NamedTypeSymbol;
             var b = type1.BaseType();
             var errs = comp.GetDiagnostics();
             Assert.Equal(1, errs.Count());

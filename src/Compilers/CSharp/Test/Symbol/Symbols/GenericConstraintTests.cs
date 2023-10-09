@@ -6335,7 +6335,7 @@ public class Derived : Base<Derived>
 
             var comp = CreateCompilation(text);
             var derivedType = comp.GlobalNamespace.GetMember<NamedTypeSymbol>("Derived");
-            derivedType.GetMembers();
+            derivedType.GetMembersAsImmutable();
         }
 
         [WorkItem(531227, "http://vstfdevdiv:8080/DevDiv2/DevDiv/_workitems/edit/531227")]
@@ -6356,7 +6356,7 @@ public class Implementation : Interface<Implementation>
 
             var comp = CreateCompilation(text);
             var implementingType = comp.GlobalNamespace.GetMember<NamedTypeSymbol>("Implementation");
-            implementingType.GetMembers();
+            implementingType.GetMembersAsImmutable();
         }
 
         [WorkItem(546973, "http://vstfdevdiv:8080/DevDiv2/DevDiv/_workitems/edit/546973")]

@@ -875,7 +875,7 @@ public class G<T>
             var tsym = comp2.GetReferencedAssemblySymbol(mtref).GlobalNamespace.GetMember<NamedTypeSymbol>("G");
             Assert.NotNull(tsym);
 
-            var mems = tsym.GetMembers().Where(s => s.Kind == SymbolKind.Method);
+            var mems = tsym.GetMembersAsImmutable().Where(s => s.Kind == SymbolKind.Method);
             // 4 accessors + ctor
             Assert.Equal(5, mems.Count());
             foreach (MethodSymbol m in mems)

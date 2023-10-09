@@ -70,8 +70,8 @@ class A {
             var comp = CreateCompilation(text);
             var global = comp.GlobalNamespace;
             var a = global.GetTypeMembers("A", 0).Single();
-            var d = a.GetMembers("D")[0] as NamedTypeSymbol;
-            var tmp = d.GetMembers();
+            var d = a.GetMembersAsImmutable("D")[0] as NamedTypeSymbol;
+            var tmp = d.GetMembersAsImmutable();
             Assert.Equal(d.Locations[0], d.DelegateInvokeMethod.Locations[0], EqualityComparer<Location>.Default);
             Assert.Equal(d.Locations[0], d.InstanceConstructors[0].Locations[0], EqualityComparer<Location>.Default);
         }
@@ -105,7 +105,7 @@ class A {
             var comp = CreateCompilation(text);
             var global = comp.GlobalNamespace;
             var a = global.GetTypeMembers("A", 0).Single();
-            var field = a.GetMembers("Field")[0] as FieldSymbol;
+            var field = a.GetMembersAsImmutable("Field")[0] as FieldSymbol;
             var fieldType = field.Type as NamedTypeSymbol;
             Assert.Equal(TypeKind.Delegate, fieldType.TypeKind);
             var invoke = fieldType.DelegateInvokeMethod;
@@ -157,7 +157,7 @@ namespace System
 
             var invoke = myDel.DelegateInvokeMethod;
 
-            var beginInvoke = myDel.GetMembers("BeginInvoke").Single() as MethodSymbol;
+            var beginInvoke = myDel.GetMembersAsImmutable("BeginInvoke").Single() as MethodSymbol;
             Assert.Equal(invoke.Parameters.Length + 2, beginInvoke.Parameters.Length);
             Assert.Equal(TypeKind.Interface, beginInvoke.ReturnType.TypeKind);
             Assert.Equal("System.IAsyncResult", beginInvoke.ReturnType.ToTestDisplayString());
@@ -171,7 +171,7 @@ namespace System
             Assert.Equal(SpecialType.System_AsyncCallback, lastParameterType.SpecialType);
             Assert.Equal("System.Object", beginInvoke.Parameters[invoke.Parameters.Length + 1].Type.ToTestDisplayString());
 
-            var endInvoke = myDel.GetMembers("EndInvoke").Single() as MethodSymbol;
+            var endInvoke = myDel.GetMembersAsImmutable("EndInvoke").Single() as MethodSymbol;
             Assert.Equal(invoke.ReturnType, endInvoke.ReturnType);
             int k = 0;
             for (int i = 0; i < invoke.Parameters.Length; i++)
@@ -199,7 +199,7 @@ namespace System
 }";
 
             var comp = CreateCompilation(text);
-            var namespaceNS = comp.GlobalNamespace.GetMembers("NS").First() as NamespaceOrTypeSymbol;
+            var namespaceNS = comp.GlobalNamespace.GetMembersAsImmutable("NS").First() as NamespaceOrTypeSymbol;
             Assert.Equal(1, namespaceNS.GetTypeMembers().Length);
 
             var d = namespaceNS.GetTypeMembers("D").First();
@@ -225,7 +225,7 @@ namespace System
 delegate void @out();
 ";
             var comp = CreateCompilation(Parse(text));
-            NamedTypeSymbol dout = (NamedTypeSymbol)comp.SourceModule.GlobalNamespace.GetMembers("out").Single();
+            NamedTypeSymbol dout = (NamedTypeSymbol)comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("out").Single();
             Assert.Equal("out", dout.Name);
             Assert.Equal("@out", dout.ToString());
         }
@@ -335,7 +335,7 @@ delegate int D(int x, ref int y, out int z);
             var comp = CreateCompilation(text);
             comp.VerifyDiagnostics();
 
-            NamedTypeSymbol d = (NamedTypeSymbol)comp.SourceModule.GlobalNamespace.GetMembers("D").Single();
+            NamedTypeSymbol d = (NamedTypeSymbol)comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("D").Single();
 
             MethodSymbol invoke = d.DelegateInvokeMethod;
             ImmutableArray<ParameterSymbol> invokeParameters = invoke.Parameters;
@@ -344,7 +344,7 @@ delegate int D(int x, ref int y, out int z);
             Assert.Equal("y", invokeParameters[1].Name);
             Assert.Equal("z", invokeParameters[2].Name);
 
-            MethodSymbol beginInvoke = (MethodSymbol)d.GetMembers("BeginInvoke").Single();
+            MethodSymbol beginInvoke = (MethodSymbol)d.GetMembersAsImmutable("BeginInvoke").Single();
             ImmutableArray<ParameterSymbol> beginInvokeParameters = beginInvoke.Parameters;
             Assert.Equal(5, beginInvokeParameters.Length);
             Assert.Equal("x", beginInvokeParameters[0].Name);
@@ -353,7 +353,7 @@ delegate int D(int x, ref int y, out int z);
             Assert.Equal("callback", beginInvokeParameters[3].Name);
             Assert.Equal("object", beginInvokeParameters[4].Name);
 
-            MethodSymbol endInvoke = (MethodSymbol)d.GetMembers("EndInvoke").Single();
+            MethodSymbol endInvoke = (MethodSymbol)d.GetMembersAsImmutable("EndInvoke").Single();
             ImmutableArray<ParameterSymbol> endInvokeParameters = endInvoke.Parameters;
             Assert.Equal(3, endInvokeParameters.Length);
             Assert.Equal("y", endInvokeParameters[0].Name);
@@ -389,21 +389,21 @@ delegate void D(out int result);
             var comp = CreateCompilation(text);
             comp.VerifyDiagnostics();
 
-            NamedTypeSymbol d = (NamedTypeSymbol)comp.SourceModule.GlobalNamespace.GetMembers("D").Single();
+            NamedTypeSymbol d = (NamedTypeSymbol)comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("D").Single();
 
             MethodSymbol invoke = d.DelegateInvokeMethod;
             ImmutableArray<ParameterSymbol> invokeParameters = invoke.Parameters;
             Assert.Equal(1, invokeParameters.Length);
             Assert.Equal("result", invokeParameters[0].Name);
 
-            MethodSymbol beginInvoke = (MethodSymbol)d.GetMembers("BeginInvoke").Single();
+            MethodSymbol beginInvoke = (MethodSymbol)d.GetMembersAsImmutable("BeginInvoke").Single();
             ImmutableArray<ParameterSymbol> beginInvokeParameters = beginInvoke.Parameters;
             Assert.Equal(3, beginInvokeParameters.Length);
             Assert.Equal("result", beginInvokeParameters[0].Name);
             Assert.Equal("callback", beginInvokeParameters[1].Name);
             Assert.Equal("object", beginInvokeParameters[2].Name);
 
-            MethodSymbol endInvoke = (MethodSymbol)d.GetMembers("EndInvoke").Single();
+            MethodSymbol endInvoke = (MethodSymbol)d.GetMembersAsImmutable("EndInvoke").Single();
             ImmutableArray<ParameterSymbol> endInvokeParameters = endInvoke.Parameters;
             Assert.Equal(2, endInvokeParameters.Length);
             Assert.Equal("result", endInvokeParameters[0].Name);
@@ -420,21 +420,21 @@ delegate void D(out int @__result);
             var comp = CreateCompilation(text);
             comp.VerifyDiagnostics();
 
-            NamedTypeSymbol d = (NamedTypeSymbol)comp.SourceModule.GlobalNamespace.GetMembers("D").Single();
+            NamedTypeSymbol d = (NamedTypeSymbol)comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("D").Single();
 
             MethodSymbol invoke = d.DelegateInvokeMethod;
             ImmutableArray<ParameterSymbol> invokeParameters = invoke.Parameters;
             Assert.Equal(1, invokeParameters.Length);
             Assert.Equal("__result", invokeParameters[0].Name);
 
-            MethodSymbol beginInvoke = (MethodSymbol)d.GetMembers("BeginInvoke").Single();
+            MethodSymbol beginInvoke = (MethodSymbol)d.GetMembersAsImmutable("BeginInvoke").Single();
             ImmutableArray<ParameterSymbol> beginInvokeParameters = beginInvoke.Parameters;
             Assert.Equal(3, beginInvokeParameters.Length);
             Assert.Equal("__result", beginInvokeParameters[0].Name);
             Assert.Equal("callback", beginInvokeParameters[1].Name);
             Assert.Equal("object", beginInvokeParameters[2].Name);
 
-            MethodSymbol endInvoke = (MethodSymbol)d.GetMembers("EndInvoke").Single();
+            MethodSymbol endInvoke = (MethodSymbol)d.GetMembersAsImmutable("EndInvoke").Single();
             ImmutableArray<ParameterSymbol> endInvokeParameters = endInvoke.Parameters;
             Assert.Equal(2, endInvokeParameters.Length);
             Assert.Equal("__result", endInvokeParameters[0].Name);
@@ -451,7 +451,7 @@ delegate void D(out int result, out int @__result);
             var comp = CreateCompilation(text);
             comp.VerifyDiagnostics();
 
-            NamedTypeSymbol d = (NamedTypeSymbol)comp.SourceModule.GlobalNamespace.GetMembers("D").Single();
+            NamedTypeSymbol d = (NamedTypeSymbol)comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("D").Single();
 
             MethodSymbol invoke = d.DelegateInvokeMethod;
             ImmutableArray<ParameterSymbol> invokeParameters = invoke.Parameters;
@@ -459,7 +459,7 @@ delegate void D(out int result, out int @__result);
             Assert.Equal("result", invokeParameters[0].Name);
             Assert.Equal("__result", invokeParameters[1].Name);
 
-            MethodSymbol beginInvoke = (MethodSymbol)d.GetMembers("BeginInvoke").Single();
+            MethodSymbol beginInvoke = (MethodSymbol)d.GetMembersAsImmutable("BeginInvoke").Single();
             ImmutableArray<ParameterSymbol> beginInvokeParameters = beginInvoke.Parameters;
             Assert.Equal(4, beginInvokeParameters.Length);
             Assert.Equal("result", invokeParameters[0].Name);
@@ -467,7 +467,7 @@ delegate void D(out int result, out int @__result);
             Assert.Equal("callback", beginInvokeParameters[2].Name);
             Assert.Equal("object", beginInvokeParameters[3].Name);
 
-            MethodSymbol endInvoke = (MethodSymbol)d.GetMembers("EndInvoke").Single();
+            MethodSymbol endInvoke = (MethodSymbol)d.GetMembersAsImmutable("EndInvoke").Single();
             ImmutableArray<ParameterSymbol> endInvokeParameters = endInvoke.Parameters;
             Assert.Equal(3, endInvokeParameters.Length);
             Assert.Equal("result", endInvokeParameters[0].Name);
@@ -485,7 +485,7 @@ delegate void D(int callback, int @object);
             var comp = CreateCompilation(text);
             comp.VerifyDiagnostics();
 
-            NamedTypeSymbol d = (NamedTypeSymbol)comp.SourceModule.GlobalNamespace.GetMembers("D").Single();
+            NamedTypeSymbol d = (NamedTypeSymbol)comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("D").Single();
 
             MethodSymbol invoke = d.DelegateInvokeMethod;
             ImmutableArray<ParameterSymbol> invokeParameters = invoke.Parameters;
@@ -493,7 +493,7 @@ delegate void D(int callback, int @object);
             Assert.Equal("callback", invokeParameters[0].Name);
             Assert.Equal("object", invokeParameters[1].Name);
 
-            MethodSymbol beginInvoke = (MethodSymbol)d.GetMembers("BeginInvoke").Single();
+            MethodSymbol beginInvoke = (MethodSymbol)d.GetMembersAsImmutable("BeginInvoke").Single();
             ImmutableArray<ParameterSymbol> beginInvokeParameters = beginInvoke.Parameters;
             Assert.Equal(4, beginInvokeParameters.Length);
             Assert.Equal("callback", beginInvokeParameters[0].Name);
@@ -501,7 +501,7 @@ delegate void D(int callback, int @object);
             Assert.Equal("__callback", beginInvokeParameters[2].Name);
             Assert.Equal("__object", beginInvokeParameters[3].Name);
 
-            MethodSymbol endInvoke = (MethodSymbol)d.GetMembers("EndInvoke").Single();
+            MethodSymbol endInvoke = (MethodSymbol)d.GetMembersAsImmutable("EndInvoke").Single();
             ImmutableArray<ParameterSymbol> endInvokeParameters = endInvoke.Parameters;
             Assert.Equal(1, endInvokeParameters.Length);
             Assert.Equal("result", endInvokeParameters[0].Name);
@@ -777,11 +777,11 @@ class C
             comp.VerifyDiagnostics();
 
             var global = comp.GlobalNamespace;
-            var d = global.GetMembers("D")[0] as NamedTypeSymbol;
+            var d = global.GetMembersAsImmutable("D")[0] as NamedTypeSymbol;
             Assert.True(d.DelegateInvokeMethod.ReturnsByRef);
             Assert.False(d.DelegateInvokeMethod.ReturnsByRefReadonly);
             Assert.Equal(RefKind.Ref, d.DelegateInvokeMethod.RefKind);
-            Assert.Equal(RefKind.Ref, ((MethodSymbol)d.GetMembers("EndInvoke").Single()).RefKind);
+            Assert.Equal(RefKind.Ref, ((MethodSymbol)d.GetMembersAsImmutable("EndInvoke").Single()).RefKind);
         }
 
         [Fact]
@@ -794,11 +794,11 @@ class C
             comp.VerifyDiagnostics();
 
             var global = comp.GlobalNamespace;
-            var d = global.GetMembers("D")[0] as NamedTypeSymbol;
+            var d = global.GetMembersAsImmutable("D")[0] as NamedTypeSymbol;
             Assert.False(d.DelegateInvokeMethod.ReturnsByRef);
             Assert.True(d.DelegateInvokeMethod.ReturnsByRefReadonly);
             Assert.Equal(RefKind.RefReadOnly, d.DelegateInvokeMethod.RefKind);
-            Assert.Equal(RefKind.RefReadOnly, ((MethodSymbol)d.GetMembers("EndInvoke").Single()).RefKind);
+            Assert.Equal(RefKind.RefReadOnly, ((MethodSymbol)d.GetMembersAsImmutable("EndInvoke").Single()).RefKind);
 
             Assert.Equal(RefKind.In, d.DelegateInvokeMethod.Parameters[0].RefKind);
         }
