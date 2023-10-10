@@ -42,15 +42,15 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             var module5 = assemblies[4].Modules[0];
             var byrefReturn = assemblies[5].Modules[0];
 
-            var varTC10 = module2.GlobalNamespace.GetTypeMembers("TC10").Single();
+            var varTC10 = module2.GlobalNamespace.GetTypeMembersAsImmutable("TC10").Single();
 
-            Assert.Equal(6, varTC10.GetMembers().Length);
+            Assert.Equal(6, varTC10.GetMembersAsImmutable().Length);
 
-            var localM1 = (MethodSymbol)varTC10.GetMembers("M1").Single();
-            var localM2 = (MethodSymbol)varTC10.GetMembers("M2").Single();
-            var localM3 = (MethodSymbol)varTC10.GetMembers("M3").Single();
-            var localM4 = (MethodSymbol)varTC10.GetMembers("M4").Single();
-            var localM5 = (MethodSymbol)varTC10.GetMembers("M5").Single();
+            var localM1 = (MethodSymbol)varTC10.GetMembersAsImmutable("M1").Single();
+            var localM2 = (MethodSymbol)varTC10.GetMembersAsImmutable("M2").Single();
+            var localM3 = (MethodSymbol)varTC10.GetMembersAsImmutable("M3").Single();
+            var localM4 = (MethodSymbol)varTC10.GetMembersAsImmutable("M4").Single();
+            var localM5 = (MethodSymbol)varTC10.GetMembersAsImmutable("M5").Single();
 
             Assert.Equal("void TC10.M1()", localM1.ToTestDisplayString());
             Assert.True(localM1.ReturnsVoid);
@@ -87,32 +87,32 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             Assert.True(localM5.ReturnsVoid);
             Assert.Equal(Accessibility.ProtectedOrInternal, localM5.DeclaredAccessibility);
 
-            var localM6 = varTC10.GetMembers("M6");
+            var localM6 = varTC10.GetMembersAsImmutable("M6");
             Assert.Equal(0, localM6.Length);
 
-            var localC107 = module1.GlobalNamespace.GetTypeMembers("C107").Single();
-            var varC108 = localC107.GetMembers("C108").Single();
+            var localC107 = module1.GlobalNamespace.GetTypeMembersAsImmutable("C107").Single();
+            var varC108 = localC107.GetMembersAsImmutable("C108").Single();
             Assert.Equal(SymbolKind.NamedType, varC108.Kind);
 
-            var csharpC1 = module3.GlobalNamespace.GetTypeMembers("C1").Single();
-            var sameName1 = csharpC1.GetMembers("SameName").Single();
-            var sameName2 = csharpC1.GetMembers("sameName").Single();
+            var csharpC1 = module3.GlobalNamespace.GetTypeMembersAsImmutable("C1").Single();
+            var sameName1 = csharpC1.GetMembersAsImmutable("SameName").Single();
+            var sameName2 = csharpC1.GetMembersAsImmutable("sameName").Single();
             Assert.Equal(SymbolKind.NamedType, sameName1.Kind);
             Assert.Equal("SameName", sameName1.Name);
             Assert.Equal(SymbolKind.Method, sameName2.Kind);
             Assert.Equal("sameName", sameName2.Name);
 
-            Assert.Equal(2, csharpC1.GetMembers("SameName2").Length);
-            Assert.Equal(1, csharpC1.GetMembers("sameName2").Length);
+            Assert.Equal(2, csharpC1.GetMembersAsImmutable("SameName2").Length);
+            Assert.Equal(1, csharpC1.GetMembersAsImmutable("sameName2").Length);
 
-            Assert.Equal(0, csharpC1.GetMembers("DoesntExist").Length);
+            Assert.Equal(0, csharpC1.GetMembersAsImmutable("DoesntExist").Length);
 
-            var basicC1 = module4.GlobalNamespace.GetTypeMembers("C1").Single();
+            var basicC1 = module4.GlobalNamespace.GetTypeMembersAsImmutable("C1").Single();
 
-            var basicC1_M1 = (MethodSymbol)basicC1.GetMembers("M1").Single();
-            var basicC1_M2 = (MethodSymbol)basicC1.GetMembers("M2").Single();
-            var basicC1_M3 = (MethodSymbol)basicC1.GetMembers("M3").Single();
-            var basicC1_M4 = (MethodSymbol)basicC1.GetMembers("M4").Single();
+            var basicC1_M1 = (MethodSymbol)basicC1.GetMembersAsImmutable("M1").Single();
+            var basicC1_M2 = (MethodSymbol)basicC1.GetMembersAsImmutable("M2").Single();
+            var basicC1_M3 = (MethodSymbol)basicC1.GetMembersAsImmutable("M3").Single();
+            var basicC1_M4 = (MethodSymbol)basicC1.GetMembersAsImmutable("M4").Single();
 
             Assert.False(basicC1_M1.Parameters[0].IsOptional);
             Assert.False(basicC1_M1.Parameters[0].HasExplicitDefaultValue);
@@ -127,15 +127,15 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             Assert.True(basicC1_M4.Parameters[0].IsOptional);
             Assert.False(basicC1_M4.Parameters[0].HasExplicitDefaultValue);
 
-            var emptyStructure = module4.GlobalNamespace.GetTypeMembers("EmptyStructure").Single();
-            Assert.Equal(1, emptyStructure.GetMembers().Length); //synthesized parameterless constructor
-            Assert.Equal(0, emptyStructure.GetMembers("NoMembersOrTypes").Length);
+            var emptyStructure = module4.GlobalNamespace.GetTypeMembersAsImmutable("EmptyStructure").Single();
+            Assert.Equal(1, emptyStructure.GetMembersAsImmutable().Length); //synthesized parameterless constructor
+            Assert.Equal(0, emptyStructure.GetMembersAsImmutable("NoMembersOrTypes").Length);
 
-            var basicC1_M5 = (MethodSymbol)basicC1.GetMembers("M5").Single();
-            var basicC1_M6 = (MethodSymbol)basicC1.GetMembers("M6").Single();
-            var basicC1_M7 = (MethodSymbol)basicC1.GetMembers("M7").Single();
-            var basicC1_M8 = (MethodSymbol)basicC1.GetMembers("M8").Single();
-            var basicC1_M9 = basicC1.GetMembers("M9").OfType<MethodSymbol>().ToArray();
+            var basicC1_M5 = (MethodSymbol)basicC1.GetMembersAsImmutable("M5").Single();
+            var basicC1_M6 = (MethodSymbol)basicC1.GetMembersAsImmutable("M6").Single();
+            var basicC1_M7 = (MethodSymbol)basicC1.GetMembersAsImmutable("M7").Single();
+            var basicC1_M8 = (MethodSymbol)basicC1.GetMembersAsImmutable("M8").Single();
+            var basicC1_M9 = basicC1.GetMembersAsImmutable("M9").OfType<MethodSymbol>().ToArray();
 
             Assert.False(basicC1_M5.IsGenericMethod); // Check genericity before cracking signature
             Assert.True(basicC1_M6.ReturnsVoid);
@@ -151,45 +151,45 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             Assert.Equal(1, basicC1_M9.Count(m => m.IsGenericMethod));
             Assert.Equal(1, basicC1_M9.Count(m => !m.IsGenericMethod));
 
-            var basicC1_M10 = (MethodSymbol)basicC1.GetMembers("M10").Single();
+            var basicC1_M10 = (MethodSymbol)basicC1.GetMembersAsImmutable("M10").Single();
             Assert.Equal("void C1.M10<T1>(T1 x)", basicC1_M10.ToTestDisplayString());
 
-            var basicC1_M11 = (MethodSymbol)basicC1.GetMembers("M11").Single();
+            var basicC1_M11 = (MethodSymbol)basicC1.GetMembersAsImmutable("M11").Single();
             Assert.Equal("T3 C1.M11<T2, T3>(T2 x)", basicC1_M11.ToTestDisplayString());
             Assert.Equal(0, basicC1_M11.TypeParameters[0].ConstraintTypes().Length);
             Assert.Same(basicC1, basicC1_M11.TypeParameters[1].ConstraintTypes().Single());
 
-            var basicC1_M12 = (MethodSymbol)basicC1.GetMembers("M12").Single();
+            var basicC1_M12 = (MethodSymbol)basicC1.GetMembersAsImmutable("M12").Single();
             Assert.Equal(0, basicC1_M12.TypeArgumentsWithAnnotations.Length);
             Assert.False(basicC1_M12.IsVararg);
             Assert.False(basicC1_M12.IsExtern);
             Assert.False(basicC1_M12.IsStatic);
 
-            var loadLibrary = (MethodSymbol)basicC1.GetMembers("LoadLibrary").Single();
+            var loadLibrary = (MethodSymbol)basicC1.GetMembersAsImmutable("LoadLibrary").Single();
             Assert.True(loadLibrary.IsExtern);
 
-            var basicC2 = module4.GlobalNamespace.GetTypeMembers("C2").Single();
+            var basicC2 = module4.GlobalNamespace.GetTypeMembersAsImmutable("C2").Single();
 
-            var basicC2_M1 = (MethodSymbol)basicC2.GetMembers("M1").Single();
+            var basicC2_M1 = (MethodSymbol)basicC2.GetMembersAsImmutable("M1").Single();
             Assert.Equal("void C2<T4>.M1<T5>(T5 x, T4 y)", basicC2_M1.ToTestDisplayString());
 
-            var console = module5.GlobalNamespace.GetMembers("System").OfType<NamespaceSymbol>().Single().
-                GetTypeMembers("Console").Single();
+            var console = module5.GlobalNamespace.GetMembersAsImmutable("System").OfType<NamespaceSymbol>().Single().
+                GetTypeMembersAsImmutable("Console").Single();
 
-            Assert.Equal(1, console.GetMembers("WriteLine").OfType<MethodSymbol>().Count(m => m.IsVararg));
-            Assert.True(console.GetMembers("WriteLine").OfType<MethodSymbol>().Single(m => m.IsVararg).IsStatic);
+            Assert.Equal(1, console.GetMembersAsImmutable("WriteLine").OfType<MethodSymbol>().Count(m => m.IsVararg));
+            Assert.True(console.GetMembersAsImmutable("WriteLine").OfType<MethodSymbol>().Single(m => m.IsVararg).IsStatic);
 
-            var basicModifiers1 = module4.GlobalNamespace.GetTypeMembers("Modifiers1").Single();
+            var basicModifiers1 = module4.GlobalNamespace.GetTypeMembersAsImmutable("Modifiers1").Single();
 
-            var basicModifiers1_M1 = (MethodSymbol)basicModifiers1.GetMembers("M1").Single();
-            var basicModifiers1_M2 = (MethodSymbol)basicModifiers1.GetMembers("M2").Single();
-            var basicModifiers1_M3 = (MethodSymbol)basicModifiers1.GetMembers("M3").Single();
-            var basicModifiers1_M4 = (MethodSymbol)basicModifiers1.GetMembers("M4").Single();
-            var basicModifiers1_M5 = (MethodSymbol)basicModifiers1.GetMembers("M5").Single();
-            var basicModifiers1_M6 = (MethodSymbol)basicModifiers1.GetMembers("M6").Single();
-            var basicModifiers1_M7 = (MethodSymbol)basicModifiers1.GetMembers("M7").Single();
-            var basicModifiers1_M8 = (MethodSymbol)basicModifiers1.GetMembers("M8").Single();
-            var basicModifiers1_M9 = (MethodSymbol)basicModifiers1.GetMembers("M9").Single();
+            var basicModifiers1_M1 = (MethodSymbol)basicModifiers1.GetMembersAsImmutable("M1").Single();
+            var basicModifiers1_M2 = (MethodSymbol)basicModifiers1.GetMembersAsImmutable("M2").Single();
+            var basicModifiers1_M3 = (MethodSymbol)basicModifiers1.GetMembersAsImmutable("M3").Single();
+            var basicModifiers1_M4 = (MethodSymbol)basicModifiers1.GetMembersAsImmutable("M4").Single();
+            var basicModifiers1_M5 = (MethodSymbol)basicModifiers1.GetMembersAsImmutable("M5").Single();
+            var basicModifiers1_M6 = (MethodSymbol)basicModifiers1.GetMembersAsImmutable("M6").Single();
+            var basicModifiers1_M7 = (MethodSymbol)basicModifiers1.GetMembersAsImmutable("M7").Single();
+            var basicModifiers1_M8 = (MethodSymbol)basicModifiers1.GetMembersAsImmutable("M8").Single();
+            var basicModifiers1_M9 = (MethodSymbol)basicModifiers1.GetMembersAsImmutable("M9").Single();
 
             Assert.True(basicModifiers1_M1.IsAbstract);
             Assert.False(basicModifiers1_M1.IsVirtual);
@@ -245,12 +245,12 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             Assert.True(basicModifiers1_M9.HidesBaseMethodsByName);
             Assert.False(basicModifiers1_M9.IsOverride);
 
-            var basicModifiers2 = module4.GlobalNamespace.GetTypeMembers("Modifiers2").Single();
+            var basicModifiers2 = module4.GlobalNamespace.GetTypeMembersAsImmutable("Modifiers2").Single();
 
-            var basicModifiers2_M1 = (MethodSymbol)basicModifiers2.GetMembers("M1").Single();
-            var basicModifiers2_M2 = (MethodSymbol)basicModifiers2.GetMembers("M2").Single();
-            var basicModifiers2_M6 = (MethodSymbol)basicModifiers2.GetMembers("M6").Single();
-            var basicModifiers2_M7 = (MethodSymbol)basicModifiers2.GetMembers("M7").Single();
+            var basicModifiers2_M1 = (MethodSymbol)basicModifiers2.GetMembersAsImmutable("M1").Single();
+            var basicModifiers2_M2 = (MethodSymbol)basicModifiers2.GetMembersAsImmutable("M2").Single();
+            var basicModifiers2_M6 = (MethodSymbol)basicModifiers2.GetMembersAsImmutable("M6").Single();
+            var basicModifiers2_M7 = (MethodSymbol)basicModifiers2.GetMembersAsImmutable("M7").Single();
 
             Assert.True(basicModifiers2_M1.IsAbstract);
             Assert.False(basicModifiers2_M1.IsVirtual);
@@ -276,10 +276,10 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             Assert.False(basicModifiers2_M7.HidesBaseMethodsByName);
             Assert.True(basicModifiers2_M7.IsOverride);
 
-            var basicModifiers3 = module4.GlobalNamespace.GetTypeMembers("Modifiers3").Single();
+            var basicModifiers3 = module4.GlobalNamespace.GetTypeMembersAsImmutable("Modifiers3").Single();
 
-            var basicModifiers3_M1 = (MethodSymbol)basicModifiers3.GetMembers("M1").Single();
-            var basicModifiers3_M6 = (MethodSymbol)basicModifiers3.GetMembers("M6").Single();
+            var basicModifiers3_M1 = (MethodSymbol)basicModifiers3.GetMembersAsImmutable("M1").Single();
+            var basicModifiers3_M6 = (MethodSymbol)basicModifiers3.GetMembersAsImmutable("M6").Single();
 
             Assert.False(basicModifiers3_M1.IsAbstract);
             Assert.False(basicModifiers3_M1.IsVirtual);
@@ -293,12 +293,12 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             Assert.False(basicModifiers3_M6.HidesBaseMethodsByName);
             Assert.True(basicModifiers3_M6.IsOverride);
 
-            var csharpModifiers1 = module3.GlobalNamespace.GetTypeMembers("Modifiers1").Single();
+            var csharpModifiers1 = module3.GlobalNamespace.GetTypeMembersAsImmutable("Modifiers1").Single();
 
-            var csharpModifiers1_M1 = (MethodSymbol)csharpModifiers1.GetMembers("M1").Single();
-            var csharpModifiers1_M2 = (MethodSymbol)csharpModifiers1.GetMembers("M2").Single();
-            var csharpModifiers1_M3 = (MethodSymbol)csharpModifiers1.GetMembers("M3").Single();
-            var csharpModifiers1_M4 = (MethodSymbol)csharpModifiers1.GetMembers("M4").Single();
+            var csharpModifiers1_M1 = (MethodSymbol)csharpModifiers1.GetMembersAsImmutable("M1").Single();
+            var csharpModifiers1_M2 = (MethodSymbol)csharpModifiers1.GetMembersAsImmutable("M2").Single();
+            var csharpModifiers1_M3 = (MethodSymbol)csharpModifiers1.GetMembersAsImmutable("M3").Single();
+            var csharpModifiers1_M4 = (MethodSymbol)csharpModifiers1.GetMembersAsImmutable("M4").Single();
 
             Assert.True(csharpModifiers1_M1.IsAbstract);
             Assert.False(csharpModifiers1_M1.IsVirtual);
@@ -324,11 +324,11 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             Assert.False(csharpModifiers1_M4.HidesBaseMethodsByName);
             Assert.False(csharpModifiers1_M4.IsOverride);
 
-            var csharpModifiers2 = module3.GlobalNamespace.GetTypeMembers("Modifiers2").Single();
+            var csharpModifiers2 = module3.GlobalNamespace.GetTypeMembersAsImmutable("Modifiers2").Single();
 
-            var csharpModifiers2_M1 = (MethodSymbol)csharpModifiers2.GetMembers("M1").Single();
-            var csharpModifiers2_M2 = (MethodSymbol)csharpModifiers2.GetMembers("M2").Single();
-            var csharpModifiers2_M3 = (MethodSymbol)csharpModifiers2.GetMembers("M3").Single();
+            var csharpModifiers2_M1 = (MethodSymbol)csharpModifiers2.GetMembersAsImmutable("M1").Single();
+            var csharpModifiers2_M2 = (MethodSymbol)csharpModifiers2.GetMembersAsImmutable("M2").Single();
+            var csharpModifiers2_M3 = (MethodSymbol)csharpModifiers2.GetMembersAsImmutable("M3").Single();
 
             Assert.False(csharpModifiers2_M1.IsAbstract);
             Assert.False(csharpModifiers2_M1.IsVirtual);
@@ -348,11 +348,11 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             Assert.False(csharpModifiers2_M3.HidesBaseMethodsByName);
             Assert.False(csharpModifiers2_M3.IsOverride);
 
-            var csharpModifiers3 = module3.GlobalNamespace.GetTypeMembers("Modifiers3").Single();
+            var csharpModifiers3 = module3.GlobalNamespace.GetTypeMembersAsImmutable("Modifiers3").Single();
 
-            var csharpModifiers3_M1 = (MethodSymbol)csharpModifiers3.GetMembers("M1").Single();
-            var csharpModifiers3_M3 = (MethodSymbol)csharpModifiers3.GetMembers("M3").Single();
-            var csharpModifiers3_M4 = (MethodSymbol)csharpModifiers3.GetMembers("M4").Single();
+            var csharpModifiers3_M1 = (MethodSymbol)csharpModifiers3.GetMembersAsImmutable("M1").Single();
+            var csharpModifiers3_M3 = (MethodSymbol)csharpModifiers3.GetMembersAsImmutable("M3").Single();
+            var csharpModifiers3_M4 = (MethodSymbol)csharpModifiers3.GetMembersAsImmutable("M4").Single();
 
             Assert.False(csharpModifiers3_M1.IsAbstract);
             Assert.False(csharpModifiers3_M1.IsVirtual);
@@ -372,7 +372,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             Assert.False(csharpModifiers3_M4.HidesBaseMethodsByName);
             Assert.False(csharpModifiers3_M4.IsOverride);
 
-            var byrefReturnMethod = byrefReturn.GlobalNamespace.GetTypeMembers("ByRefReturn").Single().GetMembers("M").OfType<MethodSymbol>().Single();
+            var byrefReturnMethod = byrefReturn.GlobalNamespace.GetTypeMembersAsImmutable("ByRefReturn").Single().GetMembersAsImmutable("M").OfType<MethodSymbol>().Single();
             Assert.Equal(RefKind.Ref, byrefReturnMethod.RefKind);
             Assert.Equal(TypeKind.Struct, byrefReturnMethod.ReturnType.TypeKind);
         }
@@ -385,16 +385,16 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
 
             var globalNamespace = assembly.GlobalNamespace;
 
-            var @interface = (NamedTypeSymbol)globalNamespace.GetTypeMembers("Interface").Single();
+            var @interface = (NamedTypeSymbol)globalNamespace.GetTypeMembersAsImmutable("Interface").Single();
             Assert.Equal(TypeKind.Interface, @interface.TypeKind);
 
-            var interfaceMethod = (MethodSymbol)@interface.GetMembers("Method").Single();
+            var interfaceMethod = (MethodSymbol)@interface.GetMembersAsImmutable("Method").Single();
 
-            var @class = (NamedTypeSymbol)globalNamespace.GetTypeMembers("Class").Single();
+            var @class = (NamedTypeSymbol)globalNamespace.GetTypeMembersAsImmutable("Class").Single();
             Assert.Equal(TypeKind.Class, @class.TypeKind);
             Assert.True(@class.Interfaces().Contains(@interface));
 
-            var classMethod = (MethodSymbol)@class.GetMembers("Interface.Method").Single();
+            var classMethod = (MethodSymbol)@class.GetMembersAsImmutable("Interface.Method").Single();
             Assert.Equal(MethodKind.ExplicitInterfaceImplementation, classMethod.MethodKind);
 
             var explicitImpl = classMethod.ExplicitInterfaceImplementations.Single();
@@ -409,22 +409,22 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
 
             var globalNamespace = assembly.GlobalNamespace;
 
-            var interface1 = (NamedTypeSymbol)globalNamespace.GetTypeMembers("I1").Single();
+            var interface1 = (NamedTypeSymbol)globalNamespace.GetTypeMembersAsImmutable("I1").Single();
             Assert.Equal(TypeKind.Interface, interface1.TypeKind);
 
-            var interface1Method = (MethodSymbol)interface1.GetMembers("Method1").Single();
+            var interface1Method = (MethodSymbol)interface1.GetMembersAsImmutable("Method1").Single();
 
-            var interface2 = (NamedTypeSymbol)globalNamespace.GetTypeMembers("I2").Single();
+            var interface2 = (NamedTypeSymbol)globalNamespace.GetTypeMembersAsImmutable("I2").Single();
             Assert.Equal(TypeKind.Interface, interface2.TypeKind);
 
-            var interface2Method = (MethodSymbol)interface2.GetMembers("Method2").Single();
+            var interface2Method = (MethodSymbol)interface2.GetMembersAsImmutable("Method2").Single();
 
-            var @class = (NamedTypeSymbol)globalNamespace.GetTypeMembers("C").Single();
+            var @class = (NamedTypeSymbol)globalNamespace.GetTypeMembersAsImmutable("C").Single();
             Assert.Equal(TypeKind.Class, @class.TypeKind);
             Assert.True(@class.Interfaces().Contains(interface1));
             Assert.True(@class.Interfaces().Contains(interface2));
 
-            var classMethod = (MethodSymbol)@class.GetMembers("Method").Single();   //  the method is considered to be Ordinary 
+            var classMethod = (MethodSymbol)@class.GetMembersAsImmutable("Method").Single();   //  the method is considered to be Ordinary 
             Assert.Equal(MethodKind.Ordinary, classMethod.MethodKind);              //  because it has name without '.'
 
             var explicitImpls = classMethod.ExplicitInterfaceImplementations;
@@ -445,23 +445,23 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
 
             var globalNamespace = assemblies.ElementAt(1).GlobalNamespace;
 
-            var @interface = (NamedTypeSymbol)globalNamespace.GetTypeMembers("IGeneric").Single();
+            var @interface = (NamedTypeSymbol)globalNamespace.GetTypeMembersAsImmutable("IGeneric").Single();
             Assert.Equal(TypeKind.Interface, @interface.TypeKind);
 
-            var interfaceMethod = (MethodSymbol)@interface.GetMembers("Method").Last(); //this assumes decl order
+            var interfaceMethod = (MethodSymbol)@interface.GetMembersAsImmutable("Method").Last(); //this assumes decl order
             Assert.Equal("void IGeneric<T>.Method<U>(T t, U u)", interfaceMethod.ToTestDisplayString()); //make sure we got the one we expected
 
-            var @class = (NamedTypeSymbol)globalNamespace.GetTypeMembers("Generic").Single();
+            var @class = (NamedTypeSymbol)globalNamespace.GetTypeMembersAsImmutable("Generic").Single();
             Assert.Equal(TypeKind.Class, @class.TypeKind);
 
             var substitutedInterface = @class.Interfaces().Single();
             Assert.Equal(@interface, substitutedInterface.ConstructedFrom);
 
-            var substitutedInterfaceMethod = (MethodSymbol)substitutedInterface.GetMembers("Method").Last(); //this assumes decl order
+            var substitutedInterfaceMethod = (MethodSymbol)substitutedInterface.GetMembersAsImmutable("Method").Last(); //this assumes decl order
             Assert.Equal("void IGeneric<S>.Method<U>(S t, U u)", substitutedInterfaceMethod.ToTestDisplayString()); //make sure we got the one we expected
             Assert.Equal(interfaceMethod, substitutedInterfaceMethod.OriginalDefinition);
 
-            var classMethod = (MethodSymbol)@class.GetMembers("IGeneric<S>.Method").Last(); //this assumes decl order
+            var classMethod = (MethodSymbol)@class.GetMembersAsImmutable("IGeneric<S>.Method").Last(); //this assumes decl order
             Assert.Equal("void Generic<S>.IGeneric<S>.Method<V>(S s, V v)", classMethod.ToTestDisplayString()); //make sure we got the one we expected
             Assert.Equal(MethodKind.ExplicitInterfaceImplementation, classMethod.MethodKind);
 
@@ -481,23 +481,23 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
 
             var globalNamespace = assemblies.ElementAt(1).GlobalNamespace;
 
-            var @interface = (NamedTypeSymbol)globalNamespace.GetTypeMembers("IGeneric").Single();
+            var @interface = (NamedTypeSymbol)globalNamespace.GetTypeMembersAsImmutable("IGeneric").Single();
             Assert.Equal(TypeKind.Interface, @interface.TypeKind);
 
-            var interfaceMethod = (MethodSymbol)@interface.GetMembers("Method").Last(); //this assumes decl order
+            var interfaceMethod = (MethodSymbol)@interface.GetMembersAsImmutable("Method").Last(); //this assumes decl order
             Assert.Equal("void IGeneric<T>.Method<U>(T t, U u)", interfaceMethod.ToTestDisplayString()); //make sure we got the one we expected
 
-            var @class = (NamedTypeSymbol)globalNamespace.GetTypeMembers("Constructed").Single();
+            var @class = (NamedTypeSymbol)globalNamespace.GetTypeMembersAsImmutable("Constructed").Single();
             Assert.Equal(TypeKind.Class, @class.TypeKind);
 
             var substitutedInterface = @class.Interfaces().Single();
             Assert.Equal(@interface, substitutedInterface.ConstructedFrom);
 
-            var substitutedInterfaceMethod = (MethodSymbol)substitutedInterface.GetMembers("Method").Last(); //this assumes decl order
+            var substitutedInterfaceMethod = (MethodSymbol)substitutedInterface.GetMembersAsImmutable("Method").Last(); //this assumes decl order
             Assert.Equal("void IGeneric<System.Int32>.Method<U>(System.Int32 t, U u)", substitutedInterfaceMethod.ToTestDisplayString()); //make sure we got the one we expected
             Assert.Equal(interfaceMethod, substitutedInterfaceMethod.OriginalDefinition);
 
-            var classMethod = (MethodSymbol)@class.GetMembers("IGeneric<System.Int32>.Method").Last(); //this assumes decl order
+            var classMethod = (MethodSymbol)@class.GetMembersAsImmutable("IGeneric<System.Int32>.Method").Last(); //this assumes decl order
             Assert.Equal("void Constructed.IGeneric<System.Int32>.Method<W>(System.Int32 i, W w)", classMethod.ToTestDisplayString()); //make sure we got the one we expected
             Assert.Equal(MethodKind.ExplicitInterfaceImplementation, classMethod.MethodKind);
 
@@ -513,20 +513,20 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
 
             var globalNamespace = assembly.GlobalNamespace;
 
-            var cyclicInterface = (NamedTypeSymbol)globalNamespace.GetTypeMembers("ImplementsSelf").Single();
+            var cyclicInterface = (NamedTypeSymbol)globalNamespace.GetTypeMembersAsImmutable("ImplementsSelf").Single();
             Assert.Equal(TypeKind.Interface, cyclicInterface.TypeKind);
 
-            var implementedInterface = (NamedTypeSymbol)globalNamespace.GetTypeMembers("I1").Single();
+            var implementedInterface = (NamedTypeSymbol)globalNamespace.GetTypeMembersAsImmutable("I1").Single();
             Assert.Equal(TypeKind.Interface, implementedInterface.TypeKind);
 
-            var interface2Method = (MethodSymbol)implementedInterface.GetMembers("Method1").Single();
+            var interface2Method = (MethodSymbol)implementedInterface.GetMembersAsImmutable("Method1").Single();
 
-            var @class = (NamedTypeSymbol)globalNamespace.GetTypeMembers("InterfaceCycleSuccess").Single();
+            var @class = (NamedTypeSymbol)globalNamespace.GetTypeMembersAsImmutable("InterfaceCycleSuccess").Single();
             Assert.Equal(TypeKind.Class, @class.TypeKind);
             Assert.True(@class.Interfaces().Contains(cyclicInterface));
             Assert.True(@class.Interfaces().Contains(implementedInterface));
 
-            var classMethod = (MethodSymbol)@class.GetMembers("Method").Single();   //  the method is considered to be Ordinary 
+            var classMethod = (MethodSymbol)@class.GetMembersAsImmutable("Method").Single();   //  the method is considered to be Ordinary 
             Assert.Equal(MethodKind.Ordinary, classMethod.MethodKind);              //  because it has name without '.'
 
             var explicitImpl = classMethod.ExplicitInterfaceImplementations.Single();
@@ -541,14 +541,14 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
 
             var globalNamespace = assembly.GlobalNamespace;
 
-            var cyclicInterface = (NamedTypeSymbol)globalNamespace.GetTypeMembers("ImplementsSelf").Single();
+            var cyclicInterface = (NamedTypeSymbol)globalNamespace.GetTypeMembersAsImmutable("ImplementsSelf").Single();
             Assert.Equal(TypeKind.Interface, cyclicInterface.TypeKind);
 
-            var @class = (NamedTypeSymbol)globalNamespace.GetTypeMembers("InterfaceCycleFailure").Single();
+            var @class = (NamedTypeSymbol)globalNamespace.GetTypeMembersAsImmutable("InterfaceCycleFailure").Single();
             Assert.Equal(TypeKind.Class, @class.TypeKind);
             Assert.True(@class.Interfaces().Contains(cyclicInterface));
 
-            var classMethod = (MethodSymbol)@class.GetMembers("Method").Single();
+            var classMethod = (MethodSymbol)@class.GetMembersAsImmutable("Method").Single();
             //we couldn't find an interface method that's explicitly implemented, so we have no reason to believe the method isn't ordinary
             Assert.Equal(MethodKind.Ordinary, classMethod.MethodKind);
 
@@ -572,16 +572,16 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
 
             var globalNamespace = assemblies.ElementAt(1).GlobalNamespace;
 
-            var defInterface = (NamedTypeSymbol)globalNamespace.GetTypeMembers("Interface").Single();
+            var defInterface = (NamedTypeSymbol)globalNamespace.GetTypeMembersAsImmutable("Interface").Single();
             Assert.Equal(TypeKind.Interface, defInterface.TypeKind);
 
-            var defInterfaceMethod = (MethodSymbol)defInterface.GetMembers("Method").Single();
+            var defInterfaceMethod = (MethodSymbol)defInterface.GetMembersAsImmutable("Method").Single();
 
-            var refInterface = (NamedTypeSymbol)globalNamespace.GetTypeMembers("IGenericInterface").Single();
+            var refInterface = (NamedTypeSymbol)globalNamespace.GetTypeMembersAsImmutable("IGenericInterface").Single();
             Assert.Equal(TypeKind.Interface, defInterface.TypeKind);
             Assert.True(refInterface.Interfaces().Contains(defInterface));
 
-            var @class = (NamedTypeSymbol)globalNamespace.GetTypeMembers("IndirectImplementation").Single();
+            var @class = (NamedTypeSymbol)globalNamespace.GetTypeMembersAsImmutable("IndirectImplementation").Single();
             Assert.Equal(TypeKind.Class, @class.TypeKind);
 
             var classInterfacesConstructedFrom = @class.Interfaces().Select(i => i.ConstructedFrom);
@@ -589,7 +589,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             Assert.Contains(defInterface, classInterfacesConstructedFrom);
             Assert.Contains(refInterface, classInterfacesConstructedFrom);
 
-            var classMethod = (MethodSymbol)@class.GetMembers("Interface.Method").Single();
+            var classMethod = (MethodSymbol)@class.GetMembersAsImmutable("Interface.Method").Single();
             Assert.Equal(MethodKind.ExplicitInterfaceImplementation, classMethod.MethodKind);
 
             var explicitImpl = classMethod.ExplicitInterfaceImplementations.Single();
@@ -608,14 +608,14 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
 
             var globalNamespace = assembly.GlobalNamespace;
 
-            var baseClass = (NamedTypeSymbol)globalNamespace.GetTypeMembers("ExplicitlyImplementedClass").Single();
+            var baseClass = (NamedTypeSymbol)globalNamespace.GetTypeMembersAsImmutable("ExplicitlyImplementedClass").Single();
             Assert.Equal(TypeKind.Class, baseClass.TypeKind);
 
-            var derivedClass = (NamedTypeSymbol)globalNamespace.GetTypeMembers("ExplicitlyImplementsAClass").Single();
+            var derivedClass = (NamedTypeSymbol)globalNamespace.GetTypeMembersAsImmutable("ExplicitlyImplementsAClass").Single();
             Assert.Equal(TypeKind.Class, derivedClass.TypeKind);
             Assert.Equal(baseClass, derivedClass.BaseType());
 
-            var derivedClassMethod = (MethodSymbol)derivedClass.GetMembers("Method").Single();
+            var derivedClassMethod = (MethodSymbol)derivedClass.GetMembersAsImmutable("Method").Single();
             Assert.Equal(MethodKind.Ordinary, derivedClassMethod.MethodKind);
             Assert.Equal(0, derivedClassMethod.ExplicitInterfaceImplementations.Length);
         }
@@ -632,19 +632,19 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
 
             var globalNamespace = assembly.GlobalNamespace;
 
-            var @interface = (NamedTypeSymbol)globalNamespace.GetTypeMembers("IUnrelated").First(); //decl order
+            var @interface = (NamedTypeSymbol)globalNamespace.GetTypeMembersAsImmutable("IUnrelated").First(); //decl order
             Assert.Equal(0, @interface.Arity);
             Assert.Equal(TypeKind.Interface, @interface.TypeKind);
 
-            var @class = (NamedTypeSymbol)globalNamespace.GetTypeMembers("ExplicitlyImplementsUnrelatedInterfaceMethods").Single();
+            var @class = (NamedTypeSymbol)globalNamespace.GetTypeMembersAsImmutable("ExplicitlyImplementsUnrelatedInterfaceMethods").Single();
             Assert.Equal(TypeKind.Class, @class.TypeKind);
             Assert.Equal(0, @class.AllInterfaces().Length);
 
-            var classMethod = (MethodSymbol)@class.GetMembers("Method1").Single();
+            var classMethod = (MethodSymbol)@class.GetMembersAsImmutable("Method1").Single();
             Assert.Equal(MethodKind.Ordinary, classMethod.MethodKind);
             Assert.Equal(0, classMethod.ExplicitInterfaceImplementations.Length);
 
-            var classGenericMethod = (MethodSymbol)@class.GetMembers("Method1").Single();
+            var classGenericMethod = (MethodSymbol)@class.GetMembersAsImmutable("Method1").Single();
             Assert.Equal(MethodKind.Ordinary, classGenericMethod.MethodKind);
             Assert.Equal(0, classGenericMethod.ExplicitInterfaceImplementations.Length);
         }
@@ -665,19 +665,19 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
 
             var globalNamespace = assemblies.ElementAt(1).GlobalNamespace;
 
-            var @interface = (NamedTypeSymbol)globalNamespace.GetTypeMembers("IUnrelated").Last(); //decl order
+            var @interface = (NamedTypeSymbol)globalNamespace.GetTypeMembersAsImmutable("IUnrelated").Last(); //decl order
             Assert.Equal(1, @interface.Arity);
             Assert.Equal(TypeKind.Interface, @interface.TypeKind);
 
-            var @class = (NamedTypeSymbol)globalNamespace.GetTypeMembers("ExplicitlyImplementsUnrelatedInterfaceMethods").Single();
+            var @class = (NamedTypeSymbol)globalNamespace.GetTypeMembersAsImmutable("ExplicitlyImplementsUnrelatedInterfaceMethods").Single();
             Assert.Equal(TypeKind.Class, @class.TypeKind);
             Assert.Equal(0, @class.AllInterfaces().Length);
 
-            var classMethod = (MethodSymbol)@class.GetMembers("Method2").Single();
+            var classMethod = (MethodSymbol)@class.GetMembersAsImmutable("Method2").Single();
             Assert.Equal(MethodKind.Ordinary, classMethod.MethodKind);
             Assert.Equal(0, classMethod.ExplicitInterfaceImplementations.Length);
 
-            var classGenericMethod = (MethodSymbol)@class.GetMembers("Method2").Single();
+            var classGenericMethod = (MethodSymbol)@class.GetMembersAsImmutable("Method2").Single();
             Assert.Equal(MethodKind.Ordinary, classGenericMethod.MethodKind);
             Assert.Equal(0, classGenericMethod.ExplicitInterfaceImplementations.Length);
         }
@@ -699,32 +699,32 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
 
             var globalNamespace = assemblies.ElementAt(1).GlobalNamespace;
 
-            var outerInterface = (NamedTypeSymbol)globalNamespace.GetTypeMembers("IGeneric2").Single();
+            var outerInterface = (NamedTypeSymbol)globalNamespace.GetTypeMembersAsImmutable("IGeneric2").Single();
             Assert.Equal(1, outerInterface.Arity);
             Assert.Equal(TypeKind.Interface, outerInterface.TypeKind);
 
-            var outerInterfaceMethod = outerInterface.GetMembers().Single();
+            var outerInterfaceMethod = outerInterface.GetMembersAsImmutable().Single();
 
-            var outerClass = (NamedTypeSymbol)globalNamespace.GetTypeMembers("Outer").Single();
+            var outerClass = (NamedTypeSymbol)globalNamespace.GetTypeMembersAsImmutable("Outer").Single();
             Assert.Equal(1, outerClass.Arity);
             Assert.Equal(TypeKind.Class, outerClass.TypeKind);
 
-            var innerInterface = (NamedTypeSymbol)outerClass.GetTypeMembers("IInner").Single();
+            var innerInterface = (NamedTypeSymbol)outerClass.GetTypeMembersAsImmutable("IInner").Single();
             Assert.Equal(1, innerInterface.Arity);
             Assert.Equal(TypeKind.Interface, innerInterface.TypeKind);
 
-            var innerInterfaceMethod = innerInterface.GetMembers().Single();
+            var innerInterfaceMethod = innerInterface.GetMembersAsImmutable().Single();
 
-            var innerClass1 = (NamedTypeSymbol)outerClass.GetTypeMembers("Inner1").Single();
+            var innerClass1 = (NamedTypeSymbol)outerClass.GetTypeMembersAsImmutable("Inner1").Single();
             CheckInnerClassHelper(innerClass1, "IGeneric2<A>.Method", outerInterfaceMethod);
 
-            var innerClass2 = (NamedTypeSymbol)outerClass.GetTypeMembers("Inner2").Single();
+            var innerClass2 = (NamedTypeSymbol)outerClass.GetTypeMembersAsImmutable("Inner2").Single();
             CheckInnerClassHelper(innerClass2, "IGeneric2<T>.Method", outerInterfaceMethod);
 
-            var innerClass3 = (NamedTypeSymbol)outerClass.GetTypeMembers("Inner3").Single();
+            var innerClass3 = (NamedTypeSymbol)outerClass.GetTypeMembersAsImmutable("Inner3").Single();
             CheckInnerClassHelper(innerClass3, "Outer<T>.IInner<C>.Method", innerInterfaceMethod);
 
-            var innerClass4 = (NamedTypeSymbol)outerClass.GetTypeMembers("Inner4").Single();
+            var innerClass4 = (NamedTypeSymbol)outerClass.GetTypeMembersAsImmutable("Inner4").Single();
             CheckInnerClassHelper(innerClass4, "Outer<T>.IInner<T>.Method", innerInterfaceMethod);
         }
 
@@ -736,7 +736,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             Assert.Equal(TypeKind.Class, innerClass.TypeKind);
             Assert.Equal(@interface, innerClass.Interfaces().Single().ConstructedFrom);
 
-            var innerClassMethod = (MethodSymbol)innerClass.GetMembers(methodName).Single();
+            var innerClassMethod = (MethodSymbol)innerClass.GetMembersAsImmutable(methodName).Single();
             var innerClassImplementingMethod = innerClassMethod.ExplicitInterfaceImplementations.Single();
             Assert.Equal(interfaceMethod, innerClassImplementingMethod.OriginalDefinition);
             Assert.Equal(@interface, innerClassImplementingMethod.ContainingType.ConstructedFrom);
@@ -1177,42 +1177,42 @@ class Override : MetadataModifiers
 
             var compilation = CreateCompilationWithILAndMscorlib40("", ilSource);
 
-            foreach (var m in compilation.GetTypeByMetadataName("cls1").GetMembers())
+            foreach (var m in compilation.GetTypeByMetadataName("cls1").GetMembersAsImmutable())
             {
                 Assert.Equal(m.Name == ".cctor" ? MethodKind.StaticConstructor : MethodKind.Constructor, ((MethodSymbol)m).MethodKind);
             }
 
-            foreach (var m in compilation.GetTypeByMetadataName("Instance_vs_Static").GetMembers())
+            foreach (var m in compilation.GetTypeByMetadataName("Instance_vs_Static").GetMembersAsImmutable())
             {
                 Assert.Equal(MethodKind.Ordinary, ((MethodSymbol)m).MethodKind);
             }
 
-            foreach (var m in compilation.GetTypeByMetadataName("ReturnAValue1").GetMembers())
+            foreach (var m in compilation.GetTypeByMetadataName("ReturnAValue1").GetMembersAsImmutable())
             {
                 Assert.Equal(MethodKind.Ordinary, ((MethodSymbol)m).MethodKind);
             }
 
-            foreach (var m in compilation.GetTypeByMetadataName("ReturnAValue2").GetMembers())
+            foreach (var m in compilation.GetTypeByMetadataName("ReturnAValue2").GetMembersAsImmutable())
             {
                 Assert.Equal(MethodKind.Ordinary, ((MethodSymbol)m).MethodKind);
             }
 
-            foreach (var m in compilation.GetTypeByMetadataName("Generic1").GetMembers())
+            foreach (var m in compilation.GetTypeByMetadataName("Generic1").GetMembersAsImmutable())
             {
                 Assert.Equal(MethodKind.Ordinary, ((MethodSymbol)m).MethodKind);
             }
 
-            foreach (var m in compilation.GetTypeByMetadataName("Generic2").GetMembers())
+            foreach (var m in compilation.GetTypeByMetadataName("Generic2").GetMembersAsImmutable())
             {
                 Assert.Equal(MethodKind.Ordinary, ((MethodSymbol)m).MethodKind);
             }
 
-            foreach (var m in compilation.GetTypeByMetadataName("HasParameter").GetMembers())
+            foreach (var m in compilation.GetTypeByMetadataName("HasParameter").GetMembersAsImmutable())
             {
                 Assert.Equal(MethodKind.Ordinary, ((MethodSymbol)m).MethodKind);
             }
 
-            foreach (var m in compilation.GetTypeByMetadataName("Virtual").GetMembers())
+            foreach (var m in compilation.GetTypeByMetadataName("Virtual").GetMembersAsImmutable())
             {
                 Assert.Equal(MethodKind.Ordinary, ((MethodSymbol)m).MethodKind);
             }
@@ -1239,7 +1239,7 @@ class Override : MetadataModifiers
 
             var compilation = CreateCompilationWithILAndMscorlib40("", ilSource);
 
-            foreach (var m in compilation.GetTypeByMetadataName("Microsoft.FSharp.Control.IDelegateEvent`1").GetMembers())
+            foreach (var m in compilation.GetTypeByMetadataName("Microsoft.FSharp.Control.IDelegateEvent`1").GetMembersAsImmutable())
             {
                 Assert.False(((MethodSymbol)m).IsVirtual);
                 Assert.True(((MethodSymbol)m).IsAbstract);

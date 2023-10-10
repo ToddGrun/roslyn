@@ -38,14 +38,14 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
 }
 ");
 
-            _acmeNamespace = (NamespaceSymbol)_compilation.GlobalNamespace.GetMembers("Acme").Single();
-            _widgetClass = _acmeNamespace.GetTypeMembers("Widget").Single();
+            _acmeNamespace = (NamespaceSymbol)_compilation.GlobalNamespace.GetMembersAsImmutable("Acme").Single();
+            _widgetClass = _acmeNamespace.GetTypeMembersAsImmutable("Widget").Single();
         }
 
         [Fact]
         public void TestStaticConstructor()
         {
-            var staticConstructorSymbol = _widgetClass.GetMembers(WellKnownMemberNames.StaticConstructorName).Single();
+            var staticConstructorSymbol = _widgetClass.GetMembersAsImmutable(WellKnownMemberNames.StaticConstructorName).Single();
             Assert.Equal("M:Acme.Widget.#cctor", staticConstructorSymbol.GetDocumentationCommentId());
             Assert.Equal(
 @"<member name=""M:Acme.Widget.#cctor"">

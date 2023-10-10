@@ -1317,7 +1317,8 @@ hasRelatedInterfaces:
         {
             Debug.Assert(iface.IsInterfaceType());
 
-            foreach (Symbol m in iface.GetMembers())
+            using var ifaceMembers = iface.GetMembers();
+            foreach (Symbol m in ifaceMembers)
             {
                 if (m.IsStatic && m.IsImplementableInterfaceMember() && iface.FindImplementationForInterfaceMember(m) is null)
                 {
@@ -1328,7 +1329,8 @@ hasRelatedInterfaces:
 
             foreach (var baseInterface in iface.InterfacesAndTheirBaseInterfacesNoUseSiteDiagnostics.Keys)
             {
-                foreach (Symbol m in baseInterface.GetMembers())
+                using var baseInterfaceMembers = baseInterface.GetMembers();
+                foreach (Symbol m in baseInterfaceMembers)
                 {
                     if (m.IsStatic && m.IsImplementableInterfaceMember() && iface.FindImplementationForInterfaceMember(m) is null)
                     {

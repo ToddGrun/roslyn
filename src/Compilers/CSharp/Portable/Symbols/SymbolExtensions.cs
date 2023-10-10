@@ -8,6 +8,7 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Microsoft.CodeAnalysis.Collections;
 using Roslyn.Utilities;
 
 using static System.Linq.ImmutableArrayExtensions;
@@ -689,8 +690,9 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             return symbols.Select(p => p.GetPublicSymbol<ISymbol>());
         }
 
-        private static ImmutableArray<TISymbol> GetPublicSymbols<TISymbol>(this ImmutableArray<Symbol> symbols)
+        private static ImmutableArray<TISymbol> GetPublicSymbols<TISymbol, TSymbol>(this ImmutableArray<TSymbol> symbols)
             where TISymbol : class, ISymbol
+            where TSymbol : Symbol
         {
             if (symbols.IsDefault)
             {
@@ -700,64 +702,86 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             return symbols.SelectAsArray(p => p.GetPublicSymbol<TISymbol>());
         }
 
+        internal static ArrayWrapper<TISymbol> GetPublicSymbols<TISymbol, TSymbol>(this ArrayWrapper<TSymbol> symbols)
+            where TISymbol : class, ISymbol
+            where TSymbol : Symbol
+        {
+            if (symbols.Count == 0)
+            {
+                return ArrayWrapper<TISymbol>.Empty;
+            }
+
+            return symbols.SelectAsArrayWrapper(p => p.GetPublicSymbol<TISymbol>());
+        }
+
         internal static ImmutableArray<ISymbol> GetPublicSymbols(this ImmutableArray<Symbol> symbols)
         {
-            return GetPublicSymbols<ISymbol>(symbols);
+            return GetPublicSymbols<ISymbol, Symbol>(symbols);
+        }
+
+        internal static ArrayWrapper<ISymbol> GetPublicSymbols(this ArrayWrapper<Symbol> symbols)
+        {
+            return GetPublicSymbols<ISymbol, Symbol>(symbols);
         }
 
         internal static ImmutableArray<IPropertySymbol> GetPublicSymbols(this ImmutableArray<PropertySymbol> symbols)
         {
-            return GetPublicSymbols<IPropertySymbol>(StaticCast<Symbol>.From(symbols));
+            return GetPublicSymbols<IPropertySymbol, PropertySymbol>(symbols);
         }
 
         internal static ImmutableArray<ITypeSymbol> GetPublicSymbols(this ImmutableArray<TypeSymbol> symbols)
         {
-            return GetPublicSymbols<ITypeSymbol>(StaticCast<Symbol>.From(symbols));
+            return GetPublicSymbols<ITypeSymbol, TypeSymbol>(symbols);
         }
 
         internal static ImmutableArray<INamedTypeSymbol> GetPublicSymbols(this ImmutableArray<NamedTypeSymbol> symbols)
         {
-            return GetPublicSymbols<INamedTypeSymbol>(StaticCast<Symbol>.From(symbols));
+            return GetPublicSymbols<INamedTypeSymbol, NamedTypeSymbol>(symbols);
+        }
+
+        internal static ArrayWrapper<INamedTypeSymbol> GetPublicSymbols(this ArrayWrapper<NamedTypeSymbol> symbols)
+        {
+            return GetPublicSymbols<INamedTypeSymbol, NamedTypeSymbol>(symbols);
         }
 
         internal static ImmutableArray<ILocalSymbol> GetPublicSymbols(this ImmutableArray<LocalSymbol> symbols)
         {
-            return GetPublicSymbols<ILocalSymbol>(StaticCast<Symbol>.From(symbols));
+            return GetPublicSymbols<ILocalSymbol, LocalSymbol>(symbols);
         }
 
         internal static ImmutableArray<IEventSymbol> GetPublicSymbols(this ImmutableArray<EventSymbol> symbols)
         {
-            return GetPublicSymbols<IEventSymbol>(StaticCast<Symbol>.From(symbols));
+            return GetPublicSymbols<IEventSymbol, EventSymbol>(symbols);
         }
 
         internal static ImmutableArray<ITypeParameterSymbol> GetPublicSymbols(this ImmutableArray<TypeParameterSymbol> symbols)
         {
-            return GetPublicSymbols<ITypeParameterSymbol>(StaticCast<Symbol>.From(symbols));
+            return GetPublicSymbols<ITypeParameterSymbol, TypeParameterSymbol>(symbols);
         }
 
         internal static ImmutableArray<IParameterSymbol> GetPublicSymbols(this ImmutableArray<ParameterSymbol> symbols)
         {
-            return GetPublicSymbols<IParameterSymbol>(StaticCast<Symbol>.From(symbols));
+            return GetPublicSymbols<IParameterSymbol, ParameterSymbol>(symbols);
         }
 
         internal static ImmutableArray<IMethodSymbol> GetPublicSymbols(this ImmutableArray<MethodSymbol> symbols)
         {
-            return GetPublicSymbols<IMethodSymbol>(StaticCast<Symbol>.From(symbols));
+            return GetPublicSymbols<IMethodSymbol, MethodSymbol>(symbols);
         }
 
         internal static ImmutableArray<IAssemblySymbol> GetPublicSymbols(this ImmutableArray<AssemblySymbol> symbols)
         {
-            return GetPublicSymbols<IAssemblySymbol>(StaticCast<Symbol>.From(symbols));
+            return GetPublicSymbols<IAssemblySymbol, AssemblySymbol>(symbols);
         }
 
         internal static ImmutableArray<IFieldSymbol> GetPublicSymbols(this ImmutableArray<FieldSymbol> symbols)
         {
-            return GetPublicSymbols<IFieldSymbol>(StaticCast<Symbol>.From(symbols));
+            return GetPublicSymbols<IFieldSymbol, FieldSymbol>(symbols);
         }
 
         internal static ImmutableArray<INamespaceSymbol> GetPublicSymbols(this ImmutableArray<NamespaceSymbol> symbols)
         {
-            return GetPublicSymbols<INamespaceSymbol>(StaticCast<Symbol>.From(symbols));
+            return GetPublicSymbols<INamespaceSymbol, NamespaceSymbol>(symbols);
         }
 
         [return: NotNullIfNotNull(nameof(symbol))]

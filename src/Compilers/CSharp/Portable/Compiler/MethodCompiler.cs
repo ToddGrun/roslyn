@@ -478,8 +478,8 @@ namespace Microsoft.CodeAnalysis.CSharp
                 }
             }
 
-            var members = containingType.GetMembers();
-            for (int memberOrdinal = 0; memberOrdinal < members.Length; memberOrdinal++)
+            using var members = containingType.GetMembers();
+            for (int memberOrdinal = 0; memberOrdinal < members.Count; memberOrdinal++)
             {
                 var member = members[memberOrdinal];
 

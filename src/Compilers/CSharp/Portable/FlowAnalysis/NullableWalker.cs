@@ -613,8 +613,9 @@ namespace Microsoft.CodeAnalysis.CSharp
                         // Required properties can be attributed MemberNotNull, indicating that if the property is set, the field will be set as well.
                         // If we're enforcing required members (ie, the constructor is not attributed with SetsRequiredMembers), we also want to
                         // not warn for members named in such attributes.
+                        using var unorderedMembers = method.ContainingType.GetMembersUnordered();
                         var membersWithStateEnforcedByRequiredMembers = constructorEnforcesRequiredMembers
-                            ? method.ContainingType.GetMembersUnordered().SelectManyAsArray(
+                            ? unorderedMembers.ToImmutableArray().SelectManyAsArray(
                                 predicate: member => member is PropertySymbol { IsRequired: true },
                                 selector: member =>
                                 {
@@ -624,7 +625,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                             : ImmutableArray<string>.Empty;
 
                         var alreadyWarnedMembers = PooledHashSet<Symbol>.GetInstance();
-                        foreach (var member in method.ContainingType.GetMembersUnordered())
+                        foreach (var member in unorderedMembers)
                         {
                             // If this constructor has `SetsRequiredMembers`, then we need to check the state of _all_ required properties, regardless of whether they are auto-properties or not.
                             // For auto-properties, `GetMembersUnordered()` will return the backing field, and `checkStateOnConstructorExit` will follow that to the property itself, so we only need
@@ -801,7 +802,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                 }
             }
 
-            void enforceMemberNotNullWhenIfAffected(SyntaxNode? syntaxOpt, bool sense, ImmutableArray<Symbol> members, LocalState state, LocalState otherState)
+            void enforceMemberNotNullWhenIfAffected(SyntaxNode? syntaxOpt, bool sense, ArrayWrapper<Symbol> members, LocalState state, LocalState otherState)
             {
                 foreach (var member in members)
                 {
@@ -868,7 +869,8 @@ namespace Microsoft.CodeAnalysis.CSharp
                 {
                     if (method.IsConstructor())
                     {
-                        foreach (var member in getMembersNeedingDefaultInitialState())
+                        using var membersNeedingDefaultInitialState = getMembersNeedingDefaultInitialState();
+                        foreach (var member in membersNeedingDefaultInitialState)
                         {
                             if (member.IsStatic != method.IsStatic)
                             {
@@ -929,11 +931,11 @@ namespace Microsoft.CodeAnalysis.CSharp
 
                 return;
 
-                ImmutableArray<Symbol> getMembersNeedingDefaultInitialState()
+                ArrayWrapper<Symbol> getMembersNeedingDefaultInitialState()
                 {
                     if (_hasInitialState)
                     {
-                        return ImmutableArray<Symbol>.Empty;
+                        return ArrayWrapper<Symbol>.Empty;
                     }
 
                     bool includeCurrentTypeRequiredMembers = true;
@@ -973,21 +975,21 @@ namespace Microsoft.CodeAnalysis.CSharp
                     // default if we can get to this constructor by doing so (ie, : this() in a value type).
                     return membersToBeInitialized(method.ContainingType, includeAllMembers: method.IncludeFieldInitializersInBody(), includeCurrentTypeRequiredMembers, includeBaseRequiredMembers);
 
-                    static ImmutableArray<Symbol> membersToBeInitialized(NamedTypeSymbol containingType, bool includeAllMembers, bool includeCurrentTypeRequiredMembers, bool includeBaseRequiredMembers)
+                    static ArrayWrapper<Symbol> membersToBeInitialized(NamedTypeSymbol containingType, bool includeAllMembers, bool includeCurrentTypeRequiredMembers, bool includeBaseRequiredMembers)
                     {
                         return (includeAllMembers, includeCurrentTypeRequiredMembers, includeBaseRequiredMembers) switch
                         {
                             (includeAllMembers: false, includeCurrentTypeRequiredMembers: false, includeBaseRequiredMembers: false)
-                                => ImmutableArray<Symbol>.Empty,
+                                => ArrayWrapper<Symbol>.Empty,
 
                             (includeAllMembers: false, includeCurrentTypeRequiredMembers: true, includeBaseRequiredMembers: false)
-                                => containingType.GetMembersUnordered().SelectManyAsArray(predicate: SymbolExtensions.IsRequired, selector: getAllMembersToBeDefaulted),
+                                => getTypeMembersNotIncludingBase(containingType),
 
                             (includeAllMembers: false, includeCurrentTypeRequiredMembers: true, includeBaseRequiredMembers: true)
-                                => containingType.AllRequiredMembers.SelectManyAsArray(static kvp => getAllMembersToBeDefaulted(kvp.Value)),
+                                => new ArrayWrapper<Symbol>(containingType.AllRequiredMembers.SelectManyAsArray(static kvp => getAllMembersToBeDefaulted(kvp.Value))),
 
                             (includeAllMembers: true, includeCurrentTypeRequiredMembers: _, includeBaseRequiredMembers: false)
-                                => containingType.GetMembersUnordered().SelectAsArray(getFieldSymbolToBeInitialized),
+                                => getAllMembersNotIncludingBase(containingType),
 
                             (includeAllMembers: true, includeCurrentTypeRequiredMembers: true, includeBaseRequiredMembers: true)
                                 => getAllTypeAndRequiredMembers(containingType),
@@ -996,7 +998,21 @@ namespace Microsoft.CodeAnalysis.CSharp
                                 => throw ExceptionUtilities.Unreachable(),
                         };
 
-                        static ImmutableArray<Symbol> getAllTypeAndRequiredMembers(TypeSymbol containingType)
+                        static ArrayWrapper<Symbol> getTypeMembersNotIncludingBase(TypeSymbol containingType)
+                        {
+                            using var members = containingType.GetMembersUnordered();
+
+                            return new ArrayWrapper<Symbol>(members.ToImmutableArray().SelectManyAsArray(predicate: SymbolExtensions.IsRequired, selector: getAllMembersToBeDefaulted));
+                        }
+
+                        static ArrayWrapper<Symbol> getAllMembersNotIncludingBase(TypeSymbol containingType)
+                        {
+                            using var members = containingType.GetMembersUnordered();
+
+                            return members.SelectAsArrayWrapper(getFieldSymbolToBeInitialized);
+                        }
+
+                        static ArrayWrapper<Symbol> getAllTypeAndRequiredMembers(TypeSymbol containingType)
                         {
                             var members = containingType.GetMembersUnordered();
                             var requiredMembers = containingType.BaseTypeNoUseSiteDiagnostics?.AllRequiredMembers ?? ImmutableSegmentedDictionary<string, Symbol>.Empty;
@@ -1006,7 +1022,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                                 return members;
                             }
 
-                            var builder = ArrayBuilder<Symbol>.GetInstance(members.Length + requiredMembers.Count);
+                            var builder = ArrayBuilder<Symbol>.GetInstance(members.Count + requiredMembers.Count);
                             builder.AddRange(members);
                             foreach (var (_, requiredMember) in requiredMembers)
                             {
@@ -1014,7 +1030,8 @@ namespace Microsoft.CodeAnalysis.CSharp
                                 builder.AddRange(getAllMembersToBeDefaulted(requiredMember));
                             }
 
-                            return builder.ToImmutableAndFree();
+                            members.Dispose();
+                            return new ArrayWrapper<Symbol>(builder);
                         }
 
                         static IEnumerable<Symbol> getAllMembersToBeDefaulted(Symbol requiredMember)
@@ -5156,18 +5173,25 @@ namespace Microsoft.CodeAnalysis.CSharp
             static IEnumerable<Symbol> getMembers(TypeSymbol type)
             {
                 // First, return the direct members
-                foreach (var member in type.GetMembers())
+                using var typeMembers = type.GetMembers();
+                foreach (var member in typeMembers)
                     yield return member;
 
                 // All types inherit members from their effective bases
                 for (NamedTypeSymbol baseType = effectiveBase(type); !(baseType is null); baseType = baseType.BaseTypeNoUseSiteDiagnostics)
-                    foreach (var member in baseType.GetMembers())
+                {
+                    using var baseTypeMembers = baseType.GetMembers();
+                    foreach (var member in baseTypeMembers)
                         yield return member;
+                }
 
                 // Interfaces and type parameters inherit from their effective interfaces
                 foreach (NamedTypeSymbol interfaceType in inheritedInterfaces(type))
-                    foreach (var member in interfaceType.GetMembers())
+                {
+                    using var interfaceTypeMembers = interfaceType.GetMembers();
+                    foreach (var member in interfaceTypeMembers)
                         yield return member;
+                }
 
                 yield break;
 

@@ -648,7 +648,8 @@ namespace Microsoft.CodeAnalysis.CSharp
             // If so, that is what to report.
             if (type is NamedTypeSymbol { TypeKind: TypeKind.Enum } e)
             {
-                foreach (var declaredMember in e.GetMembers())
+                using var members = e.GetMembers();
+                foreach (var declaredMember in members)
                 {
                     if (declaredMember is FieldSymbol { IsConst: true, IsStatic: true, DeclaredAccessibility: Accessibility.Public } field &&
                         field.GetConstantValue(ConstantFieldsInProgress.Empty, false) is ConstantValue constantValue &&

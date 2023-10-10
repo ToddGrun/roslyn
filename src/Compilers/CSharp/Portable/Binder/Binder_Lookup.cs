@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
+using Microsoft.CodeAnalysis.Collections;
 using Microsoft.CodeAnalysis.CSharp.Symbols;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.PooledObjects;
@@ -442,7 +443,7 @@ namespace Microsoft.CodeAnalysis.CSharp
 
         private static void LookupMembersInNamespace(LookupResult result, NamespaceSymbol ns, string name, int arity, LookupOptions options, Binder originalBinder, bool diagnose, ref CompoundUseSiteInfo<AssemblySymbol> useSiteInfo)
         {
-            var members = GetCandidateMembers(ns, name, options, originalBinder);
+            using var members = GetCandidateMembers(ns, name, options, originalBinder);
 
             foreach (Symbol member in members)
             {
@@ -763,7 +764,7 @@ namespace Microsoft.CodeAnalysis.CSharp
         protected static void LookupMembersWithoutInheritance(LookupResult result, TypeSymbol type, string name, int arity,
             LookupOptions options, Binder originalBinder, TypeSymbol accessThroughType, bool diagnose, ref CompoundUseSiteInfo<AssemblySymbol> useSiteInfo, ConsList<TypeSymbol> basesBeingResolved)
         {
-            var members = GetCandidateMembers(type, name, options, originalBinder);
+            using var members = GetCandidateMembers(type, name, options, originalBinder);
 
             foreach (Symbol member in members)
             {
@@ -1045,7 +1046,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                 return ImmutableArray<NamedTypeSymbol>.Empty;
             }
 
-            var interfaces = type.GetDeclaredInterfaces(basesBeingResolved);
+            using var interfaces = type.GetDeclaredInterfaces(basesBeingResolved);
 
             if (interfaces.IsEmpty)
             {
@@ -1072,7 +1073,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             var result = ArrayBuilder<NamedTypeSymbol>.GetInstance();
             var visited = new HashSet<NamedTypeSymbol>(Symbols.SymbolEqualityComparer.ConsiderEverything);
 
-            for (int i = interfaces.Length - 1; i >= 0; i--)
+            for (int i = interfaces.Count - 1; i >= 0; i--)
             {
                 addAllInterfaces(interfaces[i], visited, result, basesBeingResolved, cycleGuard);
             }
@@ -1094,12 +1095,12 @@ namespace Microsoft.CodeAnalysis.CSharp
                 {
                     if (!basesBeingResolved.ContainsReference(originalDefinition))
                     {
-                        ImmutableArray<NamedTypeSymbol> baseInterfaces = @interface.GetDeclaredInterfaces(basesBeingResolved);
+                        using ArrayWrapper<NamedTypeSymbol> baseInterfaces = @interface.GetDeclaredInterfaces(basesBeingResolved);
 
                         if (!baseInterfaces.IsEmpty)
                         {
                             cycleGuard = cycleGuard.Prepend(originalDefinition);
-                            for (int i = baseInterfaces.Length - 1; i >= 0; i--)
+                            for (int i = baseInterfaces.Count - 1; i >= 0; i--)
                             {
                                 var baseInterface = baseInterfaces[i];
                                 addAllInterfaces(baseInterface, visited, result, basesBeingResolved, cycleGuard);
@@ -1290,11 +1291,13 @@ symIsHidden:;
             return symbol.Kind == SymbolKind.Method || symbol.IsIndexer();
         }
 
-        internal static ImmutableArray<Symbol> GetCandidateMembers(NamespaceOrTypeSymbol nsOrType, string name, LookupOptions options, Binder originalBinder)
+        internal static ArrayWrapper<Symbol> GetCandidateMembers(NamespaceOrTypeSymbol nsOrType, string name, LookupOptions options, Binder originalBinder)
         {
             if ((options & LookupOptions.NamespacesOrTypesOnly) != 0 && nsOrType is TypeSymbol)
             {
-                return nsOrType.GetTypeMembers(name).Cast<NamedTypeSymbol, Symbol>();
+                using var members = nsOrType.GetTypeMembers(name);
+
+                return ArrayWrapper<Symbol>.CastUp<Symbol, NamedTypeSymbol>(members);
             }
             else if (nsOrType.Kind == SymbolKind.NamedType && originalBinder.IsEarlyAttributeBinder)
             {
@@ -1302,7 +1305,7 @@ symIsHidden:;
             }
             else if ((options & LookupOptions.LabelsOnly) != 0)
             {
-                return ImmutableArray<Symbol>.Empty;
+                return ArrayWrapper<Symbol>.Empty;
             }
             else if (nsOrType is SourceMemberContainerTypeSymbol { HasPrimaryConstructor: true } sourceMemberContainerTypeSymbol)
             {
@@ -1314,11 +1317,13 @@ symIsHidden:;
             }
         }
 
-        internal static ImmutableArray<Symbol> GetCandidateMembers(NamespaceOrTypeSymbol nsOrType, LookupOptions options, Binder originalBinder)
+        internal static ArrayWrapper<Symbol> GetCandidateMembers(NamespaceOrTypeSymbol nsOrType, LookupOptions options, Binder originalBinder)
         {
             if ((options & LookupOptions.NamespacesOrTypesOnly) != 0 && nsOrType is TypeSymbol)
             {
-                return StaticCast<Symbol>.From(nsOrType.GetTypeMembersUnordered());
+                using var unorderedMembers = nsOrType.GetTypeMembersUnordered();
+
+                return ArrayWrapper<Symbol>.CastUp<Symbol, NamedTypeSymbol>(unorderedMembers);
             }
             else if (nsOrType.Kind == SymbolKind.NamedType && originalBinder.IsEarlyAttributeBinder)
             {
@@ -1326,7 +1331,7 @@ symIsHidden:;
             }
             else if ((options & LookupOptions.LabelsOnly) != 0)
             {
-                return ImmutableArray<Symbol>.Empty;
+                return ArrayWrapper<Symbol>.Empty;
             }
             else
             {
@@ -1947,7 +1952,7 @@ symIsHidden:;
 
         private static void AddMemberLookupSymbolsInfoInNamespace(LookupSymbolsInfo result, NamespaceSymbol ns, LookupOptions options, Binder originalBinder)
         {
-            var candidateMembers = result.FilterName != null ? GetCandidateMembers(ns, result.FilterName, options, originalBinder) : GetCandidateMembers(ns, options, originalBinder);
+            using var candidateMembers = result.FilterName != null ? GetCandidateMembers(ns, result.FilterName, options, originalBinder) : GetCandidateMembers(ns, options, originalBinder);
             foreach (var symbol in candidateMembers)
             {
                 if (originalBinder.CanAddLookupSymbolInfo(symbol, options, result, null))
@@ -1959,7 +1964,7 @@ symIsHidden:;
 
         private static void AddMemberLookupSymbolsInfoWithoutInheritance(LookupSymbolsInfo result, TypeSymbol type, LookupOptions options, Binder originalBinder, TypeSymbol accessThroughType)
         {
-            var candidateMembers = result.FilterName != null ? GetCandidateMembers(type, result.FilterName, options, originalBinder) : GetCandidateMembers(type, options, originalBinder);
+            using var candidateMembers = result.FilterName != null ? GetCandidateMembers(type, result.FilterName, options, originalBinder) : GetCandidateMembers(type, options, originalBinder);
             foreach (var symbol in candidateMembers)
             {
                 if (originalBinder.CanAddLookupSymbolInfo(symbol, options, result, accessThroughType))

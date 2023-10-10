@@ -11,6 +11,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Collections;
 using Microsoft.CodeAnalysis.CSharp.Emit;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.PooledObjects;
@@ -620,7 +621,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     case CompletionPart.MembersCompletedChecksStarted:
                     case CompletionPart.MembersCompleted:
                         {
-                            ImmutableArray<Symbol> members = this.GetMembersUnordered();
+                            using ArrayWrapper<Symbol> members = this.GetMembersUnordered();
 
                             bool allCompleted = true;
 
@@ -1262,30 +1263,32 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
         }
 
-        internal override ImmutableArray<NamedTypeSymbol> GetTypeMembersUnordered()
+        internal override ArrayWrapper<NamedTypeSymbol> GetTypeMembersUnordered()
         {
-            return GetTypeMembersDictionary().Flatten();
+            return new ArrayWrapper<NamedTypeSymbol>(GetTypeMembersDictionary().Flatten());
         }
 
-        public override ImmutableArray<NamedTypeSymbol> GetTypeMembers()
+        public override ArrayWrapper<NamedTypeSymbol> GetTypeMembers()
         {
-            return GetTypeMembersDictionary().Flatten(LexicalOrderSymbolComparer.Instance);
+            return new ArrayWrapper<NamedTypeSymbol>(GetTypeMembersDictionary().Flatten(LexicalOrderSymbolComparer.Instance));
         }
 
-        public override ImmutableArray<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name)
+        public override ArrayWrapper<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name)
         {
             ImmutableArray<NamedTypeSymbol> members;
             if (GetTypeMembersDictionary().TryGetValue(name, out members))
             {
-                return members;
+                return new ArrayWrapper<NamedTypeSymbol>(members);
             }
 
-            return ImmutableArray<NamedTypeSymbol>.Empty;
+            return ArrayWrapper<NamedTypeSymbol>.Empty;
         }
 
-        public override ImmutableArray<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name, int arity)
+        public override ArrayWrapper<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name, int arity)
         {
-            return GetTypeMembers(name).WhereAsArray((t, arity) => t.Arity == arity, arity);
+            using var members = GetTypeMembers(name);
+
+            return members.WhereAsArrayWrapper((t, arity) => t.Arity == arity, arity);
         }
 
         private Dictionary<ReadOnlyMemory<char>, ImmutableArray<NamedTypeSymbol>> GetTypeMembersDictionary()
@@ -1400,7 +1403,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
         }
 
-        internal override ImmutableArray<Symbol> GetMembersUnordered()
+        internal override ArrayWrapper<Symbol> GetMembersUnordered()
         {
             var result = _lazyMembersFlattened;
 
@@ -1411,24 +1414,31 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 result = _lazyMembersFlattened;
             }
 
-            return result.ConditionallyDeOrder();
+            return new ArrayWrapper<Symbol>(result.ConditionallyDeOrder());
         }
 
-        public override ImmutableArray<Symbol> GetMembers()
+        public override ArrayWrapper<Symbol> GetMembers()
         {
             if (_flags.FlattenedMembersIsSorted)
             {
-                return _lazyMembersFlattened;
+                return new ArrayWrapper<Symbol>(_lazyMembersFlattened);
             }
             else
             {
+                // Caller will dispose
                 var allMembers = this.GetMembersUnordered();
 
-                if (allMembers.Length > 1)
+                if (allMembers.Count > 1)
                 {
                     // The array isn't sorted. Sort it and remember that we sorted it.
-                    allMembers = allMembers.Sort(LexicalOrderSymbolComparer.Instance);
-                    ImmutableInterlocked.InterlockedExchange(ref _lazyMembersFlattened, allMembers);
+                    allMembers.Sort(LexicalOrderSymbolComparer.Instance);
+                    var allMembersImmutableArray = allMembers.ToImmutableArray();
+
+                    // Dispose the unordered wrapper, and create a new sorted wrapper for the caller
+                    allMembers.Dispose();
+                    allMembers = new ArrayWrapper<Symbol>(allMembersImmutableArray);
+
+                    ImmutableInterlocked.InterlockedExchange(ref _lazyMembersFlattened, allMembersImmutableArray);
                 }
 
                 _flags.SetFlattenedMembersIsSorted();
@@ -1436,15 +1446,14 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
         }
 
-        public sealed override ImmutableArray<Symbol> GetMembers(string name)
+        public sealed override ArrayWrapper<Symbol> GetMembers(string name)
         {
-            ImmutableArray<Symbol> members;
-            if (GetMembersByName().TryGetValue(name.AsMemory(), out members))
+            if (GetMembersByName().TryGetValue(name.AsMemory(), out var members))
             {
-                return members;
+                return new ArrayWrapper<Symbol>(members);
             }
 
-            return ImmutableArray<Symbol>.Empty;
+            return ArrayWrapper<Symbol>.Empty;
         }
 
         /// <remarks>
@@ -1459,7 +1468,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         {
             if (_lazyMembersDictionary != null || declaration.MemberNames.Contains(name) || declaration.Kind is DeclarationKind.Record or DeclarationKind.RecordStruct)
             {
-                return GetMembers(name);
+                using var members = GetMembers(name);
+                return members.ToImmutableArray();
             }
 
             return ImmutableArray<Symbol>.Empty;
@@ -1505,9 +1515,9 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// In particular, this method will return nested types and fields (other than auto-property
         /// backing fields).
         /// </summary>
-        internal override ImmutableArray<Symbol> GetEarlyAttributeDecodingMembers()
+        internal override ArrayWrapper<Symbol> GetEarlyAttributeDecodingMembers()
         {
-            return GetEarlyAttributeDecodingMembersDictionary().Flatten();
+            return new ArrayWrapper<Symbol>(GetEarlyAttributeDecodingMembersDictionary().Flatten());
         }
 
         /// <summary>
@@ -1517,10 +1527,10 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// In particular, this method will return nested types and fields (other than auto-property
         /// backing fields).
         /// </summary>
-        internal override ImmutableArray<Symbol> GetEarlyAttributeDecodingMembers(string name)
+        internal override ArrayWrapper<Symbol> GetEarlyAttributeDecodingMembers(string name)
         {
             ImmutableArray<Symbol> result;
-            return GetEarlyAttributeDecodingMembersDictionary().TryGetValue(name.AsMemory(), out result) ? result : ImmutableArray<Symbol>.Empty;
+            return new ArrayWrapper<Symbol>(GetEarlyAttributeDecodingMembersDictionary().TryGetValue(name.AsMemory(), out result) ? result : ImmutableArray<Symbol>.Empty);
         }
 
         private Dictionary<ReadOnlyMemory<char>, ImmutableArray<Symbol>> GetEarlyAttributeDecodingMembersDictionary()
@@ -3349,7 +3359,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
         }
 
-        internal ImmutableArray<Symbol> GetCandidateMembersForLookup(string name)
+        internal ArrayWrapper<Symbol> GetCandidateMembersForLookup(string name)
         {
             if (this is { IsRecord: true } or { IsRecordStruct: true } ||
                 this.state.HasComplete(CompletionPart.Members))
@@ -3380,7 +3390,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 return GetMembers(name);
             }
 
-            ImmutableArray<Symbol> types = GetTypeMembers(name).Cast<NamedTypeSymbol, Symbol>();
+            using ArrayWrapper<NamedTypeSymbol> types = GetTypeMembers(name);
             ArrayBuilder<Symbol>? memberBuilder = null;
 
             foreach (var member in nonTypeMembersToCheck)
@@ -3392,18 +3402,18 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
                 if (member.Name == name)
                 {
-                    memberBuilder ??= ArrayBuilder<Symbol>.GetInstance(types.Length + 1);
+                    memberBuilder ??= ArrayBuilder<Symbol>.GetInstance(types.Count + 1);
                     memberBuilder.Add(member);
                 }
             }
 
             if (memberBuilder is null)
             {
-                return types;
+                return ArrayWrapper<Symbol>.CastUp<Symbol, NamedTypeSymbol>(types);
             }
 
             memberBuilder.AddRange(types);
-            return memberBuilder.ToImmutableAndFree();
+            return new ArrayWrapper<Symbol>(memberBuilder);
         }
 
         private void AddSynthesizedMembers(MembersAndInitializersBuilder builder, DeclaredMembersAndInitializers declaredMembersAndInitializers, BindingDiagnosticBag diagnostics)

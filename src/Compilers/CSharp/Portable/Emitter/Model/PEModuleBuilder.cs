@@ -15,6 +15,7 @@ using System.Reflection.PortableExecutable;
 using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeGen;
+using Microsoft.CodeAnalysis.Collections;
 using Microsoft.CodeAnalysis.CSharp.Symbols;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.CodeAnalysis.PooledObjects;
@@ -232,7 +233,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Emit
                         // locations such as anonymous types, etc...
                         if (location != null)
                         {
-                            foreach (var member in symbol.GetMembers())
+                            using var members = symbol.GetMembers();
+                            foreach (var member in members)
                             {
                                 switch (member.Kind)
                                 {
@@ -347,7 +349,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Emit
                         // locations such as anonymous types, etc...
                         if (location != null)
                         {
-                            foreach (var member in symbol.GetMembers())
+                            using var members = symbol.GetMembers();
+                            foreach (var member in members)
                             {
                                 switch (member.Kind)
                                 {
@@ -370,7 +373,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Emit
                             //  add this named type location
                             AddSymbolLocation(result, location, (Cci.IDefinition)symbol.GetCciAdapter());
 
-                            foreach (var member in symbol.GetMembers())
+                            using var members = symbol.GetMembers();
+                            foreach (var member in members)
                             {
                                 switch (member.Kind)
                                 {
@@ -545,7 +549,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Emit
             while (namespacesToProcess.Count > 0)
             {
                 var ns = namespacesToProcess.Pop();
-                foreach (var member in ns.GetMembers())
+                using var members = ns.GetMembers();
+                foreach (var member in members)
                 {
                     if (member.Kind == SymbolKind.Namespace)
                     {
@@ -578,7 +583,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Emit
                 index = -1;
             }
 
-            foreach (var member in symbol.GetMembers())
+            using var members = symbol.GetMembers();
+            foreach (var member in members)
             {
                 var namespaceOrType = member as NamespaceOrTypeSymbol;
                 if ((object)namespaceOrType != null)
@@ -767,8 +773,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Emit
                             builder.Add(new Cci.ExportedType(type.GetCciAdapter(), parentIndex, isForwarder: true));
 
                             // Iterate backwards so they get popped in forward order.
-                            ImmutableArray<NamedTypeSymbol> nested = type.GetTypeMembers(); // Ordered.
-                            for (int i = nested.Length - 1; i >= 0; i--)
+                            using ArrayWrapper<NamedTypeSymbol> nested = type.GetTypeMembers(); // Ordered.
+                            for (int i = nested.Count - 1; i >= 0; i--)
                             {
                                 stack.Push((nested[i], index));
                             }

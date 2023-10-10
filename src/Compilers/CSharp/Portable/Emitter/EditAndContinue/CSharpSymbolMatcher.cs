@@ -807,7 +807,9 @@ namespace Microsoft.CodeAnalysis.CSharp.Emit
                 }
                 else
                 {
-                    members.AddRange(((NamespaceSymbol)symbol).GetMembers());
+                    using var symbolMembers = ((NamespaceSymbol)symbol).GetMembers();
+
+                    members.AddRange(symbolMembers);
                 }
 
                 if (_otherSynthesizedMembers != null && _otherSynthesizedMembers.TryGetValue(symbol, out var synthesizedMembers))

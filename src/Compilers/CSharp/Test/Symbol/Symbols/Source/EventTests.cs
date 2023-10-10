@@ -39,7 +39,7 @@ class main1
 ";
             var comp = CreateCompilation(text);
 
-            var actualSymbols = comp.Assembly.GlobalNamespace.GetMembers();
+            var actualSymbols = comp.Assembly.GlobalNamespace.GetMembersAsImmutable();
             var actual = string.Join(", ", actualSymbols.Where(s => !s.IsImplicitlyDeclared).Select(symbol => symbol.Name).OrderBy(name => name));
             Assert.Equal("main1, Test1", actual);
         }
@@ -56,8 +56,8 @@ class C1
 }
 ";
             var comp = CreateCompilation(Parse(text));
-            NamedTypeSymbol c1 = (NamedTypeSymbol)comp.SourceModule.GlobalNamespace.GetMembers("C1").Single();
-            //EventSymbol ein = c1.GetMembers("in").Single();
+            NamedTypeSymbol c1 = (NamedTypeSymbol)comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("C1").Single();
+            //EventSymbol ein = c1.GetMembersAsImmutable("in").Single();
             //Assert.Equal("in", ein.Name);
             //Assert.Equal("C1.@in", ein.ToString());
             //NamedTypeSymbol dout = ein.Type;
@@ -321,8 +321,8 @@ class C
 }
 ";
             var comp = CreateCompilation(text);
-            NamedTypeSymbol type01 = comp.SourceModule.GlobalNamespace.GetTypeMembers("C").Single();
-            var fevent = type01.GetMembers("FieldLikeEvent").Single() as EventSymbol;
+            NamedTypeSymbol type01 = comp.SourceModule.GlobalNamespace.GetTypeMembersAsImmutable("C").Single();
+            var fevent = type01.GetMembersAsImmutable("FieldLikeEvent").Single() as EventSymbol;
             Assert.NotNull(fevent.AddMethod);
             Assert.True(fevent.AddMethod.IsImplicitlyDeclared, "FieldLikeEvent AddAccessor");
             Assert.NotNull(fevent.AddMethod);

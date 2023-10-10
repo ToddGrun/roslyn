@@ -11,6 +11,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using Microsoft.CodeAnalysis.CSharp.Symbols;
+using Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.CodeAnalysis.PooledObjects;
 using Microsoft.CodeAnalysis.Symbols;
@@ -556,7 +557,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Emit
 
             foreach (var partName in namespaceFullName.Split('.'))
             {
-                var subnamespace = (NamespaceSymbol)result.GetMembers(partName).FirstOrDefault(m => m.Kind == SymbolKind.Namespace);
+                using var members = result.GetMembers(partName);
+                var subnamespace = (NamespaceSymbol)members.FirstOrDefault(static m => m.Kind == SymbolKind.Namespace);
                 if (subnamespace == null)
                 {
                     subnamespace = new SynthesizedNamespaceSymbol(result, partName);

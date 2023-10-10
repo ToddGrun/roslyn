@@ -10,6 +10,7 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using Microsoft.CodeAnalysis.Collections;
 using Microsoft.CodeAnalysis.PooledObjects;
 using Roslyn.Utilities;
 
@@ -131,7 +132,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
                 HasBaseTypeDeclaringInterfaceResult? hasBaseClassDeclaringInterface = null;
 
-                foreach (var interfaceMember in @interface.GetMembers())
+                using var interfaceMembers = @interface.GetMembers();
+                foreach (var interfaceMember in interfaceMembers)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
@@ -1945,7 +1947,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             return false;
         }
 
-        internal sealed override ImmutableArray<NamedTypeSymbol> GetInterfacesToEmit()
+        internal sealed override ArrayWrapper<NamedTypeSymbol> GetInterfacesToEmit()
         {
             return CalculateInterfacesToEmit();
         }

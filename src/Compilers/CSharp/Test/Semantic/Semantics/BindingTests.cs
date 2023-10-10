@@ -2563,9 +2563,9 @@ class C
             var comp = CreateCompilation(source);
             comp.VerifyDiagnostics();
 
-            var c = comp.GlobalNamespace.GetTypeMembers("C").Single();
-            var t = (FieldSymbol)c.GetMembers("T").Single();
-            var foo = (MethodSymbol)c.GetMembers("Foo").Single();
+            var c = comp.GlobalNamespace.GetTypeMembersAsImmutable("C").Single();
+            var t = (FieldSymbol)c.GetMembersAsImmutable("T").Single();
+            var foo = (MethodSymbol)c.GetMembersAsImmutable("Foo").Single();
             var x = foo.Parameters[0];
             var a = x.GetAttributes()[0];
             var i = a.ConstructorArguments.Single();
@@ -2594,9 +2594,9 @@ class C
             var comp = CreateCompilation(source);
             comp.VerifyDiagnostics();
 
-            var c = comp.GlobalNamespace.GetTypeMembers("C").Single();
-            var t = (FieldSymbol)c.GetMembers("T").Single();
-            var foo = (MethodSymbol)c.GetMembers("Foo").Single();
+            var c = comp.GlobalNamespace.GetTypeMembersAsImmutable("C").Single();
+            var t = (FieldSymbol)c.GetMembersAsImmutable("T").Single();
+            var foo = (MethodSymbol)c.GetMembersAsImmutable("Foo").Single();
             var a = foo.GetAttributes()[0];
             var i = a.ConstructorArguments.Single();
             Assert.Equal((int)i.Value, (int)t.ConstantValue);
@@ -2623,9 +2623,9 @@ class C
             var comp = CreateCompilation(source);
             comp.VerifyDiagnostics();
 
-            var c = comp.GlobalNamespace.GetTypeMembers("C").Single();
-            var t = (FieldSymbol)c.GetMembers("T").Single();
-            var foo = (MethodSymbol)c.GetMembers("Foo").Single();
+            var c = comp.GlobalNamespace.GetTypeMembersAsImmutable("C").Single();
+            var t = (FieldSymbol)c.GetMembersAsImmutable("T").Single();
+            var foo = (MethodSymbol)c.GetMembersAsImmutable("Foo").Single();
             var tt = foo.TypeParameters[0];
             var a = tt.GetAttributes()[0];
             var i = a.ConstructorArguments.Single();

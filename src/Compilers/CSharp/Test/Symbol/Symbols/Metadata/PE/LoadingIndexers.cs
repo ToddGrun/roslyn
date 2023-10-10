@@ -601,7 +601,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
         {
             var assembly = MetadataTestHelpers.GetSymbolForReference(TestReferences.SymbolsTests.Indexers);
             var @class = assembly.GlobalNamespace.GetMember<NamedTypeSymbol>("RefIndexer");
-            var indexer = (PropertySymbol)@class.GetMembers().Where(m => m.Kind == SymbolKind.Property).Single();
+            var indexer = (PropertySymbol)@class.GetMembersAsImmutable().Where(m => m.Kind == SymbolKind.Property).Single();
             Assert.Equal(RefKind.Ref, indexer.Parameters.Single().RefKind);
             Assert.True(indexer.MustCallMethodsDirectly);
         }
@@ -1163,7 +1163,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
                 Assert.True(interfaceIndexer.IsIndexer);
 
                 var @class = compilation.GlobalNamespace.GetMember<PENamedTypeSymbol>("C");
-                var classIndexer = (PropertySymbol)@class.GetMembers().Single(s => s.Kind == SymbolKind.Property);
+                var classIndexer = (PropertySymbol)@class.GetMembersAsImmutable().Single(s => s.Kind == SymbolKind.Property);
                 Assert.False(classIndexer.IsIndexer);
 
                 Assert.Equal(classIndexer, @class.FindImplementationForInterfaceMember(interfaceIndexer));

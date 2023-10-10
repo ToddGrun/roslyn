@@ -31,15 +31,15 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             var module2 = assemblies[1].Modules[0];
             var module3 = assemblies[2].Modules[0];
 
-            var vbFields = module2.GlobalNamespace.GetTypeMembers("VBFields").Single();
-            var csFields = module1.GlobalNamespace.GetTypeMembers("CSFields").Single();
+            var vbFields = module2.GlobalNamespace.GetTypeMembersAsImmutable("VBFields").Single();
+            var csFields = module1.GlobalNamespace.GetTypeMembersAsImmutable("CSFields").Single();
 
-            var f1 = (FieldSymbol)vbFields.GetMembers("F1").Single();
-            var f2 = (FieldSymbol)vbFields.GetMembers("F2").Single();
-            var f3 = (FieldSymbol)vbFields.GetMembers("F3").Single();
-            var f4 = (FieldSymbol)vbFields.GetMembers("F4").Single();
-            var f5 = (FieldSymbol)vbFields.GetMembers("F5").Single();
-            var f6 = (FieldSymbol)csFields.GetMembers("F6").Single();
+            var f1 = (FieldSymbol)vbFields.GetMembersAsImmutable("F1").Single();
+            var f2 = (FieldSymbol)vbFields.GetMembersAsImmutable("F2").Single();
+            var f3 = (FieldSymbol)vbFields.GetMembersAsImmutable("F3").Single();
+            var f4 = (FieldSymbol)vbFields.GetMembersAsImmutable("F4").Single();
+            var f5 = (FieldSymbol)vbFields.GetMembersAsImmutable("F5").Single();
+            var f6 = (FieldSymbol)csFields.GetMembersAsImmutable("F6").Single();
 
             Assert.Equal("F1", f1.Name);
             Assert.Same(vbFields.TypeParameters[0], f1.Type);
@@ -105,9 +105,9 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             Assert.False(mod.IsOptional);
             Assert.Equal("System.Runtime.CompilerServices.IsVolatile", mod.Modifier.ToTestDisplayString());
 
-            Assert.Equal(SymbolKind.NamedType, csFields.GetMembers("FFF").Single().Kind);
-            Assert.Equal(SymbolKind.Field, csFields.GetMembers("Fff").Single().Kind);
-            Assert.Equal(SymbolKind.Method, csFields.GetMembers("FfF").Single().Kind);
+            Assert.Equal(SymbolKind.NamedType, csFields.GetMembersAsImmutable("FFF").Single().Kind);
+            Assert.Equal(SymbolKind.Field, csFields.GetMembersAsImmutable("Fff").Single().Kind);
+            Assert.Equal(SymbolKind.Method, csFields.GetMembersAsImmutable("FfF").Single().Kind);
         }
 
         [Fact]

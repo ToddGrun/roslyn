@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Runtime.InteropServices;
+using Microsoft.CodeAnalysis.Collections;
 using Roslyn.Utilities;
 
 namespace Microsoft.CodeAnalysis.CSharp.Symbols
@@ -44,12 +45,12 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
             internal sealed override bool IsInterpolatedStringHandlerType => false;
 
-            internal sealed override ImmutableArray<Symbol> GetEarlyAttributeDecodingMembers()
+            internal sealed override ArrayWrapper<Symbol> GetEarlyAttributeDecodingMembers()
             {
                 return this.GetMembersUnordered();
             }
 
-            internal sealed override ImmutableArray<Symbol> GetEarlyAttributeDecodingMembers(string name)
+            internal sealed override ArrayWrapper<Symbol> GetEarlyAttributeDecodingMembers(string name)
             {
                 return this.GetMembers(name);
             }
@@ -129,19 +130,19 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
             internal override bool HasDeclaredRequiredMembers => false;
 
-            public sealed override ImmutableArray<NamedTypeSymbol> GetTypeMembers()
+            public sealed override ArrayWrapper<NamedTypeSymbol> GetTypeMembers()
             {
-                return ImmutableArray<NamedTypeSymbol>.Empty;
+                return ArrayWrapper<NamedTypeSymbol>.Empty;
             }
 
-            public sealed override ImmutableArray<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name)
+            public sealed override ArrayWrapper<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name)
             {
-                return ImmutableArray<NamedTypeSymbol>.Empty;
+                return ArrayWrapper<NamedTypeSymbol>.Empty;
             }
 
-            public sealed override ImmutableArray<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name, int arity)
+            public sealed override ArrayWrapper<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name, int arity)
             {
-                return ImmutableArray<NamedTypeSymbol>.Empty;
+                return ArrayWrapper<NamedTypeSymbol>.Empty;
             }
 
             public sealed override Accessibility DeclaredAccessibility
@@ -154,7 +155,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 return ImmutableArray<NamedTypeSymbol>.Empty;
             }
 
-            internal sealed override ImmutableArray<NamedTypeSymbol> GetInterfacesToEmit()
+            internal sealed override ArrayWrapper<NamedTypeSymbol> GetInterfacesToEmit()
             {
                 throw ExceptionUtilities.Unreachable();
             }
@@ -258,9 +259,9 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 return BaseTypeNoUseSiteDiagnostics;
             }
 
-            internal sealed override ImmutableArray<NamedTypeSymbol> GetDeclaredInterfaces(ConsList<TypeSymbol> basesBeingResolved)
+            internal sealed override ArrayWrapper<NamedTypeSymbol> GetDeclaredInterfaces(ConsList<TypeSymbol> basesBeingResolved)
             {
-                return ImmutableArray<NamedTypeSymbol>.Empty;
+                return ArrayWrapper<NamedTypeSymbol>.Empty;
             }
 
             internal sealed override NamedTypeSymbol AsNativeInteger() => throw ExceptionUtilities.Unreachable();

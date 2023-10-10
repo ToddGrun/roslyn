@@ -244,7 +244,7 @@ class C
         {
             var compilation = CreateCompilation(source);
             var syntaxTree = compilation.SyntaxTrees.First();
-            var typeSymbol = (SourceNamedTypeSymbol)compilation.GlobalNamespace.GetMembers("C").Single();
+            var typeSymbol = (SourceNamedTypeSymbol)compilation.GlobalNamespace.GetMembersAsImmutable("C").Single();
 
             var boundInstanceInitializers = BindInitializersWithoutDiagnostics(typeSymbol, typeSymbol.InstanceInitializers);
             CheckBoundInitializers(expectedInstanceInitializers, syntaxTree, boundInstanceInitializers, isStatic: false);

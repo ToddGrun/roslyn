@@ -2529,15 +2529,15 @@ unsafe class C
                 Assert.Equal(1, module.ReferencedAssemblies.Length);
                 Assert.NotEqual(nopiaReference.Display, module.ReferencedAssemblies[0].Name);
 
-                var i1 = module.GlobalNamespace.GetTypeMembers("I1").Single();
+                var i1 = module.GlobalNamespace.GetTypeMembersAsImmutable("I1").Single();
                 Assert.NotNull(i1);
                 Assert.Equal(module, i1.ContainingModule);
 
-                var i2 = module.GlobalNamespace.GetTypeMembers("I2").Single();
+                var i2 = module.GlobalNamespace.GetTypeMembersAsImmutable("I2").Single();
                 Assert.NotNull(i2);
                 Assert.Equal(module, i2.ContainingModule);
 
-                var c = module.GlobalNamespace.GetTypeMembers("C").Single();
+                var c = module.GlobalNamespace.GetTypeMembersAsImmutable("C").Single();
                 var m = c.GetMethod("M");
 
                 var returnType = (FunctionPointerTypeSymbol)m.ReturnType;
@@ -2563,11 +2563,11 @@ unsafe class C
                 Assert.Equal(1, module.ReferencedAssemblies.Length);
                 Assert.NotEqual(nopiaReference.Display, module.ReferencedAssemblies[0].Name);
 
-                var i1 = module.GlobalNamespace.GetTypeMembers("I1").Single();
+                var i1 = module.GlobalNamespace.GetTypeMembersAsImmutable("I1").Single();
                 Assert.NotNull(i1);
                 Assert.Equal(module, i1.ContainingModule);
 
-                var i2 = module.GlobalNamespace.GetTypeMembers("I2").Single();
+                var i2 = module.GlobalNamespace.GetTypeMembersAsImmutable("I2").Single();
                 Assert.NotNull(i2);
                 Assert.Equal(module, i2.ContainingModule);
             }
@@ -2600,7 +2600,7 @@ unsafe class C2
                 Assert.DoesNotContain(nopiaReference.Display, module.ReferencedAssemblies.Select(a => a.Name));
                 Assert.Equal(intermediate.Display, module.ReferencedAssemblies[1].Name);
 
-                var i1 = module.GlobalNamespace.GetTypeMembers("I1").Single();
+                var i1 = module.GlobalNamespace.GetTypeMembersAsImmutable("I1").Single();
                 Assert.NotNull(i1);
                 Assert.Equal(module, i1.ContainingModule);
             }

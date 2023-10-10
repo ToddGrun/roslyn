@@ -197,7 +197,8 @@ namespace Microsoft.CodeAnalysis.CSharp
             }
 
             Debug.Assert(!_isForSingleSymbol);
-            foreach (var s in symbol.GetMembers())
+            using var members = symbol.GetMembers();
+            foreach (var s in members)
             {
                 _cancellationToken.ThrowIfCancellationRequested();
                 s.Accept(this);
@@ -228,7 +229,8 @@ namespace Microsoft.CodeAnalysis.CSharp
 
             if (!_isForSingleSymbol)
             {
-                foreach (Symbol member in symbol.GetMembers())
+                using var members = symbol.GetMembers();
+                foreach (Symbol member in members)
                 {
                     _cancellationToken.ThrowIfCancellationRequested();
                     member.Accept(this);

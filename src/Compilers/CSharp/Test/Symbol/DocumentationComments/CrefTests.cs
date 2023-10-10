@@ -1202,7 +1202,7 @@ class C
             var crefSyntax = GetCrefSyntaxes(compilation).Single();
 
             // CONSIDER: Dev11 actually picks the constructor of C - probably an accidental fall-through.
-            var expectedCandidates = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("C").GetMembers("M").OfType<MethodSymbol>();
+            var expectedCandidates = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("C").GetMembersAsImmutable("M").OfType<MethodSymbol>();
             var expectedWinner = expectedCandidates.Single(m => m.ParameterCount == 0);
 
             Symbol actualWinner;
@@ -1245,7 +1245,7 @@ class B { }
             var crefSyntax = GetCrefSyntaxes(compilation).Single();
 
             // NOTE: As in Dev11, no warning is produced.
-            var expectedSymbol = compilation.GlobalNamespace.GetMembers("B").OfType<SourceNamedTypeSymbol>().Single();
+            var expectedSymbol = compilation.GlobalNamespace.GetMembersAsImmutable("B").OfType<SourceNamedTypeSymbol>().Single();
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
             Assert.Equal(expectedSymbol, actualSymbol);
         }
@@ -1266,7 +1266,7 @@ class B
             var compilation = CreateCompilationWithMscorlib40AndDocumentationComments(source);
             var crefSyntax = GetCrefSyntaxes(compilation).Single();
 
-            var expectedSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("B").GetMembers("M").OfType<MethodSymbol>().
+            var expectedSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("B").GetMembersAsImmutable("M").OfType<MethodSymbol>().
                 Single(m => m.Parameters.Single().Type.SpecialType == SpecialType.System_Int32);
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
             Assert.Equal(expectedSymbol, actualSymbol);
@@ -1288,7 +1288,7 @@ class B
             var compilation = CreateCompilationWithMscorlib40AndDocumentationComments(source);
             var crefSyntax = GetCrefSyntaxes(compilation).Single();
 
-            var expectedSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("B").GetMembers("M").OfType<MethodSymbol>().
+            var expectedSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("B").GetMembersAsImmutable("M").OfType<MethodSymbol>().
                 Single(m => !m.ParameterRefKinds.IsDefault);
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
             Assert.Equal(expectedSymbol, actualSymbol);
@@ -1310,7 +1310,7 @@ class B
             var compilation = CreateCompilationWithMscorlib40AndDocumentationComments(source);
             var crefSyntax = GetCrefSyntaxes(compilation).Single();
 
-            var expectedSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("B").GetMembers("M").OfType<MethodSymbol>().
+            var expectedSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("B").GetMembersAsImmutable("M").OfType<MethodSymbol>().
                 Single(m => m.ParameterRefKinds.Single() == RefKind.Out);
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
             Assert.Equal(expectedSymbol, actualSymbol);
@@ -1332,7 +1332,7 @@ class B
             var compilation = CreateCompilationWithMscorlib40AndDocumentationComments(source);
             var crefSyntax = GetCrefSyntaxes(compilation).Single();
 
-            var expectedSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("B").GetMembers("M").OfType<MethodSymbol>().
+            var expectedSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("B").GetMembersAsImmutable("M").OfType<MethodSymbol>().
                 Single(m => m.HasParamsParameter());
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
             Assert.Equal(expectedSymbol, actualSymbol);
@@ -1354,7 +1354,7 @@ class B
             var compilation = CreateCompilationWithMscorlib40AndDocumentationComments(source);
             var crefSyntax = GetCrefSyntaxes(compilation).Single();
 
-            var expectedSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("B").GetMembers("M").OfType<MethodSymbol>().
+            var expectedSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("B").GetMembersAsImmutable("M").OfType<MethodSymbol>().
                 Single(m => m.IsExtensionMethod);
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
             Assert.Equal(expectedSymbol, actualSymbol);
@@ -1376,7 +1376,7 @@ class B
             var compilation = CreateCompilationWithMscorlib40AndDocumentationComments(source);
             var crefSyntax = GetCrefSyntaxes(compilation).Single();
 
-            var expectedCandidates = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("B").GetMembers("M");
+            var expectedCandidates = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("B").GetMembersAsImmutable("M");
             var expectedWinner = expectedCandidates.OfType<MethodSymbol>().Single(m => !m.IsVararg);
 
             Symbol actualWinner;
@@ -1405,7 +1405,7 @@ class B
             var compilation = CreateCompilationWithMscorlib40AndDocumentationComments(source);
             var crefSyntax = GetCrefSyntaxes(compilation).Single();
 
-            var expectedSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("B").GetMembers("M").OfType<MethodSymbol>().
+            var expectedSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("B").GetMembersAsImmutable("M").OfType<MethodSymbol>().
                 Single(m => m.IsVararg);
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
             Assert.Equal(expectedSymbol, actualSymbol);
@@ -1598,7 +1598,7 @@ class B
             var compilation = CreateCompilationWithMscorlib40AndDocumentationComments(source);
             var crefSyntax = GetCrefSyntaxes(compilation).Single();
 
-            var expectedOriginalDefinitionSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("B").GetMembers("M").OfType<MethodSymbol>()
+            var expectedOriginalDefinitionSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("B").GetMembersAsImmutable("M").OfType<MethodSymbol>()
                 .Single(method => method.Parameters.Single().Type.TypeKind == TypeKind.TypeParameter);
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
             Assert.Equal(expectedOriginalDefinitionSymbol, actualSymbol.OriginalDefinition);
@@ -1672,7 +1672,7 @@ class A<T, U>
 
             Assert.Equal(2, actualCandidates.Length);
             Assert.Equal(actualWinner, actualCandidates[0]);
-            Assert.Equal(actualWinner.ContainingType.GetMembers(actualWinner.Name).Single(member => member != actualWinner), actualCandidates[1]);
+            Assert.Equal(actualWinner.ContainingType.GetMembersAsImmutable(actualWinner.Name).Single(member => member != actualWinner), actualCandidates[1]);
         }
 
         [Fact]
@@ -1710,7 +1710,7 @@ class A<T>
 
             Assert.Equal(2, actualCandidates.Length);
             Assert.Equal(actualWinner, actualCandidates[0]);
-            Assert.Equal(actualWinner.ContainingType.GetMembers(actualWinner.Name).Single(member => member != actualWinner), actualCandidates[1]);
+            Assert.Equal(actualWinner.ContainingType.GetMembersAsImmutable(actualWinner.Name).Single(member => member != actualWinner), actualCandidates[1]);
         }
 
         [Fact]
@@ -1731,7 +1731,7 @@ class U { }
             var compilation = CreateCompilationWithMscorlib40AndDocumentationComments(source);
             var crefSyntax = GetCrefSyntaxes(compilation).Single();
 
-            var expectedOriginalDefinitionSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("A").GetMembers("M").OfType<MethodSymbol>().
+            var expectedOriginalDefinitionSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("A").GetMembersAsImmutable("M").OfType<MethodSymbol>().
                 Single(method => method.Parameters.Single().Type.TypeKind == TypeKind.TypeParameter);
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
 
@@ -1757,7 +1757,7 @@ class A<T>
             var compilation = CreateCompilationWithMscorlib40AndDocumentationComments(source);
             var crefSyntax = GetCrefSyntaxes(compilation).Single();
 
-            var expectedOriginalDefinitionSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("A").GetMembers("M").OfType<MethodSymbol>().
+            var expectedOriginalDefinitionSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("A").GetMembersAsImmutable("M").OfType<MethodSymbol>().
                 Single(method => method.Parameters.Single().Type.TypeKind == TypeKind.TypeParameter);
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
 
@@ -2408,7 +2408,7 @@ class C
             var compilation = CreateCompilationWithMscorlib40AndDocumentationComments(source);
             var crefSyntax = GetCrefSyntaxes(compilation).Single();
 
-            var expectedSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("C").GetMembers(WellKnownMemberNames.LogicalNotOperatorName).OfType<MethodSymbol>().
+            var expectedSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("C").GetMembersAsImmutable(WellKnownMemberNames.LogicalNotOperatorName).OfType<MethodSymbol>().
                 Single(method => method.ParameterTypesWithAnnotations.Single().SpecialType == SpecialType.System_Int32);
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
 
@@ -2593,7 +2593,7 @@ class C
             var compilation = CreateCompilationWithMscorlib40AndDocumentationComments(source);
             var crefSyntax = GetCrefSyntaxes(compilation).Single();
 
-            var expectedSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("C").GetMembers(WellKnownMemberNames.DivisionOperatorName).OfType<MethodSymbol>().
+            var expectedSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("C").GetMembersAsImmutable(WellKnownMemberNames.DivisionOperatorName).OfType<MethodSymbol>().
                 Single(method => method.ParameterTypesWithAnnotations.First().SpecialType == SpecialType.System_Int32);
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
 
@@ -2801,7 +2801,7 @@ class C
             var compilation = CreateCompilationWithMscorlib40AndDocumentationComments(source);
             var crefSyntax = GetCrefSyntaxes(compilation).Single();
 
-            var expectedSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("C").GetMembers(WellKnownMemberNames.ImplicitConversionName).OfType<MethodSymbol>().
+            var expectedSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("C").GetMembersAsImmutable(WellKnownMemberNames.ImplicitConversionName).OfType<MethodSymbol>().
                 Single(method => method.ParameterTypesWithAnnotations.Single().SpecialType == SpecialType.System_Int32);
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
 
@@ -2837,7 +2837,7 @@ class C
             var compilation = CreateCompilationWithMscorlib40AndDocumentationComments(source);
             var crefSyntax = GetCrefSyntaxes(compilation).Single();
 
-            var expectedSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("C").GetMembers(WellKnownMemberNames.ImplicitConversionName).OfType<MethodSymbol>().
+            var expectedSymbol = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("C").GetMembersAsImmutable(WellKnownMemberNames.ImplicitConversionName).OfType<MethodSymbol>().
                 Single(method => method.ParameterTypesWithAnnotations.Single().SpecialType == SpecialType.System_Int32 && method.ReturnType.SpecialType == SpecialType.System_Int32);
             var actualSymbol = GetReferencedSymbol(crefSyntax, compilation);
 

@@ -565,7 +565,7 @@ class Program
 
             static void verifyType(NamedTypeSymbol type, bool signed)
             {
-                var members = type.GetMembers().Sort(SymbolComparison);
+                var members = type.GetMembersAsImmutable().Sort(SymbolComparison);
                 var actualMembers = members.SelectAsArray(m => m.ToTestDisplayString());
                 var expectedMembers = new[]
                 {

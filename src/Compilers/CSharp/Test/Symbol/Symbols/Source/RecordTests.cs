@@ -29,7 +29,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
             var comp = CreateCompilation(@"record C(int x, string y);");
             comp.VerifyDiagnostics();
             var c = comp.GlobalNamespace.GetTypeMember("C");
-            var ctor = (MethodSymbol)c.GetMembers(".ctor")[0];
+            var ctor = (MethodSymbol)c.GetMembersAsImmutable(".ctor")[0];
             Assert.Equal(2, ctor.ParameterCount);
 
             var x = ctor.Parameters[0];
@@ -48,7 +48,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
             comp.VerifyDiagnostics();
             var c = comp.GlobalNamespace.GetTypeMember("C");
             Assert.Equal(1, c.Arity);
-            var ctor = (MethodSymbol)c.GetMembers(".ctor")[0];
+            var ctor = (MethodSymbol)c.GetMembersAsImmutable(".ctor")[0];
             Assert.Equal(0, ctor.Arity);
             Assert.Equal(2, ctor.ParameterCount);
 
@@ -81,7 +81,7 @@ record C(int x, string y)
                 );
 
             var c = comp.GlobalNamespace.GetTypeMember("C");
-            var ctor = (MethodSymbol)c.GetMembers(".ctor")[2];
+            var ctor = (MethodSymbol)c.GetMembersAsImmutable(".ctor")[2];
             Assert.Equal(2, ctor.ParameterCount);
 
             var a = ctor.Parameters[0];
@@ -110,7 +110,7 @@ record C(int x, string y)
                 );
 
             var c = comp.GlobalNamespace.GetTypeMember("C");
-            var ctors = c.GetMembers(".ctor");
+            var ctors = c.GetMembersAsImmutable(".ctor");
             Assert.Equal(3, ctors.Length);
 
             foreach (MethodSymbol ctor in ctors)
@@ -745,7 +745,7 @@ True").VerifyDiagnostics();
             Assert.Equal(0, clone.ParameterCount);
             Assert.Equal(c, clone.ReturnType);
 
-            var ctor = (MethodSymbol)c.GetMembers(".ctor")[1];
+            var ctor = (MethodSymbol)c.GetMembersAsImmutable(".ctor")[1];
             Assert.Equal(1, ctor.ParameterCount);
             Assert.True(ctor.Parameters[0].Type.Equals(c, TypeCompareKind.ConsiderEverything));
 
@@ -798,7 +798,7 @@ record C(int x, int y)
             Assert.Equal(0, clone.ParameterCount);
             Assert.Equal(c, clone.ReturnType);
 
-            var ctor = (MethodSymbol)c.GetMembers(".ctor")[1];
+            var ctor = (MethodSymbol)c.GetMembersAsImmutable(".ctor")[1];
             Assert.Equal(1, ctor.ParameterCount);
             Assert.True(ctor.Parameters[0].Type.Equals(c, TypeCompareKind.ConsiderEverything));
 
@@ -895,7 +895,7 @@ public record C(int x, int y)
             Assert.Equal(0, clone.ParameterCount);
             Assert.Equal(c, clone.ReturnType);
 
-            var ctor = (MethodSymbol)c.GetMembers(".ctor")[1];
+            var ctor = (MethodSymbol)c.GetMembersAsImmutable(".ctor")[1];
             Assert.Equal(1, ctor.ParameterCount);
             Assert.True(ctor.Parameters[0].Type.Equals(c, TypeCompareKind.ConsiderEverything));
 
@@ -1072,7 +1072,7 @@ record C
     public int X { get; init; }
     public string Y { get; init; }
 }");
-            var members = comp.GlobalNamespace.GetTypeMember("C").GetMembers();
+            var members = comp.GlobalNamespace.GetTypeMember("C").GetMembersAsImmutable();
             AssertEx.Equal(new[] {
                 "System.Type! C.EqualityContract.get",
                 "System.Type! C.EqualityContract { get; }",
@@ -1427,7 +1427,7 @@ record R;
 record R2 : R";
             var comp = CreateCompilation(src);
             var r = comp.GlobalNamespace.GetTypeMember("R");
-            var clone = (MethodSymbol)r.GetMembers(WellKnownMemberNames.CloneMethodName).Single();
+            var clone = (MethodSymbol)r.GetMembersAsImmutable(WellKnownMemberNames.CloneMethodName).Single();
             Assert.False(clone.IsOverride);
             Assert.True(clone.IsVirtual);
             Assert.False(clone.IsAbstract);
@@ -1435,7 +1435,7 @@ record R2 : R";
             Assert.Equal(0, clone.Arity);
 
             var r2 = comp.GlobalNamespace.GetTypeMember("R2");
-            var clone2 = (MethodSymbol)r2.GetMembers(WellKnownMemberNames.CloneMethodName).Single();
+            var clone2 = (MethodSymbol)r2.GetMembersAsImmutable(WellKnownMemberNames.CloneMethodName).Single();
             Assert.True(clone2.IsOverride);
             Assert.False(clone2.IsVirtual);
             Assert.False(clone2.IsAbstract);
@@ -1470,7 +1470,7 @@ class C
                 options: TestOptions.ReleaseExe);
 
             var r = comp.GlobalNamespace.GetTypeMember("R");
-            var clone = (MethodSymbol)r.GetMembers(WellKnownMemberNames.CloneMethodName).Single();
+            var clone = (MethodSymbol)r.GetMembersAsImmutable(WellKnownMemberNames.CloneMethodName).Single();
             Assert.False(clone.IsOverride);
             Assert.False(clone.IsVirtual);
             Assert.True(clone.IsAbstract);
@@ -1480,7 +1480,7 @@ class C
             Assert.True(clone.IsImplicitlyDeclared);
 
             var r2 = comp.GlobalNamespace.GetTypeMember("R2");
-            var clone2 = (MethodSymbol)r2.GetMembers(WellKnownMemberNames.CloneMethodName).Single();
+            var clone2 = (MethodSymbol)r2.GetMembersAsImmutable(WellKnownMemberNames.CloneMethodName).Single();
             Assert.True(clone2.IsOverride);
             Assert.False(clone2.IsVirtual);
             Assert.True(clone2.IsAbstract);
@@ -1491,7 +1491,7 @@ class C
             Assert.True(clone2.IsImplicitlyDeclared);
 
             var r3 = comp.GlobalNamespace.GetTypeMember("R3");
-            var clone3 = (MethodSymbol)r3.GetMembers(WellKnownMemberNames.CloneMethodName).Single();
+            var clone3 = (MethodSymbol)r3.GetMembersAsImmutable(WellKnownMemberNames.CloneMethodName).Single();
             Assert.True(clone3.IsOverride);
             Assert.False(clone3.IsVirtual);
             Assert.False(clone3.IsAbstract);
@@ -1502,7 +1502,7 @@ class C
             Assert.True(clone3.IsImplicitlyDeclared);
 
             var r4 = comp.GlobalNamespace.GetTypeMember("R4");
-            var clone4 = (MethodSymbol)r4.GetMembers(WellKnownMemberNames.CloneMethodName).Single();
+            var clone4 = (MethodSymbol)r4.GetMembersAsImmutable(WellKnownMemberNames.CloneMethodName).Single();
             Assert.True(clone4.IsOverride);
             Assert.False(clone4.IsVirtual);
             Assert.True(clone4.IsAbstract);
@@ -1513,7 +1513,7 @@ class C
             Assert.True(clone4.IsImplicitlyDeclared);
 
             var r5 = comp.GlobalNamespace.GetTypeMember("R5");
-            var clone5 = (MethodSymbol)r5.GetMembers(WellKnownMemberNames.CloneMethodName).Single();
+            var clone5 = (MethodSymbol)r5.GetMembersAsImmutable(WellKnownMemberNames.CloneMethodName).Single();
             Assert.True(clone5.IsOverride);
             Assert.False(clone5.IsVirtual);
             Assert.False(clone5.IsAbstract);

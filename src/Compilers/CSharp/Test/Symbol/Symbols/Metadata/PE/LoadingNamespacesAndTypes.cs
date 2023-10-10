@@ -52,11 +52,11 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
         {
             XElement elem = new XElement((n.Name.Length == 0 ? "Global" : n.Name));
 
-            var childrenTypes = n.GetTypeMembers().OrderBy((t) => t, new NameAndArityComparer());
+            var childrenTypes = n.GetTypeMembersAsImmutable().OrderBy((t) => t, new NameAndArityComparer());
 
             elem.Add(from t in childrenTypes select LoadChildType(t));
 
-            var childrenNS = n.GetMembers().
+            var childrenNS = n.GetMembersAsImmutable().
                                 Select((m) => (m as NamespaceSymbol)).
                                 Where((m) => m != null).
                                 OrderBy((child) => child.Name, StringComparer.OrdinalIgnoreCase);
@@ -70,7 +70,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
         {
             XElement elem = new XElement((n.Name.Length == 0 ? "Global" : n.Name));
 
-            var children = n.GetMembers();
+            var children = n.GetMembersAsImmutable();
             n = null;
 
             var types = new List<NamedTypeSymbol>();
@@ -112,7 +112,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
                 elem.Add(new XAttribute("arity", t.Arity));
             }
 
-            var childrenTypes = t.GetTypeMembers().OrderBy((c) => c, new NameAndArityComparer());
+            var childrenTypes = t.GetTypeMembersAsImmutable().OrderBy((c) => c, new NameAndArityComparer());
 
             elem.Add(from c in childrenTypes select LoadChildType(c));
 
@@ -137,7 +137,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             Assert.Equal(1, globalNS.ConstituentNamespaces.Length);
             Assert.Same(globalNS, globalNS.ConstituentNamespaces[0]);
 
-            var systemNS = (NamespaceSymbol)globalNS.GetMembers("System").Single();
+            var systemNS = (NamespaceSymbol)globalNS.GetMembersAsImmutable("System").Single();
 
             Assert.Same(systemNS.ContainingAssembly, assembly);
             Assert.Same(systemNS.ContainingSymbol, globalNS);
@@ -150,7 +150,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             Assert.Equal(1, systemNS.ConstituentNamespaces.Length);
             Assert.Same(systemNS, systemNS.ConstituentNamespaces[0]);
 
-            var collectionsNS = (NamespaceSymbol)systemNS.GetMembers("Collections").Single();
+            var collectionsNS = (NamespaceSymbol)systemNS.GetMembersAsImmutable("Collections").Single();
 
             Assert.Same(collectionsNS.ContainingAssembly, assembly);
             Assert.Same(collectionsNS.ContainingSymbol, systemNS);
@@ -176,19 +176,19 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
 
         private void TypeAndNamespaceDifferByCase(ModuleSymbol module0)
         {
-            var someName = module0.GlobalNamespace.GetMembers("SomenamE");
+            var someName = module0.GlobalNamespace.GetMembersAsImmutable("SomenamE");
             Assert.Equal(0, someName.Length);
 
-            someName = module0.GlobalNamespace.GetMembers("somEnamE");
+            someName = module0.GlobalNamespace.GetMembersAsImmutable("somEnamE");
             Assert.Equal(1, someName.Length);
             Assert.NotNull((someName[0] as NamedTypeSymbol));
 
-            someName = module0.GlobalNamespace.GetMembers("SomeName");
+            someName = module0.GlobalNamespace.GetMembersAsImmutable("SomeName");
             Assert.Equal(1, someName.Length);
             Assert.NotNull((someName[0] as NamespaceSymbol));
 
-            var someName1_1 = module0.GlobalNamespace.GetTypeMembers("somEnamE1").OrderBy((t) => t.Name).ToArray();
-            var someName1_2 = module0.GlobalNamespace.GetTypeMembers("SomeName1").OrderBy((t) => t.Name).ToArray();
+            var someName1_1 = module0.GlobalNamespace.GetTypeMembersAsImmutable("somEnamE1").OrderBy((t) => t.Name).ToArray();
+            var someName1_2 = module0.GlobalNamespace.GetTypeMembersAsImmutable("SomeName1").OrderBy((t) => t.Name).ToArray();
 
             Assert.Equal(1, someName1_1.Length);
             Assert.Equal("somEnamE1", someName1_1[0].Name);
@@ -196,24 +196,24 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             Assert.Equal("SomeName1", someName1_2[0].Name);
             Assert.NotEqual(someName1_1[0], someName1_2[0]);
 
-            var someName2_1 = module0.GlobalNamespace.GetMembers("somEnamE2").OfType<NamespaceSymbol>().OrderBy((t) => t.Name).ToArray();
-            var someName2_2 = module0.GlobalNamespace.GetMembers("SomeName2").OfType<NamespaceSymbol>().OrderBy((t) => t.Name).ToArray();
+            var someName2_1 = module0.GlobalNamespace.GetMembersAsImmutable("somEnamE2").OfType<NamespaceSymbol>().OrderBy((t) => t.Name).ToArray();
+            var someName2_2 = module0.GlobalNamespace.GetMembersAsImmutable("SomeName2").OfType<NamespaceSymbol>().OrderBy((t) => t.Name).ToArray();
             Assert.Equal(1, someName2_1.Length);
             Assert.Equal("somEnamE2", someName2_1[0].Name);
             Assert.Equal(1, someName2_2.Length);
             Assert.Equal("SomeName2", someName2_2[0].Name);
             Assert.NotEqual(someName2_1[0], someName2_2[0]);
 
-            var otherName_1 = someName2_1[0].GetTypeMembers("OtherName");
-            var otherName_2 = someName2_2[0].GetTypeMembers("OtherName");
+            var otherName_1 = someName2_1[0].GetTypeMembersAsImmutable("OtherName");
+            var otherName_2 = someName2_2[0].GetTypeMembersAsImmutable("OtherName");
 
             Assert.Equal(1, otherName_1.Length);
             Assert.Equal(1, otherName_2.Length);
             Assert.NotEqual(otherName_1[0], otherName_2[0]);
 
-            var nestingClass = module0.GlobalNamespace.GetTypeMembers("NestingClass").Single();
-            var someName3_1 = nestingClass.GetTypeMembers("SomeName3").OrderBy((t) => t.Name).ToArray();
-            var someName3_2 = nestingClass.GetTypeMembers("somEnamE3").OrderBy((t) => t.Name).ToArray();
+            var nestingClass = module0.GlobalNamespace.GetTypeMembersAsImmutable("NestingClass").Single();
+            var someName3_1 = nestingClass.GetTypeMembersAsImmutable("SomeName3").OrderBy((t) => t.Name).ToArray();
+            var someName3_2 = nestingClass.GetTypeMembersAsImmutable("somEnamE3").OrderBy((t) => t.Name).ToArray();
 
             Assert.Equal(1, someName3_1.Length);
             Assert.Equal(1, someName3_2.Length);
@@ -223,35 +223,35 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
 
         private void TestGetMembersOfName(ModuleSymbol module0)
         {
-            var sys = module0.GlobalNamespace.GetMembers("SYSTEM");
+            var sys = module0.GlobalNamespace.GetMembersAsImmutable("SYSTEM");
             Assert.Equal(0, sys.Length);
 
-            sys = module0.GlobalNamespace.GetMembers("System");
+            sys = module0.GlobalNamespace.GetMembersAsImmutable("System");
             Assert.Equal(1, sys.Length);
 
             var system = sys[0] as NamespaceSymbol;
             Assert.NotNull(system);
 
-            Assert.Equal(9, system.GetMembers("Action").Length);
-            Assert.Equal(0, system.GetMembers("ActionThatDoesntExist").Length);
+            Assert.Equal(9, system.GetMembersAsImmutable("Action").Length);
+            Assert.Equal(0, system.GetMembersAsImmutable("ActionThatDoesntExist").Length);
 
-            Assert.Equal(9, system.GetTypeMembers("Action").Length);
-            Assert.Equal(0, system.GetTypeMembers("ActionThatDoesntExist").Length);
+            Assert.Equal(9, system.GetTypeMembersAsImmutable("Action").Length);
+            Assert.Equal(0, system.GetTypeMembersAsImmutable("ActionThatDoesntExist").Length);
 
-            Assert.Equal(0, system.GetTypeMembers("Action", 20).Length);
-            var actionOf0 = system.GetTypeMembers("Action", 0).Single();
-            var actionOf4 = system.GetTypeMembers("Action", 4).Single();
+            Assert.Equal(0, system.GetTypeMembersAsImmutable("Action", 20).Length);
+            var actionOf0 = system.GetTypeMembersAsImmutable("Action", 0).Single();
+            var actionOf4 = system.GetTypeMembersAsImmutable("Action", 4).Single();
             Assert.Equal("Action", actionOf0.Name);
             Assert.Equal("Action", actionOf4.Name);
             Assert.Equal(0, actionOf0.Arity);
             Assert.Equal(4, actionOf4.Arity);
 
-            Assert.Equal(0, system.GetTypeMembers("ActionThatDoesntExist", 1).Length);
+            Assert.Equal(0, system.GetTypeMembersAsImmutable("ActionThatDoesntExist", 1).Length);
 
-            var collectionsArray = ((NamespaceSymbol)sys[0]).GetMembers("CollectionS");
+            var collectionsArray = ((NamespaceSymbol)sys[0]).GetMembersAsImmutable("CollectionS");
             Assert.Equal(0, collectionsArray.Length);
 
-            collectionsArray = ((NamespaceSymbol)sys[0]).GetMembers("Collections");
+            collectionsArray = ((NamespaceSymbol)sys[0]).GetMembersAsImmutable("Collections");
             Assert.Equal(1, collectionsArray.Length);
 
             var collections = collectionsArray[0] as NamespaceSymbol;
@@ -259,15 +259,15 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
 
             Assert.Equal(0, collections.GetAttributes().Length);
 
-            var enumerable = collections.GetMembers("IEnumerable");
+            var enumerable = collections.GetMembersAsImmutable("IEnumerable");
             Assert.Equal(1, enumerable.Length);
             Assert.Equal("System.Collections.IEnumerable", ((NamedTypeSymbol)enumerable[0]).ToTestDisplayString());
 
-            var generic = collections.GetMembers("Generic");
+            var generic = collections.GetMembersAsImmutable("Generic");
             Assert.Equal(1, generic.Length);
             Assert.NotNull((generic[0] as NamespaceSymbol));
 
-            var dictionaryArray = ((NamespaceSymbol)generic[0]).GetMembers("Dictionary");
+            var dictionaryArray = ((NamespaceSymbol)generic[0]).GetMembersAsImmutable("Dictionary");
             Assert.Equal(1, dictionaryArray.Length);
 
             var dictionary = (NamedTypeSymbol)dictionaryArray[0];
@@ -277,17 +277,17 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
 
             Assert.Equal(0, collections.GetAttributes(dictionary).Count());
 
-            Assert.Equal(0, dictionary.GetTypeMembers("ValueCollectionThatDoesntExist").Length);
-            Assert.Equal(0, dictionary.GetTypeMembers("ValueCollectioN").Length);
+            Assert.Equal(0, dictionary.GetTypeMembersAsImmutable("ValueCollectionThatDoesntExist").Length);
+            Assert.Equal(0, dictionary.GetTypeMembersAsImmutable("ValueCollectioN").Length);
 
-            var valueCollection = dictionary.GetTypeMembers("ValueCollection");
+            var valueCollection = dictionary.GetTypeMembersAsImmutable("ValueCollection");
             Assert.Equal(1, valueCollection.Length);
             Assert.Equal("ValueCollection", ((NamedTypeSymbol)valueCollection[0]).Name);
             Assert.Equal(0, ((NamedTypeSymbol)valueCollection[0]).Arity);
 
-            Assert.Equal(0, dictionary.GetTypeMembers("ValueCollectionThatDoesntExist", 1).Length);
-            Assert.Equal(valueCollection[0], dictionary.GetTypeMembers("ValueCollection", 0).Single());
-            Assert.Equal(0, dictionary.GetTypeMembers("ValueCollection", 1).Length);
+            Assert.Equal(0, dictionary.GetTypeMembersAsImmutable("ValueCollectionThatDoesntExist", 1).Length);
+            Assert.Equal(valueCollection[0], dictionary.GetTypeMembersAsImmutable("ValueCollection", 0).Single());
+            Assert.Equal(0, dictionary.GetTypeMembersAsImmutable("ValueCollection", 1).Length);
         }
 
         [ClrOnlyFact]

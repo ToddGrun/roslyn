@@ -39,7 +39,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.CorLibrary
                 Assert.Equal("<Missing Core Assembly>", t.ContainingAssembly.Identity.Name);
             }
 
-            var p = noMsCorLibRef.GlobalNamespace.GetTypeMembers("I1").Single().
+            var p = noMsCorLibRef.GlobalNamespace.GetTypeMembersAsImmutable("I1").Single().
                 GetMembers("M1").OfType<MethodSymbol>().Single().
                 Parameters[0].TypeWithAnnotations;
 
@@ -89,7 +89,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.CorLibrary
 
             while (namespaces.Count > 0)
             {
-                foreach (var m in namespaces.Dequeue().GetMembers())
+                foreach (var m in namespaces.Dequeue().GetMembersAsImmutable())
                 {
                     NamespaceSymbol ns = m as NamespaceSymbol;
 
@@ -173,8 +173,8 @@ namespace System
                 }
             }
 
-            var system_object = msCorLibRef.Modules[0].GlobalNamespace.GetMembers("System").
-                Select(m => (NamespaceSymbol)m).Single().GetTypeMembers("Object").Single();
+            var system_object = msCorLibRef.Modules[0].GlobalNamespace.GetMembersAsImmutable("System").
+                Select(m => (NamespaceSymbol)m).Single().GetTypeMembersAsImmutable("Object").Single();
 
             Assert.Equal(SpecialType.System_Object, system_object.SpecialType);
 

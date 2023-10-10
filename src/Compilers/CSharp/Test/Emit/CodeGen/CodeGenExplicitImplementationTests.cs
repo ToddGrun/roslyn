@@ -997,7 +997,7 @@ class C : Q::I
             comp.VerifyDiagnostics();
 
             var classC = comp.GlobalNamespace.GetMember<NamedTypeSymbol>("C");
-            var classCMembers = classC.GetMembers();
+            var classCMembers = classC.GetMembersAsImmutable();
 
             // The alias is preserved, in case a similar interface is implemented from another aliased assembly.
             AssertEx.All(classCMembers.Select(m => m.Name), name => name == WellKnownMemberNames.InstanceConstructorName || name.StartsWith("Q::I.", StringComparison.Ordinal));

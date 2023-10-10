@@ -10,8 +10,8 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
+using Microsoft.CodeAnalysis.Collections;
 using Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE;
-using Microsoft.CodeAnalysis.CSharp.Symbols;
 using Microsoft.CodeAnalysis.PooledObjects;
 using Roslyn.Utilities;
 
@@ -824,16 +824,16 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Retargeting
                         type.ErrorInfo ?? new CSDiagnosticInfo(ErrorCode.ERR_ErrorInReferencedAssembly, type.ContainingAssembly?.Identity.GetDisplayName() ?? string.Empty), true);
             }
 
-            public ImmutableArray<Symbol> Retarget(ImmutableArray<Symbol> arr)
+            public ArrayWrapper<Symbol> Retarget(ArrayWrapper<Symbol> arr)
             {
-                return arr.SelectAsArray(
+                return arr.SelectAsArrayWrapper(
                     static (s, self) => self.Retarget(s),
                     this);
             }
 
-            public ImmutableArray<NamedTypeSymbol> Retarget(ImmutableArray<NamedTypeSymbol> sequence)
+            public ArrayWrapper<NamedTypeSymbol> Retarget(ArrayWrapper<NamedTypeSymbol> sequence)
             {
-                return sequence.SelectAsArray(
+                return sequence.SelectAsArrayWrapper(
                     static (nts, self) =>
                     {
                         // If there is an error type in the base type list, it will end up in the interface list (rather

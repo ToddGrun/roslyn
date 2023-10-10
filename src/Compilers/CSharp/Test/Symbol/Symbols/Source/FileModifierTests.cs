@@ -1640,7 +1640,7 @@ public partial class C
             Diagnostic(ErrorCode.ERR_FileTypeNested, "C").WithArguments("Outer.C").WithLocation(3, 16));
 
         var classOuter = compilation.GetMember<NamedTypeSymbol>("Outer");
-        var cs = classOuter.GetMembers("C");
+        var cs = classOuter.GetMembersAsImmutable("C");
         Assert.Equal(3, cs.Length);
         Assert.True(cs[0] is SourceMemberContainerTypeSymbol { IsFileLocal: true });
         Assert.True(cs[1] is SourceMemberContainerTypeSymbol { IsFileLocal: true });
@@ -1684,7 +1684,7 @@ public partial class C
         compilation.VerifyDiagnostics();
 
         var namespaceNS = compilation.GetMember<NamespaceSymbol>("NS");
-        var cs = namespaceNS.GetMembers("C");
+        var cs = namespaceNS.GetMembersAsImmutable("C");
         Assert.Equal(3, cs.Length);
         Assert.True(cs[0] is SourceMemberContainerTypeSymbol { IsFileLocal: true });
         Assert.True(cs[1] is SourceMemberContainerTypeSymbol { IsFileLocal: true });

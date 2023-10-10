@@ -8294,8 +8294,8 @@ static class Program
 
             static void compareMembers(NamedTypeSymbol sourceType, NamedTypeSymbol synthesizedType, string memberName)
             {
-                var sourceMember = sourceType.GetMembers(memberName).Single();
-                var synthesizedMember = synthesizedType.GetMembers(memberName).Single();
+                var sourceMember = sourceType.GetMembersAsImmutable(memberName).Single();
+                var synthesizedMember = synthesizedType.GetMembersAsImmutable(memberName).Single();
                 Assert.Equal(sourceMember.IsAbstract, synthesizedMember.IsAbstract);
                 Assert.Equal(sourceMember.IsVirtual, synthesizedMember.IsVirtual);
                 Assert.Equal(sourceMember.IsOverride, synthesizedMember.IsOverride);
@@ -9785,7 +9785,7 @@ partial class Program
                 comp,
                 symbolValidator: module =>
                 {
-                    var type = module.GlobalNamespace.GetTypeMembers("<>y__InlineArray3").SingleOrDefault();
+                    var type = module.GlobalNamespace.GetTypeMembersAsImmutable("<>y__InlineArray3").SingleOrDefault();
                     if (targetFramework == TargetFramework.Net80)
                     {
                         Assert.NotNull(type);
@@ -9909,7 +9909,7 @@ partial class Program
                 comp,
                 symbolValidator: module =>
                 {
-                    var type = module.GlobalNamespace.GetTypeMembers("<>y__InlineArray3").SingleOrDefault();
+                    var type = module.GlobalNamespace.GetTypeMembersAsImmutable("<>y__InlineArray3").SingleOrDefault();
                     Assert.Null(type);
                 },
                 expectedOutput: "[1, 2, null], ");
@@ -10039,7 +10039,7 @@ partial class Program
 
             static ImmutableArray<string> getInlineArrayTypeNames(ModuleSymbol module)
             {
-                return module.GlobalNamespace.GetTypeMembers().WhereAsArray(t => t.Name.StartsWith("<>y__InlineArray")).SelectAsArray(t => t.Name);
+                return module.GlobalNamespace.GetTypeMembersAsImmutable().WhereAsArray(t => t.Name.StartsWith("<>y__InlineArray")).SelectAsArray(t => t.Name);
             }
         }
 

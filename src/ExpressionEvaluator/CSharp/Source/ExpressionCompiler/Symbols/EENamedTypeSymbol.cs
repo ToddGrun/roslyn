@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using Microsoft.CodeAnalysis.Collections;
 using Microsoft.CodeAnalysis.CSharp.Symbols;
 using Roslyn.Utilities;
 
@@ -112,9 +113,9 @@ namespace Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator
             return _methods;
         }
 
-        internal override ImmutableArray<NamedTypeSymbol> GetInterfacesToEmit()
+        internal override ArrayWrapper<NamedTypeSymbol> GetInterfacesToEmit()
         {
-            return ImmutableArray<NamedTypeSymbol>.Empty;
+            return ArrayWrapper<NamedTypeSymbol>.Empty;
         }
 
         public override int Arity
@@ -169,30 +170,31 @@ namespace Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator
 
         internal override bool HasDeclaredRequiredMembers => false;
 
-        public override ImmutableArray<Symbol> GetMembers()
+        public override ArrayWrapper<Symbol> GetMembers()
         {
-            return _methods.Cast<MethodSymbol, Symbol>();
+            return new ArrayWrapper<Symbol>(_methods.Cast<MethodSymbol, Symbol>());
         }
 
-        public override ImmutableArray<Symbol> GetMembers(string name)
+        public override ArrayWrapper<Symbol> GetMembers(string name)
         {
             // Should not be requesting generated members
             // by name other than constructors.
             Debug.Assert((name == WellKnownMemberNames.InstanceConstructorName) || (name == WellKnownMemberNames.StaticConstructorName));
-            return this.GetMembers().WhereAsArray((m, name) => m.Name == name, name);
+            using var members = this.GetMembers();
+            return members.WhereAsArrayWrapper((m, name) => m.Name == name, name);
         }
 
-        public override ImmutableArray<NamedTypeSymbol> GetTypeMembers()
+        public override ArrayWrapper<NamedTypeSymbol> GetTypeMembers()
         {
-            return ImmutableArray<NamedTypeSymbol>.Empty;
+            return ArrayWrapper<NamedTypeSymbol>.Empty;
         }
 
-        public override ImmutableArray<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name)
+        public override ArrayWrapper<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name)
         {
             throw ExceptionUtilities.Unreachable();
         }
 
-        public override ImmutableArray<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name, int arity)
+        public override ArrayWrapper<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name, int arity)
         {
             throw ExceptionUtilities.Unreachable();
         }
@@ -202,12 +204,12 @@ namespace Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator
             get { return Accessibility.Internal; }
         }
 
-        internal override ImmutableArray<Symbol> GetEarlyAttributeDecodingMembers()
+        internal override ArrayWrapper<Symbol> GetEarlyAttributeDecodingMembers()
         {
             throw ExceptionUtilities.Unreachable();
         }
 
-        internal override ImmutableArray<Symbol> GetEarlyAttributeDecodingMembers(string name)
+        internal override ArrayWrapper<Symbol> GetEarlyAttributeDecodingMembers(string name)
         {
             throw ExceptionUtilities.Unreachable();
         }
@@ -217,7 +219,7 @@ namespace Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator
             return _baseType;
         }
 
-        internal override ImmutableArray<NamedTypeSymbol> GetDeclaredInterfaces(ConsList<TypeSymbol> basesBeingResolved)
+        internal override ArrayWrapper<NamedTypeSymbol> GetDeclaredInterfaces(ConsList<TypeSymbol> basesBeingResolved)
         {
             throw ExceptionUtilities.Unreachable();
         }

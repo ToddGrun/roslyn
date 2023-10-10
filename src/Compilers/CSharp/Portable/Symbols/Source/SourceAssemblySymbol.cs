@@ -1100,7 +1100,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 topLevelTypesFromModules.Free();
 
                 // Descent into child namespaces.
-                foreach (Symbol member in mergedNs.GetMembers())
+                using var members = mergedNs.GetMembers();
+                foreach (Symbol member in members)
                 {
                     if (member.Kind == SymbolKind.Namespace)
                     {

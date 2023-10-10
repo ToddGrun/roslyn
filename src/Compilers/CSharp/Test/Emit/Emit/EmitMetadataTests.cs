@@ -326,8 +326,8 @@ abstract public class B : I2, I3
                 Assert.Same(i2, interfaces[0]);
                 Assert.Same(i3, interfaces[1]);
 
-                Assert.Equal(1, i2.GetMembers("M2").Length);
-                Assert.Equal(1, i3.GetMembers("M3").Length);
+                Assert.Equal(1, i2.GetMembersAsImmutable("M2").Length);
+                Assert.Equal(1, i3.GetMembersAsImmutable("M3").Length);
             });
         }
 
@@ -420,7 +420,7 @@ abstract public class A
 
             CompileAndVerify(source, options: TestOptions.ReleaseDll, symbolValidator: module =>
             {
-                var classA = module.GlobalNamespace.GetTypeMembers("A").Single();
+                var classA = module.GlobalNamespace.GetTypeMembersAsImmutable("A").Single();
 
                 var m1 = classA.GetMembers("M1").OfType<MethodSymbol>().Single();
                 var m2 = classA.GetMembers("M2").OfType<MethodSymbol>().Single();
@@ -494,18 +494,18 @@ static class C
 ";
             Func<bool, Action<ModuleSymbol>> validator = isFromSource => module =>
             {
-                var classB = module.GlobalNamespace.GetTypeMembers("B").Single();
+                var classB = module.GlobalNamespace.GetTypeMembersAsImmutable("B").Single();
                 Assert.True(classB.IsSealed);
                 Assert.Equal(Accessibility.Internal, classB.DeclaredAccessibility);
 
-                var classC = module.GlobalNamespace.GetTypeMembers("C").Single();
+                var classC = module.GlobalNamespace.GetTypeMembersAsImmutable("C").Single();
                 Assert.True(classC.IsStatic);
                 Assert.Equal(Accessibility.Internal, classC.DeclaredAccessibility);
 
-                var classD = classC.GetTypeMembers("D").Single();
-                var classE = classC.GetTypeMembers("E").Single();
-                var classF = classC.GetTypeMembers("F").Single();
-                var classH = classC.GetTypeMembers("H").Single();
+                var classD = classC.GetTypeMembersAsImmutable("D").Single();
+                var classE = classC.GetTypeMembersAsImmutable("E").Single();
+                var classF = classC.GetTypeMembersAsImmutable("F").Single();
+                var classH = classC.GetTypeMembersAsImmutable("H").Single();
 
                 Assert.Equal(Accessibility.Public, classD.DeclaredAccessibility);
                 Assert.Equal(Accessibility.Internal, classE.DeclaredAccessibility);
@@ -514,8 +514,8 @@ static class C
 
                 if (isFromSource)
                 {
-                    var classG = classC.GetTypeMembers("G").Single();
-                    var classK = classC.GetTypeMembers("K").Single();
+                    var classG = classC.GetTypeMembersAsImmutable("G").Single();
+                    var classK = classC.GetTypeMembersAsImmutable("K").Single();
                     Assert.Equal(Accessibility.Private, classG.DeclaredAccessibility);
                     Assert.Equal(Accessibility.Private, classK.DeclaredAccessibility);
                 }
@@ -544,7 +544,7 @@ public class A
 }";
             Func<bool, Action<ModuleSymbol>> validator = isFromSource => module =>
             {
-                var classA = module.GlobalNamespace.GetTypeMembers("A").Single();
+                var classA = module.GlobalNamespace.GetTypeMembersAsImmutable("A").Single();
 
                 var f1 = classA.GetMembers("F1").OfType<FieldSymbol>().Single();
                 var f2 = classA.GetMembers("F2").OfType<FieldSymbol>().Single();
@@ -660,7 +660,7 @@ public class A
 ";
             Func<bool, Action<ModuleSymbol>> validator = isFromSource => module =>
             {
-                var type = module.GlobalNamespace.GetTypeMembers("C").Single();
+                var type = module.GlobalNamespace.GetTypeMembersAsImmutable("C").Single();
                 if (isFromSource)
                 {
                     CheckConstantField(type, "I", Accessibility.Private, SpecialType.System_Int32, -1);
@@ -729,13 +729,13 @@ class Properties
             Func<bool, Action<ModuleSymbol>> validator = isFromSource => module =>
             {
                 var nmspace = module.GlobalNamespace.GetMember<NamespaceSymbol>("Namespace");
-                Assert.NotNull(nmspace.GetTypeMembers("Public").SingleOrDefault());
-                Assert.NotNull(nmspace.GetTypeMembers("Internal").SingleOrDefault());
+                Assert.NotNull(nmspace.GetTypeMembersAsImmutable("Public").SingleOrDefault());
+                Assert.NotNull(nmspace.GetTypeMembersAsImmutable("Internal").SingleOrDefault());
 
-                CheckPrivateMembers(module.GlobalNamespace.GetTypeMembers("Types").Single(), isFromSource, true);
-                CheckPrivateMembers(module.GlobalNamespace.GetTypeMembers("Fields").Single(), isFromSource, false);
-                CheckPrivateMembers(module.GlobalNamespace.GetTypeMembers("Methods").Single(), isFromSource, false);
-                CheckPrivateMembers(module.GlobalNamespace.GetTypeMembers("Properties").Single(), isFromSource, false);
+                CheckPrivateMembers(module.GlobalNamespace.GetTypeMembersAsImmutable("Types").Single(), isFromSource, true);
+                CheckPrivateMembers(module.GlobalNamespace.GetTypeMembersAsImmutable("Fields").Single(), isFromSource, false);
+                CheckPrivateMembers(module.GlobalNamespace.GetTypeMembersAsImmutable("Methods").Single(), isFromSource, false);
+                CheckPrivateMembers(module.GlobalNamespace.GetTypeMembersAsImmutable("Properties").Single(), isFromSource, false);
             };
 
             CompileAndVerify(source: source, sourceSymbolValidator: validator(true), symbolValidator: validator(false), options: TestOptions.ReleaseDll.WithMetadataImportOptions(MetadataImportOptions.Internal));
@@ -775,7 +775,7 @@ class Derived<T, U> : Base<T, U>
 }";
             Action<ModuleSymbol> validator = module =>
             {
-                var derivedType = module.GlobalNamespace.GetTypeMembers("Derived").Single();
+                var derivedType = module.GlobalNamespace.GetTypeMembersAsImmutable("Derived").Single();
                 Assert.Equal(2, derivedType.Arity);
 
                 var baseType = derivedType.BaseType();
@@ -806,7 +806,7 @@ class C : I
             Action<ModuleSymbol> validator = module =>
             {
                 // Interface
-                var type = module.GlobalNamespace.GetTypeMembers("I").Single();
+                var type = module.GlobalNamespace.GetTypeMembersAsImmutable("I").Single();
                 var method = (MethodSymbol)type.GetMembers("Method").Single();
                 Assert.NotNull(method);
                 var property = (PropertySymbol)type.GetMembers("Property").Single();
@@ -814,7 +814,7 @@ class C : I
                 Assert.NotNull(property.SetMethod);
 
                 // Implementation
-                type = module.GlobalNamespace.GetTypeMembers("C").Single();
+                type = module.GlobalNamespace.GetTypeMembersAsImmutable("C").Single();
                 method = (MethodSymbol)type.GetMembers("I.Method").Single();
                 Assert.NotNull(method);
                 property = (PropertySymbol)type.GetMembers("I.Property").Single();
@@ -844,8 +844,8 @@ class C : I
 }";
             Func<bool, Action<ModuleSymbol>> validator = isFromSource => module =>
             {
-                var type = module.GlobalNamespace.GetTypeMembers("C").Single();
-                var members = type.GetMembers();
+                var type = module.GlobalNamespace.GetTypeMembersAsImmutable("C").Single();
+                var members = type.GetMembersAsImmutable();
 
                 // Ensure member names are unique.
                 var memberNames = members.Select(member => member.Name).Distinct().ToList();
@@ -1079,7 +1079,7 @@ class Program
 ";
             Func<bool, Action<ModuleSymbol>> validator = isFromSource => module =>
             {
-                var type = module.GlobalNamespace.GetTypeMembers("C").Single();
+                var type = module.GlobalNamespace.GetTypeMembersAsImmutable("C").Single();
                 bool checkValidProperties = (type is PENamedTypeSymbol);
 
                 var propertyP = (PropertySymbol)type.GetMembers("P").Single();
@@ -1110,7 +1110,7 @@ class Program
                     Assert.False(propertyQ.MustCallMethodsDirectly);
                 }
 
-                type = module.GlobalNamespace.GetTypeMembers("F").Single();
+                type = module.GlobalNamespace.GetTypeMembersAsImmutable("F").Single();
                 propertyP = (PropertySymbol)type.GetMembers("P").Single();
                 CheckPropertyAccessibility(propertyP, Accessibility.Public, Accessibility.Public, Accessibility.NotApplicable);
                 Assert.False(propertyP.GetMethod.IsVirtual);
@@ -1130,10 +1130,10 @@ class Program
                 }
                 // Overridden property should be E but overridden
                 // accessor should be D.set_Q.
-                var overriddenProperty = module.GlobalNamespace.GetTypeMembers("E").Single().GetMembers("Q").Single();
+                var overriddenProperty = module.GlobalNamespace.GetTypeMembersAsImmutable("E").Single().GetMembers("Q").Single();
                 Assert.NotNull(overriddenProperty);
                 Assert.Same(overriddenProperty, propertyQ.OverriddenProperty);
-                var overriddenAccessor = module.GlobalNamespace.GetTypeMembers("D").Single().GetMembers("set_Q").Single();
+                var overriddenAccessor = module.GlobalNamespace.GetTypeMembersAsImmutable("D").Single().GetMembers("set_Q").Single();
                 Assert.NotNull(overriddenProperty);
                 Assert.Same(overriddenAccessor, propertyQ.SetMethod.OverriddenMethod);
             };
@@ -1154,7 +1154,7 @@ public class C : I
 }";
             Action<ModuleSymbol> validator = module =>
             {
-                var type = module.GlobalNamespace.GetTypeMembers("C").Single();
+                var type = module.GlobalNamespace.GetTypeMembersAsImmutable("C").Single();
                 var members = type.GetMembers();
                 var ip = (PropertySymbol)members.First(member => member.Name == "I.P");
                 CheckPropertyAccessibility(ip, Accessibility.Private, Accessibility.Private, Accessibility.Private);
@@ -1230,14 +1230,14 @@ class C : B
         {
             Action<ModuleSymbol> validator = module =>
             {
-                var typeA = module.GlobalNamespace.GetTypeMembers("A").Single();
+                var typeA = module.GlobalNamespace.GetTypeMembersAsImmutable("A").Single();
                 Assert.NotNull(typeA);
                 var getMethodA = (MethodSymbol)typeA.GetMembers("get_P").Single();
                 Assert.NotNull(getMethodA);
                 Assert.True(getMethodA.IsVirtual);
                 Assert.False(getMethodA.IsOverride);
 
-                var typeC = module.GlobalNamespace.GetTypeMembers("C").Single();
+                var typeC = module.GlobalNamespace.GetTypeMembersAsImmutable("C").Single();
                 Assert.NotNull(typeC);
                 var getMethodC = (MethodSymbol)typeC.GetMembers("get_P").Single();
                 Assert.NotNull(getMethodC);
@@ -1274,7 +1274,7 @@ class C : B<string>
                 var q = classA.GetProperty("Q");
                 VerifyAutoProperty(q, isFromSource);
 
-                var classC = module.GlobalNamespace.GetTypeMembers("C").Single();
+                var classC = module.GlobalNamespace.GetTypeMembersAsImmutable("C").Single();
                 p = classC.BaseType().GetProperty("P");
                 VerifyAutoProperty(p, isFromSource);
                 Assert.Equal(SpecialType.System_String, p.Type.SpecialType);
@@ -1327,9 +1327,9 @@ class C : B<string>
             string source = "enum E {}";
             Action<ModuleSymbol> validator = module =>
             {
-                var type = module.GlobalNamespace.GetTypeMembers("E").Single();
+                var type = module.GlobalNamespace.GetTypeMembersAsImmutable("E").Single();
                 CheckEnumType(type, Accessibility.Internal, SpecialType.System_Int32);
-                Assert.Equal(1, type.GetMembers().Length);
+                Assert.Equal(1, type.GetMembersAsImmutable().Length);
             };
             CompileAndVerify(source: source, sourceSymbolValidator: validator, symbolValidator: validator);
         }
@@ -1351,10 +1351,10 @@ class C : B<string>
 ";
             Action<ModuleSymbol> validator = module =>
             {
-                var type = module.GlobalNamespace.GetTypeMembers("E").Single();
+                var type = module.GlobalNamespace.GetTypeMembersAsImmutable("E").Single();
                 CheckEnumType(type, Accessibility.Internal, SpecialType.System_Int16);
 
-                Assert.Equal(8, type.GetMembers().Length);
+                Assert.Equal(8, type.GetMembersAsImmutable().Length);
                 CheckEnumConstant(type, "A", (short)0);
                 CheckEnumConstant(type, "B", (short)2);
                 CheckEnumConstant(type, "C", (short)3);
@@ -2020,7 +2020,7 @@ public abstract class C
             {
                 var global = module.GlobalNamespace;
 
-                var c = global.GetTypeMembers("C", 0).Single() as NamedTypeSymbol;
+                var c = global.GetTypeMembersAsImmutable("C", 0).Single() as NamedTypeSymbol;
                 var m = c.GetMembers("M").Single() as MethodSymbol;
                 Assert.Equal(RefKind.None, m.Parameters[0].RefKind);
                 Assert.Equal(RefKind.Ref, m.Parameters[1].RefKind);
@@ -2065,7 +2065,7 @@ class C
             {
                 var global = module.GlobalNamespace;
 
-                var myDel = global.GetTypeMembers("MyDel", 0).Single() as NamedTypeSymbol;
+                var myDel = global.GetTypeMembersAsImmutable("MyDel", 0).Single() as NamedTypeSymbol;
 
                 var invoke = myDel.DelegateInvokeMethod;
 
@@ -2127,8 +2127,8 @@ public static class C
                 Assert.True(classC.IsStatic, "Expected C to be static");
                 Assert.False(classC.IsAbstract, "Expected C to be non-abstract"); //even though it is abstract in metadata
                 Assert.False(classC.IsSealed, "Expected C to be non-sealed"); //even though it is sealed in metadata
-                Assert.Equal(0, classC.GetMembers(WellKnownMemberNames.InstanceConstructorName).Length); //since C is static
-                Assert.Equal(0, classC.GetMembers(WellKnownMemberNames.StaticConstructorName).Length); //since we don't import private members
+                Assert.Equal(0, classC.GetMembersAsImmutable(WellKnownMemberNames.InstanceConstructorName).Length); //since C is static
+                Assert.Equal(0, classC.GetMembersAsImmutable(WellKnownMemberNames.StaticConstructorName).Length); //since we don't import private members
             });
         }
 
@@ -2149,8 +2149,8 @@ public class Methods
 
             Func<bool, Action<ModuleSymbol>> validator = isFromSource => (ModuleSymbol m) =>
             {
-                CheckInternalMembers(m.GlobalNamespace.GetTypeMembers("Fields").Single(), isFromSource);
-                CheckInternalMembers(m.GlobalNamespace.GetTypeMembers("Methods").Single(), isFromSource);
+                CheckInternalMembers(m.GlobalNamespace.GetTypeMembersAsImmutable("Fields").Single(), isFromSource);
+                CheckInternalMembers(m.GlobalNamespace.GetTypeMembersAsImmutable("Methods").Single(), isFromSource);
             };
 
             CompileAndVerify(sources, sourceSymbolValidator: validator(true), symbolValidator: validator(false));

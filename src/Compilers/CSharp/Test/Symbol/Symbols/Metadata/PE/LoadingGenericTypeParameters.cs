@@ -22,9 +22,9 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             var assembly = MetadataTestHelpers.GetSymbolForReference(TestMetadata.Net40.mscorlib);
             var module0 = assembly.Modules[0];
 
-            var objectType = module0.GlobalNamespace.GetMembers("System").
+            var objectType = module0.GlobalNamespace.GetMembersAsImmutable("System").
                 OfType<NamespaceSymbol>().Single().
-                GetTypeMembers("Object").Single();
+                GetTypeMembersAsImmutable("Object").Single();
 
             Assert.Equal(0, objectType.Arity);
             Assert.Equal(0, objectType.TypeParameters.Length);
@@ -33,7 +33,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             assembly = MetadataTestHelpers.GetSymbolForReference(TestReferences.SymbolsTests.MDTestLib1);
             module0 = assembly.Modules[0];
 
-            var varC1 = module0.GlobalNamespace.GetTypeMembers("C1").Single();
+            var varC1 = module0.GlobalNamespace.GetTypeMembersAsImmutable("C1").Single();
 
             Assert.Equal(1, varC1.Arity);
             Assert.Equal(1, varC1.TypeParameters.Length);
@@ -51,11 +51,11 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             Assert.Equal(Accessibility.NotApplicable, varC1_T.DeclaredAccessibility);
             Assert.Equal("C1_T", varC1_T.Name);
             Assert.Equal("C1_T", varC1_T.ToTestDisplayString());
-            Assert.Equal(0, varC1_T.GetMembers().Length);
-            Assert.Equal(0, varC1_T.GetMembers("goo").Length);
-            Assert.Equal(0, varC1_T.GetTypeMembers().Length);
-            Assert.Equal(0, varC1_T.GetTypeMembers("goo").Length);
-            Assert.Equal(0, varC1_T.GetTypeMembers("goo", 1).Length);
+            Assert.Equal(0, varC1_T.GetMembersAsImmutable().Length);
+            Assert.Equal(0, varC1_T.GetMembersAsImmutable("goo").Length);
+            Assert.Equal(0, varC1_T.GetTypeMembersAsImmutable().Length);
+            Assert.Equal(0, varC1_T.GetTypeMembersAsImmutable("goo").Length);
+            Assert.Equal(0, varC1_T.GetTypeMembersAsImmutable("goo", 1).Length);
             Assert.False(varC1_T.HasConstructorConstraint);
             Assert.False(varC1_T.HasReferenceTypeConstraint);
             Assert.False(varC1_T.HasValueTypeConstraint);
@@ -76,7 +76,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             Assert.Same(module0, varC1_T.Locations.Single().MetadataModuleInternal);
             Assert.Equal(0, varC1_T.ConstraintTypes().Length);
 
-            var varC2 = varC1.GetTypeMembers("C2").Single();
+            var varC2 = varC1.GetTypeMembersAsImmutable("C2").Single();
             Assert.Equal(1, varC2.Arity);
             Assert.Equal(1, varC2.TypeParameters.Length);
             Assert.Equal(1, varC2.TypeArguments().Length);
@@ -86,12 +86,12 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             Assert.Equal("C2_T", varC2_T.Name);
             Assert.Equal(varC2, varC2_T.ContainingType);
 
-            var varC3 = varC1.GetTypeMembers("C3").Single();
+            var varC3 = varC1.GetTypeMembersAsImmutable("C3").Single();
             Assert.Equal(0, varC3.Arity);
             Assert.Equal(0, varC3.TypeParameters.Length);
             Assert.Equal(0, varC3.TypeArguments().Length);
 
-            var varC4 = varC3.GetTypeMembers("C4").Single();
+            var varC4 = varC3.GetTypeMembersAsImmutable("C4").Single();
             Assert.Equal(1, varC4.Arity);
             Assert.Equal(1, varC4.TypeParameters.Length);
             Assert.Equal(1, varC4.TypeArguments().Length);
@@ -101,7 +101,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             Assert.Equal("C4_T", varC4_T.Name);
             Assert.Equal(varC4, varC4_T.ContainingType);
 
-            var varTC2 = module0.GlobalNamespace.GetTypeMembers("TC2").Single();
+            var varTC2 = module0.GlobalNamespace.GetTypeMembersAsImmutable("TC2").Single();
 
             Assert.Equal(2, varTC2.Arity);
             Assert.Equal(2, varTC2.TypeParameters.Length);
@@ -121,21 +121,21 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             Assert.Equal(varTC2, varTC2_T2.ContainingType);
             Assert.Equal(1, varTC2_T2.Ordinal);
 
-            var varC100 = module0.GlobalNamespace.GetTypeMembers("C100").Single();
+            var varC100 = module0.GlobalNamespace.GetTypeMembersAsImmutable("C100").Single();
             var varT = varC100.TypeParameters[0];
             Assert.False(varT.HasConstructorConstraint);
             Assert.False(varT.HasReferenceTypeConstraint);
             Assert.False(varT.HasValueTypeConstraint);
             Assert.Equal(VarianceKind.Out, varT.Variance);
 
-            var varC101 = module0.GlobalNamespace.GetTypeMembers("C101").Single();
+            var varC101 = module0.GlobalNamespace.GetTypeMembersAsImmutable("C101").Single();
             varT = varC101.TypeParameters[0];
             Assert.False(varT.HasConstructorConstraint);
             Assert.False(varT.HasReferenceTypeConstraint);
             Assert.False(varT.HasValueTypeConstraint);
             Assert.Equal(VarianceKind.In, varT.Variance);
 
-            var varC102 = module0.GlobalNamespace.GetTypeMembers("C102").Single();
+            var varC102 = module0.GlobalNamespace.GetTypeMembersAsImmutable("C102").Single();
             varT = varC102.TypeParameters[0];
             Assert.True(varT.HasConstructorConstraint);
             Assert.False(varT.HasReferenceTypeConstraint);
@@ -143,7 +143,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             Assert.Equal(VarianceKind.None, varT.Variance);
             Assert.Equal(0, varT.ConstraintTypes().Length);
 
-            var varC103 = module0.GlobalNamespace.GetTypeMembers("C103").Single();
+            var varC103 = module0.GlobalNamespace.GetTypeMembersAsImmutable("C103").Single();
             varT = varC103.TypeParameters[0];
             Assert.False(varT.HasConstructorConstraint);
             Assert.True(varT.HasReferenceTypeConstraint);
@@ -151,7 +151,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             Assert.Equal(VarianceKind.None, varT.Variance);
             Assert.Equal(0, varT.ConstraintTypes().Length);
 
-            var varC104 = module0.GlobalNamespace.GetTypeMembers("C104").Single();
+            var varC104 = module0.GlobalNamespace.GetTypeMembersAsImmutable("C104").Single();
             varT = varC104.TypeParameters[0];
             Assert.False(varT.HasConstructorConstraint);
             Assert.False(varT.HasReferenceTypeConstraint);
@@ -159,29 +159,29 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             Assert.Equal(VarianceKind.None, varT.Variance);
             Assert.Equal(0, varT.ConstraintTypes().Length);
 
-            var varC105 = module0.GlobalNamespace.GetTypeMembers("C105").Single();
+            var varC105 = module0.GlobalNamespace.GetTypeMembersAsImmutable("C105").Single();
             varT = varC105.TypeParameters[0];
             Assert.True(varT.HasConstructorConstraint);
             Assert.True(varT.HasReferenceTypeConstraint);
             Assert.False(varT.HasValueTypeConstraint);
             Assert.Equal(VarianceKind.None, varT.Variance);
 
-            var varC106 = module0.GlobalNamespace.GetTypeMembers("C106").Single();
+            var varC106 = module0.GlobalNamespace.GetTypeMembersAsImmutable("C106").Single();
             varT = varC106.TypeParameters[0];
             Assert.True(varT.HasConstructorConstraint);
             Assert.True(varT.HasReferenceTypeConstraint);
             Assert.False(varT.HasValueTypeConstraint);
             Assert.Equal(VarianceKind.Out, varT.Variance);
 
-            var varI101 = module0.GlobalNamespace.GetTypeMembers("I101").Single();
-            var varI102 = module0.GlobalNamespace.GetTypeMembers("I102").Single();
+            var varI101 = module0.GlobalNamespace.GetTypeMembersAsImmutable("I101").Single();
+            var varI102 = module0.GlobalNamespace.GetTypeMembersAsImmutable("I102").Single();
 
-            var varC201 = module0.GlobalNamespace.GetTypeMembers("C201").Single();
+            var varC201 = module0.GlobalNamespace.GetTypeMembersAsImmutable("C201").Single();
             varT = varC201.TypeParameters[0];
             Assert.Equal(1, varT.ConstraintTypes().Length);
             Assert.Same(varI101, varT.ConstraintTypes().ElementAt(0));
 
-            var localC202 = module0.GlobalNamespace.GetTypeMembers("C202").Single();
+            var localC202 = module0.GlobalNamespace.GetTypeMembersAsImmutable("C202").Single();
             varT = localC202.TypeParameters[0];
             Assert.Equal(2, varT.ConstraintTypes().Length);
             Assert.Same(varI101, varT.ConstraintTypes().ElementAt(0));

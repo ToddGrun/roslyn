@@ -46,15 +46,15 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             var assembly2 = (MetadataOrSourceAssemblySymbol)assemblies[1];
             var assembly3 = (MetadataOrSourceAssemblySymbol)assemblies[2];
 
-            var derived1 = module1.GlobalNamespace.GetTypeMembers("Derived").Single();
+            var derived1 = module1.GlobalNamespace.GetTypeMembersAsImmutable("Derived").Single();
             var base1 = derived1.BaseType();
             BaseTypeResolution.AssertBaseType(base1, "Base");
 
-            var derived4 = module1.GlobalNamespace.GetTypeMembers("GenericDerived").Single();
+            var derived4 = module1.GlobalNamespace.GetTypeMembersAsImmutable("GenericDerived").Single();
             var base4 = derived4.BaseType();
             BaseTypeResolution.AssertBaseType(base4, "GenericBase<K>");
 
-            var derived6 = module1.GlobalNamespace.GetTypeMembers("GenericDerived1").Single();
+            var derived6 = module1.GlobalNamespace.GetTypeMembersAsImmutable("GenericDerived1").Single();
             var base6 = derived6.BaseType();
             BaseTypeResolution.AssertBaseType(base6, "GenericBase<K>.NestedGenericBase<L>");
 
@@ -74,16 +74,16 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             Assert.Equal(base4.OriginalDefinition, assembly3.CachedTypeByEmittedName("GenericBase`1"));
             Assert.Equal(2, assembly3.EmittedNameToTypeMapCount);
 
-            var derived2 = module2.GlobalNamespace.GetTypeMembers("Derived").Single();
+            var derived2 = module2.GlobalNamespace.GetTypeMembersAsImmutable("Derived").Single();
             var base2 = derived2.BaseType();
             BaseTypeResolution.AssertBaseType(base2, "Base");
             Assert.Same(base2, base1);
 
-            var derived3 = module2.GlobalNamespace.GetTypeMembers("GenericDerived").Single();
+            var derived3 = module2.GlobalNamespace.GetTypeMembersAsImmutable("GenericDerived").Single();
             var base3 = derived3.BaseType();
             BaseTypeResolution.AssertBaseType(base3, "GenericBase<S>");
 
-            var derived5 = module2.GlobalNamespace.GetTypeMembers("GenericDerived1").Single();
+            var derived5 = module2.GlobalNamespace.GetTypeMembersAsImmutable("GenericDerived1").Single();
             var base5 = derived5.BaseType();
             BaseTypeResolution.AssertBaseType(base5, "GenericBase<S1>.NestedGenericBase<S2>");
         }

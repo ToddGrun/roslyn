@@ -799,7 +799,7 @@ class Program
             {
                 var assembly = module.ContainingAssembly;
                 var type = assembly.GetTypeByMetadataName("C");
-                var field = (FieldSymbol)type.GetMembers("F").Single();
+                var field = (FieldSymbol)type.GetMembersAsImmutable("F").Single();
                 AssertNoNullableAttribute(field.GetAttributes());
                 AssertNoNullableAttribute(module.GetAttributes());
                 AssertAttributes(assembly.GetAttributes(),
@@ -813,7 +813,7 @@ class Program
             {
                 var assembly = module.ContainingAssembly;
                 var type = assembly.GetTypeByMetadataName("C");
-                var field = (FieldSymbol)type.GetMembers("F").Single();
+                var field = (FieldSymbol)type.GetMembersAsImmutable("F").Single();
                 AssertNoNullableAttribute(field.GetAttributes());
                 AssertNoNullableAttribute(module.GetAttributes());
                 AssertAttributes(assembly.GetAttributes(),
@@ -972,7 +972,7 @@ class C
             {
                 var assembly = module.ContainingAssembly;
                 var type = assembly.GetTypeByMetadataName("C");
-                var field = (FieldSymbol)type.GetMembers("F").Single();
+                var field = (FieldSymbol)type.GetMembersAsImmutable("F").Single();
                 AssertNullableAttribute(field.GetAttributes());
                 AssertNoNullableAttribute(module.GetAttributes());
                 AssertAttributes(assembly.GetAttributes(),
@@ -4992,7 +4992,7 @@ public class Program
             CompileAndVerify(comp, symbolValidator: module =>
             {
                 var type = module.ContainingAssembly.GetTypeByMetadataName("C");
-                var method = (MethodSymbol)type.GetMembers("F").Single();
+                var method = (MethodSymbol)type.GetMembersAsImmutable("F").Single();
                 var attributes = method.Parameters[0].GetAttributes();
                 AssertNullableAttribute(attributes);
 

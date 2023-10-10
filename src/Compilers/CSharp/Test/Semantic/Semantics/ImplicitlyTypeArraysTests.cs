@@ -33,7 +33,7 @@ class C
 
             compilation.VerifyDiagnostics();
 
-            var method = (SourceMemberMethodSymbol)compilation.GlobalNamespace.GetTypeMembers("C").Single().GetMembers("F").Single();
+            var method = (SourceMemberMethodSymbol)compilation.GlobalNamespace.GetTypeMembersAsImmutable("C").Single().GetMembersAsImmutable("F").Single();
             var diagnostics = BindingDiagnosticBag.GetInstance(withDiagnostics: true, withDependencies: false);
             var block = MethodCompiler.BindSynthesizedMethodBody(method, new TypeCompilationState(method.ContainingType, compilation, null), diagnostics);
             diagnostics.Free();

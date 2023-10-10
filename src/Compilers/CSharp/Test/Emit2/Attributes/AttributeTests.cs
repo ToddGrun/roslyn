@@ -1593,7 +1593,7 @@ public interface I
             {
                 var metadata = ((PEModuleSymbol)module).Module;
 
-                var typeI = (PENamedTypeSymbol)module.GlobalNamespace.GetTypeMembers("I").Single();
+                var typeI = (PENamedTypeSymbol)module.GlobalNamespace.GetTypeMembersAsImmutable("I").Single();
 
                 var methods = metadata.GetMethodsOfTypeOrThrow(typeI.Handle);
                 Assert.Equal(2, methods.Count);

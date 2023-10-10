@@ -4135,7 +4135,7 @@ public interface I3
 
             void validate()
             {
-                foreach (MethodSymbol m01 in compilation1.GetTypeByMetadataName("I1").GetMembers())
+                foreach (MethodSymbol m01 in compilation1.GetTypeByMetadataName("I1").GetMembersAsImmutable())
                 {
                     Assert.True(m01.IsAbstract);
                     Assert.False(m01.IsVirtual);
@@ -4148,7 +4148,7 @@ public interface I3
                     Assert.Null(m01.ContainingType.FindImplementationForInterfaceMember(m01));
                 }
 
-                foreach (MethodSymbol m01 in compilation1.GetTypeByMetadataName("I2").GetMembers())
+                foreach (MethodSymbol m01 in compilation1.GetTypeByMetadataName("I2").GetMembersAsImmutable())
                 {
                     Assert.False(m01.IsAbstract);
                     Assert.False(m01.IsVirtual);
@@ -4161,7 +4161,7 @@ public interface I3
                     Assert.Null(m01.ContainingType.FindImplementationForInterfaceMember(m01));
                 }
 
-                foreach (MethodSymbol m01 in compilation1.GetTypeByMetadataName("I3").GetMembers())
+                foreach (MethodSymbol m01 in compilation1.GetTypeByMetadataName("I3").GetMembersAsImmutable())
                 {
                     Assert.True(m01.IsAbstract);
                     Assert.False(m01.IsVirtual);
@@ -4381,7 +4381,7 @@ public interface I3
 
             void validate()
             {
-                foreach (MethodSymbol m01 in compilation1.GetTypeByMetadataName("I1").GetMembers())
+                foreach (MethodSymbol m01 in compilation1.GetTypeByMetadataName("I1").GetMembersAsImmutable())
                 {
                     Assert.True(m01.IsAbstract);
                     Assert.False(m01.IsVirtual);
@@ -4394,7 +4394,7 @@ public interface I3
                     Assert.Null(m01.ContainingType.FindImplementationForInterfaceMember(m01));
                 }
 
-                foreach (MethodSymbol m01 in compilation1.GetTypeByMetadataName("I2").GetMembers())
+                foreach (MethodSymbol m01 in compilation1.GetTypeByMetadataName("I2").GetMembersAsImmutable())
                 {
                     Assert.False(m01.IsAbstract);
                     Assert.False(m01.IsVirtual);
@@ -4407,7 +4407,7 @@ public interface I3
                     Assert.Null(m01.ContainingType.FindImplementationForInterfaceMember(m01));
                 }
 
-                foreach (MethodSymbol m01 in compilation1.GetTypeByMetadataName("I3").GetMembers())
+                foreach (MethodSymbol m01 in compilation1.GetTypeByMetadataName("I3").GetMembersAsImmutable())
                 {
                     Assert.True(m01.IsAbstract);
                     Assert.False(m01.IsVirtual);
@@ -4567,7 +4567,7 @@ public interface I3
 
             void validate()
             {
-                foreach (MethodSymbol m01 in compilation1.GetTypeByMetadataName("I1").GetMembers())
+                foreach (MethodSymbol m01 in compilation1.GetTypeByMetadataName("I1").GetMembersAsImmutable())
                 {
                     Assert.False(m01.IsAbstract);
                     Assert.True(m01.IsVirtual);
@@ -4580,7 +4580,7 @@ public interface I3
                     Assert.Same(m01, m01.ContainingType.FindImplementationForInterfaceMember(m01));
                 }
 
-                foreach (MethodSymbol m01 in compilation1.GetTypeByMetadataName("I2").GetMembers())
+                foreach (MethodSymbol m01 in compilation1.GetTypeByMetadataName("I2").GetMembersAsImmutable())
                 {
                     Assert.False(m01.IsAbstract);
                     Assert.True(m01.IsVirtual);
@@ -4593,7 +4593,7 @@ public interface I3
                     Assert.Same(m01, m01.ContainingType.FindImplementationForInterfaceMember(m01));
                 }
 
-                foreach (MethodSymbol m01 in compilation1.GetTypeByMetadataName("I3").GetMembers())
+                foreach (MethodSymbol m01 in compilation1.GetTypeByMetadataName("I3").GetMembersAsImmutable())
                 {
                     Assert.True(m01.IsAbstract);
                     Assert.True(m01.IsVirtual);
@@ -4807,7 +4807,7 @@ public interface I3
 
             void validate()
             {
-                foreach (MethodSymbol m01 in compilation1.GetTypeByMetadataName("I1").GetMembers())
+                foreach (MethodSymbol m01 in compilation1.GetTypeByMetadataName("I1").GetMembersAsImmutable())
                 {
                     Assert.False(m01.IsAbstract);
                     Assert.True(m01.IsVirtual);
@@ -4820,7 +4820,7 @@ public interface I3
                     Assert.Same(m01, m01.ContainingType.FindImplementationForInterfaceMember(m01));
                 }
 
-                foreach (MethodSymbol m01 in compilation1.GetTypeByMetadataName("I2").GetMembers())
+                foreach (MethodSymbol m01 in compilation1.GetTypeByMetadataName("I2").GetMembersAsImmutable())
                 {
                     Assert.False(m01.IsAbstract);
                     Assert.True(m01.IsVirtual);
@@ -4833,7 +4833,7 @@ public interface I3
                     Assert.Same(m01, m01.ContainingType.FindImplementationForInterfaceMember(m01));
                 }
 
-                foreach (MethodSymbol m01 in compilation1.GetTypeByMetadataName("I3").GetMembers())
+                foreach (MethodSymbol m01 in compilation1.GetTypeByMetadataName("I3").GetMembersAsImmutable())
                 {
                     Assert.True(m01.IsAbstract);
                     Assert.True(m01.IsVirtual);
@@ -5308,7 +5308,7 @@ interface I1
 
             void validate(ModuleSymbol module)
             {
-                var m01 = module.GlobalNamespace.GetTypeMember("I1").GetMembers().OfType<MethodSymbol>().Single();
+                var m01 = module.GlobalNamespace.GetTypeMember("I1").GetMembersAsImmutable().OfType<MethodSymbol>().Single();
 
                 Assert.False(m01.IsMetadataNewSlot());
                 Assert.True(m01.IsAbstract);
@@ -5344,7 +5344,7 @@ interface I1
 
             void validate(ModuleSymbol module)
             {
-                var m01 = module.GlobalNamespace.GetTypeMember("I1").GetMembers().OfType<MethodSymbol>().Single();
+                var m01 = module.GlobalNamespace.GetTypeMember("I1").GetMembersAsImmutable().OfType<MethodSymbol>().Single();
 
                 Assert.False(m01.IsMetadataNewSlot());
                 Assert.False(m01.IsAbstract);
@@ -5493,7 +5493,7 @@ partial interface I1
 
             void validate(ModuleSymbol module)
             {
-                foreach (var m01 in module.GlobalNamespace.GetTypeMember("I1").GetMembers().OfType<MethodSymbol>())
+                foreach (var m01 in module.GlobalNamespace.GetTypeMember("I1").GetMembersAsImmutable().OfType<MethodSymbol>())
                 {
                     Assert.False(m01.IsMetadataNewSlot());
                     Assert.True(m01.IsAbstract);
@@ -5561,7 +5561,7 @@ partial interface I1
 
             void validate(ModuleSymbol module)
             {
-                foreach (var m01 in module.GlobalNamespace.GetTypeMember("I1").GetMembers().OfType<MethodSymbol>())
+                foreach (var m01 in module.GlobalNamespace.GetTypeMember("I1").GetMembersAsImmutable().OfType<MethodSymbol>())
                 {
                     Assert.False(m01.IsMetadataNewSlot());
                     Assert.False(m01.IsAbstract);
@@ -5601,7 +5601,7 @@ interface I1<T> where T : I1<T>
             void validate(ModuleSymbol module)
             {
                 int count = 0;
-                foreach (var m01 in module.GlobalNamespace.GetTypeMember("I1").GetMembers().OfType<MethodSymbol>())
+                foreach (var m01 in module.GlobalNamespace.GetTypeMember("I1").GetMembersAsImmutable().OfType<MethodSymbol>())
                 {
                     Assert.False(m01.IsMetadataNewSlot());
                     Assert.True(m01.IsAbstract);
@@ -5645,7 +5645,7 @@ interface I1<T> where T : I1<T>
             void validate(ModuleSymbol module)
             {
                 int count = 0;
-                foreach (var m01 in module.GlobalNamespace.GetTypeMember("I1").GetMembers().OfType<MethodSymbol>())
+                foreach (var m01 in module.GlobalNamespace.GetTypeMember("I1").GetMembersAsImmutable().OfType<MethodSymbol>())
                 {
                     Assert.False(m01.IsMetadataNewSlot());
                     Assert.False(m01.IsAbstract);
@@ -5876,7 +5876,7 @@ interface I1<T> where T : I1<T>
             void validate(ModuleSymbol module)
             {
                 int count = 0;
-                foreach (var m01 in module.GlobalNamespace.GetTypeMember("I1").GetMembers().OfType<MethodSymbol>())
+                foreach (var m01 in module.GlobalNamespace.GetTypeMember("I1").GetMembersAsImmutable().OfType<MethodSymbol>())
                 {
                     Assert.False(m01.IsMetadataNewSlot());
                     Assert.True(m01.IsAbstract);
@@ -5915,7 +5915,7 @@ interface I1<T> where T : I1<T>
             void validate(ModuleSymbol module)
             {
                 int count = 0;
-                foreach (var m01 in module.GlobalNamespace.GetTypeMember("I1").GetMembers().OfType<MethodSymbol>())
+                foreach (var m01 in module.GlobalNamespace.GetTypeMember("I1").GetMembersAsImmutable().OfType<MethodSymbol>())
                 {
                     Assert.False(m01.IsMetadataNewSlot());
                     Assert.False(m01.IsAbstract);
@@ -5983,7 +5983,7 @@ interface I1
 
             void validate(ModuleSymbol module)
             {
-                var p01 = module.GlobalNamespace.GetTypeMember("I1").GetMembers().OfType<PropertySymbol>().Single();
+                var p01 = module.GlobalNamespace.GetTypeMember("I1").GetMembersAsImmutable().OfType<PropertySymbol>().Single();
 
                 Assert.True(p01.IsAbstract);
                 Assert.False(p01.IsVirtual);
@@ -5992,7 +5992,7 @@ interface I1
                 Assert.False(p01.IsOverride);
 
                 int count = 0;
-                foreach (var m01 in module.GlobalNamespace.GetTypeMember("I1").GetMembers().OfType<MethodSymbol>())
+                foreach (var m01 in module.GlobalNamespace.GetTypeMember("I1").GetMembersAsImmutable().OfType<MethodSymbol>())
                 {
                     Assert.False(m01.IsMetadataNewSlot());
                     Assert.True(m01.IsAbstract);
@@ -6028,7 +6028,7 @@ interface I1
 
             void validate(ModuleSymbol module)
             {
-                var p01 = module.GlobalNamespace.GetTypeMember("I1").GetMembers().OfType<PropertySymbol>().Single();
+                var p01 = module.GlobalNamespace.GetTypeMember("I1").GetMembersAsImmutable().OfType<PropertySymbol>().Single();
 
                 Assert.False(p01.IsAbstract);
                 Assert.True(p01.IsVirtual);
@@ -6037,7 +6037,7 @@ interface I1
                 Assert.False(p01.IsOverride);
 
                 int count = 0;
-                foreach (var m01 in module.GlobalNamespace.GetTypeMember("I1").GetMembers().OfType<MethodSymbol>())
+                foreach (var m01 in module.GlobalNamespace.GetTypeMember("I1").GetMembersAsImmutable().OfType<MethodSymbol>())
                 {
                     Assert.False(m01.IsMetadataNewSlot());
                     Assert.False(m01.IsAbstract);
@@ -6121,7 +6121,7 @@ interface I1
 
             void validate(ModuleSymbol module)
             {
-                var e01 = module.GlobalNamespace.GetTypeMember("I1").GetMembers().OfType<EventSymbol>().Single();
+                var e01 = module.GlobalNamespace.GetTypeMember("I1").GetMembersAsImmutable().OfType<EventSymbol>().Single();
 
                 Assert.True(e01.IsAbstract);
                 Assert.False(e01.IsVirtual);
@@ -6130,7 +6130,7 @@ interface I1
                 Assert.False(e01.IsOverride);
 
                 int count = 0;
-                foreach (var m01 in module.GlobalNamespace.GetTypeMember("I1").GetMembers().OfType<MethodSymbol>())
+                foreach (var m01 in module.GlobalNamespace.GetTypeMember("I1").GetMembersAsImmutable().OfType<MethodSymbol>())
                 {
                     Assert.False(m01.IsMetadataNewSlot());
                     Assert.True(m01.IsAbstract);
@@ -6167,7 +6167,7 @@ interface I1
 
             void validate(ModuleSymbol module)
             {
-                var e01 = module.GlobalNamespace.GetTypeMember("I1").GetMembers().OfType<EventSymbol>().Single();
+                var e01 = module.GlobalNamespace.GetTypeMember("I1").GetMembersAsImmutable().OfType<EventSymbol>().Single();
 
                 Assert.False(e01.IsAbstract);
                 Assert.True(e01.IsVirtual);
@@ -6176,7 +6176,7 @@ interface I1
                 Assert.False(e01.IsOverride);
 
                 int count = 0;
-                foreach (var m01 in module.GlobalNamespace.GetTypeMember("I1").GetMembers().OfType<MethodSymbol>())
+                foreach (var m01 in module.GlobalNamespace.GetTypeMember("I1").GetMembersAsImmutable().OfType<MethodSymbol>())
                 {
                     Assert.False(m01.IsMetadataNewSlot());
                     Assert.False(m01.IsAbstract);
@@ -15782,7 +15782,7 @@ interface I8 : I1
                 Diagnostic(ErrorCode.WRN_NewRequired, "M01").WithArguments("I7.M01()", "I1.M01()").WithLocation(32, 26)
                 );
 
-            var m01 = compilation1.GlobalNamespace.GetTypeMember("I1").GetMembers().OfType<MethodSymbol>().Single();
+            var m01 = compilation1.GlobalNamespace.GetTypeMember("I1").GetMembersAsImmutable().OfType<MethodSymbol>().Single();
 
             Assert.Null(compilation1.GlobalNamespace.GetTypeMember("I2").FindImplementationForInterfaceMember(m01));
             Assert.Null(compilation1.GlobalNamespace.GetTypeMember("I3").FindImplementationForInterfaceMember(m01));
@@ -15790,7 +15790,7 @@ interface I8 : I1
             Assert.Null(compilation1.GlobalNamespace.GetTypeMember("I5").FindImplementationForInterfaceMember(m01));
 
             var i6 = compilation1.GlobalNamespace.GetTypeMember("I6");
-            Assert.Same(i6.GetMembers().OfType<MethodSymbol>().Single(), i6.FindImplementationForInterfaceMember(m01));
+            Assert.Same(i6.GetMembersAsImmutable().OfType<MethodSymbol>().Single(), i6.FindImplementationForInterfaceMember(m01));
 
             Assert.Null(compilation1.GlobalNamespace.GetTypeMember("I7").FindImplementationForInterfaceMember(m01));
             Assert.Null(compilation1.GlobalNamespace.GetTypeMember("I8").FindImplementationForInterfaceMember(m01));
@@ -15862,7 +15862,7 @@ interface I8 : I1
                 Diagnostic(ErrorCode.ERR_BadMemberFlag, "M01").WithArguments("virtual").WithLocation(37, 29)
                 );
 
-            var m01 = compilation1.GlobalNamespace.GetTypeMember("I1").GetMembers().OfType<MethodSymbol>().Single();
+            var m01 = compilation1.GlobalNamespace.GetTypeMember("I1").GetMembersAsImmutable().OfType<MethodSymbol>().Single();
 
             Assert.Same(m01, compilation1.GlobalNamespace.GetTypeMember("I2").FindImplementationForInterfaceMember(m01));
             Assert.Same(m01, compilation1.GlobalNamespace.GetTypeMember("I3").FindImplementationForInterfaceMember(m01));
@@ -15870,12 +15870,12 @@ interface I8 : I1
             Assert.Same(m01, compilation1.GlobalNamespace.GetTypeMember("I5").FindImplementationForInterfaceMember(m01));
 
             var i6 = compilation1.GlobalNamespace.GetTypeMember("I6");
-            Assert.Same(i6.GetMembers().OfType<MethodSymbol>().Single(), i6.FindImplementationForInterfaceMember(m01));
+            Assert.Same(i6.GetMembersAsImmutable().OfType<MethodSymbol>().Single(), i6.FindImplementationForInterfaceMember(m01));
 
             Assert.Same(m01, compilation1.GlobalNamespace.GetTypeMember("I7").FindImplementationForInterfaceMember(m01));
 
             var i8 = compilation1.GlobalNamespace.GetTypeMember("I8");
-            Assert.Same(i8.GetMembers().OfType<MethodSymbol>().Single(), i8.FindImplementationForInterfaceMember(m01));
+            Assert.Same(i8.GetMembersAsImmutable().OfType<MethodSymbol>().Single(), i8.FindImplementationForInterfaceMember(m01));
         }
 
         [Theory]
@@ -16067,10 +16067,10 @@ public interface I1
 
             void validate(ModuleSymbol module)
             {
-                var m01 = module.GlobalNamespace.GetTypeMember("I1").GetMembers().OfType<MethodSymbol>().Single();
+                var m01 = module.GlobalNamespace.GetTypeMember("I1").GetMembersAsImmutable().OfType<MethodSymbol>().Single();
                 var c = module.GlobalNamespace.GetTypeMember("C");
 
-                Assert.Equal(1, c.GetMembers().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Count());
+                Assert.Equal(1, c.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Count());
 
                 var cM01 = (MethodSymbol)c.FindImplementationForInterfaceMember(m01);
 
@@ -16129,10 +16129,10 @@ public interface I1
 
             void validate(ModuleSymbol module)
             {
-                var m01 = module.GlobalNamespace.GetTypeMember("I1").GetMembers().OfType<MethodSymbol>().Single();
+                var m01 = module.GlobalNamespace.GetTypeMember("I1").GetMembersAsImmutable().OfType<MethodSymbol>().Single();
                 var c = module.GlobalNamespace.GetTypeMember("C");
 
-                Assert.Equal(1, c.GetMembers().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Count());
+                Assert.Equal(1, c.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Count());
 
                 var cM01 = (MethodSymbol)c.FindImplementationForInterfaceMember(m01);
 
@@ -16202,8 +16202,8 @@ public class C3 : C2, I1
             void validate(ModuleSymbol module)
             {
                 var c3 = module.GlobalNamespace.GetTypeMember("C3");
-                Assert.Empty(c3.GetMembers().OfType<MethodSymbol>().Where(m => !m.IsConstructor()));
-                var m01 = c3.Interfaces().Single().GetMembers().OfType<MethodSymbol>().Single();
+                Assert.Empty(c3.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => !m.IsConstructor()));
+                var m01 = c3.Interfaces().Single().GetMembersAsImmutable().OfType<MethodSymbol>().Single();
 
                 var cM01 = (MethodSymbol)c3.FindImplementationForInterfaceMember(m01);
 
@@ -16297,7 +16297,7 @@ public class C5 : C2, I1
             compilation1.VerifyDiagnostics();
 
             var c1 = compilation1.GlobalNamespace.GetTypeMember("C1");
-            var m01 = c1.Interfaces().Single().GetMembers().OfType<MethodSymbol>().Single();
+            var m01 = c1.Interfaces().Single().GetMembersAsImmutable().OfType<MethodSymbol>().Single();
 
             var c1M01 = (MethodSymbol)c1.FindImplementationForInterfaceMember(m01);
 
@@ -16359,7 +16359,7 @@ public class C1 : I1
 
             var c1 = compilation1.GlobalNamespace.GetTypeMember("C1");
             var i1 = c1.Interfaces().Single();
-            var m01 = i1.GetMembers().OfType<MethodSymbol>().Single();
+            var m01 = i1.GetMembersAsImmutable().OfType<MethodSymbol>().Single();
 
             Assert.Same(m01, c1.FindImplementationForInterfaceMember(m01));
             Assert.Same(m01, i1.FindImplementationForInterfaceMember(m01));
@@ -16389,7 +16389,7 @@ public class C1 : I1
             compilation2.VerifyEmitDiagnostics();
 
             c1 = compilation2.GlobalNamespace.GetTypeMember("C1");
-            m01 = c1.Interfaces().Single().GetMembers().OfType<MethodSymbol>().Single();
+            m01 = c1.Interfaces().Single().GetMembersAsImmutable().OfType<MethodSymbol>().Single();
 
             Assert.Equal("void C1.I1.M01()", c1.FindImplementationForInterfaceMember(m01).ToTestDisplayString());
         }
@@ -16437,8 +16437,8 @@ public class C1 : I2
             var c1 = compilation1.GlobalNamespace.GetTypeMember("C1");
             var i2 = c1.Interfaces().Single();
             var i1 = i2.Interfaces().Single();
-            var m01 = i1.GetMembers().OfType<MethodSymbol>().Single();
-            var i2M01 = i2.GetMembers().OfType<MethodSymbol>().Single();
+            var m01 = i1.GetMembersAsImmutable().OfType<MethodSymbol>().Single();
+            var i2M01 = i2.GetMembersAsImmutable().OfType<MethodSymbol>().Single();
 
             Assert.Same(i2M01, c1.FindImplementationForInterfaceMember(m01));
             Assert.Same(i2M01, i2.FindImplementationForInterfaceMember(m01));
@@ -16477,7 +16477,7 @@ class C2 : C1, I1
 
             void validate(ModuleSymbol module)
             {
-                var m01 = module.GlobalNamespace.GetTypeMember("I1").GetMembers().OfType<MethodSymbol>().Single();
+                var m01 = module.GlobalNamespace.GetTypeMember("I1").GetMembersAsImmutable().OfType<MethodSymbol>().Single();
                 var c2 = module.GlobalNamespace.GetTypeMember("C2");
 
                 var c2M01 = (MethodSymbol)c2.FindImplementationForInterfaceMember(m01);
@@ -16563,7 +16563,7 @@ class C2 : I1
             void validate(ModuleSymbol module)
             {
                 var c1 = module.GlobalNamespace.GetTypeMember("C1");
-                var m01 = c1.Interfaces().Single().GetMembers().OfType<MethodSymbol>().Single();
+                var m01 = c1.Interfaces().Single().GetMembersAsImmutable().OfType<MethodSymbol>().Single();
 
                 var c1M01 = (MethodSymbol)c1.FindImplementationForInterfaceMember(m01);
 
@@ -16615,7 +16615,7 @@ class C2 : I1
                 Assert.Equal("void modopt(I1) C2.I1.M01()", c2M01.ToTestDisplayString());
                 Assert.Same(m01, c2M01.ExplicitInterfaceImplementations.Single());
 
-                Assert.Same(c2M01, c2.GetMembers().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Single());
+                Assert.Same(c2M01, c2.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Single());
             }
 
             verifier.VerifyIL("C1.I1.M01()",
@@ -16683,9 +16683,9 @@ public class C3 : C2, I1
             void validate(ModuleSymbol module)
             {
                 var c3 = module.GlobalNamespace.GetTypeMember("C3");
-                Assert.Empty(c3.GetMembers().OfType<MethodSymbol>().Where(m => !m.IsConstructor()));
+                Assert.Empty(c3.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => !m.IsConstructor()));
 
-                var m01 = c3.Interfaces().Single().GetMembers("M01").OfType<MethodSymbol>().Single();
+                var m01 = c3.Interfaces().Single().GetMembersAsImmutable("M01").OfType<MethodSymbol>().Single();
 
                 var c1M01 = c3.BaseType().BaseType().GetMember<MethodSymbol>("M01");
                 Assert.Equal("void C1.M01()", c1M01.ToTestDisplayString());
@@ -16710,7 +16710,7 @@ public class C3 : C2, I1
                     Assert.Same(c1M01, c3.FindImplementationForInterfaceMember(m01));
                 }
 
-                var m02 = c3.Interfaces().Single().GetMembers("M02").OfType<MethodSymbol>().Single();
+                var m02 = c3.Interfaces().Single().GetMembersAsImmutable("M02").OfType<MethodSymbol>().Single();
 
                 var c2M02 = c3.BaseType().GetMember<MethodSymbol>("I1.M02");
                 Assert.Equal("void C2.I1.M02()", c2M02.ToTestDisplayString());
@@ -16778,7 +16778,7 @@ public class C3 : C2, I1
             void validate(ModuleSymbol module)
             {
                 var c3 = module.GlobalNamespace.GetTypeMember("C3");
-                var m01 = c3.Interfaces().Single().GetMembers().OfType<MethodSymbol>().Single();
+                var m01 = c3.Interfaces().Single().GetMembersAsImmutable().OfType<MethodSymbol>().Single();
 
                 var c2M01 = c3.BaseType().GetMember<MethodSymbol>("M01");
                 Assert.Equal("void C2.M01()", c2M01.ToTestDisplayString());
@@ -16838,7 +16838,7 @@ public class C1<T> : I1
                                                  targetFramework: _supportingFramework,
                                                  references: new[] { CreateCompilation("", targetFramework: _supportingFramework).ToMetadataReference() });
 
-            Assert.Equal(2, compilation1.GlobalNamespace.GetTypeMember("C1").GetMembers().Where(m => m.Name.Contains("M01")).Count());
+            Assert.Equal(2, compilation1.GlobalNamespace.GetTypeMember("C1").GetMembersAsImmutable().Where(m => m.Name.Contains("M01")).Count());
             compilation1.VerifyDiagnostics();
 
             var source2 =
@@ -16864,7 +16864,7 @@ public class C2 : C1<int>, I1
             void validate(ModuleSymbol module)
             {
                 var c2 = module.GlobalNamespace.GetTypeMember("C2");
-                var m01 = c2.Interfaces().Single().GetMembers().OfType<MethodSymbol>().Single();
+                var m01 = c2.Interfaces().Single().GetMembersAsImmutable().OfType<MethodSymbol>().Single();
 
                 Assert.True(m01.ContainingModule is RetargetingModuleSymbol or PEModuleSymbol);
 
@@ -16920,7 +16920,7 @@ public class C1<T> : I1<T>
                                                  targetFramework: _supportingFramework,
                                                  references: new[] { CreateCompilation("", targetFramework: _supportingFramework).ToMetadataReference() });
 
-            Assert.Equal(2, compilation1.GlobalNamespace.GetTypeMember("C1").GetMembers().Where(m => m.Name.Contains("M01")).Count());
+            Assert.Equal(2, compilation1.GlobalNamespace.GetTypeMember("C1").GetMembersAsImmutable().Where(m => m.Name.Contains("M01")).Count());
             compilation1.VerifyDiagnostics();
 
             var source2 =
@@ -16946,7 +16946,7 @@ public class C2 : C1<int>, I1<int>
             void validate(ModuleSymbol module)
             {
                 var c2 = module.GlobalNamespace.GetTypeMember("C2");
-                var m01 = c2.Interfaces().Single().GetMembers().OfType<MethodSymbol>().Single();
+                var m01 = c2.Interfaces().Single().GetMembersAsImmutable().OfType<MethodSymbol>().Single();
 
                 Assert.True(m01.ContainingModule is RetargetingModuleSymbol or PEModuleSymbol);
 
@@ -17002,7 +17002,7 @@ public class C1<T> : I1
                                                  targetFramework: _supportingFramework,
                                                  references: new[] { CreateCompilation("", targetFramework: _supportingFramework).ToMetadataReference() });
 
-            Assert.Equal(2, compilation1.GlobalNamespace.GetTypeMember("C1").GetMembers().Where(m => m.Name.Contains("M01")).Count());
+            Assert.Equal(2, compilation1.GlobalNamespace.GetTypeMember("C1").GetMembersAsImmutable().Where(m => m.Name.Contains("M01")).Count());
             compilation1.VerifyDiagnostics();
 
             var source2 =
@@ -17028,7 +17028,7 @@ public class C2 : C1<int>, I1
             void validate(ModuleSymbol module)
             {
                 var c2 = module.GlobalNamespace.GetTypeMember("C2");
-                var m01 = c2.Interfaces().Single().GetMembers().OfType<MethodSymbol>().Single();
+                var m01 = c2.Interfaces().Single().GetMembersAsImmutable().OfType<MethodSymbol>().Single();
 
                 Assert.True(m01.ContainingModule is RetargetingModuleSymbol or PEModuleSymbol);
 
@@ -17072,7 +17072,7 @@ public class C1<T> : I1<T>
                                                  targetFramework: _supportingFramework,
                                                  references: new[] { CreateCompilation("", targetFramework: _supportingFramework).ToMetadataReference() });
 
-            Assert.Equal(2, compilation1.GlobalNamespace.GetTypeMember("C1").GetMembers().Where(m => m.Name.Contains("M01")).Count());
+            Assert.Equal(2, compilation1.GlobalNamespace.GetTypeMember("C1").GetMembersAsImmutable().Where(m => m.Name.Contains("M01")).Count());
 
             compilation1.VerifyDiagnostics();
 
@@ -17099,7 +17099,7 @@ public class C2 : C1<int>, I1<int>
             void validate(ModuleSymbol module)
             {
                 var c2 = module.GlobalNamespace.GetTypeMember("C2");
-                var m01 = c2.Interfaces().Single().GetMembers().OfType<MethodSymbol>().Single();
+                var m01 = c2.Interfaces().Single().GetMembersAsImmutable().OfType<MethodSymbol>().Single();
 
                 Assert.True(m01.ContainingModule is RetargetingModuleSymbol or PEModuleSymbol);
 
@@ -17147,7 +17147,7 @@ public class C11<T> : C1<T>, I1
                                                  targetFramework: _supportingFramework,
                                                  references: new[] { CreateCompilation("", targetFramework: _supportingFramework).ToMetadataReference() });
 
-            Assert.Equal(2, compilation1.GlobalNamespace.GetTypeMember("C1").GetMembers().Where(m => m.Name.Contains("M01")).Count());
+            Assert.Equal(2, compilation1.GlobalNamespace.GetTypeMember("C1").GetMembersAsImmutable().Where(m => m.Name.Contains("M01")).Count());
             compilation1.VerifyDiagnostics();
 
             var source2 =
@@ -17173,7 +17173,7 @@ public class C2 : C11<int>, I1
             void validate(ModuleSymbol module)
             {
                 var c2 = module.GlobalNamespace.GetTypeMember("C2");
-                var m01 = c2.Interfaces().Single().GetMembers().OfType<MethodSymbol>().Single();
+                var m01 = c2.Interfaces().Single().GetMembersAsImmutable().OfType<MethodSymbol>().Single();
 
                 Assert.True(m01.ContainingModule is RetargetingModuleSymbol or PEModuleSymbol);
 
@@ -17234,7 +17234,7 @@ public class C11<T> : C1<T>, I1<T>
                                                  targetFramework: _supportingFramework,
                                                  references: new[] { CreateCompilation("", targetFramework: _supportingFramework).ToMetadataReference() });
 
-            Assert.Equal(2, compilation1.GlobalNamespace.GetTypeMember("C1").GetMembers().Where(m => m.Name.Contains("M01")).Count());
+            Assert.Equal(2, compilation1.GlobalNamespace.GetTypeMember("C1").GetMembersAsImmutable().Where(m => m.Name.Contains("M01")).Count());
             compilation1.VerifyDiagnostics();
 
             var source2 =
@@ -17260,7 +17260,7 @@ public class C2 : C11<int>, I1<int>
             void validate(ModuleSymbol module)
             {
                 var c2 = module.GlobalNamespace.GetTypeMember("C2");
-                var m01 = c2.Interfaces().Single().GetMembers().OfType<MethodSymbol>().Single();
+                var m01 = c2.Interfaces().Single().GetMembersAsImmutable().OfType<MethodSymbol>().Single();
 
                 Assert.True(m01.ContainingModule is RetargetingModuleSymbol or PEModuleSymbol);
 
@@ -17324,7 +17324,7 @@ public class C1<T>
                                                  targetFramework: _supportingFramework,
                                                  references: new[] { CreateCompilation("", targetFramework: _supportingFramework).ToMetadataReference() });
 
-            Assert.Equal(2, compilation1.GlobalNamespace.GetTypeMember("C1").GetMembers().Where(m => m.Name.Contains("M01")).Count());
+            Assert.Equal(2, compilation1.GlobalNamespace.GetTypeMember("C1").GetMembersAsImmutable().Where(m => m.Name.Contains("M01")).Count());
             compilation1.VerifyDiagnostics();
 
             var source2 =
@@ -17360,7 +17360,7 @@ public class C2 : C1<int>, I1
             void validate(ModuleSymbol module)
             {
                 var c2 = module.GlobalNamespace.GetTypeMember("C2");
-                var m01 = c2.Interfaces().Single().GetMembers().OfType<MethodSymbol>().Single();
+                var m01 = c2.Interfaces().Single().GetMembersAsImmutable().OfType<MethodSymbol>().Single();
 
                 var baseI1M01 = c2.BaseType().FindImplementationForInterfaceMember(m01);
                 Assert.Null(baseI1M01);
@@ -17383,7 +17383,7 @@ public class C2 : C1<int>, I1
                     Assert.Equal("void C1<T>.M01(System.Int32 x)", c1M01.OriginalDefinition.ToTestDisplayString());
                 }
 
-                foreach (var method in c2.BaseType().GetMembers().OfType<MethodSymbol>())
+                foreach (var method in c2.BaseType().GetMembersAsImmutable().OfType<MethodSymbol>())
                 {
                     Assert.Empty(method.ExplicitInterfaceImplementations);
                 }
@@ -17430,7 +17430,7 @@ public class C1<T>
                                                  targetFramework: _supportingFramework,
                                                  references: new[] { CreateCompilation("", targetFramework: _supportingFramework).ToMetadataReference() });
 
-            Assert.Equal(2, compilation1.GlobalNamespace.GetTypeMember("C1").GetMembers().Where(m => m.Name.Contains("M01")).Count());
+            Assert.Equal(2, compilation1.GlobalNamespace.GetTypeMember("C1").GetMembersAsImmutable().Where(m => m.Name.Contains("M01")).Count());
             compilation1.VerifyDiagnostics();
 
             var source2 =
@@ -17462,7 +17462,7 @@ public class C2 : C1<int>, I1
             void validate(ModuleSymbol module)
             {
                 var c2 = module.GlobalNamespace.GetTypeMember("C2");
-                var m01 = c2.Interfaces().Single().GetMembers().OfType<MethodSymbol>().Single();
+                var m01 = c2.Interfaces().Single().GetMembersAsImmutable().OfType<MethodSymbol>().Single();
 
                 var baseI1M01 = c2.BaseType().FindImplementationForInterfaceMember(m01);
                 Assert.Null(baseI1M01);
@@ -17485,7 +17485,7 @@ public class C2 : C1<int>, I1
                     Assert.Equal("void C1<T>.M01(System.Int32 x)", c1M01.OriginalDefinition.ToTestDisplayString());
                 }
 
-                foreach (var method in c2.BaseType().GetMembers().OfType<MethodSymbol>())
+                foreach (var method in c2.BaseType().GetMembersAsImmutable().OfType<MethodSymbol>())
                 {
                     Assert.Empty(method.ExplicitInterfaceImplementations);
                 }
@@ -18171,7 +18171,7 @@ interface I14 : I1
                 Diagnostic(badSignatureError, op).WithLocation(47, 23 + checkedKeyword.Length)
                 );
 
-            var m01 = compilation1.GlobalNamespace.GetTypeMember("I1").GetMembers().OfType<MethodSymbol>().Single();
+            var m01 = compilation1.GlobalNamespace.GetTypeMember("I1").GetMembersAsImmutable().OfType<MethodSymbol>().Single();
 
             Assert.Null(compilation1.GlobalNamespace.GetTypeMember("I2").FindImplementationForInterfaceMember(m01));
             Assert.Null(compilation1.GlobalNamespace.GetTypeMember("I3").FindImplementationForInterfaceMember(m01));
@@ -18179,24 +18179,24 @@ interface I14 : I1
             Assert.Null(compilation1.GlobalNamespace.GetTypeMember("I5").FindImplementationForInterfaceMember(m01));
 
             var i6 = compilation1.GlobalNamespace.GetTypeMember("I6");
-            Assert.Same(i6.GetMembers().OfType<MethodSymbol>().Single(), i6.FindImplementationForInterfaceMember(m01));
+            Assert.Same(i6.GetMembersAsImmutable().OfType<MethodSymbol>().Single(), i6.FindImplementationForInterfaceMember(m01));
 
             Assert.Null(compilation1.GlobalNamespace.GetTypeMember("I7").FindImplementationForInterfaceMember(m01));
 
             var i8 = compilation1.GlobalNamespace.GetTypeMember("I8");
-            Assert.Null(i8.FindImplementationForInterfaceMember(i8.Interfaces().Single().GetMembers().OfType<MethodSymbol>().Single()));
+            Assert.Null(i8.FindImplementationForInterfaceMember(i8.Interfaces().Single().GetMembersAsImmutable().OfType<MethodSymbol>().Single()));
 
             var i9 = compilation1.GlobalNamespace.GetTypeMember("I9");
-            Assert.Null(i9.FindImplementationForInterfaceMember(i9.Interfaces().Single().GetMembers().OfType<MethodSymbol>().Single()));
+            Assert.Null(i9.FindImplementationForInterfaceMember(i9.Interfaces().Single().GetMembersAsImmutable().OfType<MethodSymbol>().Single()));
 
             var i10 = compilation1.GlobalNamespace.GetTypeMember("I10");
-            Assert.Null(i10.FindImplementationForInterfaceMember(i10.Interfaces().Single().GetMembers().OfType<MethodSymbol>().Single()));
+            Assert.Null(i10.FindImplementationForInterfaceMember(i10.Interfaces().Single().GetMembersAsImmutable().OfType<MethodSymbol>().Single()));
 
             var i12 = compilation1.GlobalNamespace.GetTypeMember("I12");
-            Assert.Same(i12.GetMembers().OfType<MethodSymbol>().Single(), i12.FindImplementationForInterfaceMember(i12.Interfaces().Single().GetMembers().OfType<MethodSymbol>().Single()));
+            Assert.Same(i12.GetMembersAsImmutable().OfType<MethodSymbol>().Single(), i12.FindImplementationForInterfaceMember(i12.Interfaces().Single().GetMembersAsImmutable().OfType<MethodSymbol>().Single()));
 
             var i13 = compilation1.GlobalNamespace.GetTypeMember("I13");
-            Assert.Null(i13.FindImplementationForInterfaceMember(i13.Interfaces().Single().GetMembers().OfType<MethodSymbol>().Single()));
+            Assert.Null(i13.FindImplementationForInterfaceMember(i13.Interfaces().Single().GetMembersAsImmutable().OfType<MethodSymbol>().Single()));
 
             Assert.Null(compilation1.GlobalNamespace.GetTypeMember("I14").FindImplementationForInterfaceMember(m01));
         }
@@ -18324,7 +18324,7 @@ interface I14 : I1
                 Diagnostic(ErrorCode.ERR_BadMemberFlag, op).WithArguments("virtual").WithLocation(67, 36 + checkedKeyword.Length)
                 );
 
-            var m01 = compilation1.GlobalNamespace.GetTypeMember("I1").GetMembers().OfType<MethodSymbol>().Single();
+            var m01 = compilation1.GlobalNamespace.GetTypeMember("I1").GetMembersAsImmutable().OfType<MethodSymbol>().Single();
 
             Assert.Same(m01, compilation1.GlobalNamespace.GetTypeMember("I2").FindImplementationForInterfaceMember(m01));
             Assert.Same(m01, compilation1.GlobalNamespace.GetTypeMember("I3").FindImplementationForInterfaceMember(m01));
@@ -18332,26 +18332,26 @@ interface I14 : I1
             Assert.Same(m01, compilation1.GlobalNamespace.GetTypeMember("I5").FindImplementationForInterfaceMember(m01));
 
             var i6 = compilation1.GlobalNamespace.GetTypeMember("I6");
-            Assert.Same(i6.GetMembers().OfType<MethodSymbol>().Single(), i6.FindImplementationForInterfaceMember(m01));
+            Assert.Same(i6.GetMembersAsImmutable().OfType<MethodSymbol>().Single(), i6.FindImplementationForInterfaceMember(m01));
 
             Assert.Same(m01, compilation1.GlobalNamespace.GetTypeMember("I7").FindImplementationForInterfaceMember(m01));
 
             foreach (var name in new[] { "I8", "I9", "I10" })
             {
                 var iX = compilation1.GlobalNamespace.GetTypeMember(name);
-                var iXM = iX.Interfaces().Single().GetMembers().OfType<MethodSymbol>().Single();
+                var iXM = iX.Interfaces().Single().GetMembersAsImmutable().OfType<MethodSymbol>().Single();
                 Assert.Same(iXM, iX.FindImplementationForInterfaceMember(iXM));
             }
 
             foreach (var name in new[] { "I12", "I13" })
             {
                 var iX = compilation1.GlobalNamespace.GetTypeMember(name);
-                var iXM = iX.Interfaces().Single().GetMembers().OfType<MethodSymbol>().Single();
-                Assert.Same(iX.GetMembers().OfType<MethodSymbol>().Single(), iX.FindImplementationForInterfaceMember(iXM));
+                var iXM = iX.Interfaces().Single().GetMembersAsImmutable().OfType<MethodSymbol>().Single();
+                Assert.Same(iX.GetMembersAsImmutable().OfType<MethodSymbol>().Single(), iX.FindImplementationForInterfaceMember(iXM));
             }
 
             var i14 = compilation1.GlobalNamespace.GetTypeMember("I14");
-            Assert.Same(i14.GetMembers().OfType<MethodSymbol>().Single(), i14.FindImplementationForInterfaceMember(m01));
+            Assert.Same(i14.GetMembersAsImmutable().OfType<MethodSymbol>().Single(), i14.FindImplementationForInterfaceMember(m01));
         }
 
         [Theory]
@@ -18510,7 +18510,7 @@ interface I14 : I1
 
             compilation1.GetDiagnostics().Where(d => d.Code is not ((int)ErrorCode.ERR_OperatorNeedsMatch or (int)ErrorCode.ERR_CheckedOperatorNeedsMatch)).Verify(expected);
 
-            var m01 = compilation1.GlobalNamespace.GetTypeMember("I1").GetMembers().OfType<MethodSymbol>().Single();
+            var m01 = compilation1.GlobalNamespace.GetTypeMember("I1").GetMembersAsImmutable().OfType<MethodSymbol>().Single();
 
             Assert.Null(compilation1.GlobalNamespace.GetTypeMember("I2").FindImplementationForInterfaceMember(m01));
             Assert.Null(compilation1.GlobalNamespace.GetTypeMember("I3").FindImplementationForInterfaceMember(m01));
@@ -18518,24 +18518,24 @@ interface I14 : I1
             Assert.Null(compilation1.GlobalNamespace.GetTypeMember("I5").FindImplementationForInterfaceMember(m01));
 
             var i6 = compilation1.GlobalNamespace.GetTypeMember("I6");
-            Assert.Same(i6.GetMembers().OfType<MethodSymbol>().Single(), i6.FindImplementationForInterfaceMember(m01));
+            Assert.Same(i6.GetMembersAsImmutable().OfType<MethodSymbol>().Single(), i6.FindImplementationForInterfaceMember(m01));
 
             Assert.Null(compilation1.GlobalNamespace.GetTypeMember("I7").FindImplementationForInterfaceMember(m01));
 
             var i8 = compilation1.GlobalNamespace.GetTypeMember("I8");
-            Assert.Null(i8.FindImplementationForInterfaceMember(i8.Interfaces().Single().GetMembers().OfType<MethodSymbol>().Single()));
+            Assert.Null(i8.FindImplementationForInterfaceMember(i8.Interfaces().Single().GetMembersAsImmutable().OfType<MethodSymbol>().Single()));
 
             var i9 = compilation1.GlobalNamespace.GetTypeMember("I9");
-            Assert.Null(i9.FindImplementationForInterfaceMember(i9.Interfaces().Single().GetMembers().OfType<MethodSymbol>().Single()));
+            Assert.Null(i9.FindImplementationForInterfaceMember(i9.Interfaces().Single().GetMembersAsImmutable().OfType<MethodSymbol>().Single()));
 
             var i10 = compilation1.GlobalNamespace.GetTypeMember("I10");
-            Assert.Null(i10.FindImplementationForInterfaceMember(i10.Interfaces().Single().GetMembers().OfType<MethodSymbol>().Single()));
+            Assert.Null(i10.FindImplementationForInterfaceMember(i10.Interfaces().Single().GetMembersAsImmutable().OfType<MethodSymbol>().Single()));
 
             var i12 = compilation1.GlobalNamespace.GetTypeMember("I12");
-            Assert.Same(i12.GetMembers().OfType<MethodSymbol>().Single(), i12.FindImplementationForInterfaceMember(i12.Interfaces().Single().GetMembers().OfType<MethodSymbol>().Single()));
+            Assert.Same(i12.GetMembersAsImmutable().OfType<MethodSymbol>().Single(), i12.FindImplementationForInterfaceMember(i12.Interfaces().Single().GetMembersAsImmutable().OfType<MethodSymbol>().Single()));
 
             var i13 = compilation1.GlobalNamespace.GetTypeMember("I13");
-            Assert.Null(i13.FindImplementationForInterfaceMember(i13.Interfaces().Single().GetMembers().OfType<MethodSymbol>().Single()));
+            Assert.Null(i13.FindImplementationForInterfaceMember(i13.Interfaces().Single().GetMembersAsImmutable().OfType<MethodSymbol>().Single()));
 
             Assert.Null(compilation1.GlobalNamespace.GetTypeMember("I14").FindImplementationForInterfaceMember(m01));
         }
@@ -18702,7 +18702,7 @@ interface I14 : I1
 
             compilation1.GetDiagnostics().Where(d => d.Code is not ((int)ErrorCode.ERR_OperatorNeedsMatch or (int)ErrorCode.ERR_CheckedOperatorNeedsMatch)).Verify(expected);
 
-            var m01 = compilation1.GlobalNamespace.GetTypeMember("I1").GetMembers().OfType<MethodSymbol>().Single();
+            var m01 = compilation1.GlobalNamespace.GetTypeMember("I1").GetMembersAsImmutable().OfType<MethodSymbol>().Single();
 
             Assert.Same(m01, compilation1.GlobalNamespace.GetTypeMember("I2").FindImplementationForInterfaceMember(m01));
             Assert.Same(m01, compilation1.GlobalNamespace.GetTypeMember("I3").FindImplementationForInterfaceMember(m01));
@@ -18710,26 +18710,26 @@ interface I14 : I1
             Assert.Same(m01, compilation1.GlobalNamespace.GetTypeMember("I5").FindImplementationForInterfaceMember(m01));
 
             var i6 = compilation1.GlobalNamespace.GetTypeMember("I6");
-            Assert.Same(i6.GetMembers().OfType<MethodSymbol>().Single(), i6.FindImplementationForInterfaceMember(m01));
+            Assert.Same(i6.GetMembersAsImmutable().OfType<MethodSymbol>().Single(), i6.FindImplementationForInterfaceMember(m01));
 
             Assert.Same(m01, compilation1.GlobalNamespace.GetTypeMember("I7").FindImplementationForInterfaceMember(m01));
 
             foreach (var name in new[] { "I8", "I9", "I10" })
             {
                 var iX = compilation1.GlobalNamespace.GetTypeMember(name);
-                var iXM = iX.Interfaces().Single().GetMembers().OfType<MethodSymbol>().Single();
+                var iXM = iX.Interfaces().Single().GetMembersAsImmutable().OfType<MethodSymbol>().Single();
                 Assert.Same(iXM, iX.FindImplementationForInterfaceMember(iXM));
             }
 
             foreach (var name in new[] { "I12", "I13" })
             {
                 var iX = compilation1.GlobalNamespace.GetTypeMember(name);
-                var iXM = iX.Interfaces().Single().GetMembers().OfType<MethodSymbol>().Single();
-                Assert.Same(iX.GetMembers().OfType<MethodSymbol>().Single(), iX.FindImplementationForInterfaceMember(iXM));
+                var iXM = iX.Interfaces().Single().GetMembersAsImmutable().OfType<MethodSymbol>().Single();
+                Assert.Same(iX.GetMembersAsImmutable().OfType<MethodSymbol>().Single(), iX.FindImplementationForInterfaceMember(iXM));
             }
 
             var i14 = compilation1.GlobalNamespace.GetTypeMember("I14");
-            Assert.Same(i14.GetMembers().OfType<MethodSymbol>().Single(), i14.FindImplementationForInterfaceMember(m01));
+            Assert.Same(i14.GetMembersAsImmutable().OfType<MethodSymbol>().Single(), i14.FindImplementationForInterfaceMember(m01));
         }
 
         [Theory]
@@ -19303,9 +19303,9 @@ partial " + typeKeyword + @"
             {
                 var c = module.GlobalNamespace.GetTypeMember("C");
                 var i1 = c.Interfaces().Single();
-                var m01 = i1.GetMembers(opName).OfType<MethodSymbol>().Single();
+                var m01 = i1.GetMembersAsImmutable(opName).OfType<MethodSymbol>().Single();
 
-                Assert.Equal(isChecked ? 2 : 1, c.GetMembers().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Count());
+                Assert.Equal(isChecked ? 2 : 1, c.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Count());
 
                 var cM01 = (MethodSymbol)c.FindImplementationForInterfaceMember(m01);
 
@@ -19384,9 +19384,9 @@ partial " + typeKeyword + @"
             {
                 var c = module.GlobalNamespace.GetTypeMember("C");
                 var i1 = c.Interfaces().Single();
-                var m01 = i1.GetMembers(opName).OfType<MethodSymbol>().Single();
+                var m01 = i1.GetMembersAsImmutable(opName).OfType<MethodSymbol>().Single();
 
-                Assert.Equal(2, c.GetMembers().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Count());
+                Assert.Equal(2, c.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Count());
 
                 var cM01 = (MethodSymbol)c.FindImplementationForInterfaceMember(m01);
 
@@ -19476,9 +19476,9 @@ partial " + typeKeyword + @"
             {
                 var c = module.GlobalNamespace.GetTypeMember("C");
                 var i1 = c.Interfaces().Single();
-                var m01 = i1.GetMembers(opName).OfType<MethodSymbol>().Single();
+                var m01 = i1.GetMembersAsImmutable(opName).OfType<MethodSymbol>().Single();
 
-                Assert.Equal(matchingOp is null ? 1 : 2, c.GetMembers().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Count());
+                Assert.Equal(matchingOp is null ? 1 : 2, c.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Count());
 
                 var cM01 = (MethodSymbol)c.FindImplementationForInterfaceMember(m01);
 
@@ -19573,10 +19573,10 @@ partial " + typeKeyword + @"
 
             void validate(ModuleSymbol module)
             {
-                var m01 = module.GlobalNamespace.GetTypeMember("I1").GetMembers(opName).OfType<MethodSymbol>().Single();
+                var m01 = module.GlobalNamespace.GetTypeMember("I1").GetMembersAsImmutable(opName).OfType<MethodSymbol>().Single();
                 var c = module.GlobalNamespace.GetTypeMember("C");
 
-                Assert.Equal(isChecked ? 2 : 1, c.GetMembers().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Count());
+                Assert.Equal(isChecked ? 2 : 1, c.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Count());
 
                 var cM01 = (MethodSymbol)c.FindImplementationForInterfaceMember(m01);
 
@@ -19656,10 +19656,10 @@ partial " + typeKeyword + @"
 
             void validate(ModuleSymbol module)
             {
-                var m01 = module.GlobalNamespace.GetTypeMember("I1").GetMembers(opName).OfType<MethodSymbol>().Single();
+                var m01 = module.GlobalNamespace.GetTypeMember("I1").GetMembersAsImmutable(opName).OfType<MethodSymbol>().Single();
                 var c = module.GlobalNamespace.GetTypeMember("C");
 
-                Assert.Equal(2, c.GetMembers().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Count());
+                Assert.Equal(2, c.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Count());
 
                 var cM01 = (MethodSymbol)c.FindImplementationForInterfaceMember(m01);
 
@@ -19748,10 +19748,10 @@ partial " + typeKeyword + @"
 
             void validate(ModuleSymbol module)
             {
-                var m01 = module.GlobalNamespace.GetTypeMember("I1").GetMembers(opName).OfType<MethodSymbol>().Single();
+                var m01 = module.GlobalNamespace.GetTypeMember("I1").GetMembersAsImmutable(opName).OfType<MethodSymbol>().Single();
                 var c = module.GlobalNamespace.GetTypeMember("C");
 
-                Assert.Equal(matchingOp is null ? 1 : 2, c.GetMembers().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Count());
+                Assert.Equal(matchingOp is null ? 1 : 2, c.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Count());
 
                 var cM01 = (MethodSymbol)c.FindImplementationForInterfaceMember(m01);
 
@@ -19838,9 +19838,9 @@ partial " + typeKeyword + @"
             void validate(ModuleSymbol module)
             {
                 var c = module.GlobalNamespace.GetTypeMember("C");
-                var m01 = c.Interfaces().Single().GetMembers(opName).OfType<MethodSymbol>().Single();
+                var m01 = c.Interfaces().Single().GetMembersAsImmutable(opName).OfType<MethodSymbol>().Single();
 
-                Assert.Equal(matchingOp is null ? 1 : 2, c.GetMembers().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Count());
+                Assert.Equal(matchingOp is null ? 1 : 2, c.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Count());
 
                 var cM01 = (MethodSymbol)c.FindImplementationForInterfaceMember(m01);
 
@@ -19930,8 +19930,8 @@ public class C3 : C2, I1
             void validate(ModuleSymbol module)
             {
                 var c3 = module.GlobalNamespace.GetTypeMember("C3");
-                Assert.Empty(c3.GetMembers().OfType<MethodSymbol>().Where(m => !m.IsConstructor()));
-                var m01 = c3.Interfaces().Single().GetMembers(opName).OfType<MethodSymbol>().Single();
+                Assert.Empty(c3.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => !m.IsConstructor()));
+                var m01 = c3.Interfaces().Single().GetMembersAsImmutable(opName).OfType<MethodSymbol>().Single();
 
                 var cM01 = (MethodSymbol)c3.FindImplementationForInterfaceMember(m01);
 
@@ -20004,8 +20004,8 @@ public class C3 : C2, I1
             void validate(ModuleSymbol module)
             {
                 var c3 = module.GlobalNamespace.GetTypeMember("C3");
-                Assert.Empty(c3.GetMembers().OfType<MethodSymbol>().Where(m => !m.IsConstructor()));
-                var m01 = c3.Interfaces().Single().GetMembers(opName).OfType<MethodSymbol>().Single();
+                Assert.Empty(c3.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => !m.IsConstructor()));
+                var m01 = c3.Interfaces().Single().GetMembersAsImmutable(opName).OfType<MethodSymbol>().Single();
 
                 var cM01 = (MethodSymbol)c3.FindImplementationForInterfaceMember(m01);
 
@@ -20087,8 +20087,8 @@ public class C3 : C2, I1
             void validate(ModuleSymbol module)
             {
                 var c3 = module.GlobalNamespace.GetTypeMember("C3");
-                Assert.Empty(c3.GetMembers().OfType<MethodSymbol>().Where(m => !m.IsConstructor()));
-                var m01 = c3.Interfaces().Single().GetMembers(opName).OfType<MethodSymbol>().Single();
+                Assert.Empty(c3.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => !m.IsConstructor()));
+                var m01 = c3.Interfaces().Single().GetMembersAsImmutable(opName).OfType<MethodSymbol>().Single();
 
                 var cM01 = (MethodSymbol)c3.FindImplementationForInterfaceMember(m01);
 
@@ -20167,8 +20167,8 @@ public class C3 : C2<C3>, I1<C3>
             void validate(ModuleSymbol module)
             {
                 var c3 = module.GlobalNamespace.GetTypeMember("C3");
-                Assert.Empty(c3.GetMembers().OfType<MethodSymbol>().Where(m => !m.IsConstructor()));
-                var m01 = c3.Interfaces().Single().GetMembers(opName).OfType<MethodSymbol>().Single();
+                Assert.Empty(c3.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => !m.IsConstructor()));
+                var m01 = c3.Interfaces().Single().GetMembersAsImmutable(opName).OfType<MethodSymbol>().Single();
 
                 var cM01 = (MethodSymbol)c3.FindImplementationForInterfaceMember(m01);
 
@@ -20274,7 +20274,7 @@ public class C5 : C2, I1
             compilation1.VerifyDiagnostics();
 
             var c1 = compilation1.GlobalNamespace.GetTypeMember("C1");
-            var m01 = c1.Interfaces().Single().GetMembers().OfType<MethodSymbol>().Single();
+            var m01 = c1.Interfaces().Single().GetMembersAsImmutable().OfType<MethodSymbol>().Single();
 
             Assert.Equal(MethodKind.UserDefinedOperator, m01.MethodKind);
             Assert.Equal(MethodKind.UserDefinedOperator, c1.GetMember<MethodSymbol>(opName).MethodKind);
@@ -20409,7 +20409,7 @@ public class C5 : C2, I1
             compilation1.VerifyDiagnostics();
 
             var c1 = compilation1.GlobalNamespace.GetTypeMember("C1");
-            var m01 = c1.Interfaces().Single().GetMembers().OfType<MethodSymbol>().Single();
+            var m01 = c1.Interfaces().Single().GetMembersAsImmutable().OfType<MethodSymbol>().Single();
 
             Assert.Equal(MethodKind.UserDefinedOperator, m01.MethodKind);
             Assert.Equal(MethodKind.UserDefinedOperator, c1.GetMember<MethodSymbol>(opName).MethodKind);
@@ -20488,7 +20488,7 @@ public class C1 : I1
 
             var c1 = compilation1.GlobalNamespace.GetTypeMember("C1");
             var i1 = c1.Interfaces().Single();
-            var m01 = i1.GetMembers().OfType<MethodSymbol>().Single();
+            var m01 = i1.GetMembersAsImmutable().OfType<MethodSymbol>().Single();
 
             Assert.Equal(MethodKind.UserDefinedOperator, m01.MethodKind);
             Assert.Same(m01, c1.FindImplementationForInterfaceMember(m01));
@@ -20519,7 +20519,7 @@ public class C1 : I1
             compilation2.VerifyEmitDiagnostics();
 
             c1 = compilation2.GlobalNamespace.GetTypeMember("C1");
-            m01 = c1.Interfaces().Single().GetMembers().OfType<MethodSymbol>().Single();
+            m01 = c1.Interfaces().Single().GetMembersAsImmutable().OfType<MethodSymbol>().Single();
 
             Assert.Equal("I1 I1." + opName + "(I1 x)", m01.ToTestDisplayString());
             Assert.Equal("I1 C1.I1." + opName + "(I1 x)", c1.FindImplementationForInterfaceMember(m01).ToTestDisplayString());
@@ -20568,7 +20568,7 @@ public class C1 : I1
 
             var c1 = compilation1.GlobalNamespace.GetTypeMember("C1");
             var i1 = c1.Interfaces().Single();
-            var m01 = i1.GetMembers().OfType<MethodSymbol>().Single();
+            var m01 = i1.GetMembersAsImmutable().OfType<MethodSymbol>().Single();
 
             Assert.Equal(MethodKind.UserDefinedOperator, m01.MethodKind);
             Assert.Same(m01, c1.FindImplementationForInterfaceMember(m01));
@@ -20599,7 +20599,7 @@ public class C1 : I1
             compilation2.VerifyEmitDiagnostics();
 
             c1 = compilation2.GlobalNamespace.GetTypeMember("C1");
-            m01 = c1.Interfaces().Single().GetMembers().OfType<MethodSymbol>().Single();
+            m01 = c1.Interfaces().Single().GetMembersAsImmutable().OfType<MethodSymbol>().Single();
 
             Assert.Equal("I1 I1." + opName + "(I1 x, System.Int32 y)", m01.ToTestDisplayString());
             Assert.Equal("I1 C1.I1." + opName + "(I1 x, System.Int32 y)", c1.FindImplementationForInterfaceMember(m01).ToTestDisplayString());
@@ -20659,8 +20659,8 @@ public class C1 : I2
             var c1 = compilation1.GlobalNamespace.GetTypeMember("C1");
             var i2 = c1.Interfaces().Single();
             var i1 = i2.Interfaces().Single();
-            var m01 = i1.GetMembers().OfType<MethodSymbol>().Single();
-            var i2M01 = i2.GetMembers().OfType<MethodSymbol>().Single();
+            var m01 = i1.GetMembersAsImmutable().OfType<MethodSymbol>().Single();
+            var i2M01 = i2.GetMembersAsImmutable().OfType<MethodSymbol>().Single();
 
             Assert.Equal(MethodKind.UserDefinedOperator, m01.MethodKind);
             Assert.Same(i2M01, c1.FindImplementationForInterfaceMember(m01));
@@ -20724,8 +20724,8 @@ public class C1 : I2
             var c1 = compilation1.GlobalNamespace.GetTypeMember("C1");
             var i2 = c1.Interfaces().Single();
             var i1 = i2.Interfaces().Single();
-            var m01 = i1.GetMembers().OfType<MethodSymbol>().Single();
-            var i2M01 = i2.GetMembers().OfType<MethodSymbol>().Single();
+            var m01 = i1.GetMembersAsImmutable().OfType<MethodSymbol>().Single();
+            var i2M01 = i2.GetMembersAsImmutable().OfType<MethodSymbol>().Single();
 
             Assert.Equal(MethodKind.UserDefinedOperator, m01.MethodKind);
             Assert.Same(i2M01, c1.FindImplementationForInterfaceMember(m01));
@@ -20795,7 +20795,7 @@ public partial class C1
             {
                 var c2 = module.GlobalNamespace.GetTypeMember("C2");
                 var i1 = c2.Interfaces().Single();
-                var m01 = i1.GetMembers(opName).OfType<MethodSymbol>().Single();
+                var m01 = i1.GetMembersAsImmutable(opName).OfType<MethodSymbol>().Single();
 
                 var c2M01 = (MethodSymbol)c2.FindImplementationForInterfaceMember(m01);
 
@@ -20911,7 +20911,7 @@ partial class C1 : I1<C1>
             void validate(ModuleSymbol module)
             {
                 var c1 = module.GlobalNamespace.GetTypeMember("C1");
-                var m01 = c1.Interfaces().Single().GetMembers().OfType<MethodSymbol>().Single();
+                var m01 = c1.Interfaces().Single().GetMembersAsImmutable().OfType<MethodSymbol>().Single();
 
                 var c1M01 = (MethodSymbol)c1.FindImplementationForInterfaceMember(m01);
 
@@ -20949,7 +20949,7 @@ partial class C1 : I1<C1>
                 }
 
                 var c2 = module.GlobalNamespace.GetTypeMember("C2");
-                m01 = c2.Interfaces().Single().GetMembers().OfType<MethodSymbol>().Single();
+                m01 = c2.Interfaces().Single().GetMembersAsImmutable().OfType<MethodSymbol>().Single();
                 var c2M01 = (MethodSymbol)c2.FindImplementationForInterfaceMember(m01);
 
                 Assert.True(c2M01.IsStatic);
@@ -20963,7 +20963,7 @@ partial class C1 : I1<C1>
                 Assert.Equal("C2 modopt(I1<>) C2.I1<C2>." + opName + "(C2 x)", c2M01.ToTestDisplayString());
                 Assert.Equal(m01, c2M01.ExplicitInterfaceImplementations.Single());
 
-                Assert.Same(c2M01, c2.GetMembers().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Single());
+                Assert.Same(c2M01, c2.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Single());
             }
 
             verifier.VerifyIL("C1.I1<C1>." + opName + "(C1)",
@@ -21022,7 +21022,7 @@ class C2 : I1<C2>
             void validate(ModuleSymbol module)
             {
                 var c1 = module.GlobalNamespace.GetTypeMember("C1");
-                var m01 = c1.Interfaces().Single().GetMembers().OfType<MethodSymbol>().Single();
+                var m01 = c1.Interfaces().Single().GetMembersAsImmutable().OfType<MethodSymbol>().Single();
 
                 var c1M01 = (MethodSymbol)c1.FindImplementationForInterfaceMember(m01);
 
@@ -21060,7 +21060,7 @@ class C2 : I1<C2>
                 }
 
                 var c2 = module.GlobalNamespace.GetTypeMember("C2");
-                m01 = c2.Interfaces().Single().GetMembers().OfType<MethodSymbol>().Single();
+                m01 = c2.Interfaces().Single().GetMembersAsImmutable().OfType<MethodSymbol>().Single();
                 var c2M01 = (MethodSymbol)c2.FindImplementationForInterfaceMember(m01);
 
                 Assert.True(c2M01.IsStatic);
@@ -21074,7 +21074,7 @@ class C2 : I1<C2>
                 Assert.Equal("System.Boolean modopt(I1<>) C2.I1<C2>." + opName + "(C2 x)", c2M01.ToTestDisplayString());
                 Assert.Equal(m01, c2M01.ExplicitInterfaceImplementations.Single());
 
-                Assert.Same(c2M01, c2.GetMembers().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Single());
+                Assert.Same(c2M01, c2.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Single());
             }
 
             verifier.VerifyIL("C1.I1<C1>." + opName + "(C1)",
@@ -21157,7 +21157,7 @@ class C2 : I1<C2>
             void validate(ModuleSymbol module)
             {
                 var c1 = module.GlobalNamespace.GetTypeMember("C1");
-                var m01 = c1.Interfaces().Single().GetMembers().OfType<MethodSymbol>().Single();
+                var m01 = c1.Interfaces().Single().GetMembersAsImmutable().OfType<MethodSymbol>().Single();
 
                 var c1M01 = (MethodSymbol)c1.FindImplementationForInterfaceMember(m01);
 
@@ -21194,7 +21194,7 @@ class C2 : I1<C2>
                     Assert.Empty(c1M01.ExplicitInterfaceImplementations);
                 }
                 var c2 = module.GlobalNamespace.GetTypeMember("C2");
-                m01 = c2.Interfaces().Single().GetMembers().OfType<MethodSymbol>().Single();
+                m01 = c2.Interfaces().Single().GetMembersAsImmutable().OfType<MethodSymbol>().Single();
                 var c2M01 = (MethodSymbol)c2.FindImplementationForInterfaceMember(m01);
 
                 Assert.True(c2M01.IsStatic);
@@ -21208,7 +21208,7 @@ class C2 : I1<C2>
                 Assert.Equal("C2 modopt(I1<>) C2.I1<C2>." + opName + "(C2 x, System.Int32 y)", c2M01.ToTestDisplayString());
                 Assert.Equal(m01, c2M01.ExplicitInterfaceImplementations.Single());
 
-                Assert.Same(c2M01, c2.GetMembers().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Single());
+                Assert.Same(c2M01, c2.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Single());
             }
 
             verifier.VerifyIL("C1.I1<C1>." + opName + "(C1, int)",
@@ -21295,11 +21295,11 @@ public class C3 : C2, I1
             void validate(ModuleSymbol module)
             {
                 var c3 = module.GlobalNamespace.GetTypeMember("C3");
-                Assert.Empty(c3.GetMembers().OfType<MethodSymbol>().Where(m => !m.IsConstructor()));
+                Assert.Empty(c3.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => !m.IsConstructor()));
 
-                var m02 = c3.Interfaces().Single().GetMembers(opName).OfType<MethodSymbol>().Single();
+                var m02 = c3.Interfaces().Single().GetMembersAsImmutable(opName).OfType<MethodSymbol>().Single();
 
-                var c2M02 = c3.BaseType().GetMembers("I1." + opName).OfType<MethodSymbol>().Single();
+                var c2M02 = c3.BaseType().GetMembersAsImmutable("I1." + opName).OfType<MethodSymbol>().Single();
                 Assert.Equal("I1 C2.I1." + opName + "(I1 x)", c2M02.ToTestDisplayString());
                 Assert.Same(c2M02, c3.FindImplementationForInterfaceMember(m02));
             }
@@ -21355,16 +21355,16 @@ public class C3 : C2, I1
             void validate(ModuleSymbol module)
             {
                 var c3 = module.GlobalNamespace.GetTypeMember("C3");
-                Assert.Empty(c3.GetMembers().OfType<MethodSymbol>().Where(m => !m.IsConstructor()));
+                Assert.Empty(c3.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => !m.IsConstructor()));
 
-                var m01 = c3.Interfaces().Single().GetMembers("op_True").OfType<MethodSymbol>().Single();
-                var m02 = c3.Interfaces().Single().GetMembers("op_False").OfType<MethodSymbol>().Single();
+                var m01 = c3.Interfaces().Single().GetMembersAsImmutable("op_True").OfType<MethodSymbol>().Single();
+                var m02 = c3.Interfaces().Single().GetMembersAsImmutable("op_False").OfType<MethodSymbol>().Single();
 
-                var c2M01 = c3.BaseType().GetMembers("I1.op_True").OfType<MethodSymbol>().Single();
+                var c2M01 = c3.BaseType().GetMembersAsImmutable("I1.op_True").OfType<MethodSymbol>().Single();
                 Assert.Equal("System.Boolean C2.I1.op_True(I1 x)", c2M01.ToTestDisplayString());
                 Assert.Same(c2M01, c3.FindImplementationForInterfaceMember(m01));
 
-                var c2M02 = c3.BaseType().GetMembers("I1.op_False").OfType<MethodSymbol>().Single();
+                var c2M02 = c3.BaseType().GetMembersAsImmutable("I1.op_False").OfType<MethodSymbol>().Single();
                 Assert.Equal("System.Boolean C2.I1.op_False(I1 x)", c2M02.ToTestDisplayString());
                 Assert.Same(c2M02, c3.FindImplementationForInterfaceMember(m02));
             }
@@ -21458,9 +21458,9 @@ public class C3 : C2, I1<C2>
             void validate(ModuleSymbol module)
             {
                 var c3 = module.GlobalNamespace.GetTypeMember("C3");
-                Assert.Empty(c3.GetMembers().OfType<MethodSymbol>().Where(m => !m.IsConstructor()));
+                Assert.Empty(c3.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => !m.IsConstructor()));
 
-                var m01 = c3.Interfaces().Single().GetMembers(opName).OfType<MethodSymbol>().First();
+                var m01 = c3.Interfaces().Single().GetMembersAsImmutable(opName).OfType<MethodSymbol>().First();
 
                 var c1M01 = c3.BaseType().BaseType().GetMember<MethodSymbol>(opName);
                 Assert.Equal("C2 C1." + opName + "(C2 x, C1 y)", c1M01.ToTestDisplayString());
@@ -21485,9 +21485,9 @@ public class C3 : C2, I1<C2>
                     Assert.Same(c1M01, c3.FindImplementationForInterfaceMember(m01));
                 }
 
-                var m02 = c3.Interfaces().Single().GetMembers(opName).OfType<MethodSymbol>().ElementAt(1);
+                var m02 = c3.Interfaces().Single().GetMembersAsImmutable(opName).OfType<MethodSymbol>().ElementAt(1);
 
-                var c2M02 = c3.BaseType().GetMembers("I1<C2>." + opName).OfType<MethodSymbol>().First();
+                var c2M02 = c3.BaseType().GetMembersAsImmutable("I1<C2>." + opName).OfType<MethodSymbol>().First();
                 Assert.Equal("C2 C2.I1<C2>." + opName + "(C2 x, C2 y)", c2M02.ToTestDisplayString());
                 Assert.Same(c2M02, c3.FindImplementationForInterfaceMember(m02));
             }
@@ -21587,7 +21587,7 @@ public class C3 : C2, I1<C2>
             void validate(ModuleSymbol module)
             {
                 var c3 = module.GlobalNamespace.GetTypeMember("C3");
-                var m01 = c3.Interfaces().Single().GetMembers(opName).OfType<MethodSymbol>().Single();
+                var m01 = c3.Interfaces().Single().GetMembersAsImmutable(opName).OfType<MethodSymbol>().Single();
 
                 var c2M01 = c3.BaseType().GetMember<MethodSymbol>(opName);
                 Assert.Equal("C2 C2." + opName + "(C2 x, C1 y)", c2M01.ToTestDisplayString());
@@ -21677,7 +21677,7 @@ public partial class C1<T, U>
                                                  references: new[] { CreateCompilation("", targetFramework: _supportingFramework).ToMetadataReference() });
 
             compilation1.VerifyDiagnostics();
-            Assert.Equal(2, compilation1.GlobalNamespace.GetTypeMember("C1").GetMembers().Where(m => m.Name.Contains(opName)).Count());
+            Assert.Equal(2, compilation1.GlobalNamespace.GetTypeMember("C1").GetMembersAsImmutable().Where(m => m.Name.Contains(opName)).Count());
 
             var source2 =
 @"
@@ -21702,7 +21702,7 @@ public class C2 : C1<int, int>, I1<C1<int, int>, int>
             void validate(ModuleSymbol module)
             {
                 var c2 = module.GlobalNamespace.GetTypeMember("C2");
-                var m01 = c2.Interfaces().Single().GetMembers(opName).OfType<MethodSymbol>().Single();
+                var m01 = c2.Interfaces().Single().GetMembersAsImmutable(opName).OfType<MethodSymbol>().Single();
 
                 Assert.True(m01.ContainingModule is RetargetingModuleSymbol or PEModuleSymbol);
 
@@ -21786,7 +21786,7 @@ public partial class C1<T, U> : I1<C1<T, U>, U>
                                                  references: new[] { CreateCompilation("", targetFramework: _supportingFramework).ToMetadataReference() });
 
             compilation1.VerifyDiagnostics();
-            Assert.Equal(2, compilation1.GlobalNamespace.GetTypeMember("C1").GetMembers().Where(m => m.Name.Contains(opName)).Count());
+            Assert.Equal(2, compilation1.GlobalNamespace.GetTypeMember("C1").GetMembersAsImmutable().Where(m => m.Name.Contains(opName)).Count());
 
             var source2 =
 @"
@@ -21811,7 +21811,7 @@ public class C2 : C1<int, int>, I1<C1<int, int>, int>
             void validate(ModuleSymbol module)
             {
                 var c2 = module.GlobalNamespace.GetTypeMember("C2");
-                var m01 = c2.Interfaces().Single().GetMembers(opName).OfType<MethodSymbol>().Single();
+                var m01 = c2.Interfaces().Single().GetMembersAsImmutable(opName).OfType<MethodSymbol>().Single();
 
                 Assert.True(m01.ContainingModule is RetargetingModuleSymbol or PEModuleSymbol);
 
@@ -21888,7 +21888,7 @@ public partial class C1<T, U>
                                                  references: new[] { CreateCompilation("", targetFramework: _supportingFramework).ToMetadataReference() });
 
             compilation1.VerifyDiagnostics();
-            Assert.Equal(2, compilation1.GlobalNamespace.GetTypeMember("C1").GetMembers().Where(m => m.Name.Contains(opName)).Count());
+            Assert.Equal(2, compilation1.GlobalNamespace.GetTypeMember("C1").GetMembersAsImmutable().Where(m => m.Name.Contains(opName)).Count());
 
             var source2 =
 @"
@@ -21913,7 +21913,7 @@ public class C2 : C11<int, int>, I1<C11<int, int>, C1<int, int>>
             void validate(ModuleSymbol module)
             {
                 var c2 = module.GlobalNamespace.GetTypeMember("C2");
-                var m01 = c2.Interfaces().Single().GetMembers(opName).OfType<MethodSymbol>().Single();
+                var m01 = c2.Interfaces().Single().GetMembersAsImmutable(opName).OfType<MethodSymbol>().Single();
 
                 Assert.True(m01.ContainingModule is RetargetingModuleSymbol or PEModuleSymbol);
 
@@ -22045,7 +22045,7 @@ class
 
             var c1 = compilation1.GlobalNamespace.GetTypeMember("C1");
 
-            Assert.Equal(Accessibility.Private, c1.GetMembers().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Single().DeclaredAccessibility);
+            Assert.Equal(Accessibility.Private, c1.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Single().DeclaredAccessibility);
 
             compilation1.GetDiagnostics().Where(d => d.Code is not ((int)ErrorCode.WRN_ExternMethodNoImplementation or (int)ErrorCode.ERR_OpTFRetType or (int)ErrorCode.ERR_OperatorNeedsMatch)).Verify(
                 // (16,35): error CS0106: The modifier 'private' is not valid for this item
@@ -22195,7 +22195,7 @@ struct
 
             var c1 = compilation1.GlobalNamespace.GetTypeMember("C1");
 
-            Assert.Equal(Accessibility.Private, c1.GetMembers().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Single().DeclaredAccessibility);
+            Assert.Equal(Accessibility.Private, c1.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Single().DeclaredAccessibility);
 
             compilation1.GetDiagnostics().Where(d => d.Code is not ((int)ErrorCode.WRN_ExternMethodNoImplementation or (int)ErrorCode.ERR_OperatorNeedsMatch or (int)ErrorCode.ERR_BadAbstractEqualityOperatorSignature)).Verify(
                 // (16,35): error CS0106: The modifier 'private' is not valid for this item
@@ -22612,7 +22612,7 @@ interface I8 : I1
                 Diagnostic(ErrorCode.WRN_NewRequired, "M01").WithArguments("I7.M01", "I1.M01").WithLocation(32, 25)
                 );
 
-            foreach (var m01 in compilation1.GlobalNamespace.GetTypeMember("I1").GetMembers())
+            foreach (var m01 in compilation1.GlobalNamespace.GetTypeMember("I1").GetMembersAsImmutable())
             {
                 Assert.Null(compilation1.GlobalNamespace.GetTypeMember("I2").FindImplementationForInterfaceMember(m01));
                 Assert.Null(compilation1.GlobalNamespace.GetTypeMember("I3").FindImplementationForInterfaceMember(m01));
@@ -22622,9 +22622,9 @@ interface I8 : I1
                 Assert.Null(compilation1.GlobalNamespace.GetTypeMember("I8").FindImplementationForInterfaceMember(m01));
             }
 
-            var m = compilation1.GlobalNamespace.GetTypeMember("I1").GetMembers().OfType<PropertySymbol>().Single();
+            var m = compilation1.GlobalNamespace.GetTypeMember("I1").GetMembersAsImmutable().OfType<PropertySymbol>().Single();
             var i6 = compilation1.GlobalNamespace.GetTypeMember("I6");
-            var i6m = i6.GetMembers().OfType<PropertySymbol>().Single();
+            var i6m = i6.GetMembersAsImmutable().OfType<PropertySymbol>().Single();
             Assert.Same(i6m, i6.FindImplementationForInterfaceMember(m));
             Assert.Same(i6m.GetMethod, ((PropertySymbol)i6.FindImplementationForInterfaceMember(m)).GetMethod);
             Assert.Same(i6m.SetMethod, ((PropertySymbol)i6.FindImplementationForInterfaceMember(m)).SetMethod);
@@ -22696,7 +22696,7 @@ interface I8 : I1
                 Diagnostic(ErrorCode.ERR_BadMemberFlag, "M01").WithArguments("virtual").WithLocation(37, 28)
                 );
 
-            foreach (var m01 in compilation1.GlobalNamespace.GetTypeMember("I1").GetMembers())
+            foreach (var m01 in compilation1.GlobalNamespace.GetTypeMember("I1").GetMembersAsImmutable())
             {
                 if (m01.Kind == SymbolKind.Field)
                 {
@@ -22710,12 +22710,12 @@ interface I8 : I1
                 Assert.Same(m01, compilation1.GlobalNamespace.GetTypeMember("I7").FindImplementationForInterfaceMember(m01));
             }
 
-            var m = compilation1.GlobalNamespace.GetTypeMember("I1").GetMembers().OfType<PropertySymbol>().Single();
+            var m = compilation1.GlobalNamespace.GetTypeMember("I1").GetMembersAsImmutable().OfType<PropertySymbol>().Single();
 
             foreach (var name in new[] { "I6", "I8" })
             {
                 var i6 = compilation1.GlobalNamespace.GetTypeMember(name);
-                var i6m = i6.GetMembers().OfType<PropertySymbol>().Single();
+                var i6m = i6.GetMembersAsImmutable().OfType<PropertySymbol>().Single();
                 Assert.Same(i6m, i6.FindImplementationForInterfaceMember(m));
                 Assert.Same(i6m.GetMethod, ((PropertySymbol)i6.FindImplementationForInterfaceMember(m)).GetMethod);
                 Assert.Same(i6m.SetMethod, ((PropertySymbol)i6.FindImplementationForInterfaceMember(m)).SetMethod);
@@ -22929,13 +22929,13 @@ public interface I1
 
             void validate(ModuleSymbol module)
             {
-                var m01 = module.GlobalNamespace.GetTypeMember("I1").GetMembers().OfType<PropertySymbol>().Single();
+                var m01 = module.GlobalNamespace.GetTypeMember("I1").GetMembersAsImmutable().OfType<PropertySymbol>().Single();
                 var m01Get = m01.GetMethod;
                 var m01Set = m01.SetMethod;
                 var c = module.GlobalNamespace.GetTypeMember("C");
 
-                Assert.Equal(1, c.GetMembers().OfType<PropertySymbol>().Count());
-                Assert.Equal(2, c.GetMembers().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Count());
+                Assert.Equal(1, c.GetMembersAsImmutable().OfType<PropertySymbol>().Count());
+                Assert.Equal(2, c.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Count());
 
                 var cM01 = (PropertySymbol)c.FindImplementationForInterfaceMember(m01);
 
@@ -23024,14 +23024,14 @@ public interface I1
 
             void validate(ModuleSymbol module)
             {
-                var m01 = module.GlobalNamespace.GetTypeMember("I1").GetMembers().OfType<PropertySymbol>().Single();
+                var m01 = module.GlobalNamespace.GetTypeMember("I1").GetMembersAsImmutable().OfType<PropertySymbol>().Single();
                 var m01Get = m01.GetMethod;
                 Assert.Null(m01.SetMethod);
 
                 var c = module.GlobalNamespace.GetTypeMember("C");
 
-                Assert.Equal(1, c.GetMembers().OfType<PropertySymbol>().Count());
-                Assert.Equal(2, c.GetMembers().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Count());
+                Assert.Equal(1, c.GetMembersAsImmutable().OfType<PropertySymbol>().Count());
+                Assert.Equal(2, c.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Count());
 
                 var cM01 = (PropertySymbol)c.FindImplementationForInterfaceMember(m01);
 
@@ -23115,13 +23115,13 @@ public interface I1
 
             void validate(ModuleSymbol module)
             {
-                var m01 = module.GlobalNamespace.GetTypeMember("I1").GetMembers().OfType<PropertySymbol>().Single();
+                var m01 = module.GlobalNamespace.GetTypeMember("I1").GetMembersAsImmutable().OfType<PropertySymbol>().Single();
                 var m01Get = m01.GetMethod;
                 var m01Set = m01.SetMethod;
                 var c = module.GlobalNamespace.GetTypeMember("C");
 
-                Assert.Equal(1, c.GetMembers().OfType<PropertySymbol>().Count());
-                Assert.Equal(2, c.GetMembers().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Count());
+                Assert.Equal(1, c.GetMembersAsImmutable().OfType<PropertySymbol>().Count());
+                Assert.Equal(2, c.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Count());
 
                 var cM01 = (PropertySymbol)c.FindImplementationForInterfaceMember(m01);
 
@@ -23220,9 +23220,9 @@ public class C3 : C2, I1
             void validate(ModuleSymbol module)
             {
                 var c3 = module.GlobalNamespace.GetTypeMember("C3");
-                Assert.Empty(c3.GetMembers().OfType<PropertySymbol>());
-                Assert.Empty(c3.GetMembers().OfType<MethodSymbol>().Where(m => !m.IsConstructor()));
-                var m01 = c3.Interfaces().Single().GetMembers().OfType<PropertySymbol>().Single();
+                Assert.Empty(c3.GetMembersAsImmutable().OfType<PropertySymbol>());
+                Assert.Empty(c3.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => !m.IsConstructor()));
+                var m01 = c3.Interfaces().Single().GetMembersAsImmutable().OfType<PropertySymbol>().Single();
 
                 var cM01 = (PropertySymbol)c3.FindImplementationForInterfaceMember(m01);
 
@@ -23378,7 +23378,7 @@ public class C5 : C2, I1
             compilation1.VerifyDiagnostics();
 
             var c1 = compilation1.GlobalNamespace.GetTypeMember("C1");
-            var m01 = c1.Interfaces().Single().GetMembers().OfType<PropertySymbol>().Single();
+            var m01 = c1.Interfaces().Single().GetMembersAsImmutable().OfType<PropertySymbol>().Single();
 
             var c1M01 = (PropertySymbol)c1.FindImplementationForInterfaceMember(m01);
 
@@ -23480,7 +23480,7 @@ public class C1 : I1
 
                 var c1 = compilation1.GlobalNamespace.GetTypeMember("C1");
                 var i1 = c1.Interfaces().Single();
-                var m01 = i1.GetMembers().OfType<PropertySymbol>().Single();
+                var m01 = i1.GetMembersAsImmutable().OfType<PropertySymbol>().Single();
 
                 Assert.Same(m01, c1.FindImplementationForInterfaceMember(m01));
                 Assert.Same(m01, i1.FindImplementationForInterfaceMember(m01));
@@ -23522,8 +23522,8 @@ public class C1 : I1
 
                 c1 = compilation2.GlobalNamespace.GetTypeMember("C1");
                 i1 = c1.Interfaces().Single();
-                m01 = i1.GetMembers().OfType<PropertySymbol>().Single();
-                var c1m01 = c1.GetMembers().OfType<PropertySymbol>().Single();
+                m01 = i1.GetMembersAsImmutable().OfType<PropertySymbol>().Single();
+                var c1m01 = c1.GetMembersAsImmutable().OfType<PropertySymbol>().Single();
 
                 Assert.Same(c1m01, c1.FindImplementationForInterfaceMember(m01));
                 Assert.Same(m01, i1.FindImplementationForInterfaceMember(m01));
@@ -23558,11 +23558,11 @@ public class C1 : I1
                 void validate3(ModuleSymbol module)
                 {
                     var c = module.GlobalNamespace.GetTypeMember("C1");
-                    Assert.Equal(1, c.GetMembers().OfType<PropertySymbol>().Count());
-                    Assert.Equal(2, c.GetMembers().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Count());
+                    Assert.Equal(1, c.GetMembersAsImmutable().OfType<PropertySymbol>().Count());
+                    Assert.Equal(2, c.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Count());
 
-                    var m01 = c.Interfaces().Single().GetMembers().OfType<PropertySymbol>().Single();
-                    var c1m01 = c.GetMembers().OfType<PropertySymbol>().Single();
+                    var m01 = c.Interfaces().Single().GetMembersAsImmutable().OfType<PropertySymbol>().Single();
+                    var c1m01 = c.GetMembersAsImmutable().OfType<PropertySymbol>().Single();
                     Assert.Same(c1m01, c.FindImplementationForInterfaceMember(m01));
                     Assert.Same(c1m01.GetMethod, c.FindImplementationForInterfaceMember(m01.GetMethod));
                     Assert.Same(c1m01.SetMethod, c.FindImplementationForInterfaceMember(m01.SetMethod));
@@ -23614,7 +23614,7 @@ public class C1 : I1
 
                 var c1 = compilation1.GlobalNamespace.GetTypeMember("C1");
                 var i1 = c1.Interfaces().Single();
-                var m01 = i1.GetMembers().OfType<PropertySymbol>().Single();
+                var m01 = i1.GetMembersAsImmutable().OfType<PropertySymbol>().Single();
 
                 Assert.Null(c1.FindImplementationForInterfaceMember(m01));
                 Assert.Null(i1.FindImplementationForInterfaceMember(m01));
@@ -23649,12 +23649,12 @@ public class C1 : I1
                 void validate2(ModuleSymbol module)
                 {
                     var c = module.GlobalNamespace.GetTypeMember("C1");
-                    var m01 = c.Interfaces().Single().GetMembers().OfType<PropertySymbol>().Single();
+                    var m01 = c.Interfaces().Single().GetMembersAsImmutable().OfType<PropertySymbol>().Single();
                     var m01Get = m01.GetMethod;
                     var m01Set = m01.SetMethod;
 
-                    Assert.Equal(1, c.GetMembers().OfType<PropertySymbol>().Count());
-                    Assert.Equal(1, c.GetMembers().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Count());
+                    Assert.Equal(1, c.GetMembersAsImmutable().OfType<PropertySymbol>().Count());
+                    Assert.Equal(1, c.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Count());
 
                     var cM01 = (PropertySymbol)c.FindImplementationForInterfaceMember(m01);
 
@@ -23708,11 +23708,11 @@ public class C1 : I1
                 {
                     var c = module.GlobalNamespace.GetTypeMember("C1");
 
-                    var m01 = c.Interfaces().Single().GetMembers().OfType<PropertySymbol>().Single();
+                    var m01 = c.Interfaces().Single().GetMembersAsImmutable().OfType<PropertySymbol>().Single();
                     var m01Get = m01.GetMethod;
 
-                    Assert.Equal(1, c.GetMembers().OfType<PropertySymbol>().Count());
-                    Assert.Equal(2, c.GetMembers().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Count());
+                    Assert.Equal(1, c.GetMembersAsImmutable().OfType<PropertySymbol>().Count());
+                    Assert.Equal(2, c.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Count());
 
                     var cM01 = (PropertySymbol)c.FindImplementationForInterfaceMember(m01);
 
@@ -23784,8 +23784,8 @@ public class C1 : I1
 
                 c1 = compilation4.GlobalNamespace.GetTypeMember("C1");
                 i1 = c1.Interfaces().Single();
-                m01 = i1.GetMembers().OfType<PropertySymbol>().Single();
-                var c1M01 = c1.GetMembers().OfType<PropertySymbol>().Single();
+                m01 = i1.GetMembersAsImmutable().OfType<PropertySymbol>().Single();
+                var c1M01 = c1.GetMembersAsImmutable().OfType<PropertySymbol>().Single();
 
                 Assert.Same(c1M01, c1.FindImplementationForInterfaceMember(m01));
                 Assert.Same(c1M01.GetMethod, c1.FindImplementationForInterfaceMember(m01.GetMethod));
@@ -23812,11 +23812,11 @@ public class C1 : I1
                 {
                     var c = module.GlobalNamespace.GetTypeMember("C1");
 
-                    var m01 = c.Interfaces().Single().GetMembers().OfType<PropertySymbol>().Single();
+                    var m01 = c.Interfaces().Single().GetMembersAsImmutable().OfType<PropertySymbol>().Single();
                     var m01Get = m01.GetMethod;
 
-                    Assert.Equal(1, c.GetMembers().OfType<PropertySymbol>().Count());
-                    Assert.Equal(1, c.GetMembers().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Count());
+                    Assert.Equal(1, c.GetMembersAsImmutable().OfType<PropertySymbol>().Count());
+                    Assert.Equal(1, c.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Count());
 
                     var cM01 = (PropertySymbol)c.FindImplementationForInterfaceMember(m01);
 
@@ -23877,8 +23877,8 @@ public class C1 : I1
 
                 c1 = compilation6.GlobalNamespace.GetTypeMember("C1");
                 i1 = c1.Interfaces().Single();
-                m01 = i1.GetMembers().OfType<PropertySymbol>().Single();
-                c1M01 = c1.GetMembers().OfType<PropertySymbol>().Single();
+                m01 = i1.GetMembersAsImmutable().OfType<PropertySymbol>().Single();
+                c1M01 = c1.GetMembersAsImmutable().OfType<PropertySymbol>().Single();
 
                 Assert.Same(c1M01, c1.FindImplementationForInterfaceMember(m01));
                 Assert.Null(c1.FindImplementationForInterfaceMember(m01.GetMethod));
@@ -23910,8 +23910,8 @@ public class C1 : I1
 
                 c1 = compilation7.GlobalNamespace.GetTypeMember("C1");
                 i1 = c1.Interfaces().Single();
-                m01 = i1.GetMembers().OfType<PropertySymbol>().Single();
-                c1M01 = c1.GetMembers().OfType<PropertySymbol>().Single();
+                m01 = i1.GetMembersAsImmutable().OfType<PropertySymbol>().Single();
+                c1M01 = c1.GetMembersAsImmutable().OfType<PropertySymbol>().Single();
 
                 Assert.Same(c1M01, c1.FindImplementationForInterfaceMember(m01));
                 Assert.Null(c1.FindImplementationForInterfaceMember(m01.GetMethod));
@@ -23966,7 +23966,7 @@ public class C1 : I1
 
                 var c1 = compilation1.GlobalNamespace.GetTypeMember("C1");
                 var i1 = c1.Interfaces().Single();
-                var m01 = i1.GetMembers().OfType<PropertySymbol>().Single();
+                var m01 = i1.GetMembersAsImmutable().OfType<PropertySymbol>().Single();
 
                 Assert.Null(c1.FindImplementationForInterfaceMember(m01));
                 Assert.Null(i1.FindImplementationForInterfaceMember(m01));
@@ -24001,12 +24001,12 @@ public class C1 : I1
                 void validate2(ModuleSymbol module)
                 {
                     var c = module.GlobalNamespace.GetTypeMember("C1");
-                    var m01 = c.Interfaces().Single().GetMembers().OfType<PropertySymbol>().Single();
+                    var m01 = c.Interfaces().Single().GetMembersAsImmutable().OfType<PropertySymbol>().Single();
                     var m01Get = m01.GetMethod;
                     var m01Set = m01.SetMethod;
 
-                    Assert.Equal(1, c.GetMembers().OfType<PropertySymbol>().Count());
-                    Assert.Equal(1, c.GetMembers().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Count());
+                    Assert.Equal(1, c.GetMembersAsImmutable().OfType<PropertySymbol>().Count());
+                    Assert.Equal(1, c.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Count());
 
                     var cM01 = (PropertySymbol)c.FindImplementationForInterfaceMember(m01);
 
@@ -24060,11 +24060,11 @@ public class C1 : I1
                 {
                     var c = module.GlobalNamespace.GetTypeMember("C1");
 
-                    var m01 = c.Interfaces().Single().GetMembers().OfType<PropertySymbol>().Single();
+                    var m01 = c.Interfaces().Single().GetMembersAsImmutable().OfType<PropertySymbol>().Single();
                     var m01Set = m01.SetMethod;
 
-                    Assert.Equal(1, c.GetMembers().OfType<PropertySymbol>().Count());
-                    Assert.Equal(2, c.GetMembers().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Count());
+                    Assert.Equal(1, c.GetMembersAsImmutable().OfType<PropertySymbol>().Count());
+                    Assert.Equal(2, c.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Count());
 
                     var cM01 = (PropertySymbol)c.FindImplementationForInterfaceMember(m01);
 
@@ -24136,8 +24136,8 @@ public class C1 : I1
 
                 c1 = compilation4.GlobalNamespace.GetTypeMember("C1");
                 i1 = c1.Interfaces().Single();
-                m01 = i1.GetMembers().OfType<PropertySymbol>().Single();
-                var c1M01 = c1.GetMembers().OfType<PropertySymbol>().Single();
+                m01 = i1.GetMembersAsImmutable().OfType<PropertySymbol>().Single();
+                var c1M01 = c1.GetMembersAsImmutable().OfType<PropertySymbol>().Single();
 
                 Assert.Same(c1M01, c1.FindImplementationForInterfaceMember(m01));
                 Assert.Same(c1M01.SetMethod, c1.FindImplementationForInterfaceMember(m01.SetMethod));
@@ -24164,11 +24164,11 @@ public class C1 : I1
                 {
                     var c = module.GlobalNamespace.GetTypeMember("C1");
 
-                    var m01 = c.Interfaces().Single().GetMembers().OfType<PropertySymbol>().Single();
+                    var m01 = c.Interfaces().Single().GetMembersAsImmutable().OfType<PropertySymbol>().Single();
                     var m01Set = m01.SetMethod;
 
-                    Assert.Equal(1, c.GetMembers().OfType<PropertySymbol>().Count());
-                    Assert.Equal(1, c.GetMembers().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Count());
+                    Assert.Equal(1, c.GetMembersAsImmutable().OfType<PropertySymbol>().Count());
+                    Assert.Equal(1, c.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Count());
 
                     var cM01 = (PropertySymbol)c.FindImplementationForInterfaceMember(m01);
 
@@ -24229,8 +24229,8 @@ public class C1 : I1
 
                 c1 = compilation6.GlobalNamespace.GetTypeMember("C1");
                 i1 = c1.Interfaces().Single();
-                m01 = i1.GetMembers().OfType<PropertySymbol>().Single();
-                c1M01 = c1.GetMembers().OfType<PropertySymbol>().Single();
+                m01 = i1.GetMembersAsImmutable().OfType<PropertySymbol>().Single();
+                c1M01 = c1.GetMembersAsImmutable().OfType<PropertySymbol>().Single();
 
                 Assert.Same(c1M01, c1.FindImplementationForInterfaceMember(m01));
                 Assert.Same(c1M01.GetMethod, c1.FindImplementationForInterfaceMember(m01.GetMethod));
@@ -24262,8 +24262,8 @@ public class C1 : I1
 
                 c1 = compilation7.GlobalNamespace.GetTypeMember("C1");
                 i1 = c1.Interfaces().Single();
-                m01 = i1.GetMembers().OfType<PropertySymbol>().Single();
-                c1M01 = c1.GetMembers().OfType<PropertySymbol>().Single();
+                m01 = i1.GetMembersAsImmutable().OfType<PropertySymbol>().Single();
+                c1M01 = c1.GetMembersAsImmutable().OfType<PropertySymbol>().Single();
 
                 Assert.Same(c1M01, c1.FindImplementationForInterfaceMember(m01));
                 Assert.Same(c1M01.GetMethod, c1.FindImplementationForInterfaceMember(m01.GetMethod));
@@ -24344,8 +24344,8 @@ public class C1 : I2
             var c1 = compilation1.GlobalNamespace.GetTypeMember("C1");
             var i2 = c1.Interfaces().Single();
             var i1 = i2.Interfaces().Single();
-            var m01 = i1.GetMembers().OfType<PropertySymbol>().Single();
-            var i2M01 = i2.GetMembers().OfType<PropertySymbol>().Single();
+            var m01 = i1.GetMembersAsImmutable().OfType<PropertySymbol>().Single();
+            var i2M01 = i2.GetMembersAsImmutable().OfType<PropertySymbol>().Single();
 
             Assert.Same(i2M01, c1.FindImplementationForInterfaceMember(m01));
             Assert.Same(i2M01, i2.FindImplementationForInterfaceMember(m01));
@@ -24391,7 +24391,7 @@ class C2 : C1, I1
 
             void validate(ModuleSymbol module)
             {
-                var m01 = module.GlobalNamespace.GetTypeMember("I1").GetMembers().OfType<PropertySymbol>().Single();
+                var m01 = module.GlobalNamespace.GetTypeMember("I1").GetMembersAsImmutable().OfType<PropertySymbol>().Single();
                 var c2 = module.GlobalNamespace.GetTypeMember("C2");
 
                 var c2M01 = (PropertySymbol)c2.FindImplementationForInterfaceMember(m01);
@@ -24581,7 +24581,7 @@ class C3 : I2
             void validate(ModuleSymbol module)
             {
                 var c1 = module.GlobalNamespace.GetTypeMember("C1");
-                var m01 = c1.Interfaces().Single().GetMembers().OfType<PropertySymbol>().Single();
+                var m01 = c1.Interfaces().Single().GetMembersAsImmutable().OfType<PropertySymbol>().Single();
 
                 var c1M01 = (PropertySymbol)c1.FindImplementationForInterfaceMember(m01);
                 var c1M01Get = c1M01.GetMethod;
@@ -24671,11 +24671,11 @@ class C3 : I2
                 Assert.Same(m01.SetMethod, c2M01Set.ExplicitInterfaceImplementations.Single());
                 Assert.Same(c2M01Set, c2.FindImplementationForInterfaceMember(m01.SetMethod));
 
-                Assert.Same(c2M01, c2.GetMembers().OfType<PropertySymbol>().Single());
-                Assert.Equal(2, c2.GetMembers().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Count());
+                Assert.Same(c2M01, c2.GetMembersAsImmutable().OfType<PropertySymbol>().Single());
+                Assert.Equal(2, c2.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Count());
 
                 var c3 = module.GlobalNamespace.GetTypeMember("C3");
-                m01 = c3.Interfaces().Single().GetMembers().OfType<PropertySymbol>().Single();
+                m01 = c3.Interfaces().Single().GetMembersAsImmutable().OfType<PropertySymbol>().Single();
 
                 var c3M01 = (PropertySymbol)c3.FindImplementationForInterfaceMember(m01);
                 var c3M01Get = c3M01.GetMethod;
@@ -24711,8 +24711,8 @@ class C3 : I2
                 Assert.Same(m01.SetMethod, c3M01Set.ExplicitInterfaceImplementations.Single());
                 Assert.Same(c3M01Set, c3.FindImplementationForInterfaceMember(m01.SetMethod));
 
-                Assert.Same(c3M01, c3.GetMembers().OfType<PropertySymbol>().Single());
-                Assert.Equal(2, c3.GetMembers().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Count());
+                Assert.Same(c3M01, c3.GetMembersAsImmutable().OfType<PropertySymbol>().Single());
+                Assert.Equal(2, c3.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Count());
             }
 
             verifier.VerifyIL("C1.I1.set_M01",
@@ -24781,10 +24781,10 @@ public class C3 : C2, I1
             void validate(ModuleSymbol module)
             {
                 var c3 = module.GlobalNamespace.GetTypeMember("C3");
-                Assert.Empty(c3.GetMembers().OfType<PropertySymbol>());
-                Assert.Empty(c3.GetMembers().OfType<MethodSymbol>().Where(m => !m.IsConstructor()));
+                Assert.Empty(c3.GetMembersAsImmutable().OfType<PropertySymbol>());
+                Assert.Empty(c3.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => !m.IsConstructor()));
 
-                var m01 = c3.Interfaces().Single().GetMembers("M01").OfType<PropertySymbol>().Single();
+                var m01 = c3.Interfaces().Single().GetMembersAsImmutable("M01").OfType<PropertySymbol>().Single();
 
                 var c1M01 = c3.BaseType().BaseType().GetMember<PropertySymbol>("M01");
                 Assert.Equal("System.Int32 C1.M01 { get; set; }", c1M01.ToTestDisplayString());
@@ -24833,7 +24833,7 @@ public class C3 : C2, I1
                     Assert.Same(c1M01.SetMethod, c3.FindImplementationForInterfaceMember(m01.SetMethod));
                 }
 
-                var m02 = c3.Interfaces().Single().GetMembers("M02").OfType<PropertySymbol>().Single();
+                var m02 = c3.Interfaces().Single().GetMembersAsImmutable("M02").OfType<PropertySymbol>().Single();
 
                 var c2M02 = c3.BaseType().GetMember<PropertySymbol>("I1.M02");
                 Assert.Equal("System.Int32 C2.I1.M02 { get; set; }", c2M02.ToTestDisplayString());
@@ -24914,7 +24914,7 @@ public class C3 : C2, I1
             void validate(ModuleSymbol module)
             {
                 var c3 = module.GlobalNamespace.GetTypeMember("C3");
-                var m01 = c3.Interfaces().Single().GetMembers().OfType<PropertySymbol>().Single();
+                var m01 = c3.Interfaces().Single().GetMembersAsImmutable().OfType<PropertySymbol>().Single();
 
                 var c2M01 = c3.BaseType().GetMember<PropertySymbol>("M01");
                 var c2M01Get = c2M01.GetMethod;
@@ -24998,7 +24998,7 @@ public class C1<T> : I1
                                                  targetFramework: _supportingFramework,
                                                  references: new[] { CreateCompilation("", targetFramework: _supportingFramework).ToMetadataReference() });
 
-            Assert.Equal(2, compilation1.GlobalNamespace.GetTypeMember("C1").GetMembers().OfType<PropertySymbol>().Where(m => m.Name.Contains("M01")).Count());
+            Assert.Equal(2, compilation1.GlobalNamespace.GetTypeMember("C1").GetMembersAsImmutable().OfType<PropertySymbol>().Where(m => m.Name.Contains("M01")).Count());
             compilation1.VerifyDiagnostics();
 
             var source2 =
@@ -25024,7 +25024,7 @@ public class C2 : C1<int>, I1
             void validate(ModuleSymbol module)
             {
                 var c2 = module.GlobalNamespace.GetTypeMember("C2");
-                var m01 = c2.Interfaces().Single().GetMembers().OfType<PropertySymbol>().Single();
+                var m01 = c2.Interfaces().Single().GetMembersAsImmutable().OfType<PropertySymbol>().Single();
 
                 Assert.True(m01.ContainingModule is RetargetingModuleSymbol or PEModuleSymbol);
 
@@ -25068,7 +25068,7 @@ public class C1<T> : I1<T>
                                                  targetFramework: _supportingFramework,
                                                  references: new[] { CreateCompilation("", targetFramework: _supportingFramework).ToMetadataReference() });
 
-            Assert.Equal(2, compilation1.GlobalNamespace.GetTypeMember("C1").GetMembers().OfType<PropertySymbol>().Where(m => m.Name.Contains("M01")).Count());
+            Assert.Equal(2, compilation1.GlobalNamespace.GetTypeMember("C1").GetMembersAsImmutable().OfType<PropertySymbol>().Where(m => m.Name.Contains("M01")).Count());
 
             compilation1.VerifyDiagnostics();
 
@@ -25095,7 +25095,7 @@ public class C2 : C1<int>, I1<int>
             void validate(ModuleSymbol module)
             {
                 var c2 = module.GlobalNamespace.GetTypeMember("C2");
-                var m01 = c2.Interfaces().Single().GetMembers().OfType<PropertySymbol>().Single();
+                var m01 = c2.Interfaces().Single().GetMembersAsImmutable().OfType<PropertySymbol>().Single();
 
                 Assert.True(m01.ContainingModule is RetargetingModuleSymbol or PEModuleSymbol);
 
@@ -25391,7 +25391,7 @@ interface I8 : I1
                 Diagnostic(ErrorCode.WRN_NewRequired, "M01").WithArguments("I7.M01", "I1.M01").WithLocation(32, 41)
                 );
 
-            foreach (var m01 in compilation1.GlobalNamespace.GetTypeMember("I1").GetMembers())
+            foreach (var m01 in compilation1.GlobalNamespace.GetTypeMember("I1").GetMembersAsImmutable())
             {
                 Assert.Null(compilation1.GlobalNamespace.GetTypeMember("I2").FindImplementationForInterfaceMember(m01));
                 Assert.Null(compilation1.GlobalNamespace.GetTypeMember("I3").FindImplementationForInterfaceMember(m01));
@@ -25402,9 +25402,9 @@ interface I8 : I1
                 Assert.Null(compilation1.GlobalNamespace.GetTypeMember("I8").FindImplementationForInterfaceMember(m01));
             }
 
-            var m = compilation1.GlobalNamespace.GetTypeMember("I1").GetMembers().OfType<EventSymbol>().Single();
+            var m = compilation1.GlobalNamespace.GetTypeMember("I1").GetMembersAsImmutable().OfType<EventSymbol>().Single();
             var i6 = compilation1.GlobalNamespace.GetTypeMember("I6");
-            var i6m = i6.GetMembers().OfType<EventSymbol>().Single();
+            var i6m = i6.GetMembersAsImmutable().OfType<EventSymbol>().Single();
             Assert.Same(i6m, i6.FindImplementationForInterfaceMember(m));
             Assert.Same(i6m.AddMethod, ((EventSymbol)i6.FindImplementationForInterfaceMember(m)).AddMethod);
             Assert.Same(i6m.RemoveMethod, ((EventSymbol)i6.FindImplementationForInterfaceMember(m)).RemoveMethod);
@@ -25479,7 +25479,7 @@ interface I8 : I1
                 Diagnostic(ErrorCode.ERR_ExplicitEventFieldImpl, "M01").WithLocation(37, 44)
                 );
 
-            foreach (var m01 in compilation1.GlobalNamespace.GetTypeMember("I1").GetMembers())
+            foreach (var m01 in compilation1.GlobalNamespace.GetTypeMember("I1").GetMembersAsImmutable())
             {
                 Assert.Same(m01, compilation1.GlobalNamespace.GetTypeMember("I2").FindImplementationForInterfaceMember(m01));
                 Assert.Same(m01, compilation1.GlobalNamespace.GetTypeMember("I3").FindImplementationForInterfaceMember(m01));
@@ -25488,12 +25488,12 @@ interface I8 : I1
                 Assert.Same(m01, compilation1.GlobalNamespace.GetTypeMember("I7").FindImplementationForInterfaceMember(m01));
             }
 
-            var m = compilation1.GlobalNamespace.GetTypeMember("I1").GetMembers().OfType<EventSymbol>().Single();
+            var m = compilation1.GlobalNamespace.GetTypeMember("I1").GetMembersAsImmutable().OfType<EventSymbol>().Single();
 
             foreach (var name in new[] { "I6", "I8" })
             {
                 var i6 = compilation1.GlobalNamespace.GetTypeMember(name);
-                var i6m = i6.GetMembers().OfType<EventSymbol>().Single();
+                var i6m = i6.GetMembersAsImmutable().OfType<EventSymbol>().Single();
                 Assert.Same(i6m, i6.FindImplementationForInterfaceMember(m));
                 Assert.Same(i6m.AddMethod, ((EventSymbol)i6.FindImplementationForInterfaceMember(m)).AddMethod);
                 Assert.Same(i6m.RemoveMethod, ((EventSymbol)i6.FindImplementationForInterfaceMember(m)).RemoveMethod);
@@ -25707,13 +25707,13 @@ public interface I1
 
             void validate(ModuleSymbol module)
             {
-                var m01 = module.GlobalNamespace.GetTypeMember("I1").GetMembers().OfType<EventSymbol>().Single();
+                var m01 = module.GlobalNamespace.GetTypeMember("I1").GetMembersAsImmutable().OfType<EventSymbol>().Single();
                 var m01Add = m01.AddMethod;
                 var m01Remove = m01.RemoveMethod;
                 var c = module.GlobalNamespace.GetTypeMember("C");
 
-                Assert.Equal(1, c.GetMembers().OfType<EventSymbol>().Count());
-                Assert.Equal(2, c.GetMembers().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Count());
+                Assert.Equal(1, c.GetMembersAsImmutable().OfType<EventSymbol>().Count());
+                Assert.Equal(2, c.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Count());
 
                 var cM01 = (EventSymbol)c.FindImplementationForInterfaceMember(m01);
 
@@ -25802,13 +25802,13 @@ public interface I1
 
             void validate(ModuleSymbol module)
             {
-                var m01 = module.GlobalNamespace.GetTypeMember("I1").GetMembers().OfType<EventSymbol>().Single();
+                var m01 = module.GlobalNamespace.GetTypeMember("I1").GetMembersAsImmutable().OfType<EventSymbol>().Single();
                 var m01Add = m01.AddMethod;
                 var m01Remove = m01.RemoveMethod;
                 var c = module.GlobalNamespace.GetTypeMember("C");
 
-                Assert.Equal(1, c.GetMembers().OfType<EventSymbol>().Count());
-                Assert.Equal(2, c.GetMembers().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Count());
+                Assert.Equal(1, c.GetMembersAsImmutable().OfType<EventSymbol>().Count());
+                Assert.Equal(2, c.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Count());
 
                 var cM01 = (EventSymbol)c.FindImplementationForInterfaceMember(m01);
 
@@ -25907,9 +25907,9 @@ public class C3 : C2, I1
             void validate(ModuleSymbol module)
             {
                 var c3 = module.GlobalNamespace.GetTypeMember("C3");
-                Assert.Empty(c3.GetMembers().OfType<EventSymbol>());
-                Assert.Empty(c3.GetMembers().OfType<MethodSymbol>().Where(m => !m.IsConstructor()));
-                var m01 = c3.Interfaces().Single().GetMembers().OfType<EventSymbol>().Single();
+                Assert.Empty(c3.GetMembersAsImmutable().OfType<EventSymbol>());
+                Assert.Empty(c3.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => !m.IsConstructor()));
+                var m01 = c3.Interfaces().Single().GetMembersAsImmutable().OfType<EventSymbol>().Single();
 
                 var cM01 = (EventSymbol)c3.FindImplementationForInterfaceMember(m01);
 
@@ -26070,7 +26070,7 @@ public class C5 : C2, I1
             compilation1.VerifyDiagnostics();
 
             var c1 = compilation1.GlobalNamespace.GetTypeMember("C1");
-            var m01 = c1.Interfaces().Single().GetMembers().OfType<EventSymbol>().Single();
+            var m01 = c1.Interfaces().Single().GetMembersAsImmutable().OfType<EventSymbol>().Single();
 
             var c1M01 = (EventSymbol)c1.FindImplementationForInterfaceMember(m01);
 
@@ -26173,7 +26173,7 @@ public class C1 : I1
 
                 var c1 = compilation1.GlobalNamespace.GetTypeMember("C1");
                 var i1 = c1.Interfaces().Single();
-                var m01 = i1.GetMembers().OfType<EventSymbol>().Single();
+                var m01 = i1.GetMembersAsImmutable().OfType<EventSymbol>().Single();
 
                 Assert.Same(m01, c1.FindImplementationForInterfaceMember(m01));
                 Assert.Same(m01, i1.FindImplementationForInterfaceMember(m01));
@@ -26211,8 +26211,8 @@ public class C1 : I1
 
                 c1 = compilation2.GlobalNamespace.GetTypeMember("C1");
                 i1 = c1.Interfaces().Single();
-                m01 = i1.GetMembers().OfType<EventSymbol>().Single();
-                var c1m01 = c1.GetMembers().OfType<EventSymbol>().Single();
+                m01 = i1.GetMembersAsImmutable().OfType<EventSymbol>().Single();
+                var c1m01 = c1.GetMembersAsImmutable().OfType<EventSymbol>().Single();
 
                 Assert.Same(c1m01, c1.FindImplementationForInterfaceMember(m01));
                 Assert.Same(m01, i1.FindImplementationForInterfaceMember(m01));
@@ -26238,11 +26238,11 @@ public class C1 : I1
                 void validate3(ModuleSymbol module)
                 {
                     var c = module.GlobalNamespace.GetTypeMember("C1");
-                    Assert.Equal(1, c.GetMembers().OfType<EventSymbol>().Count());
-                    Assert.Equal(2, c.GetMembers().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Count());
+                    Assert.Equal(1, c.GetMembersAsImmutable().OfType<EventSymbol>().Count());
+                    Assert.Equal(2, c.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Count());
 
-                    var m01 = c.Interfaces().Single().GetMembers().OfType<EventSymbol>().Single();
-                    var c1m01 = c.GetMembers().OfType<EventSymbol>().Single();
+                    var m01 = c.Interfaces().Single().GetMembersAsImmutable().OfType<EventSymbol>().Single();
+                    var c1m01 = c.GetMembersAsImmutable().OfType<EventSymbol>().Single();
                     Assert.Same(c1m01, c.FindImplementationForInterfaceMember(m01));
                     Assert.Same(c1m01.AddMethod, c.FindImplementationForInterfaceMember(m01.AddMethod));
                     Assert.Same(c1m01.RemoveMethod, c.FindImplementationForInterfaceMember(m01.RemoveMethod));
@@ -26296,7 +26296,7 @@ public class C1 : I1
 
                 var c1 = compilation1.GlobalNamespace.GetTypeMember("C1");
                 var i1 = c1.Interfaces().Single();
-                var m01 = i1.GetMembers().OfType<EventSymbol>().Single();
+                var m01 = i1.GetMembersAsImmutable().OfType<EventSymbol>().Single();
 
                 Assert.Null(c1.FindImplementationForInterfaceMember(m01));
                 Assert.Null(i1.FindImplementationForInterfaceMember(m01));
@@ -26325,8 +26325,8 @@ public class C1 : I1
 
                 c1 = compilation2.GlobalNamespace.GetTypeMember("C1");
                 i1 = c1.Interfaces().Single();
-                m01 = i1.GetMembers().OfType<EventSymbol>().Single();
-                var c1M01 = c1.GetMembers().OfType<EventSymbol>().Single();
+                m01 = i1.GetMembersAsImmutable().OfType<EventSymbol>().Single();
+                var c1M01 = c1.GetMembersAsImmutable().OfType<EventSymbol>().Single();
 
                 Assert.Same(c1M01, c1.FindImplementationForInterfaceMember(m01));
                 Assert.Same(c1M01.AddMethod, c1.FindImplementationForInterfaceMember(m01.AddMethod));
@@ -26352,11 +26352,11 @@ public class C1 : I1
                 {
                     var c = module.GlobalNamespace.GetTypeMember("C1");
 
-                    var m01 = c.Interfaces().Single().GetMembers().OfType<EventSymbol>().Single();
+                    var m01 = c.Interfaces().Single().GetMembersAsImmutable().OfType<EventSymbol>().Single();
                     var m01Add = m01.AddMethod;
 
-                    Assert.Equal(1, c.GetMembers().OfType<EventSymbol>().Count());
-                    Assert.Equal(2, c.GetMembers().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Count());
+                    Assert.Equal(1, c.GetMembersAsImmutable().OfType<EventSymbol>().Count());
+                    Assert.Equal(2, c.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Count());
 
                     var cM01 = (EventSymbol)c.FindImplementationForInterfaceMember(m01);
 
@@ -26423,8 +26423,8 @@ public class C1 : I1
 
                 c1 = compilation4.GlobalNamespace.GetTypeMember("C1");
                 i1 = c1.Interfaces().Single();
-                m01 = i1.GetMembers().OfType<EventSymbol>().Single();
-                c1M01 = c1.GetMembers().OfType<EventSymbol>().Single();
+                m01 = i1.GetMembersAsImmutable().OfType<EventSymbol>().Single();
+                c1M01 = c1.GetMembersAsImmutable().OfType<EventSymbol>().Single();
 
                 Assert.Same(c1M01, c1.FindImplementationForInterfaceMember(m01));
                 Assert.Same(c1M01.AddMethod, c1.FindImplementationForInterfaceMember(m01.AddMethod));
@@ -26453,8 +26453,8 @@ public class C1 : I1
 
                 c1 = compilation5.GlobalNamespace.GetTypeMember("C1");
                 i1 = c1.Interfaces().Single();
-                m01 = i1.GetMembers().OfType<EventSymbol>().Single();
-                c1M01 = c1.GetMembers().OfType<EventSymbol>().Single();
+                m01 = i1.GetMembersAsImmutable().OfType<EventSymbol>().Single();
+                c1M01 = c1.GetMembersAsImmutable().OfType<EventSymbol>().Single();
 
                 Assert.Same(c1M01, c1.FindImplementationForInterfaceMember(m01));
                 Assert.Same(c1M01.AddMethod, c1.FindImplementationForInterfaceMember(m01.AddMethod));
@@ -26483,8 +26483,8 @@ public class C1 : I1
 
                 c1 = compilation6.GlobalNamespace.GetTypeMember("C1");
                 i1 = c1.Interfaces().Single();
-                m01 = i1.GetMembers().OfType<EventSymbol>().Single();
-                c1M01 = c1.GetMembers().OfType<EventSymbol>().Single();
+                m01 = i1.GetMembersAsImmutable().OfType<EventSymbol>().Single();
+                c1M01 = c1.GetMembersAsImmutable().OfType<EventSymbol>().Single();
 
                 Assert.Same(c1M01, c1.FindImplementationForInterfaceMember(m01));
                 Assert.Null(c1.FindImplementationForInterfaceMember(m01.AddMethod));
@@ -26513,8 +26513,8 @@ public class C1 : I1
 
                 c1 = compilation7.GlobalNamespace.GetTypeMember("C1");
                 i1 = c1.Interfaces().Single();
-                m01 = i1.GetMembers().OfType<EventSymbol>().Single();
-                c1M01 = c1.GetMembers().OfType<EventSymbol>().Single();
+                m01 = i1.GetMembersAsImmutable().OfType<EventSymbol>().Single();
+                c1M01 = c1.GetMembersAsImmutable().OfType<EventSymbol>().Single();
 
                 Assert.Same(c1M01, c1.FindImplementationForInterfaceMember(m01));
                 Assert.Null(c1.FindImplementationForInterfaceMember(m01.AddMethod));
@@ -26570,7 +26570,7 @@ public class C1 : I1
 
                 var c1 = compilation1.GlobalNamespace.GetTypeMember("C1");
                 var i1 = c1.Interfaces().Single();
-                var m01 = i1.GetMembers().OfType<EventSymbol>().Single();
+                var m01 = i1.GetMembersAsImmutable().OfType<EventSymbol>().Single();
 
                 Assert.Null(c1.FindImplementationForInterfaceMember(m01));
                 Assert.Null(i1.FindImplementationForInterfaceMember(m01));
@@ -26599,8 +26599,8 @@ public class C1 : I1
 
                 c1 = compilation2.GlobalNamespace.GetTypeMember("C1");
                 i1 = c1.Interfaces().Single();
-                m01 = i1.GetMembers().OfType<EventSymbol>().Single();
-                var c1M01 = c1.GetMembers().OfType<EventSymbol>().Single();
+                m01 = i1.GetMembersAsImmutable().OfType<EventSymbol>().Single();
+                var c1M01 = c1.GetMembersAsImmutable().OfType<EventSymbol>().Single();
 
                 Assert.Same(c1M01, c1.FindImplementationForInterfaceMember(m01));
                 Assert.Same(c1M01.RemoveMethod, c1.FindImplementationForInterfaceMember(m01.RemoveMethod));
@@ -26626,11 +26626,11 @@ public class C1 : I1
                 {
                     var c = module.GlobalNamespace.GetTypeMember("C1");
 
-                    var m01 = c.Interfaces().Single().GetMembers().OfType<EventSymbol>().Single();
+                    var m01 = c.Interfaces().Single().GetMembersAsImmutable().OfType<EventSymbol>().Single();
                     var m01Remove = m01.RemoveMethod;
 
-                    Assert.Equal(1, c.GetMembers().OfType<EventSymbol>().Count());
-                    Assert.Equal(2, c.GetMembers().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Count());
+                    Assert.Equal(1, c.GetMembersAsImmutable().OfType<EventSymbol>().Count());
+                    Assert.Equal(2, c.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Count());
 
                     var cM01 = (EventSymbol)c.FindImplementationForInterfaceMember(m01);
 
@@ -26697,8 +26697,8 @@ public class C1 : I1
 
                 c1 = compilation4.GlobalNamespace.GetTypeMember("C1");
                 i1 = c1.Interfaces().Single();
-                m01 = i1.GetMembers().OfType<EventSymbol>().Single();
-                c1M01 = c1.GetMembers().OfType<EventSymbol>().Single();
+                m01 = i1.GetMembersAsImmutable().OfType<EventSymbol>().Single();
+                c1M01 = c1.GetMembersAsImmutable().OfType<EventSymbol>().Single();
 
                 Assert.Same(c1M01, c1.FindImplementationForInterfaceMember(m01));
                 Assert.Same(c1M01.RemoveMethod, c1.FindImplementationForInterfaceMember(m01.RemoveMethod));
@@ -26727,8 +26727,8 @@ public class C1 : I1
 
                 c1 = compilation5.GlobalNamespace.GetTypeMember("C1");
                 i1 = c1.Interfaces().Single();
-                m01 = i1.GetMembers().OfType<EventSymbol>().Single();
-                c1M01 = c1.GetMembers().OfType<EventSymbol>().Single();
+                m01 = i1.GetMembersAsImmutable().OfType<EventSymbol>().Single();
+                c1M01 = c1.GetMembersAsImmutable().OfType<EventSymbol>().Single();
 
                 Assert.Same(c1M01, c1.FindImplementationForInterfaceMember(m01));
                 Assert.Same(c1M01.RemoveMethod, c1.FindImplementationForInterfaceMember(m01.RemoveMethod));
@@ -26757,8 +26757,8 @@ public class C1 : I1
 
                 c1 = compilation6.GlobalNamespace.GetTypeMember("C1");
                 i1 = c1.Interfaces().Single();
-                m01 = i1.GetMembers().OfType<EventSymbol>().Single();
-                c1M01 = c1.GetMembers().OfType<EventSymbol>().Single();
+                m01 = i1.GetMembersAsImmutable().OfType<EventSymbol>().Single();
+                c1M01 = c1.GetMembersAsImmutable().OfType<EventSymbol>().Single();
 
                 Assert.Same(c1M01, c1.FindImplementationForInterfaceMember(m01));
                 Assert.Same(c1M01.AddMethod, c1.FindImplementationForInterfaceMember(m01.AddMethod));
@@ -26787,8 +26787,8 @@ public class C1 : I1
 
                 c1 = compilation7.GlobalNamespace.GetTypeMember("C1");
                 i1 = c1.Interfaces().Single();
-                m01 = i1.GetMembers().OfType<EventSymbol>().Single();
-                c1M01 = c1.GetMembers().OfType<EventSymbol>().Single();
+                m01 = i1.GetMembersAsImmutable().OfType<EventSymbol>().Single();
+                c1M01 = c1.GetMembersAsImmutable().OfType<EventSymbol>().Single();
 
                 Assert.Same(c1M01, c1.FindImplementationForInterfaceMember(m01));
                 Assert.Same(c1M01.AddMethod, c1.FindImplementationForInterfaceMember(m01.AddMethod));
@@ -26872,8 +26872,8 @@ public class C1 : I2
             var c1 = compilation1.GlobalNamespace.GetTypeMember("C1");
             var i2 = c1.Interfaces().Single();
             var i1 = i2.Interfaces().Single();
-            var m01 = i1.GetMembers().OfType<EventSymbol>().Single();
-            var i2M01 = i2.GetMembers().OfType<EventSymbol>().Single();
+            var m01 = i1.GetMembersAsImmutable().OfType<EventSymbol>().Single();
+            var i2M01 = i2.GetMembersAsImmutable().OfType<EventSymbol>().Single();
 
             Assert.Same(i2M01, c1.FindImplementationForInterfaceMember(m01));
             Assert.Same(i2M01, i2.FindImplementationForInterfaceMember(m01));
@@ -26919,7 +26919,7 @@ class C2 : C1, I1
 
             void validate(ModuleSymbol module)
             {
-                var m01 = module.GlobalNamespace.GetTypeMember("I1").GetMembers().OfType<EventSymbol>().Single();
+                var m01 = module.GlobalNamespace.GetTypeMember("I1").GetMembersAsImmutable().OfType<EventSymbol>().Single();
                 var c2 = module.GlobalNamespace.GetTypeMember("C2");
 
                 var c2M01 = (EventSymbol)c2.FindImplementationForInterfaceMember(m01);
@@ -27121,9 +27121,9 @@ class C4 : I2
             void validate(ModuleSymbol module)
             {
                 var c1 = module.GlobalNamespace.GetTypeMember("C1");
-                var m01 = c1.Interfaces().Single().GetMembers().OfType<EventSymbol>().Single();
+                var m01 = c1.Interfaces().Single().GetMembersAsImmutable().OfType<EventSymbol>().Single();
 
-                var c1M01 = c1.GetMembers().OfType<EventSymbol>().Single();
+                var c1M01 = c1.GetMembersAsImmutable().OfType<EventSymbol>().Single();
                 var c1M01Add = c1M01.AddMethod;
                 var c1M01Remove = c1M01.RemoveMethod;
 
@@ -27228,13 +27228,13 @@ class C4 : I2
                 Assert.Same(m01.RemoveMethod, c2M01Remove.ExplicitInterfaceImplementations.Single());
                 Assert.Same(c2M01Remove, c2.FindImplementationForInterfaceMember(m01.RemoveMethod));
 
-                Assert.Same(c2M01, c2.GetMembers().OfType<EventSymbol>().Single());
-                Assert.Equal(2, c2.GetMembers().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Count());
+                Assert.Same(c2M01, c2.GetMembersAsImmutable().OfType<EventSymbol>().Single());
+                Assert.Equal(2, c2.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Count());
 
                 var c3 = module.GlobalNamespace.GetTypeMember("C3");
-                var m02 = c3.Interfaces().Single().GetMembers().OfType<EventSymbol>().Single();
+                var m02 = c3.Interfaces().Single().GetMembersAsImmutable().OfType<EventSymbol>().Single();
 
-                var c3M02 = c3.GetMembers().OfType<EventSymbol>().Single();
+                var c3M02 = c3.GetMembersAsImmutable().OfType<EventSymbol>().Single();
                 var c3M02Add = c3M02.AddMethod;
                 var c3M02Remove = c3M02.RemoveMethod;
 
@@ -27343,8 +27343,8 @@ class C4 : I2
                 Assert.Same(m02.RemoveMethod, c4M02Remove.ExplicitInterfaceImplementations.Single());
                 Assert.Same(c4M02Remove, c4.FindImplementationForInterfaceMember(m02.RemoveMethod));
 
-                Assert.Same(c4M02, c4.GetMembers().OfType<EventSymbol>().Single());
-                Assert.Equal(2, c4.GetMembers().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Count());
+                Assert.Same(c4M02, c4.GetMembersAsImmutable().OfType<EventSymbol>().Single());
+                Assert.Equal(2, c4.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Count());
             }
 
             verifier.VerifyIL("C1.I1.add_M01",
@@ -27446,10 +27446,10 @@ public class C3 : C2, I1
             void validate(ModuleSymbol module)
             {
                 var c3 = module.GlobalNamespace.GetTypeMember("C3");
-                Assert.Empty(c3.GetMembers().OfType<EventSymbol>());
-                Assert.Empty(c3.GetMembers().OfType<MethodSymbol>().Where(m => !m.IsConstructor()));
+                Assert.Empty(c3.GetMembersAsImmutable().OfType<EventSymbol>());
+                Assert.Empty(c3.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => !m.IsConstructor()));
 
-                var m01 = c3.Interfaces().Single().GetMembers("M01").OfType<EventSymbol>().Single();
+                var m01 = c3.Interfaces().Single().GetMembersAsImmutable("M01").OfType<EventSymbol>().Single();
 
                 var c1M01 = c3.BaseType().BaseType().GetMember<EventSymbol>("M01");
                 Assert.Equal("event System.Action C1.M01", c1M01.ToTestDisplayString());
@@ -27498,7 +27498,7 @@ public class C3 : C2, I1
                     Assert.Same(c1M01.RemoveMethod, c3.FindImplementationForInterfaceMember(m01.RemoveMethod));
                 }
 
-                var m02 = c3.Interfaces().Single().GetMembers("M02").OfType<EventSymbol>().Single();
+                var m02 = c3.Interfaces().Single().GetMembersAsImmutable("M02").OfType<EventSymbol>().Single();
 
                 var c2M02 = c3.BaseType().GetMember<EventSymbol>("I1.M02");
                 Assert.Equal("event System.Action C2.I1.M02", c2M02.ToTestDisplayString());
@@ -27580,7 +27580,7 @@ public class C3 : C2, I1
             void validate(ModuleSymbol module)
             {
                 var c3 = module.GlobalNamespace.GetTypeMember("C3");
-                var m01 = c3.Interfaces().Single().GetMembers().OfType<EventSymbol>().Single();
+                var m01 = c3.Interfaces().Single().GetMembersAsImmutable().OfType<EventSymbol>().Single();
 
                 var c2M01 = c3.BaseType().GetMember<EventSymbol>("M01");
                 var c2M01Add = c2M01.AddMethod;
@@ -27664,7 +27664,7 @@ public class C1<T> : I1
                                                  targetFramework: _supportingFramework,
                                                  references: new[] { CreateCompilation("", targetFramework: _supportingFramework).ToMetadataReference() });
 
-            Assert.Equal(2, compilation1.GlobalNamespace.GetTypeMember("C1").GetMembers().OfType<EventSymbol>().Where(m => m.Name.Contains("M01")).Count());
+            Assert.Equal(2, compilation1.GlobalNamespace.GetTypeMember("C1").GetMembersAsImmutable().OfType<EventSymbol>().Where(m => m.Name.Contains("M01")).Count());
             compilation1.VerifyDiagnostics();
 
             var source2 =
@@ -27690,7 +27690,7 @@ public class C2 : C1<int>, I1
             void validate(ModuleSymbol module)
             {
                 var c2 = module.GlobalNamespace.GetTypeMember("C2");
-                var m01 = c2.Interfaces().Single().GetMembers().OfType<EventSymbol>().Single();
+                var m01 = c2.Interfaces().Single().GetMembersAsImmutable().OfType<EventSymbol>().Single();
 
                 Assert.True(m01.ContainingModule is RetargetingModuleSymbol or PEModuleSymbol);
 
@@ -27734,7 +27734,7 @@ public class C1<T> : I1<T>
                                                  targetFramework: _supportingFramework,
                                                  references: new[] { CreateCompilation("", targetFramework: _supportingFramework).ToMetadataReference() });
 
-            Assert.Equal(2, compilation1.GlobalNamespace.GetTypeMember("C1").GetMembers().OfType<EventSymbol>().Where(m => m.Name.Contains("M01")).Count());
+            Assert.Equal(2, compilation1.GlobalNamespace.GetTypeMember("C1").GetMembersAsImmutable().OfType<EventSymbol>().Where(m => m.Name.Contains("M01")).Count());
 
             compilation1.VerifyDiagnostics();
 
@@ -27761,7 +27761,7 @@ public class C2 : C1<int>, I1<int>
             void validate(ModuleSymbol module)
             {
                 var c2 = module.GlobalNamespace.GetTypeMember("C2");
-                var m01 = c2.Interfaces().Single().GetMembers().OfType<EventSymbol>().Single();
+                var m01 = c2.Interfaces().Single().GetMembersAsImmutable().OfType<EventSymbol>().Single();
 
                 Assert.True(m01.ContainingModule is RetargetingModuleSymbol or PEModuleSymbol);
 
@@ -28181,40 +28181,40 @@ interface I14<T> : I1<T> where T : I1<T>
                 );
 
             var i2 = compilation1.GlobalNamespace.GetTypeMember("I2");
-            Assert.Null(i2.FindImplementationForInterfaceMember(i2.Interfaces().Single().GetMembers().OfType<MethodSymbol>().Single()));
+            Assert.Null(i2.FindImplementationForInterfaceMember(i2.Interfaces().Single().GetMembersAsImmutable().OfType<MethodSymbol>().Single()));
 
             var i3 = compilation1.GlobalNamespace.GetTypeMember("I3");
-            Assert.Null(i3.FindImplementationForInterfaceMember(i3.Interfaces().Single().GetMembers().OfType<MethodSymbol>().Single()));
+            Assert.Null(i3.FindImplementationForInterfaceMember(i3.Interfaces().Single().GetMembersAsImmutable().OfType<MethodSymbol>().Single()));
 
             var i4 = compilation1.GlobalNamespace.GetTypeMember("I4");
-            Assert.Null(i4.FindImplementationForInterfaceMember(i4.Interfaces().Single().GetMembers().OfType<MethodSymbol>().Single()));
+            Assert.Null(i4.FindImplementationForInterfaceMember(i4.Interfaces().Single().GetMembersAsImmutable().OfType<MethodSymbol>().Single()));
 
             var i5 = compilation1.GlobalNamespace.GetTypeMember("I5");
-            Assert.Null(i5.FindImplementationForInterfaceMember(i5.Interfaces().Single().GetMembers().OfType<MethodSymbol>().Single()));
+            Assert.Null(i5.FindImplementationForInterfaceMember(i5.Interfaces().Single().GetMembersAsImmutable().OfType<MethodSymbol>().Single()));
 
             var i6 = compilation1.GlobalNamespace.GetTypeMember("I6");
-            Assert.Same(i6.GetMembers().OfType<MethodSymbol>().Single(), i6.FindImplementationForInterfaceMember(i6.Interfaces().Single().GetMembers().OfType<MethodSymbol>().Single()));
+            Assert.Same(i6.GetMembersAsImmutable().OfType<MethodSymbol>().Single(), i6.FindImplementationForInterfaceMember(i6.Interfaces().Single().GetMembersAsImmutable().OfType<MethodSymbol>().Single()));
 
             var i7 = compilation1.GlobalNamespace.GetTypeMember("I7");
-            Assert.Null(i7.FindImplementationForInterfaceMember(i7.Interfaces().Single().GetMembers().OfType<MethodSymbol>().Single()));
+            Assert.Null(i7.FindImplementationForInterfaceMember(i7.Interfaces().Single().GetMembersAsImmutable().OfType<MethodSymbol>().Single()));
 
             var i8 = compilation1.GlobalNamespace.GetTypeMember("I8");
-            Assert.Null(i8.FindImplementationForInterfaceMember(i8.Interfaces().Single().GetMembers().OfType<MethodSymbol>().Single()));
+            Assert.Null(i8.FindImplementationForInterfaceMember(i8.Interfaces().Single().GetMembersAsImmutable().OfType<MethodSymbol>().Single()));
 
             var i9 = compilation1.GlobalNamespace.GetTypeMember("I9");
-            Assert.Null(i9.FindImplementationForInterfaceMember(i9.Interfaces().Single().GetMembers().OfType<MethodSymbol>().Single()));
+            Assert.Null(i9.FindImplementationForInterfaceMember(i9.Interfaces().Single().GetMembersAsImmutable().OfType<MethodSymbol>().Single()));
 
             var i10 = compilation1.GlobalNamespace.GetTypeMember("I10");
-            Assert.Null(i10.FindImplementationForInterfaceMember(i10.Interfaces().Single().GetMembers().OfType<MethodSymbol>().Single()));
+            Assert.Null(i10.FindImplementationForInterfaceMember(i10.Interfaces().Single().GetMembersAsImmutable().OfType<MethodSymbol>().Single()));
 
             var i12 = compilation1.GlobalNamespace.GetTypeMember("I12");
-            Assert.Same(i12.GetMembers().OfType<MethodSymbol>().Single(), i12.FindImplementationForInterfaceMember(i12.Interfaces().Single().GetMembers().OfType<MethodSymbol>().Single()));
+            Assert.Same(i12.GetMembersAsImmutable().OfType<MethodSymbol>().Single(), i12.FindImplementationForInterfaceMember(i12.Interfaces().Single().GetMembersAsImmutable().OfType<MethodSymbol>().Single()));
 
             var i13 = compilation1.GlobalNamespace.GetTypeMember("I13");
-            Assert.Null(i13.FindImplementationForInterfaceMember(i13.Interfaces().Single().GetMembers().OfType<MethodSymbol>().Single()));
+            Assert.Null(i13.FindImplementationForInterfaceMember(i13.Interfaces().Single().GetMembersAsImmutable().OfType<MethodSymbol>().Single()));
 
             var i14 = compilation1.GlobalNamespace.GetTypeMember("I14");
-            Assert.Null(i14.FindImplementationForInterfaceMember(i14.Interfaces().Single().GetMembers().OfType<MethodSymbol>().Single()));
+            Assert.Null(i14.FindImplementationForInterfaceMember(i14.Interfaces().Single().GetMembersAsImmutable().OfType<MethodSymbol>().Single()));
         }
 
         [Theory]
@@ -28344,44 +28344,44 @@ interface I14<T> : I1<T> where T : I1<T>
                 );
 
             var i2 = compilation1.GlobalNamespace.GetTypeMember("I2");
-            var m01 = i2.Interfaces().Single().GetMembers().OfType<MethodSymbol>().Single();
+            var m01 = i2.Interfaces().Single().GetMembersAsImmutable().OfType<MethodSymbol>().Single();
             Assert.Equal(m01, i2.FindImplementationForInterfaceMember(m01));
 
             var i3 = compilation1.GlobalNamespace.GetTypeMember("I3");
-            m01 = i3.Interfaces().Single().GetMembers().OfType<MethodSymbol>().Single();
+            m01 = i3.Interfaces().Single().GetMembersAsImmutable().OfType<MethodSymbol>().Single();
             Assert.Equal(m01, i3.FindImplementationForInterfaceMember(m01));
 
             var i4 = compilation1.GlobalNamespace.GetTypeMember("I4");
-            m01 = i4.Interfaces().Single().GetMembers().OfType<MethodSymbol>().Single();
+            m01 = i4.Interfaces().Single().GetMembersAsImmutable().OfType<MethodSymbol>().Single();
             Assert.Equal(m01, i4.FindImplementationForInterfaceMember(m01));
 
             var i5 = compilation1.GlobalNamespace.GetTypeMember("I5");
-            m01 = i5.Interfaces().Single().GetMembers().OfType<MethodSymbol>().Single();
+            m01 = i5.Interfaces().Single().GetMembersAsImmutable().OfType<MethodSymbol>().Single();
             Assert.Equal(m01, i5.FindImplementationForInterfaceMember(m01));
 
             var i6 = compilation1.GlobalNamespace.GetTypeMember("I6");
-            Assert.Same(i6.GetMembers().OfType<MethodSymbol>().Single(), i6.FindImplementationForInterfaceMember(i6.Interfaces().Single().GetMembers().OfType<MethodSymbol>().Single()));
+            Assert.Same(i6.GetMembersAsImmutable().OfType<MethodSymbol>().Single(), i6.FindImplementationForInterfaceMember(i6.Interfaces().Single().GetMembersAsImmutable().OfType<MethodSymbol>().Single()));
 
             var i7 = compilation1.GlobalNamespace.GetTypeMember("I7");
-            m01 = i7.Interfaces().Single().GetMembers().OfType<MethodSymbol>().Single();
+            m01 = i7.Interfaces().Single().GetMembersAsImmutable().OfType<MethodSymbol>().Single();
             Assert.Equal(m01, i7.FindImplementationForInterfaceMember(m01));
 
             foreach (var name in new[] { "I8", "I9", "I10" })
             {
                 var iX = compilation1.GlobalNamespace.GetTypeMember(name);
-                var iXM = iX.Interfaces().Single().GetMembers().OfType<MethodSymbol>().Single();
+                var iXM = iX.Interfaces().Single().GetMembersAsImmutable().OfType<MethodSymbol>().Single();
                 Assert.Equal(iXM, iX.FindImplementationForInterfaceMember(iXM));
             }
 
             foreach (var name in new[] { "I12", "I13" })
             {
                 var iX = compilation1.GlobalNamespace.GetTypeMember(name);
-                var iXM = iX.Interfaces().Single().GetMembers().OfType<MethodSymbol>().Single();
-                Assert.Equal(iX.GetMembers().OfType<MethodSymbol>().Single(), iX.FindImplementationForInterfaceMember(iXM));
+                var iXM = iX.Interfaces().Single().GetMembersAsImmutable().OfType<MethodSymbol>().Single();
+                Assert.Equal(iX.GetMembersAsImmutable().OfType<MethodSymbol>().Single(), iX.FindImplementationForInterfaceMember(iXM));
             }
 
             var i14 = compilation1.GlobalNamespace.GetTypeMember("I14");
-            Assert.Same(i14.GetMembers().OfType<MethodSymbol>().Single(), i14.FindImplementationForInterfaceMember(i14.Interfaces().Single().GetMembers().OfType<MethodSymbol>().Single()));
+            Assert.Same(i14.GetMembersAsImmutable().OfType<MethodSymbol>().Single(), i14.FindImplementationForInterfaceMember(i14.Interfaces().Single().GetMembersAsImmutable().OfType<MethodSymbol>().Single()));
         }
 
         [Theory]
@@ -28660,9 +28660,9 @@ partial " + typeKeyword + @"
             {
                 var c = module.GlobalNamespace.GetTypeMember("C");
                 var i1 = c.Interfaces().Single();
-                Assert.Equal(isChecked ? 4 : 2, c.GetMembers().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Count());
+                Assert.Equal(isChecked ? 4 : 2, c.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Count());
 
-                var m01 = i1.GetMembers().OfType<MethodSymbol>().First();
+                var m01 = i1.GetMembersAsImmutable().OfType<MethodSymbol>().First();
 
                 var cM01 = (MethodSymbol)c.FindImplementationForInterfaceMember(m01);
 
@@ -28687,7 +28687,7 @@ partial " + typeKeyword + @"
                     Assert.Empty(cM01.ExplicitInterfaceImplementations);
                 }
 
-                var m02 = i1.GetMembers().OfType<MethodSymbol>().ElementAt(1);
+                var m02 = i1.GetMembersAsImmutable().OfType<MethodSymbol>().ElementAt(1);
 
                 var cM02 = (MethodSymbol)c.FindImplementationForInterfaceMember(m02);
 
@@ -28787,9 +28787,9 @@ partial " + typeKeyword + @"
             void validate(ModuleSymbol module)
             {
                 var c = module.GlobalNamespace.GetTypeMember("C");
-                Assert.Equal(isChecked ? 4 : 2, c.GetMembers().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Count());
+                Assert.Equal(isChecked ? 4 : 2, c.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Count());
 
-                var m01 = c.Interfaces().Single().GetMembers().OfType<MethodSymbol>().First();
+                var m01 = c.Interfaces().Single().GetMembersAsImmutable().OfType<MethodSymbol>().First();
                 var cM01 = (MethodSymbol)c.FindImplementationForInterfaceMember(m01);
 
                 Assert.True(cM01.IsStatic);
@@ -28805,7 +28805,7 @@ partial " + typeKeyword + @"
                 Assert.Equal("C C.I1<C>." + opName + "(C x)", cM01.ToTestDisplayString());
                 Assert.Equal(m01, cM01.ExplicitInterfaceImplementations.Single());
 
-                var m02 = c.Interfaces().Single().GetMembers().OfType<MethodSymbol>().ElementAt(1);
+                var m02 = c.Interfaces().Single().GetMembersAsImmutable().OfType<MethodSymbol>().ElementAt(1);
                 var cM02 = (MethodSymbol)c.FindImplementationForInterfaceMember(m02);
 
                 Assert.True(cM02.IsStatic);
@@ -28894,8 +28894,8 @@ public class C3 : C2, I1<C2>
             void validate(ModuleSymbol module)
             {
                 var c3 = module.GlobalNamespace.GetTypeMember("C3");
-                Assert.Empty(c3.GetMembers().OfType<MethodSymbol>().Where(m => !m.IsConstructor()));
-                var m01 = c3.Interfaces().Single().GetMembers(opName).OfType<MethodSymbol>().Single();
+                Assert.Empty(c3.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => !m.IsConstructor()));
+                var m01 = c3.Interfaces().Single().GetMembersAsImmutable(opName).OfType<MethodSymbol>().Single();
 
                 var cM01 = (MethodSymbol)c3.FindImplementationForInterfaceMember(m01);
 
@@ -29013,7 +29013,7 @@ public class C5 : C2, I1<C1>
             compilation1.VerifyDiagnostics();
 
             var c1 = compilation1.GlobalNamespace.GetTypeMember("C1");
-            var m01 = c1.Interfaces().Single().GetMembers().OfType<MethodSymbol>().Single();
+            var m01 = c1.Interfaces().Single().GetMembersAsImmutable().OfType<MethodSymbol>().Single();
 
             Assert.Equal(MethodKind.Conversion, m01.MethodKind);
             Assert.Equal(MethodKind.Conversion, c1.GetMember<MethodSymbol>(opName).MethodKind);
@@ -29093,7 +29093,7 @@ public class C1 : I1<C1>
 
             var c1 = compilation1.GlobalNamespace.GetTypeMember("C1");
             var i1 = c1.Interfaces().Single();
-            var m01 = i1.GetMembers().OfType<MethodSymbol>().Single();
+            var m01 = i1.GetMembersAsImmutable().OfType<MethodSymbol>().Single();
 
             Assert.Equal(MethodKind.Conversion, m01.MethodKind);
             Assert.Equal(m01, c1.FindImplementationForInterfaceMember(m01));
@@ -29124,7 +29124,7 @@ public class C1 : I1<C1>
             compilation2.VerifyEmitDiagnostics();
 
             c1 = compilation2.GlobalNamespace.GetTypeMember("C1");
-            m01 = c1.Interfaces().Single().GetMembers().OfType<MethodSymbol>().Single();
+            m01 = c1.Interfaces().Single().GetMembersAsImmutable().OfType<MethodSymbol>().Single();
 
             Assert.Equal("System.Int32 I1<C1>." + opName + "(C1 x)", m01.ToTestDisplayString());
             Assert.Equal("System.Int32 C1.I1<C1>." + opName + "(C1 x)", c1.FindImplementationForInterfaceMember(m01).ToTestDisplayString());
@@ -29188,8 +29188,8 @@ public class C1 : I2<C1>
             var c1 = compilation1.GlobalNamespace.GetTypeMember("C1");
             var i2 = c1.Interfaces().Single();
             var i1 = i2.Interfaces().Single();
-            var m01 = i1.GetMembers().OfType<MethodSymbol>().Single();
-            var i2M01 = i2.GetMembers().OfType<MethodSymbol>().Single();
+            var m01 = i1.GetMembersAsImmutable().OfType<MethodSymbol>().Single();
+            var i2M01 = i2.GetMembersAsImmutable().OfType<MethodSymbol>().Single();
 
             Assert.Equal(MethodKind.Conversion, m01.MethodKind);
             Assert.Equal(i2M01, c1.FindImplementationForInterfaceMember(m01));
@@ -29254,7 +29254,7 @@ public partial class C1<T>
             {
                 var c2 = module.GlobalNamespace.GetTypeMember("C2");
                 var i1 = c2.Interfaces().Single();
-                var m01 = i1.GetMembers(opName).OfType<MethodSymbol>().Single();
+                var m01 = i1.GetMembersAsImmutable(opName).OfType<MethodSymbol>().Single();
 
                 var c2M01 = (MethodSymbol)c2.FindImplementationForInterfaceMember(m01);
 
@@ -29369,7 +29369,7 @@ partial class C1 : I1<C1>
             void validate(ModuleSymbol module)
             {
                 var c1 = module.GlobalNamespace.GetTypeMember("C1");
-                var m01 = c1.Interfaces().Single().GetMembers().OfType<MethodSymbol>().Single();
+                var m01 = c1.Interfaces().Single().GetMembersAsImmutable().OfType<MethodSymbol>().Single();
 
                 var c1M01 = (MethodSymbol)c1.FindImplementationForInterfaceMember(m01);
 
@@ -29407,7 +29407,7 @@ partial class C1 : I1<C1>
                 }
 
                 var c2 = module.GlobalNamespace.GetTypeMember("C2");
-                m01 = c2.Interfaces().Single().GetMembers().OfType<MethodSymbol>().Single();
+                m01 = c2.Interfaces().Single().GetMembersAsImmutable().OfType<MethodSymbol>().Single();
                 var c2M01 = (MethodSymbol)c2.FindImplementationForInterfaceMember(m01);
 
                 Assert.True(c2M01.IsStatic);
@@ -29421,7 +29421,7 @@ partial class C1 : I1<C1>
                 Assert.Equal("System.Int32 modopt(I1<>) C2.I1<C2>." + opName + "(C2 x)", c2M01.ToTestDisplayString());
                 Assert.Equal(m01, c2M01.ExplicitInterfaceImplementations.Single());
 
-                Assert.Same(c2M01, c2.GetMembers().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Single());
+                Assert.Same(c2M01, c2.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Single());
             }
 
             verifier.VerifyIL("C1.I1<C1>." + opName + "(C1)",
@@ -29519,9 +29519,9 @@ public class C3 : C2, I1<C2>
             void validate(ModuleSymbol module)
             {
                 var c3 = module.GlobalNamespace.GetTypeMember("C3");
-                Assert.Empty(c3.GetMembers().OfType<MethodSymbol>().Where(m => !m.IsConstructor()));
+                Assert.Empty(c3.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => !m.IsConstructor()));
 
-                var m01 = c3.Interfaces().Single().GetMembers(opName).OfType<MethodSymbol>().First();
+                var m01 = c3.Interfaces().Single().GetMembersAsImmutable(opName).OfType<MethodSymbol>().First();
 
                 var c1M01 = c3.BaseType().BaseType().GetMember<MethodSymbol>(opName);
                 Assert.Equal("C1<C2> C1<C2>." + opName + "(C2 x)", c1M01.ToTestDisplayString());
@@ -29546,9 +29546,9 @@ public class C3 : C2, I1<C2>
                     Assert.Equal(c1M01, c3.FindImplementationForInterfaceMember(m01));
                 }
 
-                var m02 = c3.Interfaces().Single().GetMembers(opName).OfType<MethodSymbol>().ElementAt(1);
+                var m02 = c3.Interfaces().Single().GetMembersAsImmutable(opName).OfType<MethodSymbol>().ElementAt(1);
 
-                var c2M02 = c3.BaseType().GetMembers("I1<C2>." + opName).OfType<MethodSymbol>().First();
+                var c2M02 = c3.BaseType().GetMembersAsImmutable("I1<C2>." + opName).OfType<MethodSymbol>().First();
                 Assert.Equal("C2 C2.I1<C2>." + opName + "(System.Int32 x)", c2M02.ToTestDisplayString());
                 Assert.Same(c2M02, c3.FindImplementationForInterfaceMember(m02));
             }
@@ -29612,7 +29612,7 @@ public partial class C1<T, U> : I1<C1<T, U>, U>
                                                  references: new[] { CreateCompilation("", targetFramework: _supportingFramework).ToMetadataReference() });
 
             compilation1.VerifyDiagnostics();
-            Assert.Equal(2, compilation1.GlobalNamespace.GetTypeMember("C1").GetMembers().Where(m => m.Name.Contains(opName)).Count());
+            Assert.Equal(2, compilation1.GlobalNamespace.GetTypeMember("C1").GetMembersAsImmutable().Where(m => m.Name.Contains(opName)).Count());
 
             var source2 =
 @"
@@ -29637,7 +29637,7 @@ public class C2 : C1<int, int>, I1<C1<int, int>, int>
             void validate(ModuleSymbol module)
             {
                 var c2 = module.GlobalNamespace.GetTypeMember("C2");
-                var m01 = c2.Interfaces().Single().GetMembers(opName).OfType<MethodSymbol>().Single();
+                var m01 = c2.Interfaces().Single().GetMembersAsImmutable(opName).OfType<MethodSymbol>().Single();
 
                 Assert.True(m01.ContainingModule is RetargetingModuleSymbol or PEModuleSymbol);
 
@@ -29718,7 +29718,7 @@ public partial class C1<T, U> : I1<C1<T, U>, U>
                                                  references: new[] { CreateCompilation("", targetFramework: _supportingFramework).ToMetadataReference() });
 
             compilation1.VerifyDiagnostics();
-            Assert.Equal(2, compilation1.GlobalNamespace.GetTypeMember("C1").GetMembers().Where(m => m.Name.Contains(opName)).Count());
+            Assert.Equal(2, compilation1.GlobalNamespace.GetTypeMember("C1").GetMembersAsImmutable().Where(m => m.Name.Contains(opName)).Count());
 
             var source2 =
 @"
@@ -29743,7 +29743,7 @@ public class C2 : C1<int, int>, I1<C1<int, int>, int>
             void validate(ModuleSymbol module)
             {
                 var c2 = module.GlobalNamespace.GetTypeMember("C2");
-                var m01 = c2.Interfaces().Single().GetMembers(opName).OfType<MethodSymbol>().Single();
+                var m01 = c2.Interfaces().Single().GetMembersAsImmutable(opName).OfType<MethodSymbol>().Single();
 
                 Assert.True(m01.ContainingModule is RetargetingModuleSymbol or PEModuleSymbol);
 
@@ -29857,7 +29857,7 @@ class
 
             var c1 = compilation1.GlobalNamespace.GetTypeMember("C1");
 
-            Assert.Equal(Accessibility.Private, c1.GetMembers().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Single().DeclaredAccessibility);
+            Assert.Equal(Accessibility.Private, c1.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => !m.IsConstructor()).Single().DeclaredAccessibility);
 
             compilation1.GetDiagnostics().Where(d => d.Code is not (int)ErrorCode.WRN_ExternMethodNoImplementation).Verify(
                 // (16,45): error CS0106: The modifier 'private' is not valid for this item
@@ -31622,7 +31622,7 @@ class YetAnother : Interface<int, int>
             {
                 var b = module.GlobalNamespace.GetTypeMember("Base");
                 var bI = b.Interfaces().Single();
-                var biMethods = bI.GetMembers();
+                var biMethods = bI.GetMembersAsImmutable();
 
                 Assert.Equal("void Interface<T, U>.Method(System.Int32 i)", biMethods[0].OriginalDefinition.ToTestDisplayString());
                 Assert.Equal("void Interface<T, U>.Method(T i)", biMethods[1].OriginalDefinition.ToTestDisplayString());
@@ -31657,7 +31657,7 @@ class YetAnother : Interface<int, int>
                 var d = module.GlobalNamespace.GetTypeMember("Derived");
                 var dB = d.BaseTypeNoUseSiteDiagnostics;
                 var dI = d.Interfaces().Single();
-                var diMethods = dI.GetMembers();
+                var diMethods = dI.GetMembersAsImmutable();
 
                 Assert.Equal("void Interface<T, U>.Method(System.Int32 i)", diMethods[0].OriginalDefinition.ToTestDisplayString());
                 Assert.Equal("void Interface<T, U>.Method(T i)", diMethods[1].OriginalDefinition.ToTestDisplayString());
@@ -31720,7 +31720,7 @@ public class Derived : Base<int>, Interface<int, int>
                 var d = module.GlobalNamespace.GetTypeMember("Derived");
                 var dB = d.BaseTypeNoUseSiteDiagnostics;
                 var dI = d.Interfaces().Single();
-                var diMethods = dI.GetMembers();
+                var diMethods = dI.GetMembersAsImmutable();
 
                 Assert.Equal("void Interface<T, U>.Method(System.Int32 i)", diMethods[0].OriginalDefinition.ToTestDisplayString());
                 Assert.Equal("void Interface<T, U>.Method(T i)", diMethods[1].OriginalDefinition.ToTestDisplayString());
@@ -31789,7 +31789,7 @@ public class Derived : Base<int>, Interface<int, int>
             var d = compilation1.GlobalNamespace.GetTypeMember("Derived");
             var dB = d.BaseTypeNoUseSiteDiagnostics;
             var dI = d.Interfaces().Single();
-            var diMethods = dI.GetMembers();
+            var diMethods = dI.GetMembersAsImmutable();
 
             Assert.IsType<RetargetingNamedTypeSymbol>(dB.OriginalDefinition);
 
@@ -32188,7 +32188,7 @@ interface C
                     );
 
                 var c = compilation1.SourceModule.GlobalNamespace.GetTypeMember("C");
-                var opSymbol = c.GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
+                var opSymbol = c.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
 
                 Assert.Equal(MethodKind.UserDefinedOperator, opSymbol.MethodKind);
                 Assert.Equal(name, opSymbol.Name);
@@ -32225,7 +32225,7 @@ interface C
                 );
 
             var c = compilation1.SourceModule.GlobalNamespace.GetTypeMember("C");
-            var opSymbols = c.GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).ToArray();
+            var opSymbols = c.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).ToArray();
             Assert.Equal(2, opSymbols.Length);
 
             var opSymbol1 = opSymbols[0];
@@ -32436,7 +32436,7 @@ interface C
                     );
 
                 var c = compilation1.SourceModule.GlobalNamespace.GetTypeMember("C");
-                var opSymbol = c.GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
+                var opSymbol = c.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
 
                 Assert.Equal(MethodKind.UserDefinedOperator, opSymbol.MethodKind);
                 Assert.Equal(name, opSymbol.Name);
@@ -32623,7 +32623,7 @@ interface C<T> where T : C<T>
                 );
 
             var c = compilation1.SourceModule.GlobalNamespace.GetTypeMember("C");
-            var opSymbol = c.GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
+            var opSymbol = c.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind != MethodKind.Constructor).Single();
 
             Assert.Equal(MethodKind.Conversion, opSymbol.MethodKind);
             Assert.Equal("op_Implicit", opSymbol.Name);
@@ -33669,7 +33669,7 @@ partial class C1
 
             void validate(ModuleSymbol module)
             {
-                foreach (var m01 in module.GlobalNamespace.GetTypeMember("I1").GetMembers().OfType<MethodSymbol>())
+                foreach (var m01 in module.GlobalNamespace.GetTypeMember("I1").GetMembersAsImmutable().OfType<MethodSymbol>())
                 {
                     var modifier = m01.Parameters.First().RefCustomModifiers.Single();
                     Assert.Equal("System.Runtime.InteropServices.InAttribute", modifier.Modifier.ToTestDisplayString());
@@ -33726,7 +33726,7 @@ partial class C1
 
             void validate(ModuleSymbol module)
             {
-                foreach (var m01 in module.GlobalNamespace.GetTypeMember("I1").GetMembers().OfType<MethodSymbol>())
+                foreach (var m01 in module.GlobalNamespace.GetTypeMember("I1").GetMembersAsImmutable().OfType<MethodSymbol>())
                 {
                     var modifier = m01.Parameters.Last().RefCustomModifiers.Single();
                     Assert.Equal("System.Runtime.InteropServices.InAttribute", modifier.Modifier.ToTestDisplayString());

@@ -193,16 +193,16 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
 
             var globalNamespace = assemblies.ElementAt(1).GlobalNamespace;
 
-            var @interface = (NamedTypeSymbol)globalNamespace.GetTypeMembers("Interface").Single();
+            var @interface = (NamedTypeSymbol)globalNamespace.GetTypeMembersAsImmutable("Interface").Single();
             Assert.Equal(TypeKind.Interface, @interface.TypeKind);
 
-            var interfaceEvent = (EventSymbol)@interface.GetMembers("Event").Single();
+            var interfaceEvent = (EventSymbol)@interface.GetMembersAsImmutable("Event").Single();
 
-            var @class = (NamedTypeSymbol)globalNamespace.GetTypeMembers("Class").Single();
+            var @class = (NamedTypeSymbol)globalNamespace.GetTypeMembersAsImmutable("Class").Single();
             Assert.Equal(TypeKind.Class, @class.TypeKind);
             Assert.True(@class.Interfaces().Contains(@interface));
 
-            var classEvent = (EventSymbol)@class.GetMembers("Interface.Event").Single();
+            var classEvent = (EventSymbol)@class.GetMembersAsImmutable("Interface.Event").Single();
 
             var explicitImpl = classEvent.ExplicitInterfaceImplementations.Single();
             Assert.Equal(interfaceEvent, explicitImpl);
@@ -220,21 +220,21 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
 
             var globalNamespace = assemblies.ElementAt(1).GlobalNamespace;
 
-            var @interface = (NamedTypeSymbol)globalNamespace.GetTypeMembers("IGeneric").Single();
+            var @interface = (NamedTypeSymbol)globalNamespace.GetTypeMembersAsImmutable("IGeneric").Single();
             Assert.Equal(TypeKind.Interface, @interface.TypeKind);
 
-            var interfaceEvent = (EventSymbol)@interface.GetMembers("Event").Single();
+            var interfaceEvent = (EventSymbol)@interface.GetMembersAsImmutable("Event").Single();
 
-            var @class = (NamedTypeSymbol)globalNamespace.GetTypeMembers("Generic").Single();
+            var @class = (NamedTypeSymbol)globalNamespace.GetTypeMembersAsImmutable("Generic").Single();
             Assert.Equal(TypeKind.Class, @class.TypeKind);
 
             var substitutedInterface = @class.Interfaces().Single();
             Assert.Equal(@interface, substitutedInterface.ConstructedFrom);
 
-            var substitutedInterfaceEvent = (EventSymbol)substitutedInterface.GetMembers("Event").Single();
+            var substitutedInterfaceEvent = (EventSymbol)substitutedInterface.GetMembersAsImmutable("Event").Single();
             Assert.Equal(interfaceEvent, substitutedInterfaceEvent.OriginalDefinition);
 
-            var classEvent = (EventSymbol)@class.GetMembers("IGeneric<S>.Event").Single();
+            var classEvent = (EventSymbol)@class.GetMembersAsImmutable("IGeneric<S>.Event").Single();
 
             var explicitImpl = classEvent.ExplicitInterfaceImplementations.Single();
             Assert.Equal(substitutedInterfaceEvent, explicitImpl);
@@ -252,21 +252,21 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
 
             var globalNamespace = assemblies.ElementAt(1).GlobalNamespace;
 
-            var @interface = (NamedTypeSymbol)globalNamespace.GetTypeMembers("IGeneric").Single();
+            var @interface = (NamedTypeSymbol)globalNamespace.GetTypeMembersAsImmutable("IGeneric").Single();
             Assert.Equal(TypeKind.Interface, @interface.TypeKind);
 
-            var interfaceEvent = (EventSymbol)@interface.GetMembers("Event").Single();
+            var interfaceEvent = (EventSymbol)@interface.GetMembersAsImmutable("Event").Single();
 
-            var @class = (NamedTypeSymbol)globalNamespace.GetTypeMembers("Constructed").Single();
+            var @class = (NamedTypeSymbol)globalNamespace.GetTypeMembersAsImmutable("Constructed").Single();
             Assert.Equal(TypeKind.Class, @class.TypeKind);
 
             var substitutedInterface = @class.Interfaces().Single();
             Assert.Equal(@interface, substitutedInterface.ConstructedFrom);
 
-            var substitutedInterfaceEvent = (EventSymbol)substitutedInterface.GetMembers("Event").Single();
+            var substitutedInterfaceEvent = (EventSymbol)substitutedInterface.GetMembersAsImmutable("Event").Single();
             Assert.Equal(interfaceEvent, substitutedInterfaceEvent.OriginalDefinition);
 
-            var classEvent = (EventSymbol)@class.GetMembers("IGeneric<System.Int32>.Event").Single();
+            var classEvent = (EventSymbol)@class.GetMembersAsImmutable("IGeneric<System.Int32>.Event").Single();
 
             var explicitImpl = classEvent.ExplicitInterfaceImplementations.Single();
             Assert.Equal(substitutedInterfaceEvent, explicitImpl);
@@ -288,16 +288,16 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
 
             var globalNamespace = assemblies.ElementAt(1).GlobalNamespace;
 
-            var defInterface = (NamedTypeSymbol)globalNamespace.GetTypeMembers("Interface").Single();
+            var defInterface = (NamedTypeSymbol)globalNamespace.GetTypeMembersAsImmutable("Interface").Single();
             Assert.Equal(TypeKind.Interface, defInterface.TypeKind);
 
-            var defInterfaceEvent = (EventSymbol)defInterface.GetMembers("Event").Single();
+            var defInterfaceEvent = (EventSymbol)defInterface.GetMembersAsImmutable("Event").Single();
 
-            var refInterface = (NamedTypeSymbol)globalNamespace.GetTypeMembers("IGenericInterface").Single();
+            var refInterface = (NamedTypeSymbol)globalNamespace.GetTypeMembersAsImmutable("IGenericInterface").Single();
             Assert.Equal(TypeKind.Interface, defInterface.TypeKind);
             Assert.True(refInterface.Interfaces().Contains(defInterface));
 
-            var @class = (NamedTypeSymbol)globalNamespace.GetTypeMembers("IndirectImplementation").Single();
+            var @class = (NamedTypeSymbol)globalNamespace.GetTypeMembersAsImmutable("IndirectImplementation").Single();
             Assert.Equal(TypeKind.Class, @class.TypeKind);
 
             var classInterfacesConstructedFrom = @class.Interfaces().Select(i => i.ConstructedFrom);
@@ -305,7 +305,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             Assert.Contains(defInterface, classInterfacesConstructedFrom);
             Assert.Contains(refInterface, classInterfacesConstructedFrom);
 
-            var classEvent = (EventSymbol)@class.GetMembers("Interface.Event").Single();
+            var classEvent = (EventSymbol)@class.GetMembersAsImmutable("Interface.Event").Single();
 
             var explicitImpl = classEvent.ExplicitInterfaceImplementations.Single();
             Assert.Equal(defInterfaceEvent, explicitImpl);
@@ -328,32 +328,32 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
 
             var globalNamespace = assemblies.ElementAt(1).GlobalNamespace;
 
-            var outerInterface = (NamedTypeSymbol)globalNamespace.GetTypeMembers("IGeneric2").Single();
+            var outerInterface = (NamedTypeSymbol)globalNamespace.GetTypeMembersAsImmutable("IGeneric2").Single();
             Assert.Equal(1, outerInterface.Arity);
             Assert.Equal(TypeKind.Interface, outerInterface.TypeKind);
 
-            var outerInterfaceEvent = outerInterface.GetMembers().Single(m => m.Kind == SymbolKind.Event);
+            var outerInterfaceEvent = outerInterface.GetMembersAsImmutable().Single(m => m.Kind == SymbolKind.Event);
 
-            var outerClass = (NamedTypeSymbol)globalNamespace.GetTypeMembers("Outer").Single();
+            var outerClass = (NamedTypeSymbol)globalNamespace.GetTypeMembersAsImmutable("Outer").Single();
             Assert.Equal(1, outerClass.Arity);
             Assert.Equal(TypeKind.Class, outerClass.TypeKind);
 
-            var innerInterface = (NamedTypeSymbol)outerClass.GetTypeMembers("IInner").Single();
+            var innerInterface = (NamedTypeSymbol)outerClass.GetTypeMembersAsImmutable("IInner").Single();
             Assert.Equal(1, innerInterface.Arity);
             Assert.Equal(TypeKind.Interface, innerInterface.TypeKind);
 
-            var innerInterfaceEvent = innerInterface.GetMembers().Single(m => m.Kind == SymbolKind.Event);
+            var innerInterfaceEvent = innerInterface.GetMembersAsImmutable().Single(m => m.Kind == SymbolKind.Event);
 
-            var innerClass1 = (NamedTypeSymbol)outerClass.GetTypeMembers("Inner1").Single();
+            var innerClass1 = (NamedTypeSymbol)outerClass.GetTypeMembersAsImmutable("Inner1").Single();
             CheckInnerClassHelper(innerClass1, "IGeneric2<A>.Event", outerInterfaceEvent);
 
-            var innerClass2 = (NamedTypeSymbol)outerClass.GetTypeMembers("Inner2").Single();
+            var innerClass2 = (NamedTypeSymbol)outerClass.GetTypeMembersAsImmutable("Inner2").Single();
             CheckInnerClassHelper(innerClass2, "IGeneric2<T>.Event", outerInterfaceEvent);
 
-            var innerClass3 = (NamedTypeSymbol)outerClass.GetTypeMembers("Inner3").Single();
+            var innerClass3 = (NamedTypeSymbol)outerClass.GetTypeMembersAsImmutable("Inner3").Single();
             CheckInnerClassHelper(innerClass3, "Outer<T>.IInner<C>.Event", innerInterfaceEvent);
 
-            var innerClass4 = (NamedTypeSymbol)outerClass.GetTypeMembers("Inner4").Single();
+            var innerClass4 = (NamedTypeSymbol)outerClass.GetTypeMembersAsImmutable("Inner4").Single();
             CheckInnerClassHelper(innerClass4, "Outer<T>.IInner<T>.Event", innerInterfaceEvent);
         }
 
@@ -365,7 +365,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             Assert.Equal(TypeKind.Class, innerClass.TypeKind);
             Assert.Equal(@interface, innerClass.Interfaces().Single().ConstructedFrom);
 
-            var innerClassEvent = (EventSymbol)innerClass.GetMembers(methodName).Single();
+            var innerClassEvent = (EventSymbol)innerClass.GetMembersAsImmutable(methodName).Single();
             var innerClassImplementingEvent = innerClassEvent.ExplicitInterfaceImplementations.Single();
             Assert.Equal(interfaceEvent, innerClassImplementingEvent.OriginalDefinition);
             Assert.Equal(@interface, innerClassImplementingEvent.ContainingType.ConstructedFrom);
@@ -523,7 +523,7 @@ public class C
             comp.VerifyDiagnostics();
 
             var type = comp.GlobalNamespace.GetMember<NamedTypeSymbol>("C");
-            var @event = type.GetMembers().OfType<PEEventSymbol>().Single();
+            var @event = type.GetMembersAsImmutable().OfType<PEEventSymbol>().Single();
             Assert.True(@event.HasAssociatedField);
 
             var field = @event.AssociatedField;
@@ -583,7 +583,7 @@ public class C
             comp.VerifyDiagnostics();
 
             var type = comp.GlobalNamespace.GetMember<NamedTypeSymbol>("C");
-            var events = type.GetMembers().OfType<PEEventSymbol>();
+            var events = type.GetMembersAsImmutable().OfType<PEEventSymbol>();
             Assert.Equal(2, events.Count());
             AssertEx.All(events, e => e.HasAssociatedField);
 

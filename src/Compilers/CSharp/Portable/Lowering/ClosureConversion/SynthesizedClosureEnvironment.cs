@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using Microsoft.CodeAnalysis.CodeGen;
+using Microsoft.CodeAnalysis.Collections;
 using Microsoft.CodeAnalysis.CSharp.Symbols;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.CodeAnalysis.PooledObjects;
@@ -99,7 +100,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             throw ExceptionUtilities.UnexpectedValue(syntaxOpt.Kind());
         }
 
-        public override ImmutableArray<Symbol> GetMembers()
+        public override ArrayWrapper<Symbol> GetMembers()
         {
             if (_members.IsDefault)
             {
@@ -114,7 +115,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                 _membersBuilder = null;
             }
 
-            return _members;
+            return new ArrayWrapper<Symbol>(_members);
         }
 
         /// <summary>

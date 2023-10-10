@@ -10,7 +10,6 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Threading;
 using Microsoft.CodeAnalysis.Collections;
-using Microsoft.CodeAnalysis.PooledObjects;
 using Microsoft.CodeAnalysis.Text;
 using Roslyn.Utilities;
 using ReferenceEqualityComparer = Roslyn.Utilities.ReferenceEqualityComparer;
@@ -130,7 +129,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             return _mergedDeclaration.Declarations.SelectAsArray(s_declaringSyntaxReferencesSelector);
         }
 
-        internal override ImmutableArray<Symbol> GetMembersUnordered()
+        internal override ArrayWrapper<Symbol> GetMembersUnordered()
         {
             var result = _lazyAllMembers;
 
@@ -141,24 +140,26 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 result = _lazyAllMembers;
             }
 
-            return result.ConditionallyDeOrder();
+            return new ArrayWrapper<Symbol>(result.ConditionallyDeOrder());
         }
 
-        public override ImmutableArray<Symbol> GetMembers()
+        public override ArrayWrapper<Symbol> GetMembers()
         {
             if ((_flags & LazyAllMembersIsSorted) != 0)
             {
-                return _lazyAllMembers;
+                return new ArrayWrapper<Symbol>(_lazyAllMembers);
             }
             else
             {
-                var allMembers = this.GetMembersUnordered();
+                using var allMembers = this.GetMembersUnordered();
 
-                if (allMembers.Length >= 2)
+                if (allMembers.Count >= 2)
                 {
+                    var allMembersInImmutableArray = allMembers.ToImmutableArray();
+
                     // The array isn't sorted. Sort it and remember that we sorted it.
-                    allMembers = allMembers.Sort(LexicalOrderSymbolComparer.Instance);
-                    ImmutableInterlocked.InterlockedExchange(ref _lazyAllMembers, allMembers);
+                    allMembersInImmutableArray = allMembersInImmutableArray.Sort(LexicalOrderSymbolComparer.Instance);
+                    ImmutableInterlocked.InterlockedExchange(ref _lazyAllMembers, allMembersInImmutableArray);
                 }
 
                 ThreadSafeFlagOperations.Set(ref _flags, LazyAllMembersIsSorted);
@@ -166,15 +167,15 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
         }
 
-        public override ImmutableArray<Symbol> GetMembers(ReadOnlyMemory<char> name)
+        public override ArrayWrapper<Symbol> GetMembers(ReadOnlyMemory<char> name)
         {
             ImmutableArray<NamespaceOrTypeSymbol> members;
             return this.GetNameToMembersMap().TryGetValue(name, out members)
-                ? members.Cast<NamespaceOrTypeSymbol, Symbol>()
-                : ImmutableArray<Symbol>.Empty;
+                ? new ArrayWrapper<Symbol>(members.Cast<NamespaceOrTypeSymbol, Symbol>())
+                : ArrayWrapper<Symbol>.Empty;
         }
 
-        internal override ImmutableArray<NamedTypeSymbol> GetTypeMembersUnordered()
+        internal override ArrayWrapper<NamedTypeSymbol> GetTypeMembersUnordered()
         {
             if (_lazyTypeMembersUnordered.IsDefault)
             {
@@ -182,25 +183,27 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 ImmutableInterlocked.InterlockedInitialize(ref _lazyTypeMembersUnordered, members);
             }
 
-            return _lazyTypeMembersUnordered;
+            return new ArrayWrapper<NamedTypeSymbol>(_lazyTypeMembersUnordered);
         }
 
-        public override ImmutableArray<NamedTypeSymbol> GetTypeMembers()
+        public override ArrayWrapper<NamedTypeSymbol> GetTypeMembers()
         {
-            return this.GetNameToTypeMembersMap().Flatten(LexicalOrderSymbolComparer.Instance);
+            return new ArrayWrapper<NamedTypeSymbol>(this.GetNameToTypeMembersMap().Flatten(LexicalOrderSymbolComparer.Instance));
         }
 
-        public override ImmutableArray<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name)
+        public override ArrayWrapper<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name)
         {
             ImmutableArray<NamedTypeSymbol> members;
             return this.GetNameToTypeMembersMap().TryGetValue(name, out members)
-                ? members
-                : ImmutableArray<NamedTypeSymbol>.Empty;
+                ? new ArrayWrapper<NamedTypeSymbol>(members)
+                : ArrayWrapper<NamedTypeSymbol>.Empty;
         }
 
-        public override ImmutableArray<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name, int arity)
+        public override ArrayWrapper<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name, int arity)
         {
-            return GetTypeMembers(name).WhereAsArray((s, arity) => s.Arity == arity, arity);
+            using var members = GetTypeMembers(name);
+
+            return members.WhereAsArrayWrapper((s, arity) => s.Arity == arity, arity);
         }
 
         internal override ModuleSymbol ContainingModule
@@ -324,9 +327,9 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                                 // It doesn't complain when source declares a type with the same name as
                                 // a namespace in added module, but complains when source declares a namespace
                                 // with the same name as a type in added module.
-                                var types = constituent.GetTypeMembers(symbol.Name, arity);
+                                using var types = constituent.GetTypeMembers(symbol.Name, arity);
 
-                                if (types.Length > 0)
+                                if (types.Count > 0)
                                 {
                                     other = types[0];
                                     // Since the error doesn't specify what added module this type belongs to, we can stop searching

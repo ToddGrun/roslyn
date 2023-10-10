@@ -53,7 +53,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
                     yield break;
 
                 case SymbolKind.NamedType:
-                    foreach (var m in (symbol as NamedTypeSymbol).GetMembers())
+                    foreach (var m in (symbol as NamedTypeSymbol).GetMembersAsImmutable())
                     {
                         foreach (var s in AllMethods(m))
                         {
@@ -63,7 +63,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
                     yield break;
 
                 case SymbolKind.Namespace:
-                    foreach (var m in (symbol as NamespaceSymbol).GetMembers())
+                    foreach (var m in (symbol as NamespaceSymbol).GetMembersAsImmutable())
                     {
                         foreach (var s in AllMethods(m))
                         {

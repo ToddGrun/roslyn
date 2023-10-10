@@ -459,14 +459,14 @@ class A : L
 ";
             var comp = CreateCompilation(text);
             var global = comp.GlobalNamespace;
-            var a = global.GetTypeMembers("A", 0).Single();
+            var a = global.GetTypeMembersAsImmutable("A", 0).Single();
             var abase = a.BaseType();
             Assert.Equal("B.R", abase.ToTestDisplayString());
 
-            var b = global.GetTypeMembers("B", 0).Single();
-            var r = b.GetTypeMembers("R", 0).Single();
-            var q = r.GetTypeMembers("Q", 0).Single();
-            var v = a.GetMembers("v").Single() as FieldSymbol;
+            var b = global.GetTypeMembersAsImmutable("B", 0).Single();
+            var r = b.GetTypeMembersAsImmutable("R", 0).Single();
+            var q = r.GetTypeMembersAsImmutable("Q", 0).Single();
+            var v = a.GetMembersAsImmutable("v").Single() as FieldSymbol;
             var s = v.Type;
             Assert.Equal("B.R.Q.S", s.ToTestDisplayString());
             var sbase = s.BaseType();
@@ -536,7 +536,7 @@ class A {}
 
             var info = model.GetSymbolInfo(bbase);
             Assert.NotNull(info.Symbol);
-            var a = comp.GlobalNamespace.GetTypeMembers("A", 0).Single().ISymbol;
+            var a = comp.GlobalNamespace.GetTypeMembersAsImmutable("A", 0).Single().ISymbol;
             Assert.Equal(a, info.Symbol);
             Assert.Equal(a, model.GetTypeInfo(bbase).Type);
         }
@@ -562,7 +562,7 @@ public class B : A {}
 
             var info = model.GetSymbolInfo(cbase);
             Assert.NotNull(info.Symbol);
-            var b = comp.GlobalNamespace.GetTypeMembers("B", 0).Single().ISymbol;
+            var b = comp.GlobalNamespace.GetTypeMembersAsImmutable("B", 0).Single().ISymbol;
             Assert.Equal(b, info.Symbol);
             Assert.Equal(b, model.GetTypeInfo(cbase).Type);
         }
@@ -1273,7 +1273,7 @@ class Test
             Assert.True(aliasTarget.IsGlobalNamespace);
             Assert.Null(aliasTarget.ContainingNamespace);
 
-            Assert.Equal(0, comp2.GlobalNamespace.GetMembers("X").Length); //Doesn't contain the alias target namespace as a child.
+            Assert.Equal(0, comp2.GlobalNamespace.GetMembersAsImmutable("X").Length); //Doesn't contain the alias target namespace as a child.
 
             var aliasQualifiedSyntax = tree.GetCompilationUnitRoot().DescendantNodes().OfType<AliasQualifiedNameSyntax>().Single();
             Assert.Equal(aliasSymbol, model.GetAliasInfo(aliasQualifiedSyntax.Alias));
@@ -4374,10 +4374,10 @@ namespace N
             int positionInN = text.IndexOf("in N");
 
             var globalNs = compilation.GlobalNamespace;
-            var classA = (NamedTypeSymbol)globalNs.GetMembers("A").Single();
-            var fieldX = (IFieldSymbol)classA.GetMembers("X").Single().ISymbol;
-            var fieldY = (IFieldSymbol)classA.GetMembers("Y").Single().ISymbol;
-            var fieldZ = (IFieldSymbol)classA.GetMembers("Z").Single().ISymbol;
+            var classA = (NamedTypeSymbol)globalNs.GetMembersAsImmutable("A").Single();
+            var fieldX = (IFieldSymbol)classA.GetMembersAsImmutable("X").Single().ISymbol;
+            var fieldY = (IFieldSymbol)classA.GetMembersAsImmutable("Y").Single().ISymbol;
+            var fieldZ = (IFieldSymbol)classA.GetMembersAsImmutable("Z").Single().ISymbol;
 
             Assert.True(semanticModel.IsAccessible(positionInN, fieldX));
             Assert.False(semanticModel.IsAccessible(positionInN, fieldY));
@@ -4449,7 +4449,7 @@ public partial class C
 
 ";
             var comp = CreateCompilation(source);
-            var method = (IMethodSymbol)comp.GetTypeByMetadataName("C").GetMembers("M").Single().GetPublicSymbol();
+            var method = (IMethodSymbol)comp.GetTypeByMetadataName("C").GetMembersAsImmutable("M").Single().GetPublicSymbol();
             var attribute = method.GetAttributes().Single();
             Assert.Equal("DEBUG", attribute.ConstructorArguments[0].Value);
 

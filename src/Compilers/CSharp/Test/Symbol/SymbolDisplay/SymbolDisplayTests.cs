@@ -27,7 +27,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
             var text = "class A {}";
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
-                global.GetTypeMembers("A", 0).Single();
+                global.GetTypeMembersAsImmutable("A", 0).Single();
 
             var format = new SymbolDisplayFormat(
                 typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameOnly);
@@ -46,7 +46,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
             var text = "record A {}";
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
-                global.GetTypeMembers("A", 0).Single();
+                global.GetTypeMembersAsImmutable("A", 0).Single();
 
             var format = new SymbolDisplayFormat(
                 typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameOnly);
@@ -73,8 +73,8 @@ namespace N1 {
                 global.GetNestedNamespace("N1").
                 GetNestedNamespace("N2").
                 GetNestedNamespace("N3").
-                GetTypeMembers("R1").Single().
-                GetTypeMembers("R2").Single();
+                GetTypeMembersAsImmutable("R1").Single().
+                GetTypeMembersAsImmutable("R2").Single();
 
             var format = new SymbolDisplayFormat(
                 typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameOnly);
@@ -101,8 +101,8 @@ namespace N1 {
                 global.GetNestedNamespace("N1").
                 GetNestedNamespace("N2").
                 GetNestedNamespace("N3").
-                GetTypeMembers("C1").Single().
-                GetTypeMembers("C2").Single();
+                GetTypeMembersAsImmutable("C1").Single().
+                GetTypeMembersAsImmutable("C2").Single();
 
             var format = new SymbolDisplayFormat(
                 typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameOnly);
@@ -129,8 +129,8 @@ namespace N1 {
                 global.GetNestedNamespace("N1").
                 GetNestedNamespace("N2").
                 GetNestedNamespace("N3").
-                GetTypeMembers("C1").Single().
-                GetTypeMembers("C2").Single();
+                GetTypeMembersAsImmutable("C1").Single().
+                GetTypeMembersAsImmutable("C2").Single();
 
             TestSymbolDescription(
                 text,
@@ -150,7 +150,7 @@ namespace N1 {
         {
             var text = "class A {}";
 
-            Func<NamespaceSymbol, Symbol> findSymbol = global => global.GetTypeMembers("A", 0).Single();
+            Func<NamespaceSymbol, Symbol> findSymbol = global => global.GetTypeMembersAsImmutable("A", 0).Single();
 
             var format = new SymbolDisplayFormat(
                 typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypes);
@@ -177,8 +177,8 @@ namespace N1 {
                 global.GetNestedNamespace("N1").
                 GetNestedNamespace("N2").
                 GetNestedNamespace("N3").
-                GetTypeMembers("C1").Single().
-                GetTypeMembers("C2").Single();
+                GetTypeMembersAsImmutable("C1").Single().
+                GetTypeMembersAsImmutable("C2").Single();
 
             var format = new SymbolDisplayFormat(
                 typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypes);
@@ -202,8 +202,8 @@ class A {
 ";
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
-                global.GetTypeMembers("A", 0).Single().
-                GetMembers("M").Single();
+                global.GetTypeMembersAsImmutable("A", 0).Single().
+                GetMembersAsImmutable("M").Single();
 
             var format = new SymbolDisplayFormat();
 
@@ -230,9 +230,9 @@ namespace N1 {
                 global.GetNestedNamespace("N1").
                 GetNestedNamespace("N2").
                 GetNestedNamespace("N3").
-                GetTypeMembers("C1").Single().
-                GetTypeMembers("C2").Single().
-                GetMembers("M").Single();
+                GetTypeMembersAsImmutable("C1").Single().
+                GetTypeMembersAsImmutable("C2").Single().
+                GetMembersAsImmutable("M").Single();
 
             var format = new SymbolDisplayFormat();
 
@@ -253,8 +253,8 @@ class A {
 ";
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
-                global.GetTypeMembers("A", 0).Single().
-                GetMembers("M").Single();
+                global.GetTypeMembersAsImmutable("A", 0).Single().
+                GetMembersAsImmutable("M").Single();
 
             var format = new SymbolDisplayFormat(
                 memberOptions: SymbolDisplayMemberOptions.IncludeParameters | SymbolDisplayMemberOptions.IncludeModifiers | SymbolDisplayMemberOptions.IncludeAccessibility | SymbolDisplayMemberOptions.IncludeType,
@@ -290,9 +290,9 @@ namespace N1 {
                 global.GetNestedNamespace("N1").
                 GetNestedNamespace("N2").
                 GetNestedNamespace("N3").
-                GetTypeMembers("C1").Single().
-                GetTypeMembers("C2").Single().
-                GetMembers("M").Single();
+                GetTypeMembersAsImmutable("C1").Single().
+                GetTypeMembersAsImmutable("C2").Single().
+                GetMembersAsImmutable("M").Single();
 
             var format = new SymbolDisplayFormat(
                 memberOptions: SymbolDisplayMemberOptions.IncludeParameters | SymbolDisplayMemberOptions.IncludeModifiers | SymbolDisplayMemberOptions.IncludeAccessibility | SymbolDisplayMemberOptions.IncludeType,
@@ -336,8 +336,8 @@ namespace N1 {
 ";
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
-                global.GetTypeMembers("C2").Single().
-                GetMembers("M").Single();
+                global.GetTypeMembersAsImmutable("C2").Single().
+                GetMembersAsImmutable("M").Single();
 
             var format = new SymbolDisplayFormat(
                 extensionMethodStyle: SymbolDisplayExtensionMethodStyle.StaticMethod,
@@ -401,8 +401,8 @@ namespace N1 {
 ";
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
-                global.GetTypeMembers("C2").Single().
-                GetMembers("M").Single();
+                global.GetTypeMembersAsImmutable("C2").Single().
+                GetMembersAsImmutable("M").Single();
 
             var format = new SymbolDisplayFormat(
                 extensionMethodStyle: SymbolDisplayExtensionMethodStyle.InstanceMethod,
@@ -457,8 +457,8 @@ namespace N1 {
 ";
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
-                global.GetTypeMembers("C2").Single().
-                GetMembers("M").Single();
+                global.GetTypeMembersAsImmutable("C2").Single().
+                GetMembersAsImmutable("M").Single();
 
             var format = new SymbolDisplayFormat(
                 extensionMethodStyle: SymbolDisplayExtensionMethodStyle.Default,
@@ -695,8 +695,8 @@ namespace N1 {
             var text = @"class C2 { private protected void M() {} }";
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
-                global.GetTypeMembers("C2").Single().
-                GetMembers("M").Single();
+                global.GetTypeMembersAsImmutable("C2").Single().
+                GetMembersAsImmutable("M").Single();
 
             var format = new SymbolDisplayFormat(
                 memberOptions:
@@ -733,8 +733,8 @@ class A {
 ";
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
-                global.GetTypeMembers("A", 0).Single().
-                GetMembers("f").Single();
+                global.GetTypeMembersAsImmutable("A", 0).Single().
+                GetMembersAsImmutable("f").Single();
 
             SymbolDisplayFormat format = null;
 
@@ -757,8 +757,8 @@ class A {
 ";
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
-                global.GetTypeMembers("A", 0).Single().
-                GetMembers("f").Single();
+                global.GetTypeMembersAsImmutable("A", 0).Single().
+                GetMembersAsImmutable("f").Single();
 
             var format = new SymbolDisplayFormat(
                 memberOptions: SymbolDisplayMemberOptions.IncludeType,
@@ -795,8 +795,8 @@ class C
 ";
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
-                global.GetTypeMembers("C", 0).Single().
-                GetMembers("F").Single();
+                global.GetTypeMembersAsImmutable("C", 0).Single().
+                GetMembersAsImmutable("F").Single();
 
             var format = new SymbolDisplayFormat(
                 memberOptions: SymbolDisplayMemberOptions.IncludeType | SymbolDisplayMemberOptions.IncludeParameters,
@@ -828,8 +828,8 @@ class C
 ";
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
-                global.GetTypeMembers("C", 0).Single().
-                GetMembers("F").Single();
+                global.GetTypeMembersAsImmutable("C", 0).Single().
+                GetMembersAsImmutable("F").Single();
 
             var format = new SymbolDisplayFormat(
                 memberOptions: SymbolDisplayMemberOptions.IncludeType | SymbolDisplayMemberOptions.IncludeParameters,
@@ -867,8 +867,8 @@ class C
 ";
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
-                global.GetTypeMembers("C", 0).Single().
-                GetMembers("F").Single();
+                global.GetTypeMembersAsImmutable("C", 0).Single().
+                GetMembersAsImmutable("F").Single();
 
             var format = new SymbolDisplayFormat(
                 memberOptions: SymbolDisplayMemberOptions.IncludeType | SymbolDisplayMemberOptions.IncludeParameters,
@@ -902,8 +902,8 @@ class C
 ";
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
-                global.GetTypeMembers("C", 0).Single().
-                GetMembers("F").Single();
+                global.GetTypeMembersAsImmutable("C", 0).Single().
+                GetMembersAsImmutable("F").Single();
 
             var format = new SymbolDisplayFormat(
                 memberOptions: SymbolDisplayMemberOptions.IncludeType | SymbolDisplayMemberOptions.IncludeParameters,
@@ -937,8 +937,8 @@ class C
 ";
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
-                global.GetTypeMembers("C", 0).Single().
-                GetMembers("F").Single();
+                global.GetTypeMembersAsImmutable("C", 0).Single().
+                GetMembersAsImmutable("F").Single();
 
             var format = new SymbolDisplayFormat(
                 memberOptions: SymbolDisplayMemberOptions.IncludeType | SymbolDisplayMemberOptions.IncludeParameters,
@@ -972,8 +972,8 @@ class C
 ";
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
-                global.GetTypeMembers("C", 0).Single().
-                GetMembers("F").Single();
+                global.GetTypeMembersAsImmutable("C", 0).Single().
+                GetMembersAsImmutable("F").Single();
 
             var format = new SymbolDisplayFormat(
                 memberOptions: SymbolDisplayMemberOptions.IncludeType | SymbolDisplayMemberOptions.IncludeParameters,
@@ -1007,8 +1007,8 @@ class C
 ";
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
-                global.GetTypeMembers("C", 0).Single().
-                GetMembers("F").Single();
+                global.GetTypeMembersAsImmutable("C", 0).Single().
+                GetMembersAsImmutable("F").Single();
 
             var format = new SymbolDisplayFormat(
                 memberOptions: SymbolDisplayMemberOptions.IncludeType | SymbolDisplayMemberOptions.IncludeParameters,
@@ -1061,8 +1061,8 @@ class @true {
 ";
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
-                global.GetTypeMembers("true", 0).Single().
-                GetMembers("false").Single();
+                global.GetTypeMembersAsImmutable("true", 0).Single().
+                GetMembersAsImmutable("false").Single();
 
             var format = new SymbolDisplayFormat(
                 memberOptions: SymbolDisplayMemberOptions.IncludeType | SymbolDisplayMemberOptions.IncludeParameters,
@@ -1102,8 +1102,8 @@ class @true {
 ";
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
-                global.GetTypeMembers("true", 0).Single().
-                GetMembers("false").Single();
+                global.GetTypeMembersAsImmutable("true", 0).Single().
+                GetMembersAsImmutable("false").Single();
 
             var format = new SymbolDisplayFormat(
                 memberOptions: SymbolDisplayMemberOptions.IncludeType | SymbolDisplayMemberOptions.IncludeParameters,
@@ -1145,8 +1145,8 @@ class C : I {
 ";
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
-                global.GetTypeMembers("C", 0).Single().
-                GetMembers("I.M").Single();
+                global.GetTypeMembersAsImmutable("C", 0).Single().
+                GetMembersAsImmutable("I.M").Single();
 
             var format = new SymbolDisplayFormat(
                 memberOptions: SymbolDisplayMemberOptions.None);
@@ -1170,8 +1170,8 @@ class C : I {
 ";
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
-                global.GetTypeMembers("C", 0).Single().
-                GetMembers("I.M").Single();
+                global.GetTypeMembersAsImmutable("C", 0).Single().
+                GetMembersAsImmutable("I.M").Single();
 
             var format = new SymbolDisplayFormat(
                 memberOptions: SymbolDisplayMemberOptions.IncludeExplicitInterface);
@@ -1197,8 +1197,8 @@ class C : I {
 ";
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
-                global.GetTypeMembers("C", 0).Single().
-                GetMembers("I.M").Single();
+                global.GetTypeMembersAsImmutable("C", 0).Single().
+                GetMembersAsImmutable("I.M").Single();
 
             var format = new SymbolDisplayFormat(
                 memberOptions: SymbolDisplayMemberOptions.IncludeExplicitInterface | SymbolDisplayMemberOptions.IncludeContainingType);
@@ -1223,7 +1223,7 @@ class C { }
 ";
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
-                global.GetTypeMembers("C", 0).Single();
+                global.GetTypeMembersAsImmutable("C", 0).Single();
 
             var format = new SymbolDisplayFormat(
                 typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
@@ -1270,8 +1270,8 @@ class C {
 ";
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
-                global.GetTypeMembers("C", 0).Single().
-                GetMembers("f").Single();
+                global.GetTypeMembersAsImmutable("C", 0).Single().
+                GetMembersAsImmutable("f").Single();
 
             var format = new SymbolDisplayFormat(
                 memberOptions: SymbolDisplayMemberOptions.IncludeType,
@@ -1296,8 +1296,8 @@ class C {
 ";
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
-                global.GetTypeMembers("C", 0).Single().
-                GetMembers("f").Single();
+                global.GetTypeMembersAsImmutable("C", 0).Single().
+                GetMembersAsImmutable("f").Single();
 
             var format = new SymbolDisplayFormat(
                 memberOptions: SymbolDisplayMemberOptions.IncludeType,
@@ -1336,8 +1336,8 @@ class C {
 ";
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
-                global.GetTypeMembers("C", 0).Single().
-                GetMembers(".ctor").Single();
+                global.GetTypeMembersAsImmutable("C", 0).Single().
+                GetMembersAsImmutable(".ctor").Single();
 
             var format = new SymbolDisplayFormat(
                 memberOptions: SymbolDisplayMemberOptions.IncludeType,
@@ -1359,7 +1359,7 @@ class C<T, U, V> { }
 ";
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
-                global.GetTypeMembers("C", 3).Single();
+                global.GetTypeMembersAsImmutable("C", 3).Single();
 
             var format = new SymbolDisplayFormat(
                 memberOptions: SymbolDisplayMemberOptions.IncludeType,
@@ -1393,7 +1393,7 @@ class C
 
             TestSymbolDescription(
                 text,
-                global => global.GetTypeMembers("C").Single().GetTypeMember("D"),
+                global => global.GetTypeMembersAsImmutable("C").Single().GetTypeMember("D"),
                 format,
                 "C+D",
                 SymbolDisplayPartKind.ClassName,
@@ -1420,7 +1420,7 @@ class C
 
             TestSymbolDescription(
                 text,
-                global => global.GetTypeMembers("C").Single().GetTypeMember("D"),
+                global => global.GetTypeMembersAsImmutable("C").Single().GetTypeMember("D"),
                 format,
                 "C+D`1",
                 SymbolDisplayPartKind.ClassName,
@@ -1448,7 +1448,7 @@ class C<T>
 
             TestSymbolDescription(
                 text,
-                global => global.GetTypeMembers("C").Single().GetTypeMember("D"),
+                global => global.GetTypeMembersAsImmutable("C").Single().GetTypeMember("D"),
                 format,
                 "C`1+D",
                 SymbolDisplayPartKind.ClassName,
@@ -1476,7 +1476,7 @@ class C<T>
 
             TestSymbolDescription(
                 text,
-                global => global.GetTypeMembers("C").Single().GetTypeMember("D"),
+                global => global.GetTypeMembersAsImmutable("C").Single().GetTypeMember("D"),
                 format,
                 "C`1+D`2",
                 SymbolDisplayPartKind.ClassName,
@@ -1494,7 +1494,7 @@ class C<in T, out U, V> { }
 ";
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
-                global.GetTypeMembers("C", 3).Single();
+                global.GetTypeMembersAsImmutable("C", 3).Single();
 
             var format = new SymbolDisplayFormat(
                 genericsOptions: SymbolDisplayGenericsOptions.IncludeTypeParameters);
@@ -1524,7 +1524,7 @@ class C<in T, out U, V> { }
 ";
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
-                global.GetTypeMembers("C", 3).Single();
+                global.GetTypeMembersAsImmutable("C", 3).Single();
 
             var format = new SymbolDisplayFormat(
                 genericsOptions: SymbolDisplayGenericsOptions.IncludeTypeParameters | SymbolDisplayGenericsOptions.IncludeVariance);
@@ -1600,8 +1600,8 @@ class C {
 ";
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
-                global.GetTypeMembers("C", 0).Single().
-                GetMembers("M").Single();
+                global.GetTypeMembersAsImmutable("C", 0).Single().
+                GetMembersAsImmutable("M").Single();
 
             var format = new SymbolDisplayFormat(
                 genericsOptions: SymbolDisplayGenericsOptions.IncludeTypeParameters);
@@ -1632,8 +1632,8 @@ class C {
 ";
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
-                global.GetTypeMembers("C", 0).Single().
-                GetMembers("M").Single();
+                global.GetTypeMembersAsImmutable("C", 0).Single().
+                GetMembersAsImmutable("M").Single();
 
             var format = new SymbolDisplayFormat(
                 genericsOptions: SymbolDisplayGenericsOptions.IncludeTypeParameters | SymbolDisplayGenericsOptions.IncludeVariance);
@@ -1707,8 +1707,8 @@ class C {
 ";
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
-                global.GetTypeMembers("C", 0).Single().
-                GetMembers("M").Single();
+                global.GetTypeMembersAsImmutable("C", 0).Single().
+                GetMembersAsImmutable("M").Single();
 
             var format = new SymbolDisplayFormat(
                 memberOptions: SymbolDisplayMemberOptions.None);
@@ -1730,8 +1730,8 @@ class C {
 ";
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
-                global.GetTypeMembers("C", 0).Single().
-                GetMembers("M").Single();
+                global.GetTypeMembersAsImmutable("C", 0).Single().
+                GetMembersAsImmutable("M").Single();
 
             var format = new SymbolDisplayFormat(
                 memberOptions:
@@ -1767,8 +1767,8 @@ class C {
 ";
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
-                global.GetTypeMembers("C", 0).Single().
-                GetMembers("f").Single();
+                global.GetTypeMembersAsImmutable("C", 0).Single().
+                GetMembersAsImmutable("f").Single();
 
             var format = new SymbolDisplayFormat(
                 memberOptions: SymbolDisplayMemberOptions.None);
@@ -1790,8 +1790,8 @@ class C {
 }";
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
-                global.GetTypeMembers("C", 0).Single().
-                GetMembers("f").Single();
+                global.GetTypeMembersAsImmutable("C", 0).Single().
+                GetMembersAsImmutable("f").Single();
 
             var format = new SymbolDisplayFormat(
                 memberOptions:
@@ -1825,8 +1825,8 @@ class C {
 ";
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
-                global.GetTypeMembers("C", 0).Single().
-                GetMembers("P").Single();
+                global.GetTypeMembersAsImmutable("C", 0).Single().
+                GetMembersAsImmutable("P").Single();
 
             var format = new SymbolDisplayFormat(
                 memberOptions: SymbolDisplayMemberOptions.None);
@@ -1848,8 +1848,8 @@ class C {
 ";
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
-                global.GetTypeMembers("C", 0).Single().
-                GetMembers("P").Single();
+                global.GetTypeMembersAsImmutable("C", 0).Single().
+                GetMembersAsImmutable("P").Single();
 
             var format = new SymbolDisplayFormat(
                 memberOptions:
@@ -1892,7 +1892,7 @@ class C
 
             TestSymbolDescription(
                 text,
-                global => global.GetTypeMembers("C", 0).Single().GetMembers("P").Single(),
+                global => global.GetTypeMembersAsImmutable("C", 0).Single().GetMembersAsImmutable("P").Single(),
                 format,
                 "Int32 P { get; }",
                 SymbolDisplayPartKind.StructName,
@@ -1908,7 +1908,7 @@ class C
 
             TestSymbolDescription(
                 text,
-                global => global.GetTypeMembers("C", 0).Single().GetMembers("Q").Single(),
+                global => global.GetTypeMembersAsImmutable("C", 0).Single().GetMembersAsImmutable("Q").Single(),
                 format,
                 "Object Q { set; }",
                 SymbolDisplayPartKind.ClassName,
@@ -1924,7 +1924,7 @@ class C
 
             TestSymbolDescription(
                 text,
-                global => global.GetTypeMembers("C", 0).Single().GetMembers("R").Single(),
+                global => global.GetTypeMembersAsImmutable("C", 0).Single().GetMembersAsImmutable("R").Single(),
                 format,
                 "Object R { get; set; }",
                 SymbolDisplayPartKind.ClassName,
@@ -1951,8 +1951,8 @@ class C {
 ";
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
-                global.GetTypeMembers("C", 0).Single().
-                GetMembers("get_P").Single();
+                global.GetTypeMembersAsImmutable("C", 0).Single().
+                GetMembersAsImmutable("get_P").Single();
 
             var format = new SymbolDisplayFormat(
                 memberOptions:
@@ -1988,8 +1988,8 @@ class C {
 ";
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
-                global.GetTypeMembers("C", 0).Single().
-                GetMembers("set_P").Single();
+                global.GetTypeMembersAsImmutable("C", 0).Single().
+                GetMembersAsImmutable("set_P").Single();
 
             var format = new SymbolDisplayFormat(
                 memberOptions:
@@ -2027,7 +2027,7 @@ class C {
 
             Func<NamespaceSymbol, Symbol> findSymbol1 = global =>
                 global.GetMember<NamedTypeSymbol>("C").
-                GetMembers("E").Where(m => m.Kind == SymbolKind.Event).Single();
+                GetMembersAsImmutable("E").Where(m => m.Kind == SymbolKind.Event).Single();
 
             Func<NamespaceSymbol, Symbol> findSymbol2 = global =>
                 global.GetMember<NamedTypeSymbol>("C").
@@ -2080,7 +2080,7 @@ class C {
 
             Func<NamespaceSymbol, Symbol> findSymbol1 = global =>
                 global.GetMember<NamedTypeSymbol>("C").
-                GetMembers("E").Where(m => m.Kind == SymbolKind.Event).Single();
+                GetMembersAsImmutable("E").Where(m => m.Kind == SymbolKind.Event).Single();
 
             Func<NamespaceSymbol, Symbol> findSymbol2 = global =>
                 global.GetMember<NamedTypeSymbol>("C").
@@ -2119,7 +2119,7 @@ class C {
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
                 global.GetMember<NamedTypeSymbol>("C").
-                GetMembers("add_E").Single();
+                GetMembersAsImmutable("add_E").Single();
 
             var format = new SymbolDisplayFormat(
                 memberOptions:
@@ -2156,7 +2156,7 @@ class C {
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
                 global.GetMember<NamedTypeSymbol>("C").
-                GetMembers("remove_E").Single();
+                GetMembersAsImmutable("remove_E").Single();
 
             var format = new SymbolDisplayFormat(
                 memberOptions:
@@ -2192,8 +2192,8 @@ static class C {
 ";
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
-                global.GetTypeMembers("C", 0).Single().
-                GetMembers("M").Single();
+                global.GetTypeMembersAsImmutable("C", 0).Single().
+                GetMembersAsImmutable("M").Single();
 
             var format = new SymbolDisplayFormat(
                 memberOptions: SymbolDisplayMemberOptions.IncludeParameters,
@@ -2218,8 +2218,8 @@ static class C {
 ";
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
-                global.GetTypeMembers("C", 0).Single().
-                GetMembers("M").Single();
+                global.GetTypeMembersAsImmutable("C", 0).Single().
+                GetMembersAsImmutable("M").Single();
 
             var format = new SymbolDisplayFormat(
                 typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
@@ -2248,8 +2248,8 @@ static class C {
 ";
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
-                global.GetTypeMembers("C", 0).Single().
-                GetMembers("M").Single();
+                global.GetTypeMembersAsImmutable("C", 0).Single().
+                GetMembersAsImmutable("M").Single();
 
             var format = new SymbolDisplayFormat(
                 typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
@@ -2276,8 +2276,8 @@ class C {
 ";
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
-                global.GetTypeMembers("C", 0).Single().
-                GetMembers("M").Single();
+                global.GetTypeMembersAsImmutable("C", 0).Single().
+                GetMembersAsImmutable("M").Single();
 
             var format = new SymbolDisplayFormat(
                 memberOptions: SymbolDisplayMemberOptions.IncludeParameters,
@@ -2367,8 +2367,8 @@ static class C {
 ";
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
-                global.GetTypeMembers("C", 0).Single().
-                GetMembers("M").Single();
+                global.GetTypeMembersAsImmutable("C", 0).Single().
+                GetMembersAsImmutable("M").Single();
 
             var format = new SymbolDisplayFormat(
                 memberOptions: SymbolDisplayMemberOptions.IncludeParameters,
@@ -2428,8 +2428,8 @@ class C {
 ";
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
-                global.GetTypeMembers("C", 0).Single().
-                GetMembers("M").Single();
+                global.GetTypeMembersAsImmutable("C", 0).Single().
+                GetMembersAsImmutable("M").Single();
 
             var format = new SymbolDisplayFormat(
                 memberOptions: SymbolDisplayMemberOptions.IncludeParameters,
@@ -2487,25 +2487,25 @@ abstract class C
 
             TestSymbolDescription(
                 text,
-                global => global.GetTypeMembers("I", 0).Single().GetMembers("P").Single(),
+                global => global.GetTypeMembersAsImmutable("I", 0).Single().GetMembersAsImmutable("P").Single(),
                 format,
                 "int P { get; }");
 
             TestSymbolDescription(
                 text,
-                global => global.GetTypeMembers("I", 0).Single().GetMembers("F").Single(),
+                global => global.GetTypeMembersAsImmutable("I", 0).Single().GetMembersAsImmutable("F").Single(),
                 format,
                 "object F()");
 
             TestSymbolDescription(
                 text,
-                global => global.GetTypeMembers("C", 0).Single().GetMembers("F").Single(),
+                global => global.GetTypeMembersAsImmutable("C", 0).Single().GetMembersAsImmutable("F").Single(),
                 format,
                 "public abstract object F()");
 
             TestSymbolDescription(
                 text,
-                global => global.GetTypeMembers("C", 0).Single().GetTypeMembers("I", 0).Single().GetMembers("M").Single(),
+                global => global.GetTypeMembersAsImmutable("C", 0).Single().GetTypeMembersAsImmutable("I", 0).Single().GetMembersAsImmutable("M").Single(),
                 format,
                 "void M()");
         }
@@ -2520,7 +2520,7 @@ public class X : GC1<BOGUS> {}
 ";
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
-                global.GetTypeMembers("X", 0).Single().
+                global.GetTypeMembersAsImmutable("X", 0).Single().
                 BaseType();
 
             var format = new SymbolDisplayFormat(
@@ -2553,8 +2553,8 @@ namespace N1 {
                 global.GetNestedNamespace("N1").
                 GetNestedNamespace("N2").
                 GetNestedNamespace("N3").
-                GetTypeMembers("C1").Single().
-                GetTypeMembers("C2").Single();
+                GetTypeMembersAsImmutable("C1").Single().
+                GetTypeMembersAsImmutable("C2").Single();
 
             var format = new SymbolDisplayFormat(
                 typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces);
@@ -2589,8 +2589,8 @@ namespace N1 {
                 global.GetNestedNamespace("N1").
                 GetNestedNamespace("N2").
                 GetNestedNamespace("N3").
-                GetTypeMembers("C1").Single().
-                GetTypeMembers("C2").Single();
+                GetTypeMembersAsImmutable("C1").Single().
+                GetTypeMembersAsImmutable("C2").Single();
 
             var format = new SymbolDisplayFormat(
                 typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces);
@@ -2621,7 +2621,7 @@ namespace N1 " + ob + @"
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
                 global.GetNestedNamespace("N1").
-                GetTypeMembers("C1").Single();
+                GetTypeMembersAsImmutable("C1").Single();
 
             var format = SymbolDisplayFormat.MinimallyQualifiedFormat;
 
@@ -2892,7 +2892,7 @@ class class1Attribute : System.Attribute { }
 ";
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
-                global.GetTypeMembers("class1Attribute").Single();
+                global.GetTypeMembersAsImmutable("class1Attribute").Single();
 
             TestSymbolDescription(text, findSymbol,
                 new SymbolDisplayFormat(),
@@ -2915,7 +2915,7 @@ class classAttribute : System.Attribute { }
 ";
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
-                global.GetTypeMembers("classAttribute").Single();
+                global.GetTypeMembersAsImmutable("classAttribute").Single();
 
             TestSymbolDescription(text, findSymbol,
                 new SymbolDisplayFormat(),
@@ -2936,7 +2936,7 @@ class class1Attribute { }
 ";
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
-                global.GetTypeMembers("class1Attribute").Single();
+                global.GetTypeMembersAsImmutable("class1Attribute").Single();
 
             TestSymbolDescription(text, findSymbol,
                 new SymbolDisplayFormat(),
@@ -2961,7 +2961,7 @@ class C1 {
 ";
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
-                ((FieldSymbol)global.GetTypeMembers("C1").Single().GetMembers("goo").Single()).Type;
+                ((FieldSymbol)global.GetTypeMembersAsImmutable("C1").Single().GetMembersAsImmutable("goo").Single()).Type;
 
             var format = SymbolDisplayFormat.MinimallyQualifiedFormat;
 
@@ -3331,7 +3331,7 @@ class C1 {
             var text = "public delegate void D(D param);";
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
-                global.GetTypeMembers("D", 0).Single();
+                global.GetTypeMembersAsImmutable("D", 0).Single();
 
             var format = new SymbolDisplayFormat(globalNamespaceStyle: SymbolDisplayFormat.CSharpErrorMessageFormat.GlobalNamespaceStyle,
                                                 typeQualificationStyle: SymbolDisplayFormat.CSharpErrorMessageFormat.TypeQualificationStyle,
@@ -3383,7 +3383,7 @@ class C1 {
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
             {
-                var field = global.GetTypeMembers("Test", 0).Single().GetMembers("field").Single() as FieldSymbol;
+                var field = global.GetTypeMembersAsImmutable("Test", 0).Single().GetMembersAsImmutable("field").Single() as FieldSymbol;
                 return field.Type;
             };
 
@@ -3437,7 +3437,7 @@ class C1 {
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
             {
-                var field = global.GetTypeMembers("Test", 0).Single().GetMembers("field").Single() as FieldSymbol;
+                var field = global.GetTypeMembersAsImmutable("Test", 0).Single().GetMembersAsImmutable("field").Single() as FieldSymbol;
                 return field.Type;
             };
 
@@ -3489,7 +3489,7 @@ class C1 {
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
             {
-                var field = global.GetTypeMembers("Test", 0).Single().GetMembers("field2").Single() as FieldSymbol;
+                var field = global.GetTypeMembersAsImmutable("Test", 0).Single().GetMembersAsImmutable("field2").Single() as FieldSymbol;
                 return field.Type;
             };
 
@@ -4124,8 +4124,8 @@ struct S
 }";
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
-                global.GetTypeMembers("C", 0).Single().
-                GetMembers("f").Single();
+                global.GetTypeMembersAsImmutable("C", 0).Single().
+                GetMembersAsImmutable("f").Single();
 
             var format = new SymbolDisplayFormat(
                 memberOptions:
@@ -4168,8 +4168,8 @@ class C {
 }";
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
-                global.GetTypeMembers("C", 0).Single().
-                GetMembers("f").Single();
+                global.GetTypeMembersAsImmutable("C", 0).Single().
+                GetMembersAsImmutable("f").Single();
 
             var format = new SymbolDisplayFormat(
                 memberOptions:
@@ -4215,8 +4215,8 @@ class C {
 }";
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
-                global.GetTypeMembers("C", 0).Single().
-                GetMembers("f").Single();
+                global.GetTypeMembersAsImmutable("C", 0).Single().
+                GetMembersAsImmutable("f").Single();
 
             var format = new SymbolDisplayFormat(
                 memberOptions:
@@ -4257,8 +4257,8 @@ class C {
 @"enum E { A, B, C }";
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
-                global.GetTypeMembers("E", 0).Single().
-                GetMembers("B").Single();
+                global.GetTypeMembersAsImmutable("E", 0).Single().
+                GetMembersAsImmutable("B").Single();
 
             var format = new SymbolDisplayFormat(
                 memberOptions:
@@ -4292,8 +4292,8 @@ class C {
 enum E { A = 1, B = 2, C = 4, D = A | B | C }";
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
-                global.GetTypeMembers("E", 0).Single().
-                GetMembers("D").Single();
+                global.GetTypeMembersAsImmutable("E", 0).Single().
+                GetMembersAsImmutable("D").Single();
 
             var format = new SymbolDisplayFormat(
                 memberOptions:
@@ -4340,8 +4340,8 @@ enum E { A = 1, B = 2, C = 4, D = A | B | C }";
 @"enum E { A = 1, B = 2, C = 4, D = A | B | C }";
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
-                global.GetTypeMembers("E", 0).Single().
-                GetMembers("D").Single();
+                global.GetTypeMembersAsImmutable("E", 0).Single().
+                GetMembersAsImmutable("D").Single();
 
             var format = new SymbolDisplayFormat(
                 memberOptions:
@@ -5032,8 +5032,8 @@ public class C
 ";
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
                 global.
-                GetTypeMembers("C").Single().
-                GetMembers("f").Single();
+                GetTypeMembersAsImmutable("C").Single().
+                GetMembersAsImmutable("f").Single();
 
             var format = new SymbolDisplayFormat(memberOptions: SymbolDisplayMemberOptions.IncludeType);
 
@@ -5064,8 +5064,8 @@ public class C
 ";
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
                 global.
-                GetTypeMembers("C").Single().
-                GetMembers("f").Single();
+                GetTypeMembersAsImmutable("C").Single().
+                GetMembersAsImmutable("f").Single();
 
             var format = new SymbolDisplayFormat(memberOptions: SymbolDisplayMemberOptions.IncludeType, miscellaneousOptions: SymbolDisplayMiscellaneousOptions.CollapseTupleTypes);
 
@@ -5095,8 +5095,8 @@ public class C
 " + TestResources.NetFX.ValueTuple.tuplelib_cs;
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
                 global.
-                GetTypeMembers("C").Single().
-                GetMembers("f").Single();
+                GetTypeMembersAsImmutable("C").Single().
+                GetMembersAsImmutable("f").Single();
 
             var format = new SymbolDisplayFormat(memberOptions: SymbolDisplayMemberOptions.IncludeType,
                                                  genericsOptions: SymbolDisplayGenericsOptions.IncludeTypeParameters);
@@ -5126,8 +5126,8 @@ public class C
 ";
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
                 global.
-                GetTypeMembers("C").Single().
-                GetMembers("f").Single();
+                GetTypeMembersAsImmutable("C").Single().
+                GetMembersAsImmutable("f").Single();
 
             var format = new SymbolDisplayFormat(memberOptions: SymbolDisplayMemberOptions.IncludeType);
 
@@ -5163,8 +5163,8 @@ public class C
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
                 global.
-                GetTypeMembers("C").Single().
-                GetMembers("f").Single();
+                GetTypeMembersAsImmutable("C").Single().
+                GetMembersAsImmutable("f").Single();
 
             var format = new SymbolDisplayFormat(memberOptions: SymbolDisplayMemberOptions.IncludeType,
                                 miscellaneousOptions: SymbolDisplayMiscellaneousOptions.UseSpecialTypes);
@@ -5214,8 +5214,8 @@ class C
 ";
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
                 global.
-                GetTypeMembers("C").Single().
-                GetMembers("P").Single();
+                GetTypeMembersAsImmutable("C").Single().
+                GetMembersAsImmutable("P").Single();
 
             var format = new SymbolDisplayFormat(memberOptions: SymbolDisplayMemberOptions.IncludeType,
                                 miscellaneousOptions: SymbolDisplayMiscellaneousOptions.UseSpecialTypes);
@@ -6701,7 +6701,7 @@ enum E : long
 ";
             TestSymbolDescription(
                 text,
-                g => g.GetTypeMembers("E").Single().GetField("A"),
+                g => g.GetTypeMembersAsImmutable("E").Single().GetField("A"),
                 SymbolDisplayFormat.MinimallyQualifiedFormat
                     .AddMemberOptions(SymbolDisplayMemberOptions.IncludeConstantValue),
                 "E.A = 0",
@@ -7896,7 +7896,7 @@ class B
             var text = @"
 record Person(string First, string Last);
 ";
-            Func<NamespaceSymbol, Symbol> findSymbol = global => global.GetTypeMembers("Person").Single();
+            Func<NamespaceSymbol, Symbol> findSymbol = global => global.GetTypeMembersAsImmutable("Person").Single();
 
             var format = new SymbolDisplayFormat(memberOptions: SymbolDisplayMemberOptions.IncludeType, kindOptions: SymbolDisplayKindOptions.IncludeTypeKeyword);
 
@@ -7917,7 +7917,7 @@ record Person(string First, string Last);
             var text = @"
 record class Person(string First, string Last);
 ";
-            Func<NamespaceSymbol, Symbol> findSymbol = global => global.GetTypeMembers("Person").Single();
+            Func<NamespaceSymbol, Symbol> findSymbol = global => global.GetTypeMembersAsImmutable("Person").Single();
 
             var format = new SymbolDisplayFormat(memberOptions: SymbolDisplayMemberOptions.IncludeType, kindOptions: SymbolDisplayKindOptions.IncludeTypeKeyword);
 
@@ -7938,7 +7938,7 @@ record class Person(string First, string Last);
             var text = @"
 record struct Person(string First, string Last);
 ";
-            Func<NamespaceSymbol, Symbol> findSymbol = global => global.GetTypeMembers("Person").Single();
+            Func<NamespaceSymbol, Symbol> findSymbol = global => global.GetTypeMembersAsImmutable("Person").Single();
 
             var format = new SymbolDisplayFormat(memberOptions: SymbolDisplayMemberOptions.IncludeType, kindOptions: SymbolDisplayKindOptions.IncludeTypeKeyword);
 
@@ -7961,7 +7961,7 @@ record struct Person(string First, string Last);
             var text = @"
 readonly record struct Person(string First, string Last);
 ";
-            Func<NamespaceSymbol, Symbol> findSymbol = global => global.GetTypeMembers("Person").Single();
+            Func<NamespaceSymbol, Symbol> findSymbol = global => global.GetTypeMembersAsImmutable("Person").Single();
 
             var format = new SymbolDisplayFormat(memberOptions: SymbolDisplayMemberOptions.IncludeType, kindOptions: SymbolDisplayKindOptions.IncludeTypeKeyword);
 
@@ -7989,8 +7989,8 @@ class A {
 }";
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
-                ((FieldSymbol)global.GetTypeMembers("A", 0).Single()
-                .GetMembers("f").Single()).Type;
+                ((FieldSymbol)global.GetTypeMembersAsImmutable("A", 0).Single()
+                .GetMembersAsImmutable("f").Single()).Type;
 
             var format = new SymbolDisplayFormat();
 
@@ -8010,8 +8010,8 @@ class A {
 }";
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
-                ((FieldSymbol)global.GetTypeMembers("A", 0).Single()
-                .GetMembers("f").Single()).Type;
+                ((FieldSymbol)global.GetTypeMembersAsImmutable("A", 0).Single()
+                .GetMembersAsImmutable("f").Single()).Type;
 
             var format = new SymbolDisplayFormat();
 
@@ -8031,8 +8031,8 @@ class A {
 }";
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
-                ((FieldSymbol)global.GetTypeMembers("A", 0).Single()
-                .GetMembers("f").Single()).Type;
+                ((FieldSymbol)global.GetTypeMembersAsImmutable("A", 0).Single()
+                .GetMembersAsImmutable("f").Single()).Type;
 
             var format = new SymbolDisplayFormat();
 
@@ -8052,8 +8052,8 @@ class A {
 }";
 
             Func<NamespaceSymbol, Symbol> findSymbol = global =>
-                ((FieldSymbol)global.GetTypeMembers("A", 0).Single()
-                .GetMembers("f").Single()).Type;
+                ((FieldSymbol)global.GetTypeMembersAsImmutable("A", 0).Single()
+                .GetMembersAsImmutable("f").Single()).Type;
 
             var format = new SymbolDisplayFormat();
 

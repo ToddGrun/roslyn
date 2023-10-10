@@ -2,10 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using Microsoft.CodeAnalysis.Collections;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.PooledObjects;
 using Roslyn.Utilities;
@@ -82,21 +82,22 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
             internal override NamedTypeSymbol BaseTypeNoUseSiteDiagnostics => Manager.System_Object;
 
-            public override ImmutableArray<Symbol> GetMembers()
+            public override ArrayWrapper<Symbol> GetMembers()
             {
-                return _members;
+                return new ArrayWrapper<Symbol>(_members);
             }
 
-            public override ImmutableArray<Symbol> GetMembers(string name)
+            public override ArrayWrapper<Symbol> GetMembers(string name)
             {
+                var builder = ArrayBuilder<Symbol>.GetInstance();
+
                 var symbols = _nameToSymbols[name];
-                var builder = ArrayBuilder<Symbol>.GetInstance(symbols.Count);
                 foreach (var symbol in symbols)
                 {
                     builder.Add(symbol);
                 }
 
-                return builder.ToImmutableAndFree();
+                return new ArrayWrapper<Symbol>(builder);
             }
 
             public override IEnumerable<string> MemberNames

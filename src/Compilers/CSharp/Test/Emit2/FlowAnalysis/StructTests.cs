@@ -71,7 +71,7 @@ struct S
             comp.VerifyDiagnostics();
 
             var structType = comp.GlobalNamespace.GetMember<NamedTypeSymbol>("S");
-            var constructors = structType.GetMembers(WellKnownMemberNames.InstanceConstructorName);
+            var constructors = structType.GetMembersAsImmutable(WellKnownMemberNames.InstanceConstructorName);
             Assert.Equal(2, constructors.Length);
 
             var sourceConstructor = (MethodSymbol)constructors.First(c => !c.IsImplicitlyDeclared);

@@ -154,8 +154,8 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
             var mscorNS = compilation.GetReferencedAssemblySymbol(mscorlib);
             Assert.Equal(RuntimeCorLibName.Name, mscorNS.Name);
             Assert.Equal(SymbolKind.Assembly, mscorNS.Kind);
-            var ns1 = mscorNS.GlobalNamespace.GetMembers("System").Single() as NamespaceSymbol;
-            var type1 = ns1.GetTypeMembers("StringComparer").Single() as NamedTypeSymbol;
+            var ns1 = mscorNS.GlobalNamespace.GetMembersAsImmutable("System").Single() as NamespaceSymbol;
+            var type1 = ns1.GetTypeMembersAsImmutable("StringComparer").Single() as NamedTypeSymbol;
             var ctor = type1.InstanceConstructors.Single();
 
             Assert.Equal(type1, ctor.ContainingSymbol);
@@ -189,12 +189,12 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
             var mscorNS = compilation.GetReferencedAssemblySymbol(mscorlib);
             Assert.Equal("mscorlib", mscorNS.Name);
             Assert.Equal(SymbolKind.Assembly, mscorNS.Kind);
-            var ns1 = mscorNS.GlobalNamespace.GetMembers("Microsoft").Single() as NamespaceSymbol;
-            var ns2 = ns1.GetMembers("Runtime").Single() as NamespaceSymbol;
-            var ns3 = ns2.GetMembers("Hosting").Single() as NamespaceSymbol;
+            var ns1 = mscorNS.GlobalNamespace.GetMembersAsImmutable("Microsoft").Single() as NamespaceSymbol;
+            var ns2 = ns1.GetMembersAsImmutable("Runtime").Single() as NamespaceSymbol;
+            var ns3 = ns2.GetMembersAsImmutable("Hosting").Single() as NamespaceSymbol;
 
-            var class1 = ns3.GetTypeMembers("StrongNameHelpers").First() as NamedTypeSymbol;
-            var members = class1.GetMembers("StrongNameSignatureGeneration");
+            var class1 = ns3.GetTypeMembersAsImmutable("StrongNameHelpers").First() as NamedTypeSymbol;
+            var members = class1.GetMembersAsImmutable("StrongNameSignatureGeneration");
             // 4 overloads
             Assert.Equal(4, members.Length);
             var member1 = members.Last() as MethodSymbol;
@@ -241,11 +241,11 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
             var mscorNS = compilation.GetReferencedAssemblySymbol(mscorlib);
             Assert.Equal("mscorlib", mscorNS.Name);
             Assert.Equal(SymbolKind.Assembly, mscorNS.Kind);
-            var ns1 = mscorNS.GlobalNamespace.GetMembers("Microsoft").Single() as NamespaceSymbol;
-            var ns2 = (ns1.GetMembers("Runtime").Single() as NamespaceSymbol).GetMembers("Hosting").Single() as NamespaceSymbol;
+            var ns1 = mscorNS.GlobalNamespace.GetMembersAsImmutable("Microsoft").Single() as NamespaceSymbol;
+            var ns2 = (ns1.GetMembersAsImmutable("Runtime").Single() as NamespaceSymbol).GetMembersAsImmutable("Hosting").Single() as NamespaceSymbol;
 
-            var class1 = ns2.GetTypeMembers("StrongNameHelpers").First() as NamedTypeSymbol;
-            var members = class1.GetMembers("StrongNameSignatureGeneration");
+            var class1 = ns2.GetTypeMembersAsImmutable("StrongNameHelpers").First() as NamedTypeSymbol;
+            var members = class1.GetMembersAsImmutable("StrongNameSignatureGeneration");
             var member1 = members.Last() as MethodSymbol;
 
             Assert.Equal(6, member1.Parameters.Length);
@@ -297,12 +297,12 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
 
             var mscorlib = compilation.ExternalReferences[0];
             var mscorNS = compilation.GetReferencedAssemblySymbol(mscorlib);
-            var ns1 = (mscorNS.GlobalNamespace.GetMembers("System").Single() as NamespaceSymbol).GetMembers("Collections").Single() as NamespaceSymbol;
-            var ns2 = ns1.GetMembers("Generic").Single() as NamespaceSymbol;
+            var ns1 = (mscorNS.GlobalNamespace.GetMembersAsImmutable("System").Single() as NamespaceSymbol).GetMembersAsImmutable("Collections").Single() as NamespaceSymbol;
+            var ns2 = ns1.GetMembersAsImmutable("Generic").Single() as NamespaceSymbol;
 
-            var type1 = ns2.GetTypeMembers("IDictionary").First() as NamedTypeSymbol;
-            var member1 = type1.GetMembers("Add").Single() as MethodSymbol;
-            var member2 = type1.GetMembers("TryGetValue").Single() as MethodSymbol;
+            var type1 = ns2.GetTypeMembersAsImmutable("IDictionary").First() as NamedTypeSymbol;
+            var member1 = type1.GetMembersAsImmutable("Add").Single() as MethodSymbol;
+            var member2 = type1.GetMembersAsImmutable("TryGetValue").Single() as MethodSymbol;
 
             Assert.Equal(mscorNS, member1.ContainingAssembly);
             Assert.Equal(type1, member1.ContainingSymbol);
@@ -342,11 +342,11 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
 
             var mscorlib = compilation.ExternalReferences[0];
             var mscorNS = compilation.GetReferencedAssemblySymbol(mscorlib);
-            var ns1 = (mscorNS.GlobalNamespace.GetMembers("System").Single() as NamespaceSymbol).GetMembers("Collections").Single() as NamespaceSymbol;
-            var ns2 = ns1.GetMembers("Generic").Single() as NamespaceSymbol;
+            var ns1 = (mscorNS.GlobalNamespace.GetMembersAsImmutable("System").Single() as NamespaceSymbol).GetMembersAsImmutable("Collections").Single() as NamespaceSymbol;
+            var ns2 = ns1.GetMembersAsImmutable("Generic").Single() as NamespaceSymbol;
 
-            var type1 = ns2.GetTypeMembers("IDictionary").First() as NamedTypeSymbol;
-            var member1 = type1.GetMembers("TryGetValue").Single() as MethodSymbol;
+            var type1 = ns2.GetTypeMembersAsImmutable("IDictionary").First() as NamedTypeSymbol;
+            var member1 = type1.GetMembersAsImmutable("TryGetValue").Single() as MethodSymbol;
             Assert.Equal(2, member1.Parameters.Length);
             var p1 = member1.Parameters[0] as ParameterSymbol;
             var p2 = member1.Parameters[1] as ParameterSymbol;
@@ -389,10 +389,10 @@ class C
 }";
             var compilation = CreateCompilation(text);
             Assert.False(compilation.GetDiagnostics().Any());
-            var classC = compilation.SourceModule.GlobalNamespace.GetTypeMembers("C").Single();
+            var classC = compilation.SourceModule.GlobalNamespace.GetTypeMembersAsImmutable("C").Single();
             // NamedTypeSymbol.Constructors only contains instance constructors
             Assert.Equal(1, classC.InstanceConstructors.Length);
-            Assert.Equal(1, classC.GetMembers(WellKnownMemberNames.StaticConstructorName).Length);
+            Assert.Equal(1, classC.GetMembersAsImmutable(WellKnownMemberNames.StaticConstructorName).Length);
         }
 
         [ClrOnlyFact]
@@ -438,7 +438,7 @@ class B {
 
             var namespaceA = compilation.GlobalNamespace.GetMember<NamespaceSymbol>("A");
 
-            var members = namespaceA.GetMembers("B");
+            var members = namespaceA.GetMembersAsImmutable("B");
             Assert.Equal(2, members.Length);
             Assert.NotNull(members[0]);
             Assert.NotNull(members[1]);
@@ -462,7 +462,7 @@ class B {
 
             var namespaceA = compilation.GlobalNamespace.GetMember<NamespaceSymbol>("A");
 
-            var members = namespaceA.GetMembers("B");
+            var members = namespaceA.GetMembersAsImmutable("B");
             Assert.Equal(2, members.Length);
             Assert.NotNull(members[0]);
             Assert.NotNull(members[1]);
@@ -479,13 +479,13 @@ class B {
             comp.VerifyDiagnostics();
 
             var type = comp.GlobalNamespace.GetMember<NamedTypeSymbol>("Class");
-            AssertEx.None(type.GetMembersUnordered(), symbol => symbol.Name.StartsWith("_VtblGap", StringComparison.Ordinal));
+            AssertEx.None(type.GetMembers(), symbol => symbol.Name.StartsWith("_VtblGap", StringComparison.Ordinal));
 
             // Dropped entirely.
-            Assert.Equal(0, type.GetMembers("_VtblGap1_1").Length);
+            Assert.Equal(0, type.GetMembersAsImmutable("_VtblGap1_1").Length);
 
             // Dropped entirely, since both accessors are dropped.
-            Assert.Equal(0, type.GetMembers("BothAccessorsAreGaps").Length);
+            Assert.Equal(0, type.GetMembersAsImmutable("BothAccessorsAreGaps").Length);
 
             // Getter is silently dropped, property appears valid and write-only.
             var propWithoutGetter = type.GetMember<PropertySymbol>("GetterIsGap");
@@ -655,7 +655,7 @@ class Test
             var comp1 = CreateCompilation(source1, options: TestOptions.ReleaseDll);
 
             var test1 = comp1.GetTypeByMetadataName("Test");
-            test1.GetMembers();
+            test1.GetMembersAsImmutable();
             var memberNames1 = new HashSet<string>(test1.MemberNames);
 
             foreach (var m in members)
@@ -666,7 +666,7 @@ class Test
             var comp2 = CreateCompilation("", new[] { comp1.EmitToImageReference() });
 
             var test2 = comp2.GetTypeByMetadataName("Test");
-            test2.GetMembers();
+            test2.GetMembersAsImmutable();
             var memberNames2 = new HashSet<string>(test2.MemberNames);
 
             foreach (var m in members)
@@ -729,30 +729,30 @@ public class C
             options = TestOptions.DebugDll;
             var compilation = CreateCompilation("", options: options, references: new[] { compilation0.EmitToImageReference() });
             var c = compilation.GetTypeByMetadataName("C");
-            Assert.NotEmpty(c.GetMembers("P1"));
-            Assert.Empty(c.GetMembers("P2"));
-            Assert.Empty(c.GetMembers("P3"));
+            Assert.NotEmpty(c.GetMembersAsImmutable("P1"));
+            Assert.Empty(c.GetMembersAsImmutable("P2"));
+            Assert.Empty(c.GetMembersAsImmutable("P3"));
             CompileAndVerify(compilation);
 
             compilation = compilation.WithOptions(options.WithMetadataImportOptions(MetadataImportOptions.Internal));
             c = compilation.GetTypeByMetadataName("C");
-            Assert.NotEmpty(c.GetMembers("P1"));
-            Assert.NotEmpty(c.GetMembers("P2"));
-            Assert.Empty(c.GetMembers("P3"));
+            Assert.NotEmpty(c.GetMembersAsImmutable("P1"));
+            Assert.NotEmpty(c.GetMembersAsImmutable("P2"));
+            Assert.Empty(c.GetMembersAsImmutable("P3"));
             CompileAndVerify(compilation);
 
             compilation = compilation.WithOptions(options.WithMetadataImportOptions(MetadataImportOptions.All));
             c = compilation.GetTypeByMetadataName("C");
-            Assert.NotEmpty(c.GetMembers("P1"));
-            Assert.NotEmpty(c.GetMembers("P2"));
-            Assert.NotEmpty(c.GetMembers("P3"));
+            Assert.NotEmpty(c.GetMembersAsImmutable("P1"));
+            Assert.NotEmpty(c.GetMembersAsImmutable("P2"));
+            Assert.NotEmpty(c.GetMembersAsImmutable("P3"));
             CompileAndVerify(compilation);
 
             compilation = compilation.WithOptions(options.WithMetadataImportOptions((MetadataImportOptions)byte.MaxValue));
             c = compilation.GetTypeByMetadataName("C");
-            Assert.NotEmpty(c.GetMembers("P1"));
-            Assert.NotEmpty(c.GetMembers("P2"));
-            Assert.Empty(c.GetMembers("P3"));
+            Assert.NotEmpty(c.GetMembersAsImmutable("P1"));
+            Assert.NotEmpty(c.GetMembersAsImmutable("P2"));
+            Assert.Empty(c.GetMembersAsImmutable("P3"));
             compilation.VerifyEmitDiagnostics(expectedDiagnostics);
             compilation.VerifyDiagnostics(expectedDiagnostics);
         }
@@ -791,23 +791,23 @@ public class C
 
             var compilation = CreateCompilation("", options: TestOptions.DebugDll.WithMetadataImportOptions(MetadataImportOptions.Internal), references: new[] { compilation0.EmitToImageReference() });
             var c = compilation.GetTypeByMetadataName("C");
-            Assert.NotEmpty(c.GetMembers("P1"));
-            Assert.NotEmpty(c.GetMembers("P2"));
-            Assert.Empty(c.GetMembers("P3"));
+            Assert.NotEmpty(c.GetMembersAsImmutable("P1"));
+            Assert.NotEmpty(c.GetMembersAsImmutable("P2"));
+            Assert.Empty(c.GetMembersAsImmutable("P3"));
             CompileAndVerify(compilation);
 
             compilation = compilation.WithOptions(TestOptions.DebugDll.WithMetadataImportOptions(MetadataImportOptions.All));
             c = compilation.GetTypeByMetadataName("C");
-            Assert.NotEmpty(c.GetMembers("P1"));
-            Assert.NotEmpty(c.GetMembers("P2"));
-            Assert.NotEmpty(c.GetMembers("P3"));
+            Assert.NotEmpty(c.GetMembersAsImmutable("P1"));
+            Assert.NotEmpty(c.GetMembersAsImmutable("P2"));
+            Assert.NotEmpty(c.GetMembersAsImmutable("P3"));
             CompileAndVerify(compilation);
 
             compilation = compilation.WithOptions(TestOptions.DebugDll.WithMetadataImportOptions((MetadataImportOptions)byte.MaxValue));
             c = compilation.GetTypeByMetadataName("C");
-            Assert.NotEmpty(c.GetMembers("P1"));
-            Assert.NotEmpty(c.GetMembers("P2"));
-            Assert.Empty(c.GetMembers("P3"));
+            Assert.NotEmpty(c.GetMembersAsImmutable("P1"));
+            Assert.NotEmpty(c.GetMembersAsImmutable("P2"));
+            Assert.Empty(c.GetMembersAsImmutable("P3"));
             compilation.VerifyEmitDiagnostics(expectedDiagnostics);
             compilation.VerifyDiagnostics(expectedDiagnostics);
         }

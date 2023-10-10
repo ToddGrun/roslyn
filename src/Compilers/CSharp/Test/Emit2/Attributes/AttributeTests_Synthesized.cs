@@ -124,7 +124,7 @@ class C
 
             var comp = CreateEmptyCompilation("", new[] { reference }, options: TestOptions.ReleaseDll.WithMetadataImportOptions(MetadataImportOptions.Internal));
 
-            var pid = (NamedTypeSymbol)comp.GlobalNamespace.GetMembers().Where(s => s.Name.StartsWith("<PrivateImplementationDetails>", StringComparison.Ordinal)).Single();
+            var pid = (NamedTypeSymbol)comp.GlobalNamespace.GetMembersAsImmutable().Where(s => s.Name.StartsWith("<PrivateImplementationDetails>", StringComparison.Ordinal)).Single();
 
             var expectedAttrs = new[] { "CompilerGeneratedAttribute" };
             var actualAttrs = GetAttributeNames(pid.GetAttributes());
@@ -145,8 +145,8 @@ unsafe struct S
             var reference = CreateCompilation(source, options: TestOptions.UnsafeReleaseDll).EmitToImageReference();
             var comp = CreateEmptyCompilation("", new[] { reference }, options: TestOptions.UnsafeReleaseDll.WithMetadataImportOptions(MetadataImportOptions.Internal));
 
-            var s = (NamedTypeSymbol)comp.GlobalNamespace.GetMembers("S").Single();
-            var bufferType = (NamedTypeSymbol)s.GetMembers().Where(t => t.Name == "<C>e__FixedBuffer").Single();
+            var s = (NamedTypeSymbol)comp.GlobalNamespace.GetMembersAsImmutable("S").Single();
+            var bufferType = (NamedTypeSymbol)s.GetMembersAsImmutable().Where(t => t.Name == "<C>e__FixedBuffer").Single();
 
             var expectedAttrs = new[] { "CompilerGeneratedAttribute", "UnsafeValueTypeAttribute" };
             var actualAttrs = GetAttributeNames(bufferType.GetAttributes());
@@ -264,7 +264,7 @@ class C
                 var displayClass = m.GlobalNamespace.GetMember<NamedTypeSymbol>("C.<>c__DisplayClass0_0");
                 AssertEx.SetEqual(new[] { "CompilerGeneratedAttribute" }, GetAttributeNames(displayClass.GetAttributes()));
 
-                foreach (var member in displayClass.GetMembers())
+                foreach (var member in displayClass.GetMembersAsImmutable())
                 {
                     Assert.Equal(0, member.GetAttributes().Length);
                 }
@@ -303,7 +303,7 @@ class C
 
                 AssertEx.SetEqual(expected, GetAttributeNames(anon.GetAttributes()));
 
-                foreach (var member in anon.GetMembers())
+                foreach (var member in anon.GetMembersAsImmutable())
                 {
                     var actual = GetAttributeNames(member.GetAttributes());
 
@@ -430,7 +430,7 @@ public class C
                 var iter = module.ContainingAssembly.GetTypeByMetadataName("C+<Iterator>d__0");
                 AssertEx.SetEqual(new[] { "CompilerGeneratedAttribute" }, GetAttributeNames(iter.GetAttributes()));
 
-                foreach (var member in iter.GetMembers().Where(member => member is MethodSymbol))
+                foreach (var member in iter.GetMembersAsImmutable().Where(member => member is MethodSymbol))
                 {
                     switch (member.Name)
                     {
@@ -490,7 +490,7 @@ class C
                 var iter = module.GlobalNamespace.GetMember<NamedTypeSymbol>("C.<Goo>d__0");
                 AssertEx.SetEqual(new[] { "CompilerGeneratedAttribute" }, GetAttributeNames(iter.GetAttributes()));
 
-                foreach (var member in iter.GetMembers().Where(s => s.Kind == SymbolKind.Method))
+                foreach (var member in iter.GetMembersAsImmutable().Where(s => s.Kind == SymbolKind.Method))
                 {
                     switch (member.Name)
                     {
@@ -667,7 +667,7 @@ record R
             static void validate(ModuleSymbol module)
             {
                 var record = module.GlobalNamespace.GetTypeMember("R");
-                Assert.Equal(15, record.GetMembers().Length); // If a new record member is added, extend the test with its behavior regarding CompilerGeneratedAttribute.
+                Assert.Equal(15, record.GetMembersAsImmutable().Length); // If a new record member is added, extend the test with its behavior regarding CompilerGeneratedAttribute.
 
                 var equalityContractGetter = record.GetMember("get_EqualityContract");
                 validateCompilerGeneratedAttribute(equalityContractGetter);
@@ -687,7 +687,7 @@ record R
                 var getHashCode = record.GetMember(WellKnownMemberNames.ObjectGetHashCode);
                 validateCompilerGeneratedAttribute(getHashCode);
 
-                var equals = record.GetMembers(WellKnownMemberNames.ObjectEquals);
+                var equals = record.GetMembersAsImmutable(WellKnownMemberNames.ObjectEquals);
                 Assert.Equal(2, equals.Length);
                 validateCompilerGeneratedAttribute(equals[0]);
                 validateCompilerGeneratedAttribute(equals[1]);
@@ -695,7 +695,7 @@ record R
                 var clone = record.GetMember(WellKnownMemberNames.CloneMethodName);
                 validateCompilerGeneratedAttribute(clone);
 
-                var ctor = record.GetMembers(WellKnownMemberNames.InstanceConstructorName);
+                var ctor = record.GetMembersAsImmutable(WellKnownMemberNames.InstanceConstructorName);
                 Assert.Equal(2, ctor.Length);
                 Assert.Equal("R..ctor(R original)", ctor[0].ToTestDisplayString());
                 validateCompilerGeneratedAttribute(ctor[0]);
@@ -737,7 +737,7 @@ record struct R
             static void validate(ModuleSymbol module)
             {
                 var record = module.GlobalNamespace.GetTypeMember("R");
-                Assert.Equal(11, record.GetMembers().Length); // If a new record member is added, extend the test with its behavior regarding CompilerGeneratedAttribute.
+                Assert.Equal(11, record.GetMembersAsImmutable().Length); // If a new record member is added, extend the test with its behavior regarding CompilerGeneratedAttribute.
 
                 var toString = record.GetMember(WellKnownMemberNames.ObjectToString);
                 validateCompilerGeneratedAttribute(toString);
@@ -754,7 +754,7 @@ record struct R
                 var getHashCode = record.GetMember(WellKnownMemberNames.ObjectGetHashCode);
                 validateCompilerGeneratedAttribute(getHashCode);
 
-                var equals = record.GetMembers(WellKnownMemberNames.ObjectEquals);
+                var equals = record.GetMembersAsImmutable(WellKnownMemberNames.ObjectEquals);
                 Assert.Equal(2, equals.Length);
                 validateCompilerGeneratedAttribute(equals[0]);
                 validateCompilerGeneratedAttribute(equals[1]);
@@ -800,7 +800,7 @@ namespace System.Runtime.CompilerServices
             static void validate(ModuleSymbol module)
             {
                 var record = module.GlobalNamespace.GetTypeMember("R");
-                Assert.Equal(17, record.GetMembers().Length); // If a new record member is added, extend the test with its behavior regarding CompilerGeneratedAttribute.
+                Assert.Equal(17, record.GetMembersAsImmutable().Length); // If a new record member is added, extend the test with its behavior regarding CompilerGeneratedAttribute.
 
                 var p1_backingField = record.GetMember("<P1>k__BackingField");
                 validateCompilerGeneratedAttribute(p1_backingField);
@@ -829,7 +829,7 @@ namespace System.Runtime.CompilerServices
                 var getHashCode = record.GetMember(WellKnownMemberNames.ObjectGetHashCode);
                 validateCompilerGeneratedAttribute(getHashCode);
 
-                var equals = record.GetMembers(WellKnownMemberNames.ObjectEquals);
+                var equals = record.GetMembersAsImmutable(WellKnownMemberNames.ObjectEquals);
                 Assert.Equal(2, equals.Length);
                 validateCompilerGeneratedAttribute(equals[0]);
                 validateCompilerGeneratedAttribute(equals[1]);
@@ -837,7 +837,7 @@ namespace System.Runtime.CompilerServices
                 var clone = record.GetMember(WellKnownMemberNames.CloneMethodName);
                 validateCompilerGeneratedAttribute(clone);
 
-                var ctor = record.GetMembers(WellKnownMemberNames.InstanceConstructorName);
+                var ctor = record.GetMembersAsImmutable(WellKnownMemberNames.InstanceConstructorName);
                 Assert.Equal(2, ctor.Length);
                 Assert.Equal("R..ctor(System.Int32 P1)", ctor[0].ToTestDisplayString());
                 Assert.Equal("R..ctor(R original)", ctor[1].ToTestDisplayString());
@@ -873,12 +873,12 @@ record struct R(int P1);
             void validate(ModuleSymbol module)
             {
                 var record = module.GlobalNamespace.GetTypeMember("R");
-                Assert.Equal(14, record.GetMembers().Length); // If a new record member is added, extend the test with its behavior regarding CompilerGeneratedAttribute.
+                Assert.Equal(14, record.GetMembersAsImmutable().Length); // If a new record member is added, extend the test with its behavior regarding CompilerGeneratedAttribute.
 
                 var p1_backingField = record.GetMember("<P1>k__BackingField");
                 validateCompilerGeneratedAttribute(p1_backingField);
 
-                var ctor = record.GetMembers(WellKnownMemberNames.InstanceConstructorName);
+                var ctor = record.GetMembersAsImmutable(WellKnownMemberNames.InstanceConstructorName);
                 Assert.Equal(2, ctor.Length);
                 Assert.Equal("R..ctor()", ctor[0].ToTestDisplayString());
                 Assert.Equal("R..ctor(System.Int32 P1)", ctor[1].ToTestDisplayString());
@@ -906,7 +906,7 @@ record struct R(int P1);
                 var getHashCode = record.GetMember(WellKnownMemberNames.ObjectGetHashCode);
                 validateCompilerGeneratedAttribute(getHashCode);
 
-                var equals = record.GetMembers(WellKnownMemberNames.ObjectEquals);
+                var equals = record.GetMembersAsImmutable(WellKnownMemberNames.ObjectEquals);
                 Assert.Equal(2, equals.Length);
                 validateCompilerGeneratedAttribute(equals[0]);
                 validateCompilerGeneratedAttribute(equals[1]);
@@ -940,7 +940,7 @@ record struct R;
             void validate(ModuleSymbol module)
             {
                 var record = module.GlobalNamespace.GetTypeMember("R");
-                Assert.Equal(7, record.GetMembers().Length); // If a new record member is added, extend the test with its behavior regarding CompilerGeneratedAttribute.
+                Assert.Equal(7, record.GetMembersAsImmutable().Length); // If a new record member is added, extend the test with its behavior regarding CompilerGeneratedAttribute.
 
                 var ctor = record.GetMember(WellKnownMemberNames.InstanceConstructorName);
                 Assert.Empty(ctor.GetAttributes());
@@ -957,7 +957,7 @@ record struct R;
                 var getHashCode = record.GetMember(WellKnownMemberNames.ObjectGetHashCode);
                 Assert.Empty(getHashCode.GetAttributes());
 
-                var equals = record.GetMembers(WellKnownMemberNames.ObjectEquals);
+                var equals = record.GetMembersAsImmutable(WellKnownMemberNames.ObjectEquals);
                 Assert.Equal(2, equals.Length);
                 Assert.Empty(equals[0].GetAttributes());
                 Assert.Empty(equals[1].GetAttributes());
@@ -1803,7 +1803,7 @@ class Test
             var compilation = CreateCompilationWithMscorlib45("", new[] { reference }, options: options);
 
             var type = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("Test");
-            Assert.Equal(new[] { "F", ".ctor" }, type.GetMembers().SelectAsArray(m => m.Name));
+            Assert.Equal(new[] { "F", ".ctor" }, type.GetMembersAsImmutable().SelectAsArray(m => m.Name));
 
             var asyncMethod = type.GetMember<MethodSymbol>("F");
 
@@ -1902,7 +1902,7 @@ public class Test<T>
             var compilation = CreateCompilationWithMscorlib45("", new[] { reference }, options: options);
 
             var type = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("Test");
-            Assert.Equal(new[] { "F", ".ctor" }, type.GetMembers().SelectAsArray(m => m.Name));
+            Assert.Equal(new[] { "F", ".ctor" }, type.GetMembersAsImmutable().SelectAsArray(m => m.Name));
 
             Assert.Empty(type.GetMember<MethodSymbol>("F").GetAttributes());
         }

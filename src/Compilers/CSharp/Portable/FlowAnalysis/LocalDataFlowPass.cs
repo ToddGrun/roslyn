@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp.Symbols;
+using Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE;
 
 namespace Microsoft.CodeAnalysis.CSharp
 {
@@ -171,7 +172,8 @@ namespace Microsoft.CodeAnalysis.CSharp
                 // force corresponding slots if do not exist
                 while (!TypeSymbol.Equals(containingType, symbol.ContainingType, TypeCompareKind.ConsiderEverything))
                 {
-                    var restField = containingType.GetMembers(NamedTypeSymbol.ValueTupleRestFieldName).FirstOrDefault(s => s is not TupleVirtualElementFieldSymbol) as FieldSymbol;
+                    using var containingTypeMembers = containingType.GetMembers(NamedTypeSymbol.ValueTupleRestFieldName);
+                    var restField = containingTypeMembers.FirstOrDefault(static s => s is not TupleVirtualElementFieldSymbol) as FieldSymbol;
                     if (restField is null)
                     {
                         return -1;

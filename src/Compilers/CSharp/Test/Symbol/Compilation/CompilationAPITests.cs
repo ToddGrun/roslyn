@@ -1229,8 +1229,8 @@ var a = new C2();
             //Assert.Equal("Test1", smb.Identity.Name, StringComparer.OrdinalIgnoreCase);
 
             // GetCompilationNamespace Not implemented(Derived Class AssemblySymbol)
-            //var m = smb.GlobalNamespace.GetMembers();
-            //var nsSmb = smb.GlobalNamespace.GetMembers("NS").Single() as NamespaceSymbol;
+            //var m = smb.GlobalNamespace.GetMembersAsImmutable();
+            //var nsSmb = smb.GlobalNamespace.GetMembersAsImmutable("NS").Single() as NamespaceSymbol;
             //var ns = comp.GetCompilationNamespace(ns: nsSmb);
             //Assert.Equal(ns.Kind, SymbolKind.Namespace);
             //Assert.True(String.Equals(ns.Name, "Compilation", StringComparison.OrdinalIgnoreCase));
@@ -1246,7 +1246,7 @@ var a = new C2();
             //Assert.Equal("ModuleCS00.mod", moduleSmb.Name, StringComparer.OrdinalIgnoreCase);
 
             // GetCompilationNamespace Not implemented(Derived Class ModuleSymbol)
-            //nsSmb = moduleSmb.GlobalNamespace.GetMembers("Runtime").Single() as NamespaceSymbol;
+            //nsSmb = moduleSmb.GlobalNamespace.GetMembersAsImmutable("Runtime").Single() as NamespaceSymbol;
             //ns = comp.GetCompilationNamespace(ns: nsSmb);
             //Assert.Equal(ns.Kind, SymbolKind.Namespace);
             //Assert.True(String.Equals(ns.Name, "Compilation", StringComparison.OrdinalIgnoreCase));

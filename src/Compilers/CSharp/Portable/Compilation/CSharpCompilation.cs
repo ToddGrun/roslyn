@@ -3464,7 +3464,8 @@ namespace Microsoft.CodeAnalysis.CSharp
 
             public override void VisitNamespace(NamespaceSymbol symbol)
             {
-                foreach (var childSymbol in symbol.GetMembers())
+                using var members = symbol.GetMembers();
+                foreach (var childSymbol in members)
                 {
                     switch (childSymbol)
                     {
@@ -4806,7 +4807,8 @@ namespace Microsoft.CodeAnalysis.CSharp
                 var container = GetSpineSymbol(spine);
                 if (container != null)
                 {
-                    foreach (var member in container.GetMembers())
+                    using var members = container.GetMembers();
+                    foreach (var member in members)
                     {
                         if (!member.IsTypeOrTypeAlias() &&
                             (member.CanBeReferencedByName || member.IsExplicitInterfaceImplementation() || member.IsIndexer()) &&

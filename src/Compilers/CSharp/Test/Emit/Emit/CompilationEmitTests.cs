@@ -898,7 +898,7 @@ public class C
 
             AssertEx.Equal(
                 expectedMethods,
-                compWithMetadata.GetMember<NamedTypeSymbol>(containingType).GetMembers().Select(m => m.ToTestDisplayString()));
+                compWithMetadata.GetMember<NamedTypeSymbol>(containingType).GetMembersAsImmutable().Select(m => m.ToTestDisplayString()));
         }
 
         [Fact]
@@ -2133,7 +2133,7 @@ public class PublicClass
                 options: TestOptions.DebugDll.WithMetadataImportOptions(MetadataImportOptions.All));
             AssertEx.Equal(
                 new[] { "<Module>", "<>f__AnonymousType0<<anonymous>j__TPar>", "PublicClass" },
-                compWithReal.SourceModule.GetReferencedAssemblySymbols().Last().GlobalNamespace.GetMembers().Select(m => m.ToDisplayString()));
+                compWithReal.SourceModule.GetReferencedAssemblySymbols().Last().GlobalNamespace.GetMembersAsImmutable().Select(m => m.ToDisplayString()));
 
             AssertEx.Equal(
                 new[] { "void PublicClass.PublicMethod()", "void PublicClass.PrivateMethod()",
@@ -2143,7 +2143,7 @@ public class PublicClass
                     "void PublicClass.InternalEvent.add", "void PublicClass.InternalEvent.remove",
                     "PublicClass..ctor()",
                     "event System.Action PublicClass.PublicEvent", "event System.Action PublicClass.InternalEvent" },
-                compWithReal.GetMember<NamedTypeSymbol>("PublicClass").GetMembers()
+                compWithReal.GetMember<NamedTypeSymbol>("PublicClass").GetMembersAsImmutable()
                     .Select(m => m.ToTestDisplayString()));
 
             AssertEx.Equal(
@@ -2164,7 +2164,7 @@ public class PublicClass
                 options: TestOptions.DebugDll.WithMetadataImportOptions(MetadataImportOptions.All));
             AssertEx.Equal(
                 new[] { "<Module>", "<>f__AnonymousType0<<anonymous>j__TPar>", "PublicClass" },
-                compWithReal2.SourceModule.GetReferencedAssemblySymbols().Last().GlobalNamespace.GetMembers().Select(m => m.ToDisplayString()));
+                compWithReal2.SourceModule.GetReferencedAssemblySymbols().Last().GlobalNamespace.GetMembersAsImmutable().Select(m => m.ToDisplayString()));
 
             AssertEx.Equal(
                 new[] { "void PublicClass.PublicMethod()", "void PublicClass.PrivateMethod()",
@@ -2174,7 +2174,7 @@ public class PublicClass
                     "void PublicClass.InternalEvent.add", "void PublicClass.InternalEvent.remove",
                     "PublicClass..ctor()",
                     "event System.Action PublicClass.PublicEvent", "event System.Action PublicClass.InternalEvent" },
-                compWithReal2.GetMember<NamedTypeSymbol>("PublicClass").GetMembers()
+                compWithReal2.GetMember<NamedTypeSymbol>("PublicClass").GetMembersAsImmutable()
                     .Select(m => m.ToTestDisplayString()));
 
             AssertEx.Equal(
@@ -2192,7 +2192,7 @@ public class PublicClass
                 options: TestOptions.DebugDll.WithMetadataImportOptions(MetadataImportOptions.All));
             AssertEx.Equal(
                 new[] { "<Module>", "PublicClass" },
-                compWithMetadata.SourceModule.GetReferencedAssemblySymbols().Last().GlobalNamespace.GetMembers().Select(m => m.ToDisplayString()));
+                compWithMetadata.SourceModule.GetReferencedAssemblySymbols().Last().GlobalNamespace.GetMembersAsImmutable().Select(m => m.ToDisplayString()));
 
             AssertEx.Equal(
                 new[] { "void PublicClass.PublicMethod()", "void PublicClass.PrivateMethod()",
@@ -2202,7 +2202,7 @@ public class PublicClass
                     "void PublicClass.InternalEvent.add", "void PublicClass.InternalEvent.remove",
                     "PublicClass..ctor()",
                     "event System.Action PublicClass.PublicEvent", "event System.Action PublicClass.InternalEvent" },
-                compWithMetadata.GetMember<NamedTypeSymbol>("PublicClass").GetMembers().Select(m => m.ToTestDisplayString()));
+                compWithMetadata.GetMember<NamedTypeSymbol>("PublicClass").GetMembersAsImmutable().Select(m => m.ToTestDisplayString()));
 
             AssertEx.Equal(
                 new[] { "System.Runtime.CompilerServices.CompilationRelaxationsAttribute",
@@ -2221,14 +2221,14 @@ public class PublicClass
                 options: TestOptions.DebugDll.WithMetadataImportOptions(MetadataImportOptions.All));
             AssertEx.Equal(
                 new[] { "<Module>", "PublicClass" },
-                compWithRef.SourceModule.GetReferencedAssemblySymbols().Last().GlobalNamespace.GetMembers().Select(m => m.ToDisplayString()));
+                compWithRef.SourceModule.GetReferencedAssemblySymbols().Last().GlobalNamespace.GetMembersAsImmutable().Select(m => m.ToDisplayString()));
 
             AssertEx.Equal(
                 new[] { "void PublicClass.PublicMethod()", "void PublicClass.ProtectedMethod()",
                     "void PublicClass.ProtectedInternalMethod()",
                     "void PublicClass.PublicEvent.add", "void PublicClass.PublicEvent.remove",
                     "PublicClass..ctor()", "event System.Action PublicClass.PublicEvent"},
-                compWithRef.GetMember<NamedTypeSymbol>("PublicClass").GetMembers().Select(m => m.ToTestDisplayString()));
+                compWithRef.GetMember<NamedTypeSymbol>("PublicClass").GetMembersAsImmutable().Select(m => m.ToTestDisplayString()));
 
             AssertEx.Equal(
                 new[] {
@@ -2299,11 +2299,11 @@ public class C : I
             {
                 AssertEx.Equal(
                     new[] { "<Module>", "I", "C" },
-                    input.SourceModule.GetReferencedAssemblySymbols().Last().GlobalNamespace.GetMembers().Select(m => m.ToDisplayString()));
+                    input.SourceModule.GetReferencedAssemblySymbols().Last().GlobalNamespace.GetMembersAsImmutable().Select(m => m.ToDisplayString()));
 
                 AssertEx.Equal(
                     new[] { "System.Int32 C.I.P.get", "void C.I.P.set", "C..ctor()", "System.Int32 C.I.P { get; set; }" },
-                    input.GetMember<NamedTypeSymbol>("C").GetMembers()
+                    input.GetMember<NamedTypeSymbol>("C").GetMembersAsImmutable()
                         .Select(m => m.ToTestDisplayString()));
             }
         }
@@ -2366,11 +2366,11 @@ public class C : I
             {
                 AssertEx.Equal(
                     new[] { "<Module>", "I", "C" },
-                    input.SourceModule.GetReferencedAssemblySymbols().Last().GlobalNamespace.GetMembers().Select(m => m.ToDisplayString()));
+                    input.SourceModule.GetReferencedAssemblySymbols().Last().GlobalNamespace.GetMembersAsImmutable().Select(m => m.ToDisplayString()));
 
                 AssertEx.Equal(
                     new[] { "void C.I.E.add", "void C.I.E.remove", "C..ctor()", "event System.Action C.I.E" },
-                    input.GetMember<NamedTypeSymbol>("C").GetMembers()
+                    input.GetMember<NamedTypeSymbol>("C").GetMembersAsImmutable()
                         .Select(m => m.ToTestDisplayString()));
             }
         }
@@ -2433,12 +2433,12 @@ public class C : I
             {
                 AssertEx.Equal(
                     new[] { "<Module>", "I", "C" },
-                    input.SourceModule.GetReferencedAssemblySymbols().Last().GlobalNamespace.GetMembers().Select(m => m.ToDisplayString()));
+                    input.SourceModule.GetReferencedAssemblySymbols().Last().GlobalNamespace.GetMembersAsImmutable().Select(m => m.ToDisplayString()));
 
                 AssertEx.Equal(
                     new[] {"System.Int32 C.I.get_Item(System.Int32 i)", "void C.I.set_Item(System.Int32 i, System.Int32 value)",
                         "C..ctor()", "System.Int32 C.I.Item[System.Int32 i] { get; set; }" },
-                    input.GetMember<NamedTypeSymbol>("C").GetMembers()
+                    input.GetMember<NamedTypeSymbol>("C").GetMembersAsImmutable()
                         .Select(m => m.ToTestDisplayString()));
             }
         }
@@ -2468,23 +2468,23 @@ internal struct InternalStruct
 
             AssertEx.Equal(
                 new[] { "<Module>", "InternalStruct", "Microsoft", "System" },
-                globalNamespace.GetMembers().Select(m => m.ToDisplayString()));
+                globalNamespace.GetMembersAsImmutable().Select(m => m.ToDisplayString()));
 
-            AssertEx.Equal(new[] { "Microsoft.CodeAnalysis" }, globalNamespace.GetMember<NamespaceSymbol>("Microsoft").GetMembers().Select(m => m.ToDisplayString()));
+            AssertEx.Equal(new[] { "Microsoft.CodeAnalysis" }, globalNamespace.GetMember<NamespaceSymbol>("Microsoft").GetMembersAsImmutable().Select(m => m.ToDisplayString()));
             AssertEx.Equal(
                 new[] { "Microsoft.CodeAnalysis.EmbeddedAttribute" },
-                globalNamespace.GetMember<NamespaceSymbol>("Microsoft.CodeAnalysis").GetMembers().Select(m => m.ToDisplayString()));
+                globalNamespace.GetMember<NamespaceSymbol>("Microsoft.CodeAnalysis").GetMembersAsImmutable().Select(m => m.ToDisplayString()));
 
             AssertEx.Equal(
                 new[] { "System.Runtime.CompilerServices" },
-                globalNamespace.GetMember<NamespaceSymbol>("System.Runtime").GetMembers().Select(m => m.ToDisplayString()));
+                globalNamespace.GetMember<NamespaceSymbol>("System.Runtime").GetMembersAsImmutable().Select(m => m.ToDisplayString()));
             AssertEx.Equal(
                 new[] { "System.Runtime.CompilerServices.IsReadOnlyAttribute" },
-                globalNamespace.GetMember<NamespaceSymbol>("System.Runtime.CompilerServices").GetMembers().Select(m => m.ToDisplayString()));
+                globalNamespace.GetMember<NamespaceSymbol>("System.Runtime.CompilerServices").GetMembersAsImmutable().Select(m => m.ToDisplayString()));
 
             AssertEx.Equal(
                 new[] { "System.Int32 InternalStruct.<P>k__BackingField", "InternalStruct..ctor()" },
-                compWithRef.GetMember<NamedTypeSymbol>("InternalStruct").GetMembers().Select(m => m.ToTestDisplayString()));
+                compWithRef.GetMember<NamedTypeSymbol>("InternalStruct").GetMembersAsImmutable().Select(m => m.ToTestDisplayString()));
         }
 
         [Fact]
@@ -2510,11 +2510,11 @@ struct S
                 options: TestOptions.DebugDll.WithMetadataImportOptions(MetadataImportOptions.All));
             AssertEx.Equal(
                 new[] { "<Module>", "S" },
-                compWithRef.SourceModule.GetReferencedAssemblySymbols().Last().GlobalNamespace.GetMembers().Select(m => m.ToDisplayString()));
+                compWithRef.SourceModule.GetReferencedAssemblySymbols().Last().GlobalNamespace.GetMembersAsImmutable().Select(m => m.ToDisplayString()));
 
             AssertEx.Equal(
                 new[] { "S.PrivateType S.field", "S..ctor()", "S.PrivateType" },
-                compWithRef.GetMember<NamedTypeSymbol>("S").GetMembers().Select(m => m.ToTestDisplayString()));
+                compWithRef.GetMember<NamedTypeSymbol>("S").GetMembersAsImmutable().Select(m => m.ToTestDisplayString()));
         }
 
         [Fact]
@@ -3879,7 +3879,7 @@ using System;
                              sourceSymbolValidator: delegate (ModuleSymbol m)
                              {
                                  string[] expectedGlobalMembers = { "C1", "B", "A1", "F", "G", "E", "D" };
-                                 var actualGlobalMembers = m.GlobalNamespace.GetMembers().Where(member => !member.IsImplicitlyDeclared).ToArray();
+                                 var actualGlobalMembers = m.GlobalNamespace.GetMembersAsImmutable().Where(member => !member.IsImplicitlyDeclared).ToArray();
                                  for (int i = 0; i < System.Math.Max(expectedGlobalMembers.Length, actualGlobalMembers.Length); i++)
                                  {
                                      Assert.Equal(expectedGlobalMembers[i], actualGlobalMembers[i].Name);
@@ -3900,7 +3900,7 @@ using System;
                                                         ".ctor", ".cctor"
                                                 };
 
-                                 var actualAMembers = ((SourceModuleSymbol)m).GlobalNamespace.GetTypeMembers("A1").Single().GetMembers().ToArray();
+                                 var actualAMembers = ((SourceModuleSymbol)m).GlobalNamespace.GetTypeMembersAsImmutable("A1").Single().GetMembersAsImmutable().ToArray();
 
                                  for (int i = 0; i < System.Math.Max(expectedAMembers.Length, actualAMembers.Length); i++)
                                  {
@@ -3908,7 +3908,7 @@ using System;
                                  }
 
                                  string[] expectedBMembers = { ".ctor", "Invoke", "BeginInvoke", "EndInvoke" };
-                                 var actualBMembers = ((SourceModuleSymbol)m).GlobalNamespace.GetTypeMembers("B").Single().GetMembers().ToArray();
+                                 var actualBMembers = ((SourceModuleSymbol)m).GlobalNamespace.GetTypeMembersAsImmutable("B").Single().GetMembersAsImmutable().ToArray();
 
                                  for (int i = 0; i < System.Math.Max(expectedBMembers.Length, actualBMembers.Length); i++)
                                  {
@@ -3918,7 +3918,7 @@ using System;
                                  string[] expectedCMembers = {".cctor",
                                                             "C", "B", "F", "A",
                                                             ".ctor"};
-                                 var actualCMembers = ((SourceModuleSymbol)m).GlobalNamespace.GetTypeMembers("C1").Single().GetMembers().ToArray();
+                                 var actualCMembers = ((SourceModuleSymbol)m).GlobalNamespace.GetTypeMembersAsImmutable("C1").Single().GetMembersAsImmutable().ToArray();
 
                                  AssertEx.SetEqual(expectedCMembers, actualCMembers.Select(s => s.Name));
                              },
@@ -3941,17 +3941,17 @@ using System;
                                                         "O", "N", "M",
                                                         };
 
-                                 var actualAMembers = m.GlobalNamespace.GetTypeMembers("A1").Single().GetMembers().ToArray();
+                                 var actualAMembers = m.GlobalNamespace.GetTypeMembersAsImmutable("A1").Single().GetMembersAsImmutable().ToArray();
 
                                  AssertEx.SetEqual(expectedAMembers, actualAMembers.Select(s => s.Name));
 
                                  string[] expectedBMembers = { ".ctor", "BeginInvoke", "EndInvoke", "Invoke" };
-                                 var actualBMembers = m.GlobalNamespace.GetTypeMembers("B").Single().GetMembers().ToArray();
+                                 var actualBMembers = m.GlobalNamespace.GetTypeMembersAsImmutable("B").Single().GetMembersAsImmutable().ToArray();
 
                                  AssertEx.SetEqual(expectedBMembers, actualBMembers.Select(s => s.Name));
 
                                  string[] expectedCMembers = { "C", "B", "A", ".ctor", "F" };
-                                 var actualCMembers = m.GlobalNamespace.GetTypeMembers("C1").Single().GetMembers().ToArray();
+                                 var actualCMembers = m.GlobalNamespace.GetTypeMembersAsImmutable("C1").Single().GetMembersAsImmutable().ToArray();
 
                                  AssertEx.SetEqual(expectedCMembers, actualCMembers.Select(s => s.Name));
                              }

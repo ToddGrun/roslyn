@@ -3357,7 +3357,7 @@ class C
             Assert.Null(mTuple.BaseType());
             Assert.False(mTuple.TupleData.UnderlyingDefinitionToMemberMap.Any());
 
-            var mFirst = (FieldSymbol)mTuple.GetMembers("first").Single();
+            var mFirst = (FieldSymbol)mTuple.GetMembersAsImmutable("first").Single();
 
             Assert.IsType<TupleErrorFieldSymbol>(mFirst);
 
@@ -3375,7 +3375,7 @@ class C
             Assert.False(mFirst.IsImplicitlyDeclared);
             Assert.Null(mFirst.TypeLayoutOffset);
 
-            var mItem1 = (FieldSymbol)mTuple.GetMembers("Item1").Single();
+            var mItem1 = (FieldSymbol)mTuple.GetMembersAsImmutable("Item1").Single();
 
             Assert.IsType<TupleErrorFieldSymbol>(mItem1);
 
@@ -4488,13 +4488,13 @@ namespace System
                 "(T1, T2)..ctor()",
                 "T1 (T1, T2).Item1",
                 "T2 (T1, T2).Item2" },
-                vt2.GetMembers().ToTestDisplayStrings());
+                vt2.GetMembersAsImmutable().ToTestDisplayStrings());
 
-            var stringItem1 = vt2.GetMembers("Item1")[0];
+            var stringItem1 = vt2.GetMembersAsImmutable("Item1")[0];
             Assert.Equal("System.String (T1, T2).Item1", stringItem1.ToTestDisplayString());
             Assert.Equal(-1, ((FieldSymbol)stringItem1).TupleElementIndex);
 
-            var intItem2 = vt2.GetMembers("Item2")[0];
+            var intItem2 = vt2.GetMembersAsImmutable("Item2")[0];
             Assert.Equal("System.Int32 (T1, T2).Item2", intItem2.ToTestDisplayString());
             Assert.Equal(-1, ((FieldSymbol)intItem2).TupleElementIndex);
 
@@ -4594,7 +4594,7 @@ namespace System
             var mTuple = (NamedTypeSymbol)comp.SourceModule.GlobalNamespace.GetMember<NamedTypeSymbol>("C").GetMember<MethodSymbol>("M").ReturnType;
             AssertTupleTypeEquality(mTuple);
 
-            var mItem1 = (FieldSymbol)mTuple.GetMembers("Item1").Single();
+            var mItem1 = (FieldSymbol)mTuple.GetMembersAsImmutable("Item1").Single();
 
             Assert.IsType<TupleErrorFieldSymbol>(mItem1);
 
@@ -4614,7 +4614,7 @@ namespace System
             Assert.Null(mItem1.TypeLayoutOffset);
 
             // Note: fields come first
-            AssertTestDisplayString(mTuple.GetMembers(),
+            AssertTestDisplayString(mTuple.GetMembersAsImmutable(),
                 "System.String (System.String, System.String).Item1",
                 "System.String (System.String, System.String).Item2",
                 "System.Int32 (System.String, System.String).Item2",
@@ -4623,7 +4623,7 @@ namespace System
 
             var m2Tuple = (NamedTypeSymbol)comp.SourceModule.GlobalNamespace.GetMember<NamedTypeSymbol>("C").GetMember<MethodSymbol>("M2").Parameters[0].Type;
             AssertTupleTypeEquality(m2Tuple);
-            AssertTestDisplayString(m2Tuple.GetMembers(),
+            AssertTestDisplayString(m2Tuple.GetMembersAsImmutable(),
                 "System.Int32 (System.Int32 a, System.Int32 b).Item1",
                 "System.Int32 (System.Int32 a, System.Int32 b).a",
                 "System.Int32 (System.Int32 a, System.Int32 b).Item2",
@@ -6198,7 +6198,7 @@ namespace System
             Assert.Equal(2, types.Length);
             Assert.Equal(SymbolKind.NamedType, types[0].Kind);
             Assert.Equal(SymbolKind.ErrorType, types[1].Kind);
-            Assert.All(tupleWithoutNames.GetMembers().OfType<IFieldSymbol>().Select(f => f.Locations.FirstOrDefault()),
+            Assert.All(tupleWithoutNames.GetMembersAsImmutable().OfType<IFieldSymbol>().Select(f => f.Locations.FirstOrDefault()),
                loc => Assert.Null(loc));
         }
 
@@ -11029,7 +11029,7 @@ class C
             var m2Tuple = (NamedTypeSymbol)c.GetMember<MethodSymbol>("M2").ReturnType;
             var m6Tuple = (NamedTypeSymbol)c.GetMember<MethodSymbol>("M6").ReturnType;
 
-            AssertTestDisplayString(m1Tuple.GetMembers(),
+            AssertTestDisplayString(m1Tuple.GetMembersAsImmutable(),
                 "System.Int32 (System.Int32, System.Int32).Item1",
                 "System.Int32 (System.Int32, System.Int32).Item2",
                 "(System.Int32, System.Int32)..ctor()",
@@ -11067,7 +11067,7 @@ class C
                 "System.ITupleInternal.ToStringEnd",
                 "ToString" }, m1Tuple.TupleData.UnderlyingDefinitionToMemberMap.Values.Select(s => s.Name).OrderBy(n => n).ToArray());
 
-            AssertTestDisplayString(m2Tuple.GetMembers(),
+            AssertTestDisplayString(m2Tuple.GetMembersAsImmutable(),
                 "System.Int32 (System.Int32 a2, System.Int32 b2).Item1",
                 "System.Int32 (System.Int32 a2, System.Int32 b2).a2",
                 "System.Int32 (System.Int32 a2, System.Int32 b2).Item2",
@@ -11108,7 +11108,7 @@ class C
                 "ToString" },
                  m2Tuple.TupleData.UnderlyingDefinitionToMemberMap.Values.Select(s => s.Name).OrderBy(n => n).ToArray());
 
-            AssertTestDisplayString(m6Tuple.GetMembers(),
+            AssertTestDisplayString(m6Tuple.GetMembersAsImmutable(),
                 "System.Int32 (System.Int32 item1, System.Int32 item2).Item1",
                 "System.Int32 (System.Int32 item1, System.Int32 item2).item1",
                 "System.Int32 (System.Int32 item1, System.Int32 item2).Item2",
@@ -11210,11 +11210,11 @@ class C
             Assert.False(m1Tuple.IsComImport);
             Assert.Equal(new[] { "System.Int32", "System.Int32" }, m1Tuple.TypeArgumentsWithAnnotationsNoUseSiteDiagnostics.Select(t => t.ToTestDisplayString()));
             Assert.True(m1Tuple.GetAttributes().IsEmpty);
-            Assert.Equal("System.Int32 (System.Int32 a2, System.Int32 b2).Item1", m2Tuple.GetMembers("Item1").Single().ToTestDisplayString());
-            Assert.Equal("System.Int32 (System.Int32 a2, System.Int32 b2).a2", m2Tuple.GetMembers("a2").Single().ToTestDisplayString());
-            Assert.True(m1Tuple.GetTypeMembers().IsEmpty);
-            Assert.True(m1Tuple.GetTypeMembers("C9").IsEmpty);
-            Assert.True(m1Tuple.GetTypeMembers("C9", 0).IsEmpty);
+            Assert.Equal("System.Int32 (System.Int32 a2, System.Int32 b2).Item1", m2Tuple.GetMembersAsImmutable("Item1").Single().ToTestDisplayString());
+            Assert.Equal("System.Int32 (System.Int32 a2, System.Int32 b2).a2", m2Tuple.GetMembersAsImmutable("a2").Single().ToTestDisplayString());
+            Assert.True(m1Tuple.GetTypeMembersAsImmutable().IsEmpty);
+            Assert.True(m1Tuple.GetTypeMembersAsImmutable("C9").IsEmpty);
+            Assert.True(m1Tuple.GetTypeMembersAsImmutable("C9", 0).IsEmpty);
             Assert.Equal(6, m1Tuple.Interfaces().Length);
             Assert.Equal("System.Int32 (System.Int32, System.Int32).Item1", m1Tuple.GetEarlyAttributeDecodingMembers("Item1").Single().ToTestDisplayString());
             Assert.True(m1Tuple.GetTypeMembersUnordered().IsEmpty);
@@ -11232,9 +11232,9 @@ class C
             AssertTupleTypeMembersEquality(m1Tuple, m6Tuple);
             AssertTupleTypeMembersEquality(m2Tuple, m6Tuple);
 
-            var m1Item1 = (FieldSymbol)m1Tuple.GetMembers()[0];
-            var m2Item1 = (FieldSymbol)m2Tuple.GetMembers()[0];
-            var m2a2 = (FieldSymbol)m2Tuple.GetMembers()[1];
+            var m1Item1 = (FieldSymbol)m1Tuple.GetMembersAsImmutable()[0];
+            var m2Item1 = (FieldSymbol)m2Tuple.GetMembersAsImmutable()[0];
+            var m2a2 = (FieldSymbol)m2Tuple.GetMembersAsImmutable()[1];
 
             AssertNonvirtualTupleElementField(m1Item1);
             AssertNonvirtualTupleElementField(m2Item1);
@@ -11351,7 +11351,7 @@ class C
             var m2Tuple = (NamedTypeSymbol)c.GetMember<MethodSymbol>("M2").ReturnType;
             var m6Tuple = (NamedTypeSymbol)c.GetMember<MethodSymbol>("M6").ReturnType;
 
-            AssertTestDisplayString(m1Tuple.GetMembers(),
+            AssertTestDisplayString(m1Tuple.GetMembersAsImmutable(),
                 "System.Int32 (System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32).Item1",
                 "System.Int32 (System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32).Item2",
                 "System.Int32 (System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32).Item3",
@@ -11378,7 +11378,7 @@ class C
                 "System.Int32 (System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32).System.ITupleInternal.Size.get",
                 "System.Int32 (System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32).System.ITupleInternal.Size { get; }");
 
-            AssertTestDisplayString(m2Tuple.GetMembers(),
+            AssertTestDisplayString(m2Tuple.GetMembersAsImmutable(),
                 "System.Int32 (System.Int32 a2, System.Int32 b2, System.Int32 c2, System.Int32 d2, System.Int32 e2, System.Int32 f2, System.Int32 g2, System.Int32 h2, System.Int32 i2).Item1",
                 "System.Int32 (System.Int32 a2, System.Int32 b2, System.Int32 c2, System.Int32 d2, System.Int32 e2, System.Int32 f2, System.Int32 g2, System.Int32 h2, System.Int32 i2).a2",
                 "System.Int32 (System.Int32 a2, System.Int32 b2, System.Int32 c2, System.Int32 d2, System.Int32 e2, System.Int32 f2, System.Int32 g2, System.Int32 h2, System.Int32 i2).Item2",
@@ -11501,12 +11501,12 @@ class C
                 m1Tuple.TypeArgumentsWithAnnotationsNoUseSiteDiagnostics.ToTestDisplayStrings());
             Assert.True(m1Tuple.GetAttributes().IsEmpty);
             Assert.Equal("System.Int32 (System.Int32 a2, System.Int32 b2, System.Int32 c2, System.Int32 d2, System.Int32 e2, System.Int32 f2, System.Int32 g2, System.Int32 h2, System.Int32 i2).Item9",
-                m2Tuple.GetMembers("Item9").Single().ToTestDisplayString());
+                m2Tuple.GetMembersAsImmutable("Item9").Single().ToTestDisplayString());
             Assert.Equal("System.Int32 (System.Int32 a2, System.Int32 b2, System.Int32 c2, System.Int32 d2, System.Int32 e2, System.Int32 f2, System.Int32 g2, System.Int32 h2, System.Int32 i2).i2",
-                m2Tuple.GetMembers("i2").Single().ToTestDisplayString());
-            Assert.True(m1Tuple.GetTypeMembers().IsEmpty);
-            Assert.True(m1Tuple.GetTypeMembers("C9").IsEmpty);
-            Assert.True(m1Tuple.GetTypeMembers("C9", 0).IsEmpty);
+                m2Tuple.GetMembersAsImmutable("i2").Single().ToTestDisplayString());
+            Assert.True(m1Tuple.GetTypeMembersAsImmutable().IsEmpty);
+            Assert.True(m1Tuple.GetTypeMembersAsImmutable("C9").IsEmpty);
+            Assert.True(m1Tuple.GetTypeMembersAsImmutable("C9", 0).IsEmpty);
             Assert.Equal(6, m1Tuple.Interfaces().Length);
             Assert.Equal("System.Int32 (System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32).Item1",
                 m1Tuple.GetEarlyAttributeDecodingMembers("Item1").Single().ToTestDisplayString());
@@ -11526,14 +11526,14 @@ class C
             AssertTupleTypeMembersEquality(m1Tuple, m6Tuple);
             AssertTupleTypeMembersEquality(m2Tuple, m6Tuple);
 
-            var m1Item7 = (FieldSymbol)m1Tuple.GetMembers().Where(m => m.Name == "Item7").Single();
-            var m1Item9 = (FieldSymbol)m1Tuple.GetMembers().Where(m => m.Name == "Item9").Single();
+            var m1Item7 = (FieldSymbol)m1Tuple.GetMembersAsImmutable().Where(m => m.Name == "Item7").Single();
+            var m1Item9 = (FieldSymbol)m1Tuple.GetMembersAsImmutable().Where(m => m.Name == "Item9").Single();
             AssertNonvirtualTupleElementField(m1Item7);
             AssertVirtualTupleElementField(m1Item9);
 
-            var m2g2 = (FieldSymbol)m2Tuple.GetMembers().Where(m => m.Name == "g2").Single();
-            var m2Item9 = (FieldSymbol)m2Tuple.GetMembers().Where(m => m.Name == "Item9").Single();
-            var m2i2 = (FieldSymbol)m2Tuple.GetMembers().Where(m => m.Name == "i2").Single();
+            var m2g2 = (FieldSymbol)m2Tuple.GetMembersAsImmutable().Where(m => m.Name == "g2").Single();
+            var m2Item9 = (FieldSymbol)m2Tuple.GetMembersAsImmutable().Where(m => m.Name == "Item9").Single();
+            var m2i2 = (FieldSymbol)m2Tuple.GetMembersAsImmutable().Where(m => m.Name == "i2").Single();
             AssertVirtualTupleElementField(m2g2);
             AssertVirtualTupleElementField(m2Item9);
             AssertVirtualTupleElementField(m2i2);
@@ -11593,7 +11593,7 @@ class C
             Assert.True(tuple.Equals(tuple, TypeCompareKind.ConsiderEverything));
             Assert.True(tuple.Equals(tuple, TypeCompareKind.IgnoreDynamicAndTupleNames));
 
-            var members = tuple.GetMembers();
+            var members = tuple.GetMembersAsImmutable();
 
             for (int i = 0; i < members.Length; i++)
             {
@@ -11616,8 +11616,8 @@ class C
             if (tuple1.Equals(tuple2))
             {
                 Assert.True(tuple2.Equals(tuple1));
-                var members1 = tuple1.GetMembers();
-                var members2 = tuple2.GetMembers();
+                var members1 = tuple1.GetMembersAsImmutable();
+                var members2 = tuple2.GetMembersAsImmutable();
 
                 Assert.Equal(members1.Length, members2.Length);
                 for (int i = 0; i < members1.Length; i++)
@@ -11667,8 +11667,8 @@ class C
             else
             {
                 Assert.False(tuple2.Equals(tuple1));
-                var members1 = tuple1.GetMembers();
-                var members2 = tuple2.GetMembers();
+                var members1 = tuple1.GetMembersAsImmutable();
+                var members2 = tuple2.GetMembersAsImmutable();
                 foreach (var m in members1)
                 {
                     Assert.False(members2.Any(u => u.Equals(m)));
@@ -11741,7 +11741,7 @@ class C
             var m3Tuple = (NamedTypeSymbol)c.GetMember<MethodSymbol>("M3").ReturnType;
             AssertTupleTypeEquality(m3Tuple);
 
-            AssertTestDisplayString(m3Tuple.GetMembers(),
+            AssertTestDisplayString(m3Tuple.GetMembersAsImmutable(),
                 "System.Int32 (System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32).Item1",
                 "System.Int32 (System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32).Item2",
                 "System.Int32 (System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32).Item3",
@@ -11768,7 +11768,7 @@ class C
                 "System.Int32 (System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32).System.ITupleInternal.Size.get",
                 "System.Int32 (System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32).System.ITupleInternal.Size { get; }");
 
-            var m3Item8 = (FieldSymbol)m3Tuple.GetMembers("Item8").Single();
+            var m3Item8 = (FieldSymbol)m3Tuple.GetMembersAsImmutable("Item8").Single();
 
             AssertVirtualTupleElementField(m3Item8);
 
@@ -11788,8 +11788,8 @@ class C
             Assert.True(m3Item8.IsImplicitlyDeclared);
             Assert.Null(m3Item8.TypeLayoutOffset);
 
-            var m3TupleRestTuple = (NamedTypeSymbol)((FieldSymbol)m3Tuple.GetMembers("Rest").Single()).Type;
-            AssertTestDisplayString(m3TupleRestTuple.GetMembers(),
+            var m3TupleRestTuple = (NamedTypeSymbol)((FieldSymbol)m3Tuple.GetMembersAsImmutable("Rest").Single()).Type;
+            AssertTestDisplayString(m3TupleRestTuple.GetMembersAsImmutable(),
                 "System.Int32 (System.Int32, System.Int32).Item1",
                 "System.Int32 (System.Int32, System.Int32).Item2",
                 "(System.Int32, System.Int32)..ctor()",
@@ -11813,7 +11813,7 @@ class C
             Assert.True(m3TupleRestTuple.Locations.IsEmpty);
             Assert.True(m3TupleRestTuple.DeclaringSyntaxReferences.IsEmpty);
 
-            foreach (var m in m3TupleRestTuple.GetMembers().OfType<FieldSymbol>())
+            foreach (var m in m3TupleRestTuple.GetMembersAsImmutable().OfType<FieldSymbol>())
             {
                 Assert.True(m.Locations.IsEmpty);
             }
@@ -11889,7 +11889,7 @@ class C
             var m4Tuple = (NamedTypeSymbol)c.GetMember<MethodSymbol>("M4").ReturnType;
             AssertTupleTypeEquality(m4Tuple);
 
-            AssertTestDisplayString(m4Tuple.GetMembers(),
+            AssertTestDisplayString(m4Tuple.GetMembersAsImmutable(),
                 "System.Int32 (System.Int32 a4, System.Int32 b4, System.Int32 c4, System.Int32 d4, System.Int32 e4, System.Int32 f4, System.Int32 g4, System.Int32 h4, System.Int32 i4)" +
                     ".Item1",
                 "System.Int32 (System.Int32 a4, System.Int32 b4, System.Int32 c4, System.Int32 d4, System.Int32 e4, System.Int32 f4, System.Int32 g4, System.Int32 h4, System.Int32 i4)" +
@@ -11961,7 +11961,7 @@ class C
                     ".System.ITupleInternal.Size { get; }"
                 );
 
-            var m4Item8 = (FieldSymbol)m4Tuple.GetMembers("Item8").Single();
+            var m4Item8 = (FieldSymbol)m4Tuple.GetMembersAsImmutable("Item8").Single();
 
             AssertVirtualTupleElementField(m4Item8);
 
@@ -11980,7 +11980,7 @@ class C
             Assert.True(m4Item8.IsImplicitlyDeclared);
             Assert.Null(m4Item8.TypeLayoutOffset);
 
-            var m4h4 = (FieldSymbol)m4Tuple.GetMembers("h4").Single();
+            var m4h4 = (FieldSymbol)m4Tuple.GetMembersAsImmutable("h4").Single();
 
             AssertVirtualTupleElementField(m4h4);
 
@@ -12000,10 +12000,10 @@ class C
             Assert.False(m4h4.IsImplicitlyDeclared);
             Assert.Null(m4h4.TypeLayoutOffset);
 
-            var m4TupleRestTuple = ((FieldSymbol)m4Tuple.GetMembers("Rest").Single()).Type;
+            var m4TupleRestTuple = ((FieldSymbol)m4Tuple.GetMembersAsImmutable("Rest").Single()).Type;
             AssertTupleTypeEquality(m4TupleRestTuple);
 
-            AssertTestDisplayString(m4TupleRestTuple.GetMembers(),
+            AssertTestDisplayString(m4TupleRestTuple.GetMembersAsImmutable(),
                 "System.Int32 (System.Int32, System.Int32).Item1",
                 "System.Int32 (System.Int32, System.Int32).Item2",
                 "(System.Int32, System.Int32)..ctor()",
@@ -12022,7 +12022,7 @@ class C
                 "System.Int32 (System.Int32, System.Int32).System.ITupleInternal.Size.get",
                 "System.Int32 (System.Int32, System.Int32).System.ITupleInternal.Size { get; }");
 
-            foreach (var m in m4TupleRestTuple.GetMembers().OfType<FieldSymbol>())
+            foreach (var m in m4TupleRestTuple.GetMembersAsImmutable().OfType<FieldSymbol>())
             {
                 Assert.True(m.Locations.IsEmpty);
             }
@@ -12173,7 +12173,7 @@ class C
             var m5Tuple = (NamedTypeSymbol)c.GetMember<MethodSymbol>("M5").ReturnType;
             AssertTupleTypeEquality(m5Tuple);
 
-            AssertTestDisplayString(m5Tuple.GetMembers(),
+            AssertTestDisplayString(m5Tuple.GetMembersAsImmutable(),
 "System.Int32 (System.Int32 Item1, System.Int32 Item2, System.Int32 Item3, System.Int32 Item4, System.Int32 Item5, System.Int32 Item6, System.Int32 Item7, System.Int32 Item8, System.Int32 Item9, System.Int32 Item10, System.Int32 Item11, System.Int32 Item12, System.Int32 Item13, System.Int32 Item14, System.Int32 Item15, System.Int32 Item16).Item1",
 "System.Int32 (System.Int32 Item1, System.Int32 Item2, System.Int32 Item3, System.Int32 Item4, System.Int32 Item5, System.Int32 Item6, System.Int32 Item7, System.Int32 Item8, System.Int32 Item9, System.Int32 Item10, System.Int32 Item11, System.Int32 Item12, System.Int32 Item13, System.Int32 Item14, System.Int32 Item15, System.Int32 Item16).Item2",
 "System.Int32 (System.Int32 Item1, System.Int32 Item2, System.Int32 Item3, System.Int32 Item4, System.Int32 Item5, System.Int32 Item6, System.Int32 Item7, System.Int32 Item8, System.Int32 Item9, System.Int32 Item10, System.Int32 Item11, System.Int32 Item12, System.Int32 Item13, System.Int32 Item14, System.Int32 Item15, System.Int32 Item16).Item3",
@@ -12208,7 +12208,7 @@ class C
 "System.Int32 (System.Int32 Item1, System.Int32 Item2, System.Int32 Item3, System.Int32 Item4, System.Int32 Item5, System.Int32 Item6, System.Int32 Item7, System.Int32 Item8, System.Int32 Item9, System.Int32 Item10, System.Int32 Item11, System.Int32 Item12, System.Int32 Item13, System.Int32 Item14, System.Int32 Item15, System.Int32 Item16).System.ITupleInternal.Size { get; }"
 );
 
-            var m5Item8 = (FieldSymbol)m5Tuple.GetMembers("Item8").Single();
+            var m5Item8 = (FieldSymbol)m5Tuple.GetMembersAsImmutable("Item8").Single();
 
             AssertVirtualTupleElementField(m5Item8);
 
@@ -12229,10 +12229,10 @@ class C
             Assert.False(m5Item8.IsImplicitlyDeclared);
             Assert.Null(m5Item8.TypeLayoutOffset);
 
-            var m5TupleRestTuple = ((FieldSymbol)m5Tuple.GetMembers("Rest").Single()).Type;
+            var m5TupleRestTuple = ((FieldSymbol)m5Tuple.GetMembersAsImmutable("Rest").Single()).Type;
             AssertTupleTypeEquality(m5TupleRestTuple);
 
-            AssertTestDisplayString(m5TupleRestTuple.GetMembers(),
+            AssertTestDisplayString(m5TupleRestTuple.GetMembersAsImmutable(),
 "System.Int32 (System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32).Item1",
 "System.Int32 (System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32).Item2",
 "System.Int32 (System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32).Item3",
@@ -12259,7 +12259,7 @@ class C
 "System.Int32 (System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32).System.ITupleInternal.Size.get",
 "System.Int32 (System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32).System.ITupleInternal.Size { get; }");
 
-            foreach (var m in m5TupleRestTuple.GetMembers().OfType<FieldSymbol>())
+            foreach (var m in m5TupleRestTuple.GetMembersAsImmutable().OfType<FieldSymbol>())
             {
                 if (m.Name != "Rest")
                 {
@@ -12271,10 +12271,10 @@ class C
                 }
             }
 
-            var m5TupleRestTupleRestTuple = ((FieldSymbol)m5TupleRestTuple.GetMembers("Rest").Single()).Type;
+            var m5TupleRestTupleRestTuple = ((FieldSymbol)m5TupleRestTuple.GetMembersAsImmutable("Rest").Single()).Type;
             AssertTupleTypeEquality(m5TupleRestTupleRestTuple);
 
-            AssertTestDisplayString(m5TupleRestTupleRestTuple.GetMembers(),
+            AssertTestDisplayString(m5TupleRestTupleRestTuple.GetMembersAsImmutable(),
 "System.Int32 (System.Int32, System.Int32).Item1",
 "System.Int32 (System.Int32, System.Int32).Item2",
 "(System.Int32, System.Int32)..ctor()",
@@ -12293,7 +12293,7 @@ class C
 "System.Int32 (System.Int32, System.Int32).System.ITupleInternal.Size.get",
 "System.Int32 (System.Int32, System.Int32).System.ITupleInternal.Size { get; }");
 
-            foreach (var m in m5TupleRestTupleRestTuple.GetMembers().OfType<FieldSymbol>())
+            foreach (var m in m5TupleRestTupleRestTuple.GetMembersAsImmutable().OfType<FieldSymbol>())
             {
                 Assert.True(m.Locations.IsEmpty);
             }
@@ -12463,7 +12463,7 @@ class C
             var m7Tuple = c.GetMember<MethodSymbol>("M7").ReturnType;
             AssertTupleTypeEquality(m7Tuple);
 
-            AssertTestDisplayString(m7Tuple.GetMembers(),
+            AssertTestDisplayString(m7Tuple.GetMembersAsImmutable(),
                 "System.Int32 (System.Int32 Item9, System.Int32 Item1, System.Int32 Item2, System.Int32 Item3, System.Int32 Item4, System.Int32 Item5, System.Int32 Item6, System.Int32 Item7, System.Int32 Item8)" +
                     ".Item1",
                 "System.Int32 (System.Int32 Item9, System.Int32 Item1, System.Int32 Item2, System.Int32 Item3, System.Int32 Item4, System.Int32 Item5, System.Int32 Item6, System.Int32 Item7, System.Int32 Item8)" +
@@ -12542,7 +12542,7 @@ class C
             var m8Tuple = (NamedTypeSymbol)c.GetMember<MethodSymbol>("M8").ReturnType;
             AssertTupleTypeEquality(m8Tuple);
 
-            AssertTestDisplayString(m8Tuple.GetMembers(),
+            AssertTestDisplayString(m8Tuple.GetMembersAsImmutable(),
                 "System.Int32 (System.Int32 a1, System.Int32 a2, System.Int32 a3, System.Int32 a4, System.Int32 a5, System.Int32 a6, System.Int32 a7, System.Int32 Item1).Item1",
                 "System.Int32 (System.Int32 a1, System.Int32 a2, System.Int32 a3, System.Int32 a4, System.Int32 a5, System.Int32 a6, System.Int32 a7, System.Int32 Item1).a1",
                 "System.Int32 (System.Int32 a1, System.Int32 a2, System.Int32 a3, System.Int32 a4, System.Int32 a5, System.Int32 a6, System.Int32 a7, System.Int32 Item1).Item2",
@@ -12576,7 +12576,7 @@ class C
                 "System.Int32 (System.Int32 a1, System.Int32 a2, System.Int32 a3, System.Int32 a4, System.Int32 a5, System.Int32 a6, System.Int32 a7, System.Int32 Item1).System.ITupleInternal.Size.get",
                 "System.Int32 (System.Int32 a1, System.Int32 a2, System.Int32 a3, System.Int32 a4, System.Int32 a5, System.Int32 a6, System.Int32 a7, System.Int32 Item1).System.ITupleInternal.Size { get; }");
 
-            var m8Item8 = (FieldSymbol)m8Tuple.GetMembers("Item8").Single();
+            var m8Item8 = (FieldSymbol)m8Tuple.GetMembersAsImmutable("Item8").Single();
 
             AssertVirtualTupleElementField(m8Item8);
 
@@ -12596,7 +12596,7 @@ class C
             Assert.True(m8Item8.IsImplicitlyDeclared);
             Assert.Null(m8Item8.TypeLayoutOffset);
 
-            var m8Item1 = (FieldSymbol)m8Tuple.GetMembers("Item1").Last();
+            var m8Item1 = (FieldSymbol)m8Tuple.GetMembersAsImmutable("Item1").Last();
 
             AssertVirtualTupleElementField(m8Item1);
 
@@ -12618,10 +12618,10 @@ class C
             Assert.False(m8Item1.IsImplicitlyDeclared);
             Assert.Null(m8Item1.TypeLayoutOffset);
 
-            var m8TupleRestTuple = ((FieldSymbol)m8Tuple.GetMembers("Rest").Single()).Type;
+            var m8TupleRestTuple = ((FieldSymbol)m8Tuple.GetMembersAsImmutable("Rest").Single()).Type;
             AssertTupleTypeEquality(m8TupleRestTuple);
 
-            AssertTestDisplayString(m8TupleRestTuple.GetMembers(),
+            AssertTestDisplayString(m8TupleRestTuple.GetMembersAsImmutable(),
                 "System.Int32 System.ValueTuple<System.Int32>.Item1",
                 "System.ValueTuple<System.Int32>..ctor()",
                 "System.ValueTuple<System.Int32>..ctor(System.Int32 item1)",
@@ -12703,16 +12703,16 @@ class C
                 "System.Int32 (System.Int32, System.Int32).Item1",
                 "System.Int32 (System.Int32, System.Int32).Item2",
                 "System.String (System.Int32, System.Int32).ToString()" },
-                m1Tuple.GetMembersUnordered().ToTestDisplayStrings().ToImmutableArray().Sort());
+                m1Tuple.GetMembersUnorderedAsImmutable().ToTestDisplayStrings().ToImmutableArray().Sort());
 
-            AssertTestDisplayString(m1Tuple.GetMembers(),
+            AssertTestDisplayString(m1Tuple.GetMembersAsImmutable(),
                 "System.Int32 (System.Int32, System.Int32).Item1",
                 "System.Int32 (System.Int32, System.Int32).Item2",
                 "(System.Int32, System.Int32)..ctor(System.Int32 item1, System.Int32 item2)",
                 "System.String (System.Int32, System.Int32).ToString()",
                 "(System.Int32, System.Int32)..ctor()");
 
-            AssertTestDisplayString(m2Tuple.GetMembers(),
+            AssertTestDisplayString(m2Tuple.GetMembersAsImmutable(),
                 "System.Int32 (System.Int32 a2, System.Int32 b2).Item1",
                 "System.Int32 (System.Int32 a2, System.Int32 b2).a2",
                 "System.Int32 (System.Int32 a2, System.Int32 b2).Item2",
@@ -12721,7 +12721,7 @@ class C
                 "System.String (System.Int32 a2, System.Int32 b2).ToString()",
                 "(System.Int32 a2, System.Int32 b2)..ctor()");
 
-            AssertTestDisplayString(m6Tuple.GetMembers(),
+            AssertTestDisplayString(m6Tuple.GetMembersAsImmutable(),
                 "System.Int32 (System.Int32 item1, System.Int32 item2).Item1",
                 "System.Int32 (System.Int32 item1, System.Int32 item2).item1",
                 "System.Int32 (System.Int32 item1, System.Int32 item2).Item2",
@@ -12757,11 +12757,11 @@ class C
             Assert.False(m1Tuple.IsComImport);
             Assert.Equal(new[] { "System.Int32", "System.Int32" }, m1Tuple.TypeArgumentsWithAnnotationsNoUseSiteDiagnostics.ToTestDisplayStrings());
             Assert.True(m1Tuple.GetAttributes().IsEmpty);
-            Assert.Equal("System.Int32 (System.Int32 a2, System.Int32 b2).Item1", m2Tuple.GetMembers("Item1").Single().ToTestDisplayString());
-            Assert.Equal("System.Int32 (System.Int32 a2, System.Int32 b2).a2", m2Tuple.GetMembers("a2").Single().ToTestDisplayString());
-            Assert.True(m1Tuple.GetTypeMembers().IsEmpty);
-            Assert.True(m1Tuple.GetTypeMembers("C9").IsEmpty);
-            Assert.True(m1Tuple.GetTypeMembers("C9", 0).IsEmpty);
+            Assert.Equal("System.Int32 (System.Int32 a2, System.Int32 b2).Item1", m2Tuple.GetMembersAsImmutable("Item1").Single().ToTestDisplayString());
+            Assert.Equal("System.Int32 (System.Int32 a2, System.Int32 b2).a2", m2Tuple.GetMembersAsImmutable("a2").Single().ToTestDisplayString());
+            Assert.True(m1Tuple.GetTypeMembersAsImmutable().IsEmpty);
+            Assert.True(m1Tuple.GetTypeMembersAsImmutable("C9").IsEmpty);
+            Assert.True(m1Tuple.GetTypeMembersAsImmutable("C9", 0).IsEmpty);
             Assert.True(m1Tuple.Interfaces().IsEmpty);
             Assert.Equal(m1Tuple.GetEarlyAttributeDecodingMembers().Select(m => m.Name).ToArray(),
                          m1Tuple.GetEarlyAttributeDecodingMembers().Select(m => m.Name).ToArray());
@@ -12783,9 +12783,9 @@ class C
             AssertTupleTypeMembersEquality(m1Tuple, m6Tuple);
             AssertTupleTypeMembersEquality(m2Tuple, m6Tuple);
 
-            var m1Item1 = (FieldSymbol)m1Tuple.GetMembers()[0];
-            var m2Item1 = (FieldSymbol)m2Tuple.GetMembers()[0];
-            var m2a2 = (FieldSymbol)m2Tuple.GetMembers()[1];
+            var m1Item1 = (FieldSymbol)m1Tuple.GetMembersAsImmutable()[0];
+            var m2Item1 = (FieldSymbol)m2Tuple.GetMembersAsImmutable()[0];
+            var m2a2 = (FieldSymbol)m2Tuple.GetMembersAsImmutable()[1];
 
             AssertNonvirtualTupleElementField(m1Item1);
             AssertNonvirtualTupleElementField(m2Item1);
@@ -12935,7 +12935,7 @@ namespace System
             var m9Tuple = (NamedTypeSymbol)c.GetMember<MethodSymbol>("M9").ReturnType;
             AssertTupleTypeEquality(m9Tuple);
 
-            AssertTestDisplayString(m9Tuple.GetMembers(),
+            AssertTestDisplayString(m9Tuple.GetMembersAsImmutable(),
                 "System.Int32 (System.Int32, System.Int32).Item1",
                 "System.Int32 (System.Int32, System.Int32).Item2",
                 "(System.Int32, System.Int32)..ctor(System.Int32 item1, System.Int32 item2)",
@@ -12945,9 +12945,9 @@ namespace System
 
             Assert.True(m9Tuple.Equals(m9Tuple.TupleUnderlyingType, TypeCompareKind.ConsiderEverything));
 
-            Assert.Equal("(System.Int32, System.Int32).C9", m9Tuple.GetTypeMembers().Single().ToTestDisplayString());
-            Assert.Equal("(System.Int32, System.Int32).C9", m9Tuple.GetTypeMembers("C9").Single().ToTestDisplayString());
-            Assert.Equal("(System.Int32, System.Int32).C9", m9Tuple.GetTypeMembers("C9", 0).Single().ToTestDisplayString());
+            Assert.Equal("(System.Int32, System.Int32).C9", m9Tuple.GetTypeMembersAsImmutable().Single().ToTestDisplayString());
+            Assert.Equal("(System.Int32, System.Int32).C9", m9Tuple.GetTypeMembersAsImmutable("C9").Single().ToTestDisplayString());
+            Assert.Equal("(System.Int32, System.Int32).C9", m9Tuple.GetTypeMembersAsImmutable("C9", 0).Single().ToTestDisplayString());
             Assert.Equal("(System.Int32, System.Int32).C9", m9Tuple.GetTypeMembersUnordered().Single().ToTestDisplayString());
         }
 
@@ -13015,7 +13015,7 @@ class C
             var c = comp.GetTypeByMetadataName("C");
             var m9Tuple = (NamedTypeSymbol)c.GetMember<MethodSymbol>("M9").ReturnType;
 
-            AssertTestDisplayString(m9Tuple.GetMembers(),
+            AssertTestDisplayString(m9Tuple.GetMembersAsImmutable(),
                 "System.Int32 (System.Int32, System.Int32).Item1",
                 "System.Int32 (System.Int32, System.Int32).Item2",
                 "(System.Int32, System.Int32)..ctor()",
@@ -13207,9 +13207,9 @@ partial class C
             var m102Tuple = (NamedTypeSymbol)c.GetMember<MethodSymbol>("M102").ReturnType;
             AssertTupleTypeEquality(m102Tuple);
 
-            var m10Item1 = (FieldSymbol)m10Tuple.GetMembers("Item1").Single();
-            var m102Item20 = (FieldSymbol)m102Tuple.GetMembers("Item20").Single();
-            var m102a = (FieldSymbol)m102Tuple.GetMembers("a").Single();
+            var m10Item1 = (FieldSymbol)m10Tuple.GetMembersAsImmutable("Item1").Single();
+            var m102Item20 = (FieldSymbol)m102Tuple.GetMembersAsImmutable("Item20").Single();
+            var m102a = (FieldSymbol)m102Tuple.GetMembersAsImmutable("a").Single();
 
             AssertNonvirtualTupleElementField(m10Item1);
             AssertTupleNonElementField(m102Item20);
@@ -13219,10 +13219,10 @@ partial class C
             Assert.Equal("System.ObsoleteAttribute", m102Item20.GetAttributes().Single().ToString());
             Assert.Equal("System.ObsoleteAttribute", m102a.GetAttributes().Single().ToString());
 
-            var m10Item2 = (FieldSymbol)m10Tuple.GetMembers("Item2").Single();
-            var m102Item21 = (FieldSymbol)m102Tuple.GetMembers("Item21").Single();
-            var m102Item2 = (FieldSymbol)m102Tuple.GetMembers("Item2").Single();
-            var m102b = (FieldSymbol)m102Tuple.GetMembers("b").Single();
+            var m10Item2 = (FieldSymbol)m10Tuple.GetMembersAsImmutable("Item2").Single();
+            var m102Item21 = (FieldSymbol)m102Tuple.GetMembersAsImmutable("Item21").Single();
+            var m102Item2 = (FieldSymbol)m102Tuple.GetMembersAsImmutable("Item2").Single();
+            var m102b = (FieldSymbol)m102Tuple.GetMembersAsImmutable("b").Single();
 
             AssertNonvirtualTupleElementField(m10Item2);
             AssertNonvirtualTupleElementField(m102Item2);
@@ -13238,8 +13238,8 @@ partial class C
             var m103Tuple = (NamedTypeSymbol)c.GetMember<MethodSymbol>("M103").ReturnType;
             AssertTupleTypeEquality(m103Tuple);
 
-            var m103Item2 = (FieldSymbol)m103Tuple.GetMembers("Item2").Last();
-            var m103Item9 = (FieldSymbol)m103Tuple.GetMembers("Item9").Single();
+            var m103Item2 = (FieldSymbol)m103Tuple.GetMembersAsImmutable("Item2").Last();
+            var m103Item9 = (FieldSymbol)m103Tuple.GetMembersAsImmutable("Item9").Single();
 
             AssertVirtualTupleElementField(m103Item2);
             AssertVirtualTupleElementField(m103Item9);
@@ -13298,7 +13298,7 @@ namespace System
 
             var valuetuple = comp.GetTypeByMetadataName("System.ValueTuple`2");
 
-            AssertTestDisplayString(valuetuple.GetMembers(),
+            AssertTestDisplayString(valuetuple.GetMembersAsImmutable(),
                 "(T1, T2)..ctor(T1 Item1, T2 Item2)",
                 "T1 (T1, T2).<Item1>k__BackingField",
                 "readonly T1 (T1, T2).Item1.get",
@@ -13345,7 +13345,7 @@ namespace System
 
             var valuetuple = comp.GetTypeByMetadataName("System.ValueTuple`2");
 
-            AssertTestDisplayString(valuetuple.GetMembers(),
+            AssertTestDisplayString(valuetuple.GetMembersAsImmutable(),
                 "(T1, T2)..ctor(T1 Item1, T2 Item2)",
                 "(T1, T2)..ctor()",
                 "T1 (T1, T2).Item1",
@@ -13377,7 +13377,7 @@ namespace System
 
             var valuetuple = comp.GetTypeByMetadataName("System.ValueTuple`2");
 
-            AssertTestDisplayString(valuetuple.GetMembers(),
+            AssertTestDisplayString(valuetuple.GetMembersAsImmutable(),
                 "(T1, T2)..ctor(T1 Item1, T2 Item2)",
                 "(T1, T2)..ctor()",
                 "T1 (T1, T2).Item1",
@@ -13711,7 +13711,7 @@ namespace System
                 Assert.False(t11.Equals(t1));
                 Assert.True(t11.Equals(t1, TypeCompareKind.IgnoreDynamicAndTupleNames));
 
-                AssertTestDisplayString(t11.GetMembers(),
+                AssertTestDisplayString(t11.GetMembersAsImmutable(),
                     "System.Int32 System.ValueTuple<System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, (System.Int32 a, System.Int32 b)>.Item1",
                     "System.Int32 System.ValueTuple<System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, (System.Int32 a, System.Int32 b)>.Item2",
                     "System.Int32 System.ValueTuple<System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, System.Int32, (System.Int32 a, System.Int32 b)>.Item3",
@@ -13773,7 +13773,7 @@ namespace System
                 Assert.False(t12.Equals(t1));
                 Assert.True(t12.Equals(t1, TypeCompareKind.IgnoreDynamicAndTupleNames));
 
-                AssertTestDisplayString(t12.GetMembers(),
+                AssertTestDisplayString(t12.GetMembersAsImmutable(),
                     "System.Int32 (System.Int32 Item1, System.Int32 Item2, System.Int32 Item3, System.Int32 Item4, System.Int32 Item5, System.Int32 Item6, System.Int32 Item7, System.Int32 Item8, System.Int32 Item9).Item1",
                     "System.Int32 (System.Int32 Item1, System.Int32 Item2, System.Int32 Item3, System.Int32 Item4, System.Int32 Item5, System.Int32 Item6, System.Int32 Item7, System.Int32 Item8, System.Int32 Item9).Item2",
                     "System.Int32 (System.Int32 Item1, System.Int32 Item2, System.Int32 Item3, System.Int32 Item4, System.Int32 Item5, System.Int32 Item6, System.Int32 Item7, System.Int32 Item8, System.Int32 Item9).Item3",
@@ -15789,7 +15789,7 @@ namespace System
 
             var m1Tuple = (NamedTypeSymbol)c.GetMember<MethodSymbol>("M1").ReturnType;
 
-            AssertTestDisplayString(m1Tuple.GetMembers(),
+            AssertTestDisplayString(m1Tuple.GetMembersAsImmutable(),
                 "System.Int32 (System.Int32, System.Int32).Item1",
                 "System.Int32 (System.Int32, System.Int32).Item2",
                 "(System.Int32, System.Int32)..ctor(System.Int32 item1, System.Int32 item2)",
@@ -16016,7 +16016,7 @@ null
 
             var m1Tuple = (NamedTypeSymbol)c.GetMember<MethodSymbol>("M1").ReturnType;
 
-            AssertTestDisplayString(m1Tuple.GetMembers(),
+            AssertTestDisplayString(m1Tuple.GetMembersAsImmutable(),
                 "System.Int32 (System.Int32, System.Int64).Item1",
                 "System.Int64 (System.Int32, System.Int64).Item2",
                 "(System.Int32, System.Int64)..ctor(System.Int32 item1, System.Int64 item2)",
@@ -16578,10 +16578,10 @@ class C
             AssertEx.Equal(new[] {
                 "System.Int32 (System.Int32, System.Int32)[missing].Item1",
                 "System.Int32 (System.Int32, System.Int32)[missing].Item2" },
-                ((ErrorTypeSymbol)((Symbols.PublicModel.ErrorTypeSymbol)xSymbol).UnderlyingSymbol).GetMembersUnordered().ToTestDisplayStrings().ToImmutableArray().Sort());
+                ((ErrorTypeSymbol)((Symbols.PublicModel.ErrorTypeSymbol)xSymbol).UnderlyingSymbol).GetMembersUnorderedAsImmutable().ToTestDisplayStrings().ToImmutableArray().Sort());
 
             AssertEx.Equal("System.Int32 (System.Int32, System.Int32)[missing].Item1",
-                ((NamedTypeSymbol)((Symbols.PublicModel.ErrorTypeSymbol)xSymbol).UnderlyingSymbol).GetMembers("Item1").Single().ToTestDisplayString());
+                ((NamedTypeSymbol)((Symbols.PublicModel.ErrorTypeSymbol)xSymbol).UnderlyingSymbol).GetMembersAsImmutable("Item1").Single().ToTestDisplayString());
         }
 
         [Fact]
@@ -16617,13 +16617,13 @@ class C
                 "System.Int32 (System.Int32 a, System.Int32 b)[missing].b",
                 "System.Int32 (System.Int32 a, System.Int32 b)[missing].Item1",
                 "System.Int32 (System.Int32 a, System.Int32 b)[missing].Item2" },
-                ((ErrorTypeSymbol)((Symbols.PublicModel.ErrorTypeSymbol)xSymbol).UnderlyingSymbol).GetMembersUnordered().ToTestDisplayStrings().ToImmutableArray().Sort());
+                ((ErrorTypeSymbol)((Symbols.PublicModel.ErrorTypeSymbol)xSymbol).UnderlyingSymbol).GetMembersUnorderedAsImmutable().ToTestDisplayStrings().ToImmutableArray().Sort());
 
             AssertEx.Equal("System.Int32 (System.Int32 a, System.Int32 b)[missing].Item1",
-                ((NamedTypeSymbol)((Symbols.PublicModel.ErrorTypeSymbol)xSymbol).UnderlyingSymbol).GetMembers("Item1").Single().ToTestDisplayString());
+                ((NamedTypeSymbol)((Symbols.PublicModel.ErrorTypeSymbol)xSymbol).UnderlyingSymbol).GetMembersAsImmutable("Item1").Single().ToTestDisplayString());
 
             AssertEx.Equal("System.Int32 (System.Int32 a, System.Int32 b)[missing].a",
-                ((NamedTypeSymbol)((Symbols.PublicModel.ErrorTypeSymbol)xSymbol).UnderlyingSymbol).GetMembers("a").Single().ToTestDisplayString());
+                ((NamedTypeSymbol)((Symbols.PublicModel.ErrorTypeSymbol)xSymbol).UnderlyingSymbol).GetMembersAsImmutable("a").Single().ToTestDisplayString());
         }
 
         [Fact, CompilerTrait(CompilerFeature.LocalFunctions)]
@@ -23472,7 +23472,7 @@ namespace ConsoleApplication5
 
             var comp = CompileAndVerify(source, expectedOutput: "42qq", references: new[] { libComp.ToMetadataReference() }, options: TestOptions.DebugExe, verify: Verification.Fails);
 
-            var m = (MethodSymbol)(((CSharpCompilation)comp.Compilation).GetTypeByMetadataName("ConsoleApplication5.C2").GetMembers("Goo").First());
+            var m = (MethodSymbol)(((CSharpCompilation)comp.Compilation).GetTypeByMetadataName("ConsoleApplication5.C2").GetMembersAsImmutable("Goo").First());
             Assert.Equal("ref (System.Int32, System.Object) ConsoleApplication5.C2.Goo(System.Int32 arg)", m.ToTestDisplayString());
 
             var b = m.OverriddenMethod;
@@ -23874,7 +23874,7 @@ namespace ConsoleApplication5
 
             CompileAndVerify(comp, expectedOutput: "42qq", verify: Verification.Fails);
 
-            var m = (MethodSymbol)(comp.GetTypeByMetadataName("ConsoleApplication5.C2").GetMembers("Goo").First());
+            var m = (MethodSymbol)(comp.GetTypeByMetadataName("ConsoleApplication5.C2").GetMembersAsImmutable("Goo").First());
             Assert.Equal("ref (System.Int32, dynamic) ConsoleApplication5.C2.Goo(System.Int32 arg)", m.ToTestDisplayString());
 
             var b = m.OverriddenMethod;
@@ -23927,7 +23927,7 @@ namespace ConsoleApplication5
 
             var comp = CompileAndVerify(source, expectedOutput: "42qq", references: new[] { libCompRef }, options: TestOptions.DebugExe, verify: Verification.Passes);
 
-            var m = (PropertySymbol)(((CSharpCompilation)comp.Compilation).GetTypeByMetadataName("ConsoleApplication5.C2").GetMembers("Goo").First());
+            var m = (PropertySymbol)(((CSharpCompilation)comp.Compilation).GetTypeByMetadataName("ConsoleApplication5.C2").GetMembersAsImmutable("Goo").First());
             Assert.Equal("ref (System.Int32, System.Object) ConsoleApplication5.C2.Goo { get; }", m.ToTestDisplayString());
             Assert.Equal("ref (System.Int32, System.Object) ConsoleApplication5.C2.Goo.get", m.GetMethod.ToTestDisplayString());
 
@@ -27426,12 +27426,12 @@ class Program
 }";
             var comp = CreateCompilation(source);
             comp.VerifyDiagnostics();
-            var containingType = comp.GlobalNamespace.GetTypeMembers("Program").Single();
-            VerifyTypeFromCSharp((NamedTypeSymbol)((FieldSymbol)containingType.GetMembers("F0").Single()).Type, TupleUnderlyingTypeValue.Same, TupleUnderlyingTypeValue.Null, TupleUnderlyingTypeValue.Same, TupleUnderlyingTypeValue.Null, "System.ValueTuple", "()");
-            VerifyTypeFromCSharp((NamedTypeSymbol)((FieldSymbol)containingType.GetMembers("F1").Single()).Type, TupleUnderlyingTypeValue.Same, TupleUnderlyingTypeValue.Null, TupleUnderlyingTypeValue.Same, TupleUnderlyingTypeValue.Null, "(System.Int32, System.Int32)", "(System.Int32, System.Int32)");
-            VerifyTypeFromCSharp((NamedTypeSymbol)((FieldSymbol)containingType.GetMembers("F2").Single()).Type, TupleUnderlyingTypeValue.Distinct, TupleUnderlyingTypeValue.Distinct, TupleUnderlyingTypeValue.Same, TupleUnderlyingTypeValue.Null, "(System.Int32 A, System.Int32 B)", "(A As System.Int32, B As System.Int32)");
-            VerifyTypeFromCSharp((NamedTypeSymbol)((FieldSymbol)containingType.GetMembers("F3").Single()).Type, TupleUnderlyingTypeValue.Same, TupleUnderlyingTypeValue.Null, TupleUnderlyingTypeValue.Null, TupleUnderlyingTypeValue.Null, "(System.Object, System.Object, System.Object, System.Object, System.Object, System.Object, System.Object, System.Object)", "(System.Object, System.Object, System.Object, System.Object, System.Object, System.Object, System.Object, System.Object)");
-            VerifyTypeFromCSharp((NamedTypeSymbol)((FieldSymbol)containingType.GetMembers("F4").Single()).Type, TupleUnderlyingTypeValue.Distinct, TupleUnderlyingTypeValue.Distinct, TupleUnderlyingTypeValue.Null, TupleUnderlyingTypeValue.Null, "(System.Object, System.Object B, System.Object, System.Object D, System.Object, System.Object F, System.Object, System.Object H)", "(System.Object, B As System.Object, System.Object, D As System.Object, System.Object, F As System.Object, System.Object, H As System.Object)");
+            var containingType = comp.GlobalNamespace.GetTypeMembersAsImmutable("Program").Single();
+            VerifyTypeFromCSharp((NamedTypeSymbol)((FieldSymbol)containingType.GetMembersAsImmutable("F0").Single()).Type, TupleUnderlyingTypeValue.Same, TupleUnderlyingTypeValue.Null, TupleUnderlyingTypeValue.Same, TupleUnderlyingTypeValue.Null, "System.ValueTuple", "()");
+            VerifyTypeFromCSharp((NamedTypeSymbol)((FieldSymbol)containingType.GetMembersAsImmutable("F1").Single()).Type, TupleUnderlyingTypeValue.Same, TupleUnderlyingTypeValue.Null, TupleUnderlyingTypeValue.Same, TupleUnderlyingTypeValue.Null, "(System.Int32, System.Int32)", "(System.Int32, System.Int32)");
+            VerifyTypeFromCSharp((NamedTypeSymbol)((FieldSymbol)containingType.GetMembersAsImmutable("F2").Single()).Type, TupleUnderlyingTypeValue.Distinct, TupleUnderlyingTypeValue.Distinct, TupleUnderlyingTypeValue.Same, TupleUnderlyingTypeValue.Null, "(System.Int32 A, System.Int32 B)", "(A As System.Int32, B As System.Int32)");
+            VerifyTypeFromCSharp((NamedTypeSymbol)((FieldSymbol)containingType.GetMembersAsImmutable("F3").Single()).Type, TupleUnderlyingTypeValue.Same, TupleUnderlyingTypeValue.Null, TupleUnderlyingTypeValue.Null, TupleUnderlyingTypeValue.Null, "(System.Object, System.Object, System.Object, System.Object, System.Object, System.Object, System.Object, System.Object)", "(System.Object, System.Object, System.Object, System.Object, System.Object, System.Object, System.Object, System.Object)");
+            VerifyTypeFromCSharp((NamedTypeSymbol)((FieldSymbol)containingType.GetMembersAsImmutable("F4").Single()).Type, TupleUnderlyingTypeValue.Distinct, TupleUnderlyingTypeValue.Distinct, TupleUnderlyingTypeValue.Null, TupleUnderlyingTypeValue.Null, "(System.Object, System.Object B, System.Object, System.Object D, System.Object, System.Object F, System.Object, System.Object H)", "(System.Object, B As System.Object, System.Object, D As System.Object, System.Object, F As System.Object, System.Object, H As System.Object)");
         }
 
         [Fact]
@@ -28008,20 +28008,20 @@ class C
                 );
 
             var comp3 = CreateCompilation("", references: new[] { comp.ToMetadataReference() }, targetFramework: TargetFramework.Mscorlib46);
-            var retargetingValueTupleType = (NamedTypeSymbol)comp3.GlobalNamespace.GetMember<NamespaceSymbol>("System").GetMembers("ValueTuple").Single();
+            var retargetingValueTupleType = (NamedTypeSymbol)comp3.GlobalNamespace.GetMember<NamespaceSymbol>("System").GetMembersAsImmutable("ValueTuple").Single();
             Assert.IsType<RetargetingNamedTypeSymbol>(retargetingValueTupleType);
             Assert.Empty(retargetingValueTupleType.GetFieldsToEmit());
             verify(retargetingValueTupleType.GetMember<FieldSymbol>("Item1"), retargeting: true, index: 0);
             verify(retargetingValueTupleType.GetMember<FieldSymbol>("Item2"), retargeting: true, index: 1);
 
             AssertEx.SetEqual(new string[] { "T1 (T1, T2).Item1", "T2 (T1, T2).Item2", "(T1, T2)..ctor()" },
-                retargetingValueTupleType.GetMembers().ToTestDisplayStrings());
+                retargetingValueTupleType.GetMembersAsImmutable().ToTestDisplayStrings());
             AssertEx.SetEqual(new string[] { "T1 (T1, T2).Item1", "T2 (T1, T2).Item2", "(T1, T2)..ctor()" },
-                retargetingValueTupleType.GetMembersUnordered().OrderBy(m => m.Name).ToTestDisplayStrings());
+                retargetingValueTupleType.GetMembersUnorderedAsImmutable().OrderBy(m => m.Name).ToTestDisplayStrings());
 
             static void verifyModule(ModuleSymbol module)
             {
-                var type = (NamedTypeSymbol)module.GlobalNamespace.GetMember<NamespaceSymbol>("System").GetMembers("ValueTuple").Single();
+                var type = (NamedTypeSymbol)module.GlobalNamespace.GetMember<NamespaceSymbol>("System").GetMembersAsImmutable("ValueTuple").Single();
                 Assert.Empty(type.GetFieldsToEmit());
 
                 var item1 = type.GetMember<FieldSymbol>("Item1");
@@ -28098,9 +28098,9 @@ class C
 
             static void verifyModule(ModuleSymbol module)
             {
-                var type = (NamedTypeSymbol)module.GlobalNamespace.GetMember<NamespaceSymbol>("System").GetMembers("ValueTuple").Single();
+                var type = (NamedTypeSymbol)module.GlobalNamespace.GetMember<NamespaceSymbol>("System").GetMembersAsImmutable("ValueTuple").Single();
                 Assert.Equal("(T1, T2)", type.ToTestDisplayString());
-                var fields = type.GetMembers().OfType<FieldSymbol>();
+                var fields = type.GetMembersAsImmutable().OfType<FieldSymbol>();
                 AssertEx.SetEqual(new[] { "T1 (T1, T2).Item1", "T2 (T1, T2).Item2" }, fields.ToTestDisplayStrings());
                 Assert.All(fields, f => Assert.True(f.HasUseSiteError));
 
@@ -28141,7 +28141,7 @@ namespace System
 
                 if (isSourceSymbol)
                 {
-                    AssertTestDisplayString(tuple2.GetMembers(),
+                    AssertTestDisplayString(tuple2.GetMembersAsImmutable(),
                         "T1 (T1 Item1, T2 Item2).Item1",
                         "T2 (T1 Item1, T2 Item2).Item2",
                         "(T1, T2) (T1 Item1, T2 Item2).M()",
@@ -28151,7 +28151,7 @@ namespace System
                 }
                 else
                 {
-                    AssertTestDisplayString(tuple2.GetMembers(),
+                    AssertTestDisplayString(tuple2.GetMembersAsImmutable(),
                         "T1 (T1 Item1, T2 Item2).Item1",
                         "T2 (T1 Item1, T2 Item2).Item2",
                         "(T1 Item1, T2 Item2)..ctor()",
@@ -28220,12 +28220,12 @@ namespace System
             CompileAndVerify(comp, sourceSymbolValidator: verifyModule, symbolValidator: verifyModule);
 
             var comp2 = CreateCompilation("", targetFramework: TargetFramework.Mscorlib46, references: new[] { comp.ToMetadataReference() });
-            var retargetingValueTupleTypes = comp2.GlobalNamespace.GetMember<NamespaceSymbol>("System").GetMembers("ValueTuple");
+            var retargetingValueTupleTypes = comp2.GlobalNamespace.GetMember<NamespaceSymbol>("System").GetMembersAsImmutable("ValueTuple");
             verifyTupleTypes(retargetingValueTupleTypes, retargeting: true);
 
             static void verifyModule(ModuleSymbol module)
             {
-                var valueTupleTypes = module.GlobalNamespace.GetMember<NamespaceSymbol>("System").GetMembers("ValueTuple");
+                var valueTupleTypes = module.GlobalNamespace.GetMember<NamespaceSymbol>("System").GetMembersAsImmutable("ValueTuple");
                 verifyTupleTypes(valueTupleTypes, retargeting: false);
             }
 
@@ -28334,12 +28334,12 @@ namespace System
             CompileAndVerify(comp, sourceSymbolValidator: verifyModule, symbolValidator: verifyModule);
 
             var comp2 = CreateCompilation("", targetFramework: TargetFramework.Mscorlib46, references: new[] { comp.ToMetadataReference() });
-            var retargetingValueTupleTypes = comp2.GlobalNamespace.GetMember<NamespaceSymbol>("System").GetMembers("ValueTuple");
+            var retargetingValueTupleTypes = comp2.GlobalNamespace.GetMember<NamespaceSymbol>("System").GetMembersAsImmutable("ValueTuple");
             verifyTuple8Type(retargetingValueTupleTypes[5], retargeting: true);
 
             static void verifyModule(ModuleSymbol module)
             {
-                var valueTupleTypes = module.GlobalNamespace.GetMember<NamespaceSymbol>("System").GetMembers("ValueTuple").As<NamedTypeSymbol>();
+                var valueTupleTypes = module.GlobalNamespace.GetMember<NamespaceSymbol>("System").GetMembersAsImmutable("ValueTuple").As<NamedTypeSymbol>();
                 AssertEx.SetEqual(new[] { "System.ValueTuple<T1>",
                 "(T1, T2, T3, T4)", "(T1, T2, T3, T4, T5)", "(T1, T2, T3, T4, T5, T6)",
                 "(T1, T2, T3, T4, T5, T6, T7)", "System.ValueTuple<T1, T2, T3, T4, T5, T6, T7, TRest>" },
@@ -28423,13 +28423,13 @@ namespace System
             var verifier = CompileAndVerify(comp, symbolValidator: verifyModule, sourceSymbolValidator: verifyModule);
 
             var comp3 = CreateCompilation("", references: new[] { comp.ToMetadataReference() }, targetFramework: TargetFramework.Mscorlib46);
-            var retargetingValueTupleType = (NamedTypeSymbol)comp3.GlobalNamespace.GetMember<NamespaceSymbol>("System").GetMembers("ValueTuple").Single();
+            var retargetingValueTupleType = (NamedTypeSymbol)comp3.GlobalNamespace.GetMember<NamespaceSymbol>("System").GetMembersAsImmutable("ValueTuple").Single();
             Assert.IsType<RetargetingNamedTypeSymbol>(retargetingValueTupleType);
             verifyTupleType(retargetingValueTupleType, retargeting: true);
 
             static void verifyModule(ModuleSymbol module)
             {
-                var type = (NamedTypeSymbol)module.GlobalNamespace.GetMember<NamespaceSymbol>("System").GetMembers("ValueTuple").Single();
+                var type = (NamedTypeSymbol)module.GlobalNamespace.GetMember<NamespaceSymbol>("System").GetMembersAsImmutable("ValueTuple").Single();
                 verifyTupleType(type, retargeting: false);
             }
 
@@ -28438,7 +28438,7 @@ namespace System
                 Assert.Equal("(T1, T2)", namedType.ToTestDisplayString());
                 AssertEx.SetEqual(new[] { "T1 (T1, T2).Item1", "T2 (T1, T2).Item2", "System.String (T1, T2).field" }, namedType.GetFieldsToEmit().ToTestDisplayStrings());
 
-                var fields = namedType.GetMembers().OfType<FieldSymbol>();
+                var fields = namedType.GetMembersAsImmutable().OfType<FieldSymbol>();
                 AssertEx.SetEqual(new[] { "T1 (T1, T2).Item1", "T2 (T1, T2).Item2", "System.String (T1, T2).field" }, fields.ToTestDisplayStrings());
                 Assert.All(fields, f => Assert.False(f.HasUseSiteError));
 
@@ -28519,11 +28519,11 @@ namespace System
 
             static void verifyModule(ModuleSymbol module)
             {
-                var namedType = (NamedTypeSymbol)module.GlobalNamespace.GetMember<NamespaceSymbol>("System").GetMembers("ValueTuple").Single();
+                var namedType = (NamedTypeSymbol)module.GlobalNamespace.GetMember<NamespaceSymbol>("System").GetMembersAsImmutable("ValueTuple").Single();
                 var isSourceSymbol = namedType.ContainingModule is SourceModuleSymbol;
 
                 Assert.Equal("(T1, T2)", namedType.ToTestDisplayString());
-                var fields = namedType.GetMembers().OfType<FieldSymbol>();
+                var fields = namedType.GetMembersAsImmutable().OfType<FieldSymbol>();
                 AssertEx.SetEqual(new[] { "T1 (T1, T2).Item1", "T2 (T1, T2).Item2", "System.String (T1, T2).<Property>k__BackingField" }, fields.ToTestDisplayStrings());
                 var backingField = namedType.GetField("<Property>k__BackingField");
                 if (isSourceSymbol)
@@ -28585,7 +28585,7 @@ class C
 
             static void verifyModule(ModuleSymbol module)
             {
-                var type = (NamedTypeSymbol)module.GlobalNamespace.GetMember<NamespaceSymbol>("System").GetMembers("ValueTuple").Single();
+                var type = (NamedTypeSymbol)module.GlobalNamespace.GetMember<NamespaceSymbol>("System").GetMembersAsImmutable("ValueTuple").Single();
                 var item2 = type.GetMember<FieldSymbol>("Item2");
                 verify(item2);
 
@@ -28720,7 +28720,7 @@ namespace System
             {
                 var isSourceSymbol = module is SourceModuleSymbol;
 
-                var type = (NamedTypeSymbol)module.GlobalNamespace.GetMember<NamespaceSymbol>("System").GetMembers("ValueTuple").Single();
+                var type = (NamedTypeSymbol)module.GlobalNamespace.GetMember<NamespaceSymbol>("System").GetMembersAsImmutable("ValueTuple").Single();
                 assertValueTupleUnderlyingFields(type, isSourceSymbol);
                 if (isSourceSymbol)
                 {
@@ -28788,7 +28788,7 @@ namespace System
 
             static void assertValueTupleUnderlyingFields(NamedTypeSymbol type, bool isSourceSymbol)
             {
-                var fields = type.GetMembers().OfType<FieldSymbol>();
+                var fields = type.GetMembersAsImmutable().OfType<FieldSymbol>();
                 foreach (var field in fields)
                 {
                     var underlying = field.TupleUnderlyingField;
@@ -28799,7 +28799,7 @@ namespace System
 
             static void assertTupleUnderlyingFields(NamedTypeSymbol type)
             {
-                var fields = type.GetMembers().OfType<FieldSymbol>();
+                var fields = type.GetMembersAsImmutable().OfType<FieldSymbol>();
                 foreach (var field in fields)
                 {
                     var underlying = field.TupleUnderlyingField;
@@ -28810,7 +28810,7 @@ namespace System
 
             static IEnumerable<string> printFields(NamedTypeSymbol type)
             {
-                var fields = type.GetMembers().OfType<FieldSymbol>();
+                var fields = type.GetMembersAsImmutable().OfType<FieldSymbol>();
                 return fields.Select(s => s.GetType().Name + ": " + s.Name);
             }
 
@@ -28959,7 +28959,7 @@ public class C
 
             static void assertUnderlying(NamedTypeSymbol type)
             {
-                var fields = type.GetMembers().OfType<FieldSymbol>();
+                var fields = type.GetMembersAsImmutable().OfType<FieldSymbol>();
                 foreach (var field in fields)
                 {
                     var underlying = field.TupleUnderlyingField;
@@ -28970,7 +28970,7 @@ public class C
 
             static IEnumerable<string> printFields(NamedTypeSymbol type)
             {
-                var fields = type.GetMembers().OfType<FieldSymbol>();
+                var fields = type.GetMembersAsImmutable().OfType<FieldSymbol>();
                 return fields.Select(s => s.GetType().Name + ": " + s.Name);
             }
 

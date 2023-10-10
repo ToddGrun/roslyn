@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Threading;
+using Microsoft.CodeAnalysis.Collections;
 using Microsoft.CodeAnalysis.CSharp.Emit;
 using Roslyn.Utilities;
 
@@ -117,19 +118,25 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Retargeting
 
         internal override bool HasDeclaredRequiredMembers => _underlyingType.HasDeclaredRequiredMembers;
 
-        public override ImmutableArray<Symbol> GetMembers()
+        public override ArrayWrapper<Symbol> GetMembers()
         {
-            return this.RetargetingTranslator.Retarget(_underlyingType.GetMembers());
+            using var members = _underlyingType.GetMembers();
+
+            return this.RetargetingTranslator.Retarget(members);
         }
 
-        internal override ImmutableArray<Symbol> GetMembersUnordered()
+        internal override ArrayWrapper<Symbol> GetMembersUnordered()
         {
-            return this.RetargetingTranslator.Retarget(_underlyingType.GetMembersUnordered());
+            using var members = _underlyingType.GetMembersUnordered();
+
+            return this.RetargetingTranslator.Retarget(members);
         }
 
-        public override ImmutableArray<Symbol> GetMembers(string name)
+        public override ArrayWrapper<Symbol> GetMembers(string name)
         {
-            return this.RetargetingTranslator.Retarget(_underlyingType.GetMembers(name));
+            using var members = _underlyingType.GetMembers(name);
+
+            return this.RetargetingTranslator.Retarget(members);
         }
 
         internal override IEnumerable<FieldSymbol> GetFieldsToEmit()
@@ -181,32 +188,38 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Retargeting
             }
         }
 
-        internal override ImmutableArray<Symbol> GetEarlyAttributeDecodingMembers()
+        internal override ArrayWrapper<Symbol> GetEarlyAttributeDecodingMembers()
         {
-            return this.RetargetingTranslator.Retarget(_underlyingType.GetEarlyAttributeDecodingMembers());
+            using var members = _underlyingType.GetEarlyAttributeDecodingMembers();
+
+            return this.RetargetingTranslator.Retarget(members);
         }
 
-        internal override ImmutableArray<Symbol> GetEarlyAttributeDecodingMembers(string name)
+        internal override ArrayWrapper<Symbol> GetEarlyAttributeDecodingMembers(string name)
         {
-            return this.RetargetingTranslator.Retarget(_underlyingType.GetEarlyAttributeDecodingMembers(name));
+            using var members = _underlyingType.GetEarlyAttributeDecodingMembers(name);
+
+            return this.RetargetingTranslator.Retarget(members);
         }
 
-        internal override ImmutableArray<NamedTypeSymbol> GetTypeMembersUnordered()
+        internal override ArrayWrapper<NamedTypeSymbol> GetTypeMembersUnordered()
         {
-            return this.RetargetingTranslator.Retarget(_underlyingType.GetTypeMembersUnordered());
+            using var members = _underlyingType.GetTypeMembersUnordered();
+
+            return this.RetargetingTranslator.Retarget(members);
         }
 
-        public override ImmutableArray<NamedTypeSymbol> GetTypeMembers()
+        public override ArrayWrapper<NamedTypeSymbol> GetTypeMembers()
         {
             return this.RetargetingTranslator.Retarget(_underlyingType.GetTypeMembers());
         }
 
-        public override ImmutableArray<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name)
+        public override ArrayWrapper<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name)
         {
             return this.RetargetingTranslator.Retarget(_underlyingType.GetTypeMembers(name));
         }
 
-        public override ImmutableArray<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name, int arity)
+        public override ArrayWrapper<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name, int arity)
         {
             return this.RetargetingTranslator.Retarget(_underlyingType.GetTypeMembers(name, arity));
         }
@@ -304,25 +317,27 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Retargeting
         {
             if (_lazyInterfaces.IsDefault)
             {
-                var declaredInterfaces = GetDeclaredInterfaces(basesBeingResolved);
+                using var declaredInterfaces = GetDeclaredInterfaces(basesBeingResolved);
                 if (!IsInterface)
                 {
                     // only interfaces needs to check for inheritance cycles via interfaces.
-                    return declaredInterfaces;
+                    return declaredInterfaces.ToImmutableArray();
                 }
 
-                ImmutableArray<NamedTypeSymbol> result = declaredInterfaces
-                    .SelectAsArray(t => BaseTypeAnalysis.TypeDependsOn(t, this) ? CyclicInheritanceError(t) : t);
+                using ArrayWrapper<NamedTypeSymbol> result = declaredInterfaces
+                    .SelectAsArrayWrapper(t => BaseTypeAnalysis.TypeDependsOn(t, this) ? CyclicInheritanceError(t) : t);
 
-                ImmutableInterlocked.InterlockedCompareExchange(ref _lazyInterfaces, result, default(ImmutableArray<NamedTypeSymbol>));
+                ImmutableInterlocked.InterlockedCompareExchange(ref _lazyInterfaces, result.ToImmutableArray(), default(ImmutableArray<NamedTypeSymbol>));
             }
 
             return _lazyInterfaces;
         }
 
-        internal override ImmutableArray<NamedTypeSymbol> GetInterfacesToEmit()
+        internal override ArrayWrapper<NamedTypeSymbol> GetInterfacesToEmit()
         {
-            return this.RetargetingTranslator.Retarget(_underlyingType.GetInterfacesToEmit());
+            using var interfacesToEmit = _underlyingType.GetInterfacesToEmit();
+
+            return this.RetargetingTranslator.Retarget(interfacesToEmit);
         }
 
         internal override NamedTypeSymbol GetDeclaredBaseType(ConsList<TypeSymbol> basesBeingResolved)
@@ -337,16 +352,16 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Retargeting
             return _lazyDeclaredBaseType;
         }
 
-        internal override ImmutableArray<NamedTypeSymbol> GetDeclaredInterfaces(ConsList<TypeSymbol> basesBeingResolved)
+        internal override ArrayWrapper<NamedTypeSymbol> GetDeclaredInterfaces(ConsList<TypeSymbol> basesBeingResolved)
         {
             if (_lazyDeclaredInterfaces.IsDefault)
             {
                 var underlyingBaseInterfaces = _underlyingType.GetDeclaredInterfaces(basesBeingResolved);
-                var result = this.RetargetingTranslator.Retarget(underlyingBaseInterfaces);
-                ImmutableInterlocked.InterlockedCompareExchange(ref _lazyDeclaredInterfaces, result, default(ImmutableArray<NamedTypeSymbol>));
+                using var result = this.RetargetingTranslator.Retarget(underlyingBaseInterfaces);
+                ImmutableInterlocked.InterlockedCompareExchange(ref _lazyDeclaredInterfaces, result.ToImmutableArray(), default(ImmutableArray<NamedTypeSymbol>));
             }
 
-            return _lazyDeclaredInterfaces;
+            return new ArrayWrapper<NamedTypeSymbol>(_lazyDeclaredInterfaces);
         }
 
         internal override UseSiteInfo<AssemblySymbol> GetUseSiteInfo()

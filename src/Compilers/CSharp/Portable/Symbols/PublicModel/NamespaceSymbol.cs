@@ -40,7 +40,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.PublicModel
 
         IEnumerable<INamespaceOrTypeSymbol> INamespaceSymbol.GetMembers()
         {
-            foreach (var n in _underlying.GetMembers())
+            using var members = _underlying.GetMembers();
+            foreach (var n in members)
             {
                 yield return ((Symbols.NamespaceOrTypeSymbol)n).GetPublicSymbol();
             }
@@ -48,7 +49,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.PublicModel
 
         IEnumerable<INamespaceOrTypeSymbol> INamespaceSymbol.GetMembers(string name)
         {
-            foreach (var n in _underlying.GetMembers(name))
+            using var members = _underlying.GetMembers(name);
+            foreach (var n in members)
             {
                 yield return ((Symbols.NamespaceOrTypeSymbol)n).GetPublicSymbol();
             }

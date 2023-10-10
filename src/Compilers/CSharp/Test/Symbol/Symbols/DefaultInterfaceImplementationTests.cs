@@ -205,7 +205,7 @@ typeKind + " Test2 " + @": I1
             var i1 = test1.InterfacesNoUseSiteDiagnostics().Single();
             Assert.Equal("I1", i1.Name);
 
-            var m1 = i1.GetMembers().OfType<MethodSymbol>().Where(m => methodName is null ? true : m.Name == methodName).Single();
+            var m1 = i1.GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => methodName is null ? true : m.Name == methodName).Single();
 
             Assert.True(i1.IsAbstract);
             Assert.True(i1.IsMetadataAbstract);
@@ -5229,7 +5229,7 @@ class Test : I1 {}
         private static void ValidateIndexerImplementation_201(ModuleSymbol m)
         {
             var i1 = m.GlobalNamespace.GetTypeMember("I1");
-            var indexers = i1.GetMembers("this[]");
+            var indexers = i1.GetMembersAsImmutable("this[]");
             var p1 = (PropertySymbol)indexers[0];
             var p2 = (PropertySymbol)indexers[1];
             var p3 = (PropertySymbol)indexers[2];
@@ -5412,7 +5412,7 @@ class Test : I1
             void Validate(ModuleSymbol m)
             {
                 var i1 = m.GlobalNamespace.GetTypeMember("I1");
-                var indexers = i1.GetMembers("this[]");
+                var indexers = i1.GetMembersAsImmutable("this[]");
                 var p1 = (PropertySymbol)indexers[0];
                 var p2 = (PropertySymbol)indexers[1];
                 var p3 = (PropertySymbol)indexers[2];
@@ -5557,7 +5557,7 @@ class Test : I1
             void Validate(ModuleSymbol m)
             {
                 var i1 = m.GlobalNamespace.GetTypeMember("I1");
-                var indexers = i1.GetMembers("this[]");
+                var indexers = i1.GetMembersAsImmutable("this[]");
                 var p1 = (PropertySymbol)indexers[0];
                 var p2 = (PropertySymbol)indexers[1];
                 var p3 = (PropertySymbol)indexers[2];
@@ -5699,7 +5699,7 @@ class Test2 : I1
             var i1 = derived.InterfacesNoUseSiteDiagnostics().Single();
             Assert.Equal("I1", i1.ToTestDisplayString());
 
-            var indexers = i1.GetMembers("this[]");
+            var indexers = i1.GetMembersAsImmutable("this[]");
             var p1 = (PropertySymbol)indexers[0];
             var p3 = (PropertySymbol)indexers[1];
             var p5 = (PropertySymbol)indexers[2];
@@ -5851,7 +5851,7 @@ class Test2 : I2
             var i1 = compilation3.GetTypeByMetadataName("I1");
             Assert.Equal("I1", i1.ToTestDisplayString());
 
-            var indexers = i1.GetMembers("this[]");
+            var indexers = i1.GetMembersAsImmutable("this[]");
             var p1 = (PropertySymbol)indexers[0];
             var p3 = (PropertySymbol)indexers[1];
             var p5 = (PropertySymbol)indexers[2];
@@ -13854,7 +13854,7 @@ set_P2", symbolValidator: Validate);
 
         private static PropertySymbol GetSingleProperty(NamedTypeSymbol container)
         {
-            return container.GetMembers().OfType<PropertySymbol>().Single();
+            return container.GetMembersAsImmutable().OfType<PropertySymbol>().Single();
         }
 
         private static PropertySymbol GetSingleProperty(CSharpCompilation compilation, string containerName)
@@ -14549,7 +14549,7 @@ class Test1 : I1
         {
             var test1 = compilation1.GetTypeByMetadataName("Test1");
             var i1 = compilation1.GetTypeByMetadataName("I1");
-            var p1 = i1.GetMembers().OfType<PropertySymbol>().ElementAt(0);
+            var p1 = i1.GetMembersAsImmutable().OfType<PropertySymbol>().ElementAt(0);
             var p1get = p1.GetMethod;
 
             Assert.True(p1.IsAbstract);
@@ -14572,7 +14572,7 @@ class Test1 : I1
             Assert.Equal(Accessibility.Private, p1get.DeclaredAccessibility);
             Assert.Null(test1.FindImplementationForInterfaceMember(p1get));
 
-            var p2 = i1.GetMembers().OfType<PropertySymbol>().ElementAt(1);
+            var p2 = i1.GetMembersAsImmutable().OfType<PropertySymbol>().ElementAt(1);
             var p2get = p2.GetMethod;
 
             Assert.False(p2.IsAbstract);
@@ -14595,7 +14595,7 @@ class Test1 : I1
             Assert.Equal(Accessibility.Private, p2get.DeclaredAccessibility);
             Assert.Same(p2get, test1.FindImplementationForInterfaceMember(p2get));
 
-            var p3 = i1.GetMembers().OfType<PropertySymbol>().ElementAt(2);
+            var p3 = i1.GetMembersAsImmutable().OfType<PropertySymbol>().ElementAt(2);
 
             Assert.False(p3.IsAbstract);
             Assert.False(p3.IsVirtual);
@@ -14622,7 +14622,7 @@ class Test1 : I1
                 Assert.Null(test1.FindImplementationForInterfaceMember(accessor));
             }
 
-            var p4 = i1.GetMembers().OfType<PropertySymbol>().ElementAt(3);
+            var p4 = i1.GetMembersAsImmutable().OfType<PropertySymbol>().ElementAt(3);
             var p4get = p4.GetMethod;
 
             Assert.False(p4.IsAbstract);
@@ -16153,7 +16153,7 @@ class Test2 : I1, I2, I3
             Assert.Null(test2.FindImplementationForInterfaceMember(p1get));
 
             var p2 = GetSingleProperty(compilation1, "I2");
-            var test1P2 = test1.GetMembers().OfType<PropertySymbol>().Where(p => p.Name.StartsWith("I2.")).Single();
+            var test1P2 = test1.GetMembersAsImmutable().OfType<PropertySymbol>().Where(p => p.Name.StartsWith("I2.")).Single();
             var p2get = p2.GetMethod;
 
             Assert.True(p2.IsAbstract);
@@ -16179,7 +16179,7 @@ class Test2 : I1, I2, I3
             Assert.Null(test2.FindImplementationForInterfaceMember(p2get));
 
             var p3 = GetSingleProperty(compilation1, "I3");
-            var test1P3 = test1.GetMembers().OfType<PropertySymbol>().Where(p => p.Name.StartsWith("I3.")).Single();
+            var test1P3 = test1.GetMembersAsImmutable().OfType<PropertySymbol>().Where(p => p.Name.StartsWith("I3.")).Single();
             var p3set = p3.SetMethod;
 
             Assert.False(p3.IsAbstract);
@@ -16404,7 +16404,7 @@ class Test2 : I0, I1, I2, I3, I4, I5, I6, I7, I8
             {
                 var i1 = compilation1.GetTypeByMetadataName("I" + i);
                 var p2 = GetSingleProperty(i1);
-                var test1P2 = test1.GetMembers().OfType<PropertySymbol>().Where(p => p.Name.StartsWith(i1.Name)).Single();
+                var test1P2 = test1.GetMembersAsImmutable().OfType<PropertySymbol>().Where(p => p.Name.StartsWith(i1.Name)).Single();
 
                 Assert.True(p2.IsAbstract);
                 Assert.True(p2.IsVirtual);
@@ -16593,7 +16593,7 @@ class Test2 : I1, I2, I3, I4, I5
                 var test2 = m.GlobalNamespace.GetTypeMember("Test2");
                 bool isSource = !(m is PEModuleSymbol);
                 var p1 = GetSingleProperty(m, "I1");
-                var test2P1 = test2.GetMembers().OfType<PropertySymbol>().Where(p => p.Name.StartsWith("I1.")).Single();
+                var test2P1 = test2.GetMembersAsImmutable().OfType<PropertySymbol>().Where(p => p.Name.StartsWith("I1.")).Single();
                 var p1get = p1.GetMethod;
 
                 Assert.False(p1.IsAbstract);
@@ -16619,7 +16619,7 @@ class Test2 : I1, I2, I3, I4, I5
                 Assert.Same(test2P1.GetMethod, test2.FindImplementationForInterfaceMember(p1get));
 
                 var p2 = GetSingleProperty(m, "I2");
-                var test2P2 = test2.GetMembers().OfType<PropertySymbol>().Where(p => p.Name.StartsWith("I2.")).Single();
+                var test2P2 = test2.GetMembersAsImmutable().OfType<PropertySymbol>().Where(p => p.Name.StartsWith("I2.")).Single();
                 var p2set = p2.SetMethod;
 
                 Assert.False(p2.IsAbstract);
@@ -16836,7 +16836,7 @@ class Test2 : I1, I2, I3, I4, I5
             var test1 = compilation1.GetTypeByMetadataName("Test1");
             var test2 = compilation1.GetTypeByMetadataName("Test2");
             var p1 = GetSingleProperty(compilation1, "I1");
-            var test2P1 = test2.GetMembers().OfType<PropertySymbol>().Where(p => p.Name.StartsWith("I1.")).Single();
+            var test2P1 = test2.GetMembersAsImmutable().OfType<PropertySymbol>().Where(p => p.Name.StartsWith("I1.")).Single();
             var p1get = p1.GetMethod;
 
             Assert.True(p1.IsAbstract);
@@ -16862,7 +16862,7 @@ class Test2 : I1, I2, I3, I4, I5
             Assert.Same(test2P1.GetMethod, test2.FindImplementationForInterfaceMember(p1get));
 
             var p2 = GetSingleProperty(compilation1, "I2");
-            var test2P2 = test2.GetMembers().OfType<PropertySymbol>().Where(p => p.Name.StartsWith("I2.")).Single();
+            var test2P2 = test2.GetMembersAsImmutable().OfType<PropertySymbol>().Where(p => p.Name.StartsWith("I2.")).Single();
             var p2get = p2.GetMethod;
 
             Assert.False(p2.IsAbstract);
@@ -16888,7 +16888,7 @@ class Test2 : I1, I2, I3, I4, I5
             Assert.Same(test2P2.GetMethod, test2.FindImplementationForInterfaceMember(p2get));
 
             var p3 = GetSingleProperty(compilation1, "I3");
-            var test2P3 = test2.GetMembers().OfType<PropertySymbol>().Where(p => p.Name.StartsWith("I3.")).Single();
+            var test2P3 = test2.GetMembersAsImmutable().OfType<PropertySymbol>().Where(p => p.Name.StartsWith("I3.")).Single();
 
             Assert.False(p3.IsAbstract);
             Assert.Equal(p3.IsIndexer, p3.IsVirtual);
@@ -17086,7 +17086,7 @@ class Test2 : I1, I2, I3, I4, I5
             var test1 = compilation1.GetTypeByMetadataName("Test1");
             var test2 = compilation1.GetTypeByMetadataName("Test2");
             var p1 = GetSingleProperty(compilation1, "I1");
-            var test2P1 = test2.GetMembers().OfType<PropertySymbol>().Where(p => p.Name.StartsWith("I1.")).Single();
+            var test2P1 = test2.GetMembersAsImmutable().OfType<PropertySymbol>().Where(p => p.Name.StartsWith("I1.")).Single();
 
             Assert.True(p1.IsAbstract);
             Assert.False(p1.IsVirtual);
@@ -17116,7 +17116,7 @@ class Test2 : I1, I2, I3, I4, I5
             }
 
             var p2 = GetSingleProperty(compilation1, "I2");
-            var test2P2 = test2.GetMembers().OfType<PropertySymbol>().Where(p => p.Name.StartsWith("I2.")).Single();
+            var test2P2 = test2.GetMembersAsImmutable().OfType<PropertySymbol>().Where(p => p.Name.StartsWith("I2.")).Single();
             var p2get = p2.GetMethod;
 
             Assert.True(p2.IsAbstract);
@@ -17142,7 +17142,7 @@ class Test2 : I1, I2, I3, I4, I5
             Assert.Same(test2P2.GetMethod, test2.FindImplementationForInterfaceMember(p2get));
 
             var p3 = GetSingleProperty(compilation1, "I3");
-            var test2P3 = test2.GetMembers().OfType<PropertySymbol>().Where(p => p.Name.StartsWith("I3.")).Single();
+            var test2P3 = test2.GetMembersAsImmutable().OfType<PropertySymbol>().Where(p => p.Name.StartsWith("I3.")).Single();
 
             Assert.False(p3.IsAbstract);
             Assert.Equal(p3.IsIndexer, p3.IsVirtual);
@@ -17172,7 +17172,7 @@ class Test2 : I1, I2, I3, I4, I5
             }
 
             var p4 = GetSingleProperty(compilation1, "I4");
-            var test2P4 = test2.GetMembers().OfType<PropertySymbol>().Where(p => p.Name.StartsWith("I4.")).Single();
+            var test2P4 = test2.GetMembersAsImmutable().OfType<PropertySymbol>().Where(p => p.Name.StartsWith("I4.")).Single();
 
             Assert.True(p4.IsAbstract);
             Assert.False(p4.IsVirtual);
@@ -27482,7 +27482,7 @@ set_P2", symbolValidator: Validate);
 
         private static EventSymbol GetSingleEvent(NamedTypeSymbol container)
         {
-            return container.GetMembers().OfType<EventSymbol>().Single();
+            return container.GetMembersAsImmutable().OfType<EventSymbol>().Single();
         }
 
         private static EventSymbol GetSingleEvent(CSharpCompilation compilation, string containerName)
@@ -28048,7 +28048,7 @@ class Test1 : I1
         {
             var test1 = compilation1.GetTypeByMetadataName("Test1");
             var i1 = compilation1.GetTypeByMetadataName("I1");
-            var p1 = i1.GetMembers().OfType<EventSymbol>().ElementAt(0);
+            var p1 = i1.GetMembersAsImmutable().OfType<EventSymbol>().ElementAt(0);
 
             Assert.True(p1.IsAbstract);
             Assert.False(p1.IsVirtual);
@@ -28075,7 +28075,7 @@ class Test1 : I1
                 Assert.Null(test1.FindImplementationForInterfaceMember(accessor));
             }
 
-            var p2 = i1.GetMembers().OfType<EventSymbol>().ElementAt(1);
+            var p2 = i1.GetMembersAsImmutable().OfType<EventSymbol>().ElementAt(1);
 
             Assert.False(p2.IsAbstract);
             Assert.True(p2.IsVirtual);
@@ -28102,7 +28102,7 @@ class Test1 : I1
                 Assert.Same(accessor, test1.FindImplementationForInterfaceMember(accessor));
             }
 
-            var p3 = i1.GetMembers().OfType<EventSymbol>().ElementAt(2);
+            var p3 = i1.GetMembersAsImmutable().OfType<EventSymbol>().ElementAt(2);
 
             Assert.False(p3.IsAbstract);
             Assert.False(p3.IsVirtual);
@@ -28129,7 +28129,7 @@ class Test1 : I1
                 Assert.Null(test1.FindImplementationForInterfaceMember(accessor));
             }
 
-            var p4 = i1.GetMembers().OfType<EventSymbol>().ElementAt(3);
+            var p4 = i1.GetMembersAsImmutable().OfType<EventSymbol>().ElementAt(3);
 
             Assert.False(p4.IsAbstract);
             Assert.False(p4.IsVirtual);
@@ -29546,7 +29546,7 @@ class Test2 : I1, I2, I3
             }
 
             var p2 = GetSingleEvent(compilation1, "I2");
-            var test1P2 = test1.GetMembers().OfType<EventSymbol>().Where(p => p.Name.StartsWith("I2.")).Single();
+            var test1P2 = test1.GetMembersAsImmutable().OfType<EventSymbol>().Where(p => p.Name.StartsWith("I2.")).Single();
 
             Assert.True(p2.IsAbstract);
             Assert.False(p2.IsVirtual);
@@ -29576,7 +29576,7 @@ class Test2 : I1, I2, I3
             }
 
             var p3 = GetSingleEvent(compilation1, "I3");
-            var test1P3 = test1.GetMembers().OfType<EventSymbol>().Where(p => p.Name.StartsWith("I3.")).Single();
+            var test1P3 = test1.GetMembersAsImmutable().OfType<EventSymbol>().Where(p => p.Name.StartsWith("I3.")).Single();
 
             Assert.False(p3.IsAbstract);
             Assert.True(p3.IsVirtual);
@@ -29817,7 +29817,7 @@ class Test2 : I0, I1, I2, I3, I4, I5, I6, I7, I8
             {
                 var i1 = compilation1.GetTypeByMetadataName("I" + i);
                 var p2 = GetSingleEvent(i1);
-                var test1P2 = test1.GetMembers().OfType<EventSymbol>().Where(p => p.Name.StartsWith(i1.Name)).Single();
+                var test1P2 = test1.GetMembersAsImmutable().OfType<EventSymbol>().Where(p => p.Name.StartsWith(i1.Name)).Single();
 
                 Assert.True(p2.IsAbstract);
                 Assert.True(p2.IsVirtual);
@@ -29929,7 +29929,7 @@ class Test2 : I1, I2, I3, I4, I5
                 var test2 = m.GlobalNamespace.GetTypeMember("Test2");
                 bool isSource = !(m is PEModuleSymbol);
                 var p1 = GetSingleEvent(m, "I1");
-                var test2P1 = test2.GetMembers().OfType<EventSymbol>().Where(p => p.Name.StartsWith("I1.")).Single();
+                var test2P1 = test2.GetMembersAsImmutable().OfType<EventSymbol>().Where(p => p.Name.StartsWith("I1.")).Single();
 
                 Assert.False(p1.IsAbstract);
                 Assert.True(p1.IsVirtual);
@@ -29959,7 +29959,7 @@ class Test2 : I1, I2, I3, I4, I5
                 }
 
                 var p2 = GetSingleEvent(m, "I2");
-                var test2P2 = test2.GetMembers().OfType<EventSymbol>().Where(p => p.Name.StartsWith("I2.")).Single();
+                var test2P2 = test2.GetMembersAsImmutable().OfType<EventSymbol>().Where(p => p.Name.StartsWith("I2.")).Single();
 
                 Assert.False(p2.IsAbstract);
                 Assert.True(p2.IsVirtual);
@@ -30259,7 +30259,7 @@ class Test2 : I1, I2, I3, I4
             var test1 = compilation1.GetTypeByMetadataName("Test1");
             var test2 = compilation1.GetTypeByMetadataName("Test2");
             var p1 = GetSingleEvent(compilation1, "I1");
-            var test2P1 = test2.GetMembers().OfType<EventSymbol>().Where(p => p.Name.StartsWith("I1.")).Single();
+            var test2P1 = test2.GetMembersAsImmutable().OfType<EventSymbol>().Where(p => p.Name.StartsWith("I1.")).Single();
 
             Assert.True(p1.IsAbstract);
             Assert.False(p1.IsVirtual);
@@ -30289,7 +30289,7 @@ class Test2 : I1, I2, I3, I4
             }
 
             var p2 = GetSingleEvent(compilation1, "I2");
-            var test2P2 = test2.GetMembers().OfType<EventSymbol>().Where(p => p.Name.StartsWith("I2.")).Single();
+            var test2P2 = test2.GetMembersAsImmutable().OfType<EventSymbol>().Where(p => p.Name.StartsWith("I2.")).Single();
 
             Assert.False(p2.IsAbstract);
             Assert.True(p2.IsVirtual);
@@ -30319,7 +30319,7 @@ class Test2 : I1, I2, I3, I4
             }
 
             var p3 = GetSingleEvent(compilation1, "I3");
-            var test2P3 = test2.GetMembers().OfType<EventSymbol>().Where(p => p.Name.StartsWith("I3.")).Single();
+            var test2P3 = test2.GetMembersAsImmutable().OfType<EventSymbol>().Where(p => p.Name.StartsWith("I3.")).Single();
 
             Assert.False(p3.IsAbstract);
             Assert.False(p3.IsVirtual);
@@ -30480,7 +30480,7 @@ class Test2 : I1, I2, I3, I4, I5
             var test1 = compilation1.GetTypeByMetadataName("Test1");
             var test2 = compilation1.GetTypeByMetadataName("Test2");
             var p1 = GetSingleEvent(compilation1, "I1");
-            var test2P1 = test2.GetMembers().OfType<EventSymbol>().Where(p => p.Name.StartsWith("I1.")).Single();
+            var test2P1 = test2.GetMembersAsImmutable().OfType<EventSymbol>().Where(p => p.Name.StartsWith("I1.")).Single();
 
             Assert.True(p1.IsAbstract);
             Assert.False(p1.IsVirtual);
@@ -30510,7 +30510,7 @@ class Test2 : I1, I2, I3, I4, I5
             }
 
             var p2 = GetSingleEvent(compilation1, "I2");
-            var test2P2 = test2.GetMembers().OfType<EventSymbol>().Where(p => p.Name.StartsWith("I2.")).Single();
+            var test2P2 = test2.GetMembersAsImmutable().OfType<EventSymbol>().Where(p => p.Name.StartsWith("I2.")).Single();
 
             Assert.True(p2.IsAbstract);
             Assert.False(p2.IsVirtual);
@@ -30540,7 +30540,7 @@ class Test2 : I1, I2, I3, I4, I5
             }
 
             var p3 = GetSingleEvent(compilation1, "I3");
-            var test2P3 = test2.GetMembers().OfType<EventSymbol>().Where(p => p.Name.StartsWith("I3.")).Single();
+            var test2P3 = test2.GetMembersAsImmutable().OfType<EventSymbol>().Where(p => p.Name.StartsWith("I3.")).Single();
 
             Assert.False(p3.IsAbstract);
             Assert.False(p3.IsVirtual);
@@ -30570,7 +30570,7 @@ class Test2 : I1, I2, I3, I4, I5
             }
 
             var p4 = GetSingleEvent(compilation1, "I4");
-            var test2P4 = test2.GetMembers().OfType<EventSymbol>().Where(p => p.Name.StartsWith("I4.")).Single();
+            var test2P4 = test2.GetMembersAsImmutable().OfType<EventSymbol>().Where(p => p.Name.StartsWith("I4.")).Single();
 
             Assert.True(p4.IsAbstract);
             Assert.False(p4.IsVirtual);
@@ -33590,7 +33590,7 @@ class Test1 : I1
                 var i1 = test1.InterfacesNoUseSiteDiagnostics().Where(i => i.Name == "I1").Single();
                 var i1i2m1 = i1.GetMember<MethodSymbol>("I2.M1");
                 var i2 = i1.InterfacesNoUseSiteDiagnostics().Where(i => i.Name == "I2").Single();
-                var i2m1 = i2.GetMembers().OfType<MethodSymbol>().Single();
+                var i2m1 = i2.GetMembersAsImmutable().OfType<MethodSymbol>().Single();
                 var i3 = i1.ContainingNamespace.GetTypeMember("I3");
 
                 Assert.True(i1.IsAbstract);
@@ -33806,7 +33806,7 @@ class Test1 : I1
                 var i1 = test1.InterfacesNoUseSiteDiagnostics().Where(i => i.Name == "I1").Single();
                 var i1i2m1 = i1.GetMember<MethodSymbol>("I2.M1");
                 var i2 = i1.InterfacesNoUseSiteDiagnostics().Where(i => i.Name == "I2").Single();
-                var i2m1 = i2.GetMembers().OfType<MethodSymbol>().Single();
+                var i2m1 = i2.GetMembersAsImmutable().OfType<MethodSymbol>().Single();
                 var i3 = i1.ContainingNamespace.GetTypeMember("I3");
 
                 Assert.True(i1.IsAbstract);
@@ -36706,7 +36706,7 @@ public partial interface I
             comp.VerifyDiagnostics();
 
             var @interface = comp.SourceModule.GlobalNamespace.GetTypeMember("I");
-            var method = @interface.GetMembers().OfType<MethodSymbol>().Single();
+            var method = @interface.GetMembersAsImmutable().OfType<MethodSymbol>().Single();
             Assert.Equal(Accessibility.Private, method.DeclaredAccessibility);
         }
 
@@ -36861,12 +36861,12 @@ I4.M1
         {
             var test1 = m.GlobalNamespace.GetTypeMember("Test1");
             var i1 = test1.InterfacesNoUseSiteDiagnostics().Where(i => i.Name == "I1").Single();
-            var i1i2m1 = i1.GetMembers().OfType<PropertySymbol>().Where(p => p.Name.StartsWith("I2.")).Single();
-            var i1i4m1 = i1.GetMembers().OfType<PropertySymbol>().Where(p => p.Name.StartsWith("I4.")).Single();
+            var i1i2m1 = i1.GetMembersAsImmutable().OfType<PropertySymbol>().Where(p => p.Name.StartsWith("I2.")).Single();
+            var i1i4m1 = i1.GetMembersAsImmutable().OfType<PropertySymbol>().Where(p => p.Name.StartsWith("I4.")).Single();
             var i2 = i1.InterfacesNoUseSiteDiagnostics().Where(i => i.Name == "I2").Single();
-            var i2m1 = i2.GetMembers().OfType<PropertySymbol>().Single();
+            var i2m1 = i2.GetMembersAsImmutable().OfType<PropertySymbol>().Single();
             var i4 = i1.AllInterfacesNoUseSiteDiagnostics.Where(i => i.Name == "I4").Single();
-            var i4m1 = i4.GetMembers().OfType<PropertySymbol>().Single();
+            var i4m1 = i4.GetMembersAsImmutable().OfType<PropertySymbol>().Single();
             var i3 = i1.ContainingNamespace.GetTypeMember("I3");
 
             Assert.True(i1.IsAbstract);
@@ -39894,12 +39894,12 @@ I4.M1.remove
         {
             var test1 = m.GlobalNamespace.GetTypeMember("Test1");
             var i1 = test1.InterfacesNoUseSiteDiagnostics().Where(i => i.Name == "I1").Single();
-            var i1i2m1 = i1.GetMembers().OfType<EventSymbol>().Where(p => p.Name.StartsWith("I2.")).Single();
-            var i1i4m1 = i1.GetMembers().OfType<EventSymbol>().Where(p => p.Name.StartsWith("I4.")).Single();
+            var i1i2m1 = i1.GetMembersAsImmutable().OfType<EventSymbol>().Where(p => p.Name.StartsWith("I2.")).Single();
+            var i1i4m1 = i1.GetMembersAsImmutable().OfType<EventSymbol>().Where(p => p.Name.StartsWith("I4.")).Single();
             var i2 = i1.InterfacesNoUseSiteDiagnostics().Where(i => i.Name == "I2").Single();
-            var i2m1 = i2.GetMembers().OfType<EventSymbol>().Single();
+            var i2m1 = i2.GetMembersAsImmutable().OfType<EventSymbol>().Single();
             var i4 = i1.AllInterfacesNoUseSiteDiagnostics.Where(i => i.Name == "I4").Single();
-            var i4m1 = i4.GetMembers().OfType<EventSymbol>().Single();
+            var i4m1 = i4.GetMembersAsImmutable().OfType<EventSymbol>().Single();
             var i3 = i1.ContainingNamespace.GetTypeMember("I3");
 
             Assert.True(i1.IsAbstract);
@@ -44460,7 +44460,7 @@ interface I1
             compilation1.VerifyDiagnostics();
 
             ValidateConstructor(compilation1.SourceModule);
-            Assert.Empty(compilation1.GetTypeByMetadataName("I1").GetMembers("I1"));
+            Assert.Empty(compilation1.GetTypeByMetadataName("I1").GetMembersAsImmutable("I1"));
 
             CompileAndVerify(compilation1, symbolValidator: ValidateConstructor, verify: VerifyOnMonoOrCoreClr, expectedOutput: !ExecutionConditionUtil.IsMonoOrCoreClr ? null :
 @"I1
@@ -49346,7 +49346,7 @@ true
 
             var i1 = compilation1.GlobalNamespace.GetTypeMember("I1");
 
-            foreach (var member in i1.GetMembers())
+            foreach (var member in i1.GetMembersAsImmutable())
             {
                 Assert.Equal(Accessibility.Public, member.DeclaredAccessibility);
             }
@@ -49394,7 +49394,7 @@ public interface I1
 
             var i1 = compilation1.GlobalNamespace.GetTypeMember("I1");
 
-            foreach (var member in i1.GetMembers())
+            foreach (var member in i1.GetMembersAsImmutable())
             {
                 Assert.Equal(Accessibility.Public, member.DeclaredAccessibility);
             }
@@ -50902,7 +50902,7 @@ class Test1 : I2
                 var test1 = m.GlobalNamespace.GetTypeMember("Test1");
                 var i2 = test1.InterfacesNoUseSiteDiagnostics().First();
                 Assert.Equal("I2", i2.Name);
-                var i2m1 = i2.GetMembers().OfType<MethodSymbol>().Single();
+                var i2m1 = i2.GetMembersAsImmutable().OfType<MethodSymbol>().Single();
 
                 ValidateReabstraction(i2m1, isStatic: isStatic);
 
@@ -52334,7 +52334,7 @@ class Test1 : I2
                 var test1 = m.GlobalNamespace.GetTypeMember("Test1");
                 var i2 = test1.InterfacesNoUseSiteDiagnostics().First();
                 Assert.Equal("I2", i2.Name);
-                var i2p1 = i2.GetMembers().OfType<PropertySymbol>().Single();
+                var i2p1 = i2.GetMembersAsImmutable().OfType<PropertySymbol>().Single();
 
                 ValidateReabstraction(i2p1, isStatic);
 
@@ -52532,10 +52532,10 @@ Test1.set_P1
             static void validate(ModuleSymbol m)
             {
                 var test1 = m.GlobalNamespace.GetTypeMember("Test1");
-                var test12p1 = test1.GetMembers().OfType<PropertySymbol>().Single();
+                var test12p1 = test1.GetMembersAsImmutable().OfType<PropertySymbol>().Single();
                 var i2 = test1.InterfacesNoUseSiteDiagnostics().First();
                 Assert.Equal("I2", i2.Name);
-                var i2p1 = i2.GetMembers().OfType<PropertySymbol>().Single();
+                var i2p1 = i2.GetMembersAsImmutable().OfType<PropertySymbol>().Single();
 
                 var i1p1 = i2p1.ExplicitInterfaceImplementations.Single();
 
@@ -52692,7 +52692,7 @@ class Test1 : I3
                 var i3 = test1.InterfacesNoUseSiteDiagnostics().First();
                 Assert.Equal("I3", i3.Name);
 
-                var i1p1 = i3.ContainingNamespace.GetTypeMember("I1").GetMembers().OfType<PropertySymbol>().Single();
+                var i1p1 = i3.ContainingNamespace.GetTypeMember("I1").GetMembersAsImmutable().OfType<PropertySymbol>().Single();
 
                 Assert.Null(i3.FindImplementationForInterfaceMember(i1p1));
                 Assert.Null(test1.FindImplementationForInterfaceMember(i1p1));
@@ -52863,8 +52863,8 @@ I3.set_P1
                 var i3 = test1.InterfacesNoUseSiteDiagnostics().First();
                 Assert.Equal("I3", i3.Name);
 
-                var i3p1 = i3.GetMembers().OfType<PropertySymbol>().Single();
-                var i1p1 = i3.ContainingNamespace.GetTypeMember("I1").GetMembers().OfType<PropertySymbol>().Single();
+                var i3p1 = i3.GetMembersAsImmutable().OfType<PropertySymbol>().Single();
+                var i1p1 = i3.ContainingNamespace.GetTypeMember("I1").GetMembersAsImmutable().OfType<PropertySymbol>().Single();
 
                 Assert.Same(i3p1, i3.FindImplementationForInterfaceMember(i1p1));
                 Assert.Same(i3p1, test1.FindImplementationForInterfaceMember(i1p1));
@@ -53029,7 +53029,7 @@ class Test1 : I2, I3
             static void validate(ModuleSymbol m)
             {
                 var test1 = m.GlobalNamespace.GetTypeMember("Test1");
-                var i1p1 = test1.InterfacesNoUseSiteDiagnostics().First().ContainingNamespace.GetTypeMember("I1").GetMembers().OfType<PropertySymbol>().Single();
+                var i1p1 = test1.InterfacesNoUseSiteDiagnostics().First().ContainingNamespace.GetTypeMember("I1").GetMembersAsImmutable().OfType<PropertySymbol>().Single();
 
                 Assert.Null(test1.FindImplementationForInterfaceMember(i1p1));
                 if (i1p1.GetMethod is object)
@@ -53193,7 +53193,7 @@ class Test1 : I4
                 var test1 = m.GlobalNamespace.GetTypeMember("Test1");
                 var i4 = test1.InterfacesNoUseSiteDiagnostics().First();
                 Assert.Equal("I4", i4.Name);
-                var i1p1 = i4.ContainingNamespace.GetTypeMember("I1").GetMembers().OfType<PropertySymbol>().Single();
+                var i1p1 = i4.ContainingNamespace.GetTypeMember("I1").GetMembersAsImmutable().OfType<PropertySymbol>().Single();
 
                 Assert.Null(i4.FindImplementationForInterfaceMember(i1p1));
                 Assert.Null(test1.FindImplementationForInterfaceMember(i1p1));
@@ -53332,8 +53332,8 @@ I4.set_P1
                 var i4 = test1.InterfacesNoUseSiteDiagnostics().First();
                 Assert.Equal("I4", i4.Name);
 
-                var i4p1 = i4.GetMembers().OfType<PropertySymbol>().Single();
-                var i1p1 = i4.ContainingNamespace.GetTypeMember("I1").GetMembers().OfType<PropertySymbol>().Single();
+                var i4p1 = i4.GetMembersAsImmutable().OfType<PropertySymbol>().Single();
+                var i1p1 = i4.ContainingNamespace.GetTypeMember("I1").GetMembersAsImmutable().OfType<PropertySymbol>().Single();
 
                 Assert.Same(i4p1, i4.FindImplementationForInterfaceMember(i1p1));
                 Assert.Same(i4p1, test1.FindImplementationForInterfaceMember(i1p1));
@@ -53417,7 +53417,7 @@ class Test1 : I2
                 var test1 = m.GlobalNamespace.GetTypeMember("Test1");
                 var i2 = test1.InterfacesNoUseSiteDiagnostics().First();
                 Assert.Equal("I2", i2.Name);
-                var i2p1 = i2.GetMembers().OfType<PropertySymbol>().Single();
+                var i2p1 = i2.GetMembersAsImmutable().OfType<PropertySymbol>().Single();
                 var i1p1 = i2p1.ExplicitInterfaceImplementations.Single();
 
                 ValidateReabstraction(i2p1, isStatic);
@@ -53549,7 +53549,7 @@ class Test1 : I2
                 var test1 = m.GlobalNamespace.GetTypeMember("Test1");
                 var i2 = test1.InterfacesNoUseSiteDiagnostics().First();
                 Assert.Equal("I2", i2.Name);
-                var i2p1 = i2.GetMembers().OfType<PropertySymbol>().Single();
+                var i2p1 = i2.GetMembersAsImmutable().OfType<PropertySymbol>().Single();
 
                 Assert.True(i2p1.IsAbstract);
                 Assert.False(i2p1.IsVirtual);
@@ -53693,7 +53693,7 @@ public class C2 : I1
             static void validate(ModuleSymbol m)
             {
                 var c2 = m.GlobalNamespace.GetTypeMember("C2");
-                var c2p1 = c2.GetMembers().OfType<PropertySymbol>().Single();
+                var c2p1 = c2.GetMembersAsImmutable().OfType<PropertySymbol>().Single();
 
                 Assert.False(c2p1.IsAbstract);
                 Assert.False(c2p1.IsSealed);
@@ -54025,7 +54025,7 @@ class Test1 : I2
                 var test1 = m.GlobalNamespace.GetTypeMember("Test1");
                 var i2 = test1.InterfacesNoUseSiteDiagnostics().First();
                 Assert.Equal("I2", i2.Name);
-                var i2p1 = i2.GetMembers().OfType<PropertySymbol>().Single();
+                var i2p1 = i2.GetMembersAsImmutable().OfType<PropertySymbol>().Single();
                 var i1p1 = i2p1.ExplicitInterfaceImplementations.Single();
 
                 ValidateReabstraction(i2p1, isStatic);
@@ -56852,7 +56852,7 @@ class Test1 : I2
                 var test1 = m.GlobalNamespace.GetTypeMember("Test1");
                 var i2 = test1.InterfacesNoUseSiteDiagnostics().First();
                 Assert.Equal("I2", i2.Name);
-                var i2p1 = i2.GetMembers().OfType<PropertySymbol>().Single();
+                var i2p1 = i2.GetMembersAsImmutable().OfType<PropertySymbol>().Single();
 
                 ValidateReabstraction(i2p1, isStatic);
 
@@ -57312,7 +57312,7 @@ class Test1 : I2
                 var test1 = m.GlobalNamespace.GetTypeMember("Test1");
                 var i2 = test1.InterfacesNoUseSiteDiagnostics().First();
                 Assert.Equal("I2", i2.Name);
-                var i2p1 = i2.GetMembers().OfType<EventSymbol>().Single();
+                var i2p1 = i2.GetMembersAsImmutable().OfType<EventSymbol>().Single();
 
                 ValidateReabstraction(i2p1, isStatic);
 
@@ -57490,10 +57490,10 @@ Test1.remove_P1
             static void validate(ModuleSymbol m)
             {
                 var test1 = m.GlobalNamespace.GetTypeMember("Test1");
-                var test12p1 = test1.GetMembers().OfType<EventSymbol>().Single();
+                var test12p1 = test1.GetMembersAsImmutable().OfType<EventSymbol>().Single();
                 var i2 = test1.InterfacesNoUseSiteDiagnostics().First();
                 Assert.Equal("I2", i2.Name);
-                var i2p1 = i2.GetMembers().OfType<EventSymbol>().Single();
+                var i2p1 = i2.GetMembersAsImmutable().OfType<EventSymbol>().Single();
 
                 var i1p1 = i2p1.ExplicitInterfaceImplementations.Single();
 
@@ -57643,7 +57643,7 @@ class Test1 : I3
                 var i3 = test1.InterfacesNoUseSiteDiagnostics().First();
                 Assert.Equal("I3", i3.Name);
 
-                var i1p1 = i3.ContainingNamespace.GetTypeMember("I1").GetMembers().OfType<EventSymbol>().Single();
+                var i1p1 = i3.ContainingNamespace.GetTypeMember("I1").GetMembersAsImmutable().OfType<EventSymbol>().Single();
 
                 Assert.Null(i3.FindImplementationForInterfaceMember(i1p1));
                 Assert.Null(test1.FindImplementationForInterfaceMember(i1p1));
@@ -57802,8 +57802,8 @@ I3.remove_P1
                 var i3 = test1.InterfacesNoUseSiteDiagnostics().First();
                 Assert.Equal("I3", i3.Name);
 
-                var i3p1 = i3.GetMembers().OfType<EventSymbol>().Single();
-                var i1p1 = i3.ContainingNamespace.GetTypeMember("I1").GetMembers().OfType<EventSymbol>().Single();
+                var i3p1 = i3.GetMembersAsImmutable().OfType<EventSymbol>().Single();
+                var i1p1 = i3.ContainingNamespace.GetTypeMember("I1").GetMembersAsImmutable().OfType<EventSymbol>().Single();
 
                 Assert.Same(i3p1, i3.FindImplementationForInterfaceMember(i1p1));
                 Assert.Same(i3p1, test1.FindImplementationForInterfaceMember(i1p1));
@@ -57954,7 +57954,7 @@ class Test1 : I2, I3
             static void validate(ModuleSymbol m)
             {
                 var test1 = m.GlobalNamespace.GetTypeMember("Test1");
-                var i1p1 = test1.InterfacesNoUseSiteDiagnostics().First().ContainingNamespace.GetTypeMember("I1").GetMembers().OfType<EventSymbol>().Single();
+                var i1p1 = test1.InterfacesNoUseSiteDiagnostics().First().ContainingNamespace.GetTypeMember("I1").GetMembersAsImmutable().OfType<EventSymbol>().Single();
 
                 Assert.Null(test1.FindImplementationForInterfaceMember(i1p1));
                 Assert.Null(test1.FindImplementationForInterfaceMember(i1p1.AddMethod));
@@ -58105,7 +58105,7 @@ class Test1 : I4
                 var test1 = m.GlobalNamespace.GetTypeMember("Test1");
                 var i4 = test1.InterfacesNoUseSiteDiagnostics().First();
                 Assert.Equal("I4", i4.Name);
-                var i1p1 = i4.ContainingNamespace.GetTypeMember("I1").GetMembers().OfType<EventSymbol>().Single();
+                var i1p1 = i4.ContainingNamespace.GetTypeMember("I1").GetMembersAsImmutable().OfType<EventSymbol>().Single();
 
                 Assert.Null(i4.FindImplementationForInterfaceMember(i1p1));
                 Assert.Null(test1.FindImplementationForInterfaceMember(i1p1));
@@ -58234,8 +58234,8 @@ I4.remove_P1
                 var i4 = test1.InterfacesNoUseSiteDiagnostics().First();
                 Assert.Equal("I4", i4.Name);
 
-                var i4p1 = i4.GetMembers().OfType<EventSymbol>().Single();
-                var i1p1 = i4.ContainingNamespace.GetTypeMember("I1").GetMembers().OfType<EventSymbol>().Single();
+                var i4p1 = i4.GetMembersAsImmutable().OfType<EventSymbol>().Single();
+                var i1p1 = i4.ContainingNamespace.GetTypeMember("I1").GetMembersAsImmutable().OfType<EventSymbol>().Single();
 
                 Assert.Same(i4p1, i4.FindImplementationForInterfaceMember(i1p1));
                 Assert.Same(i4p1, test1.FindImplementationForInterfaceMember(i1p1));
@@ -58305,7 +58305,7 @@ class Test1 : I2
                 var test1 = m.GlobalNamespace.GetTypeMember("Test1");
                 var i2 = test1.InterfacesNoUseSiteDiagnostics().First();
                 Assert.Equal("I2", i2.Name);
-                var i2p1 = i2.GetMembers().OfType<EventSymbol>().Single();
+                var i2p1 = i2.GetMembersAsImmutable().OfType<EventSymbol>().Single();
                 var i1p1 = i2p1.ExplicitInterfaceImplementations.Single();
 
                 ValidateReabstraction(i2p1, isStatic);
@@ -58495,7 +58495,7 @@ public class C2 : I1
             static void validate(ModuleSymbol m)
             {
                 var c2 = m.GlobalNamespace.GetTypeMember("C2");
-                var c2p1 = c2.GetMembers().OfType<EventSymbol>().Single();
+                var c2p1 = c2.GetMembersAsImmutable().OfType<EventSymbol>().Single();
 
                 Assert.False(c2p1.IsAbstract);
                 Assert.False(c2p1.IsSealed);
@@ -59077,7 +59077,7 @@ class Test1 : I2
                 var test1 = m.GlobalNamespace.GetTypeMember("Test1");
                 var i2 = test1.InterfacesNoUseSiteDiagnostics().First();
                 Assert.Equal("I2", i2.Name);
-                var i2p1 = i2.GetMembers().OfType<EventSymbol>().Single();
+                var i2p1 = i2.GetMembersAsImmutable().OfType<EventSymbol>().Single();
                 var i1p1 = i2p1.ExplicitInterfaceImplementations.Single();
 
                 ValidateReabstraction(i2p1, isStatic);
@@ -59136,7 +59136,7 @@ class Test1 : I2
                 var test1 = m.GlobalNamespace.GetTypeMember("Test1");
                 var i2 = test1.InterfacesNoUseSiteDiagnostics().First();
                 Assert.Equal("I2", i2.Name);
-                var i2p1 = i2.GetMembers().OfType<EventSymbol>().Single();
+                var i2p1 = i2.GetMembersAsImmutable().OfType<EventSymbol>().Single();
 
                 ValidateReabstraction(i2p1, isStatic);
 
@@ -66960,7 +66960,7 @@ interface I1
         private static void AssertNoMethodImplementation(CSharpCompilation compilation1)
         {
             var i1 = compilation1.GetTypeByMetadataName("I1");
-            Assert.Empty(i1.GetMembers().OfType<MethodSymbol>().Single().ExplicitInterfaceImplementations);
+            Assert.Empty(i1.GetMembersAsImmutable().OfType<MethodSymbol>().Single().ExplicitInterfaceImplementations);
         }
 
         [Fact]
@@ -67026,7 +67026,7 @@ interface I2
 
             var i1 = compilation1.GetTypeByMetadataName("I1");
             var i2 = compilation1.GetTypeByMetadataName("I2");
-            Assert.Same(i2.GetMembers().OfType<MethodSymbol>().Single(), i1.GetMembers().OfType<MethodSymbol>().Single().ExplicitInterfaceImplementations.Single());
+            Assert.Same(i2.GetMembersAsImmutable().OfType<MethodSymbol>().Single(), i1.GetMembersAsImmutable().OfType<MethodSymbol>().Single().ExplicitInterfaceImplementations.Single());
         }
 
         [Fact]
@@ -67142,7 +67142,7 @@ interface I1
         private static void AssertNoPropertyImplementation(CSharpCompilation compilation1)
         {
             var i1 = compilation1.GetTypeByMetadataName("I1");
-            var m = i1.GetMembers().OfType<PropertySymbol>().Single();
+            var m = i1.GetMembersAsImmutable().OfType<PropertySymbol>().Single();
             Assert.Empty(m.ExplicitInterfaceImplementations);
             Assert.Empty(m.GetMethod.ExplicitInterfaceImplementations);
         }
@@ -67210,8 +67210,8 @@ interface I2
 
             var i1 = compilation1.GetTypeByMetadataName("I1");
             var i2 = compilation1.GetTypeByMetadataName("I2");
-            var m1 = i1.GetMembers().OfType<PropertySymbol>().Single();
-            var m2 = i2.GetMembers().OfType<PropertySymbol>().Single();
+            var m1 = i1.GetMembersAsImmutable().OfType<PropertySymbol>().Single();
+            var m2 = i2.GetMembersAsImmutable().OfType<PropertySymbol>().Single();
             Assert.Same(m2, m1.ExplicitInterfaceImplementations.Single());
             Assert.Same(m2.GetMethod, m1.GetMethod.ExplicitInterfaceImplementations.Single());
         }
@@ -67330,7 +67330,7 @@ interface I1
         private static void AssertNoEventImplementation(CSharpCompilation compilation1)
         {
             var i1 = compilation1.GetTypeByMetadataName("I1");
-            var m = i1.GetMembers().OfType<EventSymbol>().Single();
+            var m = i1.GetMembersAsImmutable().OfType<EventSymbol>().Single();
             Assert.Empty(m.ExplicitInterfaceImplementations);
             Assert.Empty(m.AddMethod.ExplicitInterfaceImplementations);
             Assert.Empty(m.RemoveMethod.ExplicitInterfaceImplementations);
@@ -67401,8 +67401,8 @@ interface I2
 
             var i1 = compilation1.GetTypeByMetadataName("I1");
             var i2 = compilation1.GetTypeByMetadataName("I2");
-            var m1 = i1.GetMembers().OfType<EventSymbol>().Single();
-            var m2 = i2.GetMembers().OfType<EventSymbol>().Single();
+            var m1 = i1.GetMembersAsImmutable().OfType<EventSymbol>().Single();
+            var m2 = i2.GetMembersAsImmutable().OfType<EventSymbol>().Single();
             Assert.Same(m2, m1.ExplicitInterfaceImplementations.Single());
             Assert.Same(m2.AddMethod, m1.AddMethod.ExplicitInterfaceImplementations.Single());
             Assert.Same(m2.RemoveMethod, m1.RemoveMethod.ExplicitInterfaceImplementations.Single());
@@ -67819,7 +67819,7 @@ C1.get_P3
 
                 var c1 = compilation1.GetTypeByMetadataName("C1");
 
-                foreach (var p in c1.GetMembers().OfType<PropertySymbol>())
+                foreach (var p in c1.GetMembersAsImmutable().OfType<PropertySymbol>())
                 {
                     Assert.True(p.GetMethod.IsMetadataVirtual());
                     Assert.True(p.GetMethod.IsMetadataFinal);
@@ -67883,7 +67883,7 @@ C1.get_P2
 
             var c1 = compilation1.GetTypeByMetadataName("C1");
 
-            foreach (var p in c1.GetMembers().OfType<PropertySymbol>())
+            foreach (var p in c1.GetMembersAsImmutable().OfType<PropertySymbol>())
             {
                 Assert.True(p.GetMethod.IsMetadataVirtual());
                 Assert.True(p.GetMethod.IsMetadataFinal);
@@ -68690,7 +68690,7 @@ class Test1 : I2<Test1>
                 Assert.Equal("I2", i2.Name);
 
                 int count = 0;
-                foreach (var i2m1 in i2.GetMembers().OfType<MethodSymbol>())
+                foreach (var i2m1 in i2.GetMembersAsImmutable().OfType<MethodSymbol>())
                 {
                     count++;
                     ValidateReabstraction(i2m1, isStatic: true);
@@ -68775,7 +68775,7 @@ class Test1 : I2<Test1>
                 Assert.Equal("I2", i2.Name);
 
                 int count = 0;
-                foreach (var i2m1 in i2.GetMembers().OfType<MethodSymbol>())
+                foreach (var i2m1 in i2.GetMembersAsImmutable().OfType<MethodSymbol>())
                 {
                     count++;
                     ValidateReabstraction(i2m1, isStatic: true);
@@ -69138,7 +69138,7 @@ public interface I1
 
             void validate(ModuleSymbol module)
             {
-                foreach (var m01 in module.GlobalNamespace.GetTypeMember("I1").GetMembers().OfType<MethodSymbol>())
+                foreach (var m01 in module.GlobalNamespace.GetTypeMember("I1").GetMembersAsImmutable().OfType<MethodSymbol>())
                 {
                     foreach (var p in m01.Parameters)
                     {

@@ -584,7 +584,7 @@ public class C
             var verifier = CompileAndVerifyWithCSharp(source, options: TestOptions.ReleaseDll.WithMetadataImportOptions(MetadataImportOptions.All), symbolValidator: peModule =>
             {
                 var c = peModule.GlobalNamespace.GetMember<NamedTypeSymbol>("C");
-                var containers = c.GetMembers().OfType<NamedTypeSymbol>().ToArray();
+                var containers = c.GetMembersAsImmutable().OfType<NamedTypeSymbol>().ToArray();
                 Assert.Equal(2, containers.Length);
 
                 foreach (var container in containers)
@@ -594,7 +594,7 @@ public class C
                     Assert.Equal(SpecialType.System_Object, container.BaseType().SpecialType);
                     AssertEx.SetEqual(new[] { "CompilerGeneratedAttribute" }, GetAttributeNames(container.GetAttributes()));
 
-                    var members = container.GetMembers();
+                    var members = container.GetMembersAsImmutable();
                     Assert.Equal(1, members.Length);
                     var field = (FieldSymbol)members[0];
 
@@ -640,12 +640,12 @@ public class C
             var verifier = CompileAndVerifyWithCSharp(source, options: TestOptions.ReleaseDll.WithMetadataImportOptions(MetadataImportOptions.All), symbolValidator: peModule =>
             {
                 var c = peModule.GlobalNamespace.GetMember<NamedTypeSymbol>("C");
-                Assert.Equal(2, c.GetMembers().OfType<NamedTypeSymbol>().Count());
+                Assert.Equal(2, c.GetMembersAsImmutable().OfType<NamedTypeSymbol>().Count());
 
                 var container = c.GetMember<NamedTypeSymbol>("<>o__0");
 
                 // all call-site storage fields of the method are added to a single container:
-                var memberNames = container.GetMembers().Select(m => m.Name);
+                var memberNames = container.GetMembersAsImmutable().Select(m => m.Name);
                 AssertEx.SetEqual(new[] { "<>p__0", "<>p__1", "<>p__2" }, memberNames);
 
                 var displayClass = c.GetMember<NamedTypeSymbol>("<>c__DisplayClass0_0");
@@ -677,7 +677,7 @@ public class C
                 var c = peModule.GlobalNamespace.GetMember<NamedTypeSymbol>("C");
                 var iteratorClass = c.GetMember<NamedTypeSymbol>("<M1>d__0");
 
-                foreach (var member in iteratorClass.GetMembers())
+                foreach (var member in iteratorClass.GetMembersAsImmutable())
                 {
                     switch (member.Kind)
                     {
@@ -710,7 +710,7 @@ public class C
                 }
 
                 var container = c.GetMember<NamedTypeSymbol>("<>o__0");
-                Assert.Equal(1, container.GetMembers().Length);
+                Assert.Equal(1, container.GetMembersAsImmutable().Length);
             });
         }
 
@@ -801,7 +801,7 @@ public class C
             var verifier = CompileAndVerifyWithCSharp(source, options: TestOptions.ReleaseDll.WithMetadataImportOptions(MetadataImportOptions.All), symbolValidator: peModule =>
             {
                 var container = peModule.GlobalNamespace.GetMember<NamedTypeSymbol>("C").GetMember<NamedTypeSymbol>("<>o__0");
-                Assert.Equal(0, container.GetMembers().Single().GetAttributes().Length);
+                Assert.Equal(0, container.GetMembersAsImmutable().Single().GetAttributes().Length);
             });
         }
 
@@ -832,7 +832,7 @@ public class C
                 AssertEx.SetEqual(new[] { "CompilerGeneratedAttribute" }, GetAttributeNames(d.GetAttributes()));
 
                 // members:
-                var members = d.GetMembers();
+                var members = d.GetMembersAsImmutable();
                 Assert.Equal(2, members.Length);
                 foreach (var member in members)
                 {

@@ -371,16 +371,16 @@ namespace Goo
 
             var global = compilation.GlobalNamespace;
 
-            var goo = global.GetMembers("Goo").Single() as NamespaceSymbol;
+            var goo = global.GetMembersAsImmutable("Goo").Single() as NamespaceSymbol;
             Assert.Equal("Goo", goo.Name);
 
-            var script = goo.GetTypeMembers("Script").Single();
+            var script = goo.GetTypeMembersAsImmutable("Script").Single();
             Assert.Equal("Goo.Script", script.ToTestDisplayString());
 
-            var a = script.GetTypeMembers("A").Single();
+            var a = script.GetTypeMembersAsImmutable("A").Single();
             Assert.Equal("Goo.Script.A", a.ToTestDisplayString());
 
-            var b = goo.GetTypeMembers("B").Single();
+            var b = goo.GetTypeMembersAsImmutable("B").Single();
             Assert.Equal("Goo.B", b.ToTestDisplayString());
             Assert.Same(a, b.BaseType());
         }
@@ -401,19 +401,19 @@ G();
                 syntaxTrees: new[] { tree });
 
             var global = compilation.GlobalNamespace;
-            var members = global.GetMembers().Where(m => !m.IsImplicitlyDeclared).AsImmutable();
+            var members = global.GetMembersAsImmutable().Where(m => !m.IsImplicitlyDeclared).AsImmutable();
 
             Assert.Equal(1, members.Length);
             Assert.Equal("Goo", members[0].Name);
             Assert.IsAssignableFrom<NamespaceSymbol>(members[0]);
             var ns = (NamespaceSymbol)members[0];
-            members = ns.GetMembers();
+            members = ns.GetMembersAsImmutable();
 
             Assert.Equal(2, members.Length);
             foreach (var member in members)
             {
                 var cls = (ImplicitNamedTypeSymbol)member;
-                var methods = cls.GetMembers();
+                var methods = cls.GetMembersAsImmutable();
                 if (cls.IsScriptClass)
                 {
                     Assert.False(cls.IsImplicitClass);
@@ -449,28 +449,28 @@ delegate void G();
             var global = compilation.GlobalNamespace;
             ImmutableArray<NamedTypeSymbol> members;
 
-            members = global.GetTypeMembers("Script");
+            members = global.GetTypeMembersAsImmutable("Script");
             Assert.Equal(1, members.Length);
             Assert.Equal(TypeKind.Class, members[0].TypeKind);
             var script = members[0];
 
-            members = script.GetTypeMembers("C");
+            members = script.GetTypeMembersAsImmutable("C");
             Assert.Equal(1, members.Length);
             Assert.Equal(TypeKind.Class, members[0].TypeKind);
 
-            members = script.GetTypeMembers("D");
+            members = script.GetTypeMembersAsImmutable("D");
             Assert.Equal(1, members.Length);
             Assert.Equal(TypeKind.Interface, members[0].TypeKind);
 
-            members = script.GetTypeMembers("E");
+            members = script.GetTypeMembersAsImmutable("E");
             Assert.Equal(1, members.Length);
             Assert.Equal(TypeKind.Struct, members[0].TypeKind);
 
-            members = script.GetTypeMembers("F");
+            members = script.GetTypeMembersAsImmutable("F");
             Assert.Equal(1, members.Length);
             Assert.Equal(TypeKind.Enum, members[0].TypeKind);
 
-            members = script.GetTypeMembers("G");
+            members = script.GetTypeMembersAsImmutable("G");
             Assert.Equal(1, members.Length);
             Assert.Equal(TypeKind.Delegate, members[0].TypeKind);
         }

@@ -242,8 +242,8 @@ class C
                 sourceSymbolValidator: m => sourceModule = m,
                 symbolValidator: m => peModule = m);
 
-            var srcTypes = sourceModule.GlobalNamespace.GetTypeMembers();
-            var peTypes = peModule.GlobalNamespace.GetTypeMembers()
+            var srcTypes = sourceModule.GlobalNamespace.GetTypeMembersAsImmutable();
+            var peTypes = peModule.GlobalNamespace.GetTypeMembersAsImmutable()
                 .WhereAsArray(t => t.Name != "<Module>");
 
             Assert.Equal(srcTypes.Length, peTypes.Length);
@@ -255,11 +255,11 @@ class C
 
                 Assert.Equal(ToTestString(srcType.BaseType()), ToTestString(peType.BaseType()));
 
-                var srcMembers = srcType.GetMembers()
+                var srcMembers = srcType.GetMembersAsImmutable()
                     .Where(m => !m.Name.Contains("k__BackingField"))
                     .Select(ToTestString)
                     .ToList();
-                var peMembers = peType.GetMembers()
+                var peMembers = peType.GetMembersAsImmutable()
                     .Select(ToTestString)
                     .ToList();
 
@@ -916,7 +916,7 @@ public interface I3<T>
 
             void symbolValidator(ModuleSymbol m)
             {
-                foreach (var t in m.GlobalNamespace.GetTypeMembers())
+                foreach (var t in m.GlobalNamespace.GetTypeMembersAsImmutable())
                 {
                     switch (t.Name)
                     {
@@ -1013,7 +1013,7 @@ public interface I3 : I1<(int c, int d)> {}";
 
             void symbolValidator(ModuleSymbol m)
             {
-                foreach (var t in m.GlobalNamespace.GetTypeMembers())
+                foreach (var t in m.GlobalNamespace.GetTypeMembersAsImmutable())
                 {
                     switch (t.Name)
                     {

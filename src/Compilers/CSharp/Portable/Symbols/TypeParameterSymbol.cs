@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using Microsoft.CodeAnalysis.Collections;
 using Microsoft.CodeAnalysis.PooledObjects;
 using Microsoft.CodeAnalysis.Symbols;
 using Roslyn.Utilities;
@@ -140,33 +141,33 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         }
 
         // Type parameters do not have members
-        public sealed override ImmutableArray<Symbol> GetMembers()
+        public sealed override ArrayWrapper<Symbol> GetMembers()
         {
-            return ImmutableArray<Symbol>.Empty;
+            return ArrayWrapper<Symbol>.Empty;
         }
 
         // Type parameters do not have members
-        public sealed override ImmutableArray<Symbol> GetMembers(string name)
+        public sealed override ArrayWrapper<Symbol> GetMembers(string name)
         {
-            return ImmutableArray<Symbol>.Empty;
+            return ArrayWrapper<Symbol>.Empty;
         }
 
         // Type parameters do not have members
-        public sealed override ImmutableArray<NamedTypeSymbol> GetTypeMembers()
+        public sealed override ArrayWrapper<NamedTypeSymbol> GetTypeMembers()
         {
-            return ImmutableArray<NamedTypeSymbol>.Empty;
+            return ArrayWrapper<NamedTypeSymbol>.Empty;
         }
 
         // Type parameters do not have members
-        public sealed override ImmutableArray<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name)
+        public sealed override ArrayWrapper<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name)
         {
-            return ImmutableArray<NamedTypeSymbol>.Empty;
+            return ArrayWrapper<NamedTypeSymbol>.Empty;
         }
 
         // Type parameters do not have members
-        public sealed override ImmutableArray<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name, int arity)
+        public sealed override ArrayWrapper<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name, int arity)
         {
-            return ImmutableArray<NamedTypeSymbol>.Empty;
+            return ArrayWrapper<NamedTypeSymbol>.Empty;
         }
 
         internal override TResult Accept<TArgument, TResult>(CSharpSymbolVisitor<TArgument, TResult> visitor, TArgument argument)

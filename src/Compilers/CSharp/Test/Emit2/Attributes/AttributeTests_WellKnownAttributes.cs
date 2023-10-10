@@ -177,21 +177,21 @@ class C
                 attrSym.VerifyNamedArgumentValue(0, "ThrowOnUnmappableChar", TypedConstantKind.Primitive, true);
 
                 // =============================
-                var mem = (MethodSymbol)igoo.GetMembers("DoSomething").First();
+                var mem = (MethodSymbol)igoo.GetMembersAsImmutable("DoSomething").First();
                 Assert.Equal(1, mem.GetAttributes().Length);
                 attrSym = mem.GetAttributes().First();
                 Assert.Equal("AllowReversePInvokeCallsAttribute", attrSym.AttributeClass.Name);
                 Assert.Equal(0, attrSym.CommonConstructorArguments.Length);
 
-                mem = (MethodSymbol)igoo.GetMembers("Register").First();
+                mem = (MethodSymbol)igoo.GetMembersAsImmutable("Register").First();
                 attrSym = mem.GetAttributes().First();
                 Assert.Equal("ComRegisterFunctionAttribute", attrSym.AttributeClass.Name);
                 Assert.Equal(0, attrSym.CommonConstructorArguments.Length);
 
-                mem = (MethodSymbol)igoo.GetMembers("UnRegister").First();
+                mem = (MethodSymbol)igoo.GetMembersAsImmutable("UnRegister").First();
                 Assert.Equal(1, mem.GetAttributes().Length);
 
-                mem = (MethodSymbol)igoo.GetMembers("LibFunc").First();
+                mem = (MethodSymbol)igoo.GetMembersAsImmutable("LibFunc").First();
                 attrSym = mem.GetAttributes().First();
                 Assert.Equal(1, attrSym.CommonConstructorArguments.Length);
                 // 32
@@ -284,7 +284,7 @@ class C
                 attrSym = type2.GetAttribute(pgidSym);
                 attrSym.VerifyValue(0, TypedConstantKind.Primitive, "ProgId");
 
-                var method = (MethodSymbol)type2.GetMembers("Method").First();
+                var method = (MethodSymbol)type2.GetMembersAsImmutable("Method").First();
                 attrSym = method.GetAttribute(dispSym);
                 attrSym.VerifyValue(0, TypedConstantKind.Primitive, 123);
 
@@ -308,15 +308,15 @@ class C
                     attrSym = type3.GetAttribute(tidSym);
                     attrSym.VerifyValue(1, TypedConstantKind.Primitive, "EGoo, InteropAttribute, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null");
 
-                    var field = (FieldSymbol)type3.GetMembers("One").First();
+                    var field = (FieldSymbol)type3.GetMembersAsImmutable("One").First();
                     Assert.Equal(0, field.GetAttributes().Length);
 
-                    field = (FieldSymbol)type3.GetMembers("Two").First();
+                    field = (FieldSymbol)type3.GetMembersAsImmutable("Two").First();
                     Assert.Equal(1, field.GetAttributes().Length);
                     attrSym = field.GetAttributes().First();
                     attrSym.VerifyValue(0, TypedConstantKind.Enum, (int)TypeLibVarFlags.FDisplayBind);
 
-                    field = (FieldSymbol)type3.GetMembers("Three").First();
+                    field = (FieldSymbol)type3.GetMembersAsImmutable("Three").First();
                     attrSym = field.GetAttributes().First();
                     attrSym.VerifyValue(0, TypedConstantKind.Primitive, "message");
                     attrSym.VerifyValue(1, TypedConstantKind.Primitive, false);
@@ -472,7 +472,7 @@ class C
                 attrSym.VerifyNamedArgumentValue(1, "Pack", TypedConstantKind.Primitive, 8);
                 attrSym.VerifyNamedArgumentValue(2, "CharSet", TypedConstantKind.Enum, (int)CharSet.Unicode);
 
-                var field = (FieldSymbol)type2.GetMembers("field").First();
+                var field = (FieldSymbol)type2.GetMembersAsImmutable("field").First();
                 Assert.Equal(3, field.GetAttributes().Length);
                 attrSym = field.GetAttribute(nosSym);
                 Assert.Equal(0, attrSym.CommonConstructorArguments.Length);
@@ -2401,7 +2401,7 @@ class C
                 attrSym.VerifyNamedArgumentValue(0, "CallingConvention", TypedConstantKind.Enum, (int)CallingConvention.FastCall);
                 attrSym.VerifyNamedArgumentValue(1, "SetLastError", TypedConstantKind.Primitive, true);
 
-                method = (MethodSymbol)type1.GetMembers("MessageBox").First();
+                method = (MethodSymbol)type1.GetMembersAsImmutable("MessageBox").First();
                 attrSym = method.GetAttributes().First();
                 Assert.Equal("DllImportAttribute", attrSym.AttributeClass.Name);
                 attrSym.VerifyValue(0, TypedConstantKind.Primitive, "user32.dll");
@@ -5613,7 +5613,7 @@ class A
             Action<ModuleSymbol> sourceValidator = (ModuleSymbol module) =>
             {
                 NamespaceSymbol securityNS = Get_System_Security_NamespaceSymbol(module);
-                NamedTypeSymbol dynamicSecurityMethodAttrType = securityNS.GetTypeMembers("DynamicSecurityMethodAttribute").Single(type => type.DeclaringSyntaxReferences.Any());
+                NamedTypeSymbol dynamicSecurityMethodAttrType = securityNS.GetTypeMembersAsImmutable("DynamicSecurityMethodAttribute").Single(type => type.DeclaringSyntaxReferences.Any());
                 NamedTypeSymbol typeA = module.GlobalNamespace.GetTypeMember("A");
                 MethodSymbol method = typeA.GetMember<MethodSymbol>("SecurityMethod");
 

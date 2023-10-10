@@ -74,10 +74,10 @@ class B
             var builder = new List<Symbol>();
             var type = compilation1.GetMember<NamedTypeSymbol>("A");
             builder.Add(type);
-            builder.AddRange(type.GetMembers());
+            builder.AddRange(type.GetMembersAsImmutable());
             type = compilation1.GetMember<NamedTypeSymbol>("B");
             builder.Add(type);
-            builder.AddRange(type.GetMembers());
+            builder.AddRange(type.GetMembersAsImmutable());
             var members = builder.ToImmutableArray();
             Assert.True(members.Length > 10);
 
@@ -135,7 +135,7 @@ class B
             var compilation1 = compilation0.WithSource(source);
 
             var matcher = CreateMatcher(compilation1, compilation0);
-            var members = compilation1.GetMember<NamedTypeSymbol>("A.B").GetMembers("M");
+            var members = compilation1.GetMember<NamedTypeSymbol>("A.B").GetMembersAsImmutable("M");
             Assert.Equal(2, members.Length);
             foreach (var member in members)
             {
@@ -1706,8 +1706,8 @@ class A
             var compilation1 = compilation0.WithSource(source);
 
             var matcher = CreateMatcher(compilation1, compilation0);
-            var members1 = compilation1.GetMember<NamedTypeSymbol>("A").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind is (MethodKind.Conversion or MethodKind.UserDefinedOperator)).ToArray();
-            var members0 = compilation0.GetMember<NamedTypeSymbol>("A").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind is (MethodKind.Conversion or MethodKind.UserDefinedOperator)).ToArray();
+            var members1 = compilation1.GetMember<NamedTypeSymbol>("A").GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind is (MethodKind.Conversion or MethodKind.UserDefinedOperator)).ToArray();
+            var members0 = compilation0.GetMember<NamedTypeSymbol>("A").GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind is (MethodKind.Conversion or MethodKind.UserDefinedOperator)).ToArray();
             Assert.Equal(6, members1.Length);
             Assert.Equal(members1.Length, members0.Length);
 
@@ -1748,8 +1748,8 @@ class A
             var compilation1 = compilation0.WithSource(source1);
 
             var matcher = CreateMatcher(compilation1, compilation0);
-            var members1 = compilation1.GetMember<NamedTypeSymbol>("A").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind is (MethodKind.Conversion or MethodKind.UserDefinedOperator)).ToArray();
-            var members0 = compilation0.GetMember<NamedTypeSymbol>("A").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind is (MethodKind.Conversion or MethodKind.UserDefinedOperator)).ToArray();
+            var members1 = compilation1.GetMember<NamedTypeSymbol>("A").GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind is (MethodKind.Conversion or MethodKind.UserDefinedOperator)).ToArray();
+            var members0 = compilation0.GetMember<NamedTypeSymbol>("A").GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind is (MethodKind.Conversion or MethodKind.UserDefinedOperator)).ToArray();
             Assert.Equal(6, members1.Length);
             Assert.Equal(3, members0.Length);
 
@@ -1800,8 +1800,8 @@ class A
             var compilation1 = compilation0.WithSource(source1);
 
             var matcher = CreateMatcher(compilation1, compilation0);
-            var members1 = compilation1.GetMember<NamedTypeSymbol>("A").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind is (MethodKind.Conversion or MethodKind.UserDefinedOperator)).ToArray();
-            var members0 = compilation0.GetMember<NamedTypeSymbol>("A").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind is (MethodKind.Conversion or MethodKind.UserDefinedOperator)).ToArray();
+            var members1 = compilation1.GetMember<NamedTypeSymbol>("A").GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind is (MethodKind.Conversion or MethodKind.UserDefinedOperator)).ToArray();
+            var members0 = compilation0.GetMember<NamedTypeSymbol>("A").GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind is (MethodKind.Conversion or MethodKind.UserDefinedOperator)).ToArray();
             Assert.Equal(3, members1.Length);
             Assert.Equal(6, members0.Length);
 
@@ -1847,7 +1847,7 @@ class A
             var compilation1 = compilation0.WithSource(source1);
 
             var matcher = CreateMatcher(compilation1, compilation0);
-            var members1 = compilation1.GetMember<NamedTypeSymbol>("A").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind is (MethodKind.Conversion or MethodKind.UserDefinedOperator)).ToArray();
+            var members1 = compilation1.GetMember<NamedTypeSymbol>("A").GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind is (MethodKind.Conversion or MethodKind.UserDefinedOperator)).ToArray();
             Assert.Equal(6, members1.Length);
 
             foreach (var member in members1)
@@ -1892,7 +1892,7 @@ class A
             var compilation1 = compilation0.WithSource(source1);
 
             var matcher = CreateMatcher(compilation1, compilation0);
-            var members1 = compilation1.GetMember<NamedTypeSymbol>("A").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind is (MethodKind.Conversion or MethodKind.UserDefinedOperator)).ToArray();
+            var members1 = compilation1.GetMember<NamedTypeSymbol>("A").GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind is (MethodKind.Conversion or MethodKind.UserDefinedOperator)).ToArray();
             Assert.Equal(6, members1.Length);
 
             foreach (var member in members1)

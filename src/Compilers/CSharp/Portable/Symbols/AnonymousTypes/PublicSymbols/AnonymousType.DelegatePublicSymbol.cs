@@ -5,6 +5,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using Microsoft.CodeAnalysis.Collections;
 using Microsoft.CodeAnalysis.PooledObjects;
 using Roslyn.Utilities;
 
@@ -38,15 +39,23 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
             internal override NamedTypeSymbol BaseTypeNoUseSiteDiagnostics => Manager.System_MulticastDelegate;
 
-            public override IEnumerable<string> MemberNames => GetMembers().SelectAsArray(member => member.Name);
+            public override IEnumerable<string> MemberNames
+            {
+                get
+                {
+                    using var members = GetMembers();
 
-            public override ImmutableArray<Symbol> GetMembers()
+                    return members.SelectAsArray(member => member.Name);
+                }
+            }
+
+            public override ArrayWrapper<Symbol> GetMembers()
             {
                 if (_lazyMembers.IsDefault)
                 {
                     ImmutableInterlocked.InterlockedInitialize(ref _lazyMembers, CreateMembers());
                 }
-                return _lazyMembers;
+                return new ArrayWrapper<Symbol>(_lazyMembers);
             }
 
             private ImmutableArray<Symbol> CreateMembers()
@@ -68,7 +77,18 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 return ImmutableArray.Create<Symbol>(constructor, invokeMethod);
             }
 
-            public override ImmutableArray<Symbol> GetMembers(string name) => GetMembers().WhereAsArray((member, name) => member.Name == name, name);
+            public override ArrayWrapper<Symbol> GetMembers(string name)
+            {
+                var builder = ArrayBuilder<Symbol>.GetInstance();
+                using var members = GetMembers();
+                foreach (var member in members)
+                {
+                    if (member.Name == name)
+                        builder.Add(member);
+                }
+
+                return new ArrayWrapper<Symbol>(builder);
+            }
 
             public override bool IsImplicitlyDeclared => true;
 

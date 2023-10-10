@@ -1592,7 +1592,7 @@ class C
                     "System.Threading.Tasks.ValueTask C.<M>d__0.System.IAsyncDisposable.DisposeAsync()",
                     "System.Int32 C.<M>d__0.System.Collections.Generic.IAsyncEnumerator<System.Int32>.Current { get; }",
                     "System.Int32 C.<M>d__0.<>1__state" },
-                    type.GetMembersUnordered().Select(m => m.ToTestDisplayString()));
+                    type.GetMembersUnorderedAsImmutable().Select(m => m.ToTestDisplayString()));
 
                 AssertEx.SetEqual(new[] {
                     "System.Runtime.CompilerServices.IAsyncStateMachine",
@@ -2134,7 +2134,7 @@ class C
                     "System.Threading.Tasks.ValueTask C.<M>d__0.System.IAsyncDisposable.DisposeAsync()",
                     "System.Int32 C.<M>d__0.System.Collections.Generic.IAsyncEnumerator<System.Int32>.Current { get; }",
                     "System.Int32 C.<M>d__0.<>1__state" },
-                    type.GetMembersUnordered().Select(m => m.ToTestDisplayString()));
+                    type.GetMembersUnorderedAsImmutable().Select(m => m.ToTestDisplayString()));
 
                 AssertEx.SetEqual(new[] {
                     "System.Runtime.CompilerServices.IAsyncStateMachine",

@@ -71,8 +71,8 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
             Assert.Equal("Test", sym.ContainingAssembly.Name);
             Assert.Equal("Test", sym.ContainingSymbol.Name);
 
-            var ns = comp.GlobalNamespace.GetMembers("NS").Single() as NamespaceSymbol;
-            var ns1 = (ns.GetMembers("NS1").Single() as NamespaceSymbol).GetMembers("NS2").Single() as NamespaceSymbol;
+            var ns = comp.GlobalNamespace.GetMembersAsImmutable("NS").Single() as NamespaceSymbol;
+            var ns1 = (ns.GetMembersAsImmutable("NS1").Single() as NamespaceSymbol).GetMembersAsImmutable("NS2").Single() as NamespaceSymbol;
             // NamespaceExtent 
             var ext = ns1.Extent;
             Assert.Equal(NamespaceKind.Module, ext.Kind);
@@ -123,12 +123,12 @@ namespace N1 {
                             references: new MetadataReference[] { compRef });
 
             var global = comp.GlobalNamespace;
-            var ns = global.GetMembers("N1").Single() as NamespaceSymbol;
-            Assert.Equal(1, ns.GetTypeMembers().Length); // S
-            Assert.Equal(3, ns.GetMembers().Length); // N11, N12, S
+            var ns = global.GetMembersAsImmutable("N1").Single() as NamespaceSymbol;
+            Assert.Equal(1, ns.GetTypeMembersAsImmutable().Length); // S
+            Assert.Equal(3, ns.GetMembersAsImmutable().Length); // N11, N12, S
 
-            var ns1 = (ns.GetMembers("N11").Single() as NamespaceSymbol).GetMembers("N111").Single() as NamespaceSymbol;
-            Assert.Equal(2, ns1.GetTypeMembers().Length); // A & B
+            var ns1 = (ns.GetMembersAsImmutable("N11").Single() as NamespaceSymbol).GetMembersAsImmutable("N111").Single() as NamespaceSymbol;
+            Assert.Equal(2, ns1.GetTypeMembersAsImmutable().Length); // A & B
         }
 
         [Fact]
@@ -166,17 +166,17 @@ namespace NS.NS1 {
                             references: new MetadataReference[] { compRef });
 
             var global = comp.GlobalNamespace;
-            var ns = global.GetMembers("NS").Single() as NamespaceSymbol;
-            Assert.Equal(1, ns.GetTypeMembers().Length); // IGoo
-            Assert.Equal(3, ns.GetMembers().Length); // NS1, NS2, IGoo
+            var ns = global.GetMembersAsImmutable("NS").Single() as NamespaceSymbol;
+            Assert.Equal(1, ns.GetTypeMembersAsImmutable().Length); // IGoo
+            Assert.Equal(3, ns.GetMembersAsImmutable().Length); // NS1, NS2, IGoo
 
-            var ns1 = ns.GetMembers("NS1").Single() as NamespaceSymbol;
-            var type1 = ns1.GetTypeMembers("A").SingleOrDefault() as NamedTypeSymbol;
+            var ns1 = ns.GetMembersAsImmutable("NS1").Single() as NamespaceSymbol;
+            var type1 = ns1.GetTypeMembersAsImmutable("A").SingleOrDefault() as NamedTypeSymbol;
             Assert.Equal(1, type1.Interfaces().Length);
             Assert.Equal("IGoo", type1.Interfaces()[0].Name);
 
-            var ns2 = ns.GetMembers("NS2").Single() as NamespaceSymbol;
-            var type2 = ns2.GetTypeMembers("C").SingleOrDefault() as NamedTypeSymbol;
+            var ns2 = ns.GetMembersAsImmutable("NS2").Single() as NamespaceSymbol;
+            var type2 = ns2.GetTypeMembersAsImmutable("C").SingleOrDefault() as NamedTypeSymbol;
             Assert.NotNull(type2.BaseType());
             Assert.Equal("NS.NS1.B", type2.BaseType().ToTestDisplayString());
         }
@@ -211,15 +211,15 @@ namespace NS.NS1 {
             //                        references: new MetadataReference[] { compRef1, compRef2 });
 
             var global = comp.GlobalNamespace; // throw
-            var ns = global.GetMembers("N1").Single() as NamespaceSymbol;
-            Assert.Equal(3, ns.GetTypeMembers().Length); // A, IGoo & SGoo
+            var ns = global.GetMembersAsImmutable("N1").Single() as NamespaceSymbol;
+            Assert.Equal(3, ns.GetTypeMembersAsImmutable().Length); // A, IGoo & SGoo
             Assert.Equal(NamespaceKind.Compilation, ns.Extent.Kind);
 
             var constituents = ns.ConstituentNamespaces;
             Assert.Equal(3, constituents.Length);
-            Assert.True(constituents.Contains(comp.SourceAssembly.GlobalNamespace.GetMembers("N1").Single() as NamespaceSymbol));
-            Assert.True(constituents.Contains(comp.GetReferencedAssemblySymbol(compRef1).GlobalNamespace.GetMembers("N1").Single() as NamespaceSymbol));
-            Assert.True(constituents.Contains(comp.GetReferencedAssemblySymbol(compRef2).GlobalNamespace.GetMembers("N1").Single() as NamespaceSymbol));
+            Assert.True(constituents.Contains(comp.SourceAssembly.GlobalNamespace.GetMembersAsImmutable("N1").Single() as NamespaceSymbol));
+            Assert.True(constituents.Contains(comp.GetReferencedAssemblySymbol(compRef1).GlobalNamespace.GetMembersAsImmutable("N1").Single() as NamespaceSymbol));
+            Assert.True(constituents.Contains(comp.GetReferencedAssemblySymbol(compRef2).GlobalNamespace.GetMembersAsImmutable("N1").Single() as NamespaceSymbol));
 
             foreach (var constituentNs in constituents)
             {
@@ -259,15 +259,15 @@ namespace NS.NS1 {
                                         references: new MetadataReference[] { compRef1, compRef2 });
 
             var global = comp.GlobalNamespace; // throw
-            var ns = global.GetMembers("N1").Single() as NamespaceSymbol;
-            Assert.Equal(3, ns.GetTypeMembers().Length); // A, IGoo & SGoo
+            var ns = global.GetMembersAsImmutable("N1").Single() as NamespaceSymbol;
+            Assert.Equal(3, ns.GetTypeMembersAsImmutable().Length); // A, IGoo & SGoo
             Assert.Equal(NamespaceKind.Compilation, ns.Extent.Kind);
 
             var constituents = ns.ConstituentNamespaces;
             Assert.Equal(3, constituents.Length);
-            Assert.True(constituents.Contains(comp.SourceAssembly.GlobalNamespace.GetMembers("N1").Single() as NamespaceSymbol));
-            Assert.True(constituents.Contains(comp.GetReferencedAssemblySymbol(compRef1).GlobalNamespace.GetMembers("N1").Single() as NamespaceSymbol));
-            Assert.True(constituents.Contains(comp.GetReferencedAssemblySymbol(compRef2).GlobalNamespace.GetMembers("N1").Single() as NamespaceSymbol));
+            Assert.True(constituents.Contains(comp.SourceAssembly.GlobalNamespace.GetMembersAsImmutable("N1").Single() as NamespaceSymbol));
+            Assert.True(constituents.Contains(comp.GetReferencedAssemblySymbol(compRef1).GlobalNamespace.GetMembersAsImmutable("N1").Single() as NamespaceSymbol));
+            Assert.True(constituents.Contains(comp.GetReferencedAssemblySymbol(compRef2).GlobalNamespace.GetMembersAsImmutable("N1").Single() as NamespaceSymbol));
         }
 
         /// Container with nested types and non-type members with the same name
@@ -300,9 +300,9 @@ namespace NS.NS1 {
                 syntaxTrees: new SyntaxTree[] { SyntaxFactory.ParseSyntaxTree(text1) },
                 references: new MetadataReference[] { });
             var global = comp.GlobalNamespace; // throw
-            var ns = global.GetMembers("N1").Single() as NamespaceSymbol;
-            Assert.Equal(1, ns.GetTypeMembers().Length); // A
-            var b = ns.GetTypeMembers("A")[0].GetMembers("b");
+            var ns = global.GetMembersAsImmutable("N1").Single() as NamespaceSymbol;
+            Assert.Equal(1, ns.GetTypeMembersAsImmutable().Length); // A
+            var b = ns.GetTypeMembersAsImmutable("A")[0].GetMembersAsImmutable("b");
             Assert.Equal(5, b.Length);
         }
 
@@ -332,8 +332,8 @@ namespace NS
             var model = compilation.GetSemanticModel(tree);
 
             var globalNS = compilation.SourceModule.GlobalNamespace;
-            var ns1 = globalNS.GetMembers("NS").Single() as NamespaceSymbol;
-            var type1 = ns1.GetTypeMembers("C").First() as NamedTypeSymbol;
+            var ns1 = globalNS.GetMembersAsImmutable("NS").Single() as NamespaceSymbol;
+            var type1 = ns1.GetTypeMembersAsImmutable("C").First() as NamedTypeSymbol;
             var b = type1.BaseType();
         }
 

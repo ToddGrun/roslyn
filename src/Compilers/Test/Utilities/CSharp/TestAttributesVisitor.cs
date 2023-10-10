@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Text;
+using Microsoft.CodeAnalysis.Collections;
 using Microsoft.CodeAnalysis.CSharp.Symbols;
 using Xunit;
 
@@ -34,7 +35,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Test.Utilities
 
         public override void VisitNamespace(NamespaceSymbol @namespace)
         {
-            VisitList(@namespace.GetMembers());
+            using var members = @namespace.GetMembers();
+            VisitList(members);
         }
 
         public override void VisitNamedType(NamedTypeSymbol type)
@@ -78,6 +80,14 @@ namespace Microsoft.CodeAnalysis.CSharp.Test.Utilities
         }
 
         private void VisitList<TSymbol>(ImmutableArray<TSymbol> symbols) where TSymbol : Symbol
+        {
+            foreach (var symbol in symbols)
+            {
+                Visit(symbol);
+            }
+        }
+
+        private void VisitList<TSymbol>(ArrayWrapper<TSymbol> symbols) where TSymbol : Symbol
         {
             foreach (var symbol in symbols)
             {

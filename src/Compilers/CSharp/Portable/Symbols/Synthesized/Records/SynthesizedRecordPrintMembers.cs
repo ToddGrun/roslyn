@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
+using Microsoft.CodeAnalysis.Collections;
 using Microsoft.CodeAnalysis.PooledObjects;
 using Roslyn.Utilities;
 
@@ -118,7 +119,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             var F = new SyntheticBoundNodeFactory(this, ContainingType.GetNonNullSyntaxNode(), compilationState, diagnostics);
             try
             {
-                ImmutableArray<Symbol> printableMembers = ContainingType.GetMembers().WhereAsArray(m => isPrintable(m));
+                using ArrayWrapper<Symbol> members = ContainingType.GetMembers();
+                using ArrayWrapper<Symbol> printableMembers = members.WhereAsArrayWrapper(m => isPrintable(m));
 
                 if (ReturnType.IsErrorType() ||
                     printableMembers.Any(static m => m.GetTypeOrReturnType().Type.IsErrorType()))
@@ -179,7 +181,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
                 Debug.Assert(!printableMembers.IsEmpty);
 
-                for (var i = 0; i < printableMembers.Length; i++)
+                for (var i = 0; i < printableMembers.Count; i++)
                 {
                     // builder.Append(", <name> = "); // if previous members exist
                     // builder.Append("<name> = "); // if it is the first member

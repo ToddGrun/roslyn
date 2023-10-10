@@ -2044,7 +2044,7 @@ public class C
 
             Func<bool, Action<ModuleSymbol>> validator = isFromSource => module =>
             {
-                var methods = module.GlobalNamespace.GetMember<NamedTypeSymbol>("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind == MethodKind.Ordinary).ToArray();
+                var methods = module.GlobalNamespace.GetMember<NamedTypeSymbol>("C").GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind == MethodKind.Ordinary).ToArray();
                 Assert.Equal(8, methods.Length);
 
                 var parameters = methods.Select(m => m.Parameters.Single()).ToArray();
@@ -2126,7 +2126,7 @@ public struct S
 
             Func<bool, Action<ModuleSymbol>> validator = isFromSource => module =>
             {
-                var methods = module.GlobalNamespace.GetMember<NamedTypeSymbol>("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind == MethodKind.Ordinary).ToArray();
+                var methods = module.GlobalNamespace.GetMember<NamedTypeSymbol>("C").GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind == MethodKind.Ordinary).ToArray();
                 Assert.Equal(3, methods.Length);
 
                 var parameters = methods.Select(m => m.Parameters.Single()).ToArray();
@@ -2177,7 +2177,7 @@ public class C
 
             Func<bool, Action<ModuleSymbol>> validator = isFromSource => module =>
             {
-                var methods = module.GlobalNamespace.GetMember<NamedTypeSymbol>("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind == MethodKind.Ordinary).ToArray();
+                var methods = module.GlobalNamespace.GetMember<NamedTypeSymbol>("C").GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind == MethodKind.Ordinary).ToArray();
                 Assert.Equal(8, methods.Length);
 
                 var parameters = methods.Select(m => m.Parameters.Single()).ToArray();
@@ -2260,7 +2260,7 @@ public class C
 
             Func<bool, Action<ModuleSymbol>> validator = isFromSource => module =>
             {
-                var methods = module.GlobalNamespace.GetMember<NamedTypeSymbol>("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind == MethodKind.Ordinary).ToArray();
+                var methods = module.GlobalNamespace.GetMember<NamedTypeSymbol>("C").GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind == MethodKind.Ordinary).ToArray();
                 Assert.Equal(8, methods.Length);
 
                 var parameters = methods.Select(m => m.Parameters.Single()).ToArray();
@@ -2342,7 +2342,7 @@ public class C
 
             Func<bool, Action<ModuleSymbol>> validator = isFromSource => module =>
             {
-                var methods = module.GlobalNamespace.GetMember<NamedTypeSymbol>("C").GetMembers().OfType<MethodSymbol>().Where(m => m.MethodKind == MethodKind.Ordinary).ToArray();
+                var methods = module.GlobalNamespace.GetMember<NamedTypeSymbol>("C").GetMembersAsImmutable().OfType<MethodSymbol>().Where(m => m.MethodKind == MethodKind.Ordinary).ToArray();
                 Assert.Equal(7, methods.Length);
 
                 var parameters = methods.Select(m => m.Parameters.Single()).ToArray();

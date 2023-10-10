@@ -11,10 +11,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using Microsoft.CodeAnalysis.Collections;
-using Microsoft.CodeAnalysis.CSharp.Symbols;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.PooledObjects;
-using Microsoft.CodeAnalysis.Text;
 
 namespace Microsoft.CodeAnalysis.CSharp.Symbols
 {
@@ -140,7 +137,9 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             // Accumulate all the child namespaces and types.
             foreach (NamespaceSymbol namespaceSymbol in _namespacesToMerge)
             {
-                foreach (Symbol childSymbol in namespaceSymbol.GetMembers(name))
+                using var members = namespaceSymbol.GetMembers(name);
+
+                foreach (Symbol childSymbol in members)
                 {
                     if (childSymbol.Kind == SymbolKind.Namespace)
                     {
@@ -173,14 +172,16 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
             foreach (var ns in _namespacesToMerge)
             {
-                childCount += ns.GetMembersUnordered().Length;
+                using var members = ns.GetMembersUnordered();
+                childCount += members.Count;
             }
 
             var childNames = new SegmentedHashSet<ReadOnlyMemory<char>>(childCount, comparer);
 
             foreach (var ns in _namespacesToMerge)
             {
-                foreach (var child in ns.GetMembersUnordered())
+                using var members = ns.GetMembersUnordered();
+                foreach (var child in members)
                 {
                     childNames.Add(child.Name.AsMemory());
                 }
@@ -213,7 +214,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
         }
 
-        public override ImmutableArray<Symbol> GetMembers()
+        public override ArrayWrapper<Symbol> GetMembers()
         {
             // Return all the elements from every IGrouping in the ILookup.
             if (_allMembers.IsDefault)
@@ -223,28 +224,34 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 _allMembers = builder.ToImmutableAndFree();
             }
 
-            return _allMembers;
+            return new ArrayWrapper<Symbol>(_allMembers);
         }
 
-        public override ImmutableArray<Symbol> GetMembers(ReadOnlyMemory<char> name)
+        public override ArrayWrapper<Symbol> GetMembers(ReadOnlyMemory<char> name)
         {
-            return _cachedLookup[name];
+            return new ArrayWrapper<Symbol>(_cachedLookup[name]);
         }
 
-        internal sealed override ImmutableArray<NamedTypeSymbol> GetTypeMembersUnordered()
+        internal sealed override ArrayWrapper<NamedTypeSymbol> GetTypeMembersUnordered()
         {
-            return ImmutableArray.CreateRange<NamedTypeSymbol>(GetMembersUnordered().OfType<NamedTypeSymbol>());
+            using var unorderedMembers = GetMembersUnordered();
+
+            return unorderedMembers.OfType<Symbol, NamedTypeSymbol>();
         }
 
-        public sealed override ImmutableArray<NamedTypeSymbol> GetTypeMembers()
+        public sealed override ArrayWrapper<NamedTypeSymbol> GetTypeMembers()
         {
-            return ImmutableArray.CreateRange<NamedTypeSymbol>(GetMembers().OfType<NamedTypeSymbol>());
+            using var members = GetMembers();
+
+            return members.OfType<Symbol, NamedTypeSymbol>();
         }
 
-        public override ImmutableArray<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name)
+        public override ArrayWrapper<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name)
         {
             // TODO - This is really inefficient. Creating a new array on each lookup needs to fixed!
-            return ImmutableArray.CreateRange<NamedTypeSymbol>(_cachedLookup[name].OfType<NamedTypeSymbol>());
+            using var members = new ArrayWrapper<Symbol>(_cachedLookup[name]);
+
+            return members.OfType<Symbol, NamedTypeSymbol>();
         }
 
         public override Symbol ContainingSymbol

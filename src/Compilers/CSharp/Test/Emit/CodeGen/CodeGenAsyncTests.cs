@@ -926,7 +926,7 @@ class Driver
             {
                 var stateMachine = module.GlobalNamespace.GetMember<NamedTypeSymbol>("Program.<Main>d__0");
                 // Test that there is no state-machine field based on 'x'.
-                Assert.Empty(stateMachine.GetMembers().Where(m => m.Name.StartsWith("<x>")));
+                Assert.Empty(stateMachine.GetMembersAsImmutable().Where(m => m.Name.StartsWith("<x>")));
             }
         }
 
@@ -985,7 +985,7 @@ class Driver
             {
                 var stateMachine = module.GlobalNamespace.GetMember<NamedTypeSymbol>("Program.<Main>d__0");
                 // Test that there is no state-machine field based on 'x'.
-                Assert.Empty(stateMachine.GetMembers().Where(m => m.Name.StartsWith("<x>")));
+                Assert.Empty(stateMachine.GetMembersAsImmutable().Where(m => m.Name.StartsWith("<x>")));
             }
         }
 

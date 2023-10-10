@@ -101,7 +101,7 @@ public class Base
                 options: TestOptions.SigningReleaseDll,
                 assemblyName: "Paul");
             var bb = (NamedTypeSymbol)baseCompilation.GlobalNamespace.GetMember("Base");
-            foreach (var member in bb.GetMembers())
+            foreach (var member in bb.GetMembersAsImmutable())
             {
                 switch (member.Name)
                 {

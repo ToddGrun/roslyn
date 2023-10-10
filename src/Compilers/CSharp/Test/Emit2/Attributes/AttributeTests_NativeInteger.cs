@@ -1489,7 +1489,7 @@ class B : A<System.UIntPtr, nint>
             CompileAndVerify(comp, symbolValidator: module =>
             {
                 var type = module.ContainingAssembly.GetTypeByMetadataName("Program");
-                var member = type.GetMembers("F").Single();
+                var member = type.GetMembersAsImmutable("F").Single();
                 var attributes = member.GetAttributes();
                 AssertNativeIntegerAttribute(attributes);
                 var attribute = GetNativeIntegerAttribute(attributes);

@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using Microsoft.CodeAnalysis.Collections;
 using Microsoft.CodeAnalysis.CSharp.Emit;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.CodeAnalysis.PooledObjects;
@@ -105,14 +106,15 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
             internal override bool HasDeclaredRequiredMembers => false;
 
-            public override ImmutableArray<Symbol> GetMembers()
+            public override ArrayWrapper<Symbol> GetMembers()
             {
-                return _members;
+                return new ArrayWrapper<Symbol>(_members);
             }
 
             internal override IEnumerable<FieldSymbol> GetFieldsToEmit()
             {
-                foreach (var m in this.GetMembers())
+                using var members = this.GetMembers();
+                foreach (var m in members)
                 {
                     switch (m.Kind)
                     {
@@ -123,16 +125,17 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 }
             }
 
-            public override ImmutableArray<Symbol> GetMembers(string name)
+            public override ArrayWrapper<Symbol> GetMembers(string name)
             {
+                var builder = ArrayBuilder<Symbol>.GetInstance();
+
                 var symbols = _nameToSymbols[name];
-                var builder = ArrayBuilder<Symbol>.GetInstance(symbols.Count);
                 foreach (var symbol in symbols)
                 {
                     builder.Add(symbol);
                 }
 
-                return builder.ToImmutableAndFree();
+                return new ArrayWrapper<Symbol>(builder);
             }
 
             internal override ImmutableArray<NamedTypeSymbol> InterfacesNoUseSiteDiagnostics(ConsList<TypeSymbol> basesBeingResolved)
@@ -140,9 +143,9 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 return ImmutableArray<NamedTypeSymbol>.Empty;
             }
 
-            internal override ImmutableArray<NamedTypeSymbol> GetInterfacesToEmit()
+            internal override ArrayWrapper<NamedTypeSymbol> GetInterfacesToEmit()
             {
-                return ImmutableArray<NamedTypeSymbol>.Empty;
+                return ArrayWrapper<NamedTypeSymbol>.Empty;
             }
 
             internal override NamedTypeSymbol BaseTypeNoUseSiteDiagnostics => this.Manager.System_Object;

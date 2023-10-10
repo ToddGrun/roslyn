@@ -4,12 +4,6 @@
 
 #nullable disable
 
-using Microsoft.CodeAnalysis.Collections;
-using Microsoft.CodeAnalysis.CSharp.Symbols;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.PooledObjects;
-using Microsoft.CodeAnalysis.Text;
-using Roslyn.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -18,6 +12,12 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using Microsoft.CodeAnalysis.Collections;
+using Microsoft.CodeAnalysis.CSharp.Symbols;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.PooledObjects;
+using Microsoft.CodeAnalysis.Text;
+using Roslyn.Utilities;
 
 namespace Microsoft.CodeAnalysis.CSharp
 {
@@ -3191,7 +3191,8 @@ namespace Microsoft.CodeAnalysis.CSharp
 
         internal GlobalExpressionVariable LookupDeclaredField(SyntaxNode node, string identifier)
         {
-            foreach (Symbol member in ContainingType?.GetMembers(identifier) ?? ImmutableArray<Symbol>.Empty)
+            ArrayWrapper<Symbol> members = ContainingType?.GetMembers(identifier) ?? ArrayWrapper<Symbol>.Empty;
+            foreach (Symbol member in members)
             {
                 GlobalExpressionVariable field;
                 if (member.Kind == SymbolKind.Field &&

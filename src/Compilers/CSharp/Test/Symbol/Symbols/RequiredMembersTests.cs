@@ -67,7 +67,7 @@ public class RequiredMembersTests : CSharpTestBase
         Assert.True(type.HasAnyRequiredMembers);
 
         var peModule = module as PEModuleSymbol;
-        foreach (var ctor in type.GetMembers().Where(m => m is MethodSymbol { MethodKind: MethodKind.Constructor }))
+        foreach (var ctor in type.GetMembersAsImmutable().Where(m => m is MethodSymbol { MethodKind: MethodKind.Constructor }))
         {
             var ctorAttributes = ctor.GetAttributes();
 
@@ -5833,7 +5833,7 @@ public class Derived : Base
         void validate(ModuleSymbol module)
         {
             var c = module.GlobalNamespace.GetTypeMember("C");
-            var copyCtor = c.GetMembers(".ctor").Cast<MethodSymbol>().Single(m => m.ParameterCount == 1);
+            var copyCtor = c.GetMembersAsImmutable(".ctor").Cast<MethodSymbol>().Single(m => m.ParameterCount == 1);
 
             if (copyCtor is SynthesizedRecordCopyCtor)
             {
@@ -5895,7 +5895,7 @@ public class Derived : Base
         void validate(ModuleSymbol module)
         {
             var c = module.GlobalNamespace.GetTypeMember("Derived");
-            var copyCtor = c.GetMembers(".ctor").Cast<MethodSymbol>().Single(m => m.ParameterCount == 1);
+            var copyCtor = c.GetMembersAsImmutable(".ctor").Cast<MethodSymbol>().Single(m => m.ParameterCount == 1);
 
             if (copyCtor is SynthesizedRecordCopyCtor)
             {
@@ -6179,7 +6179,7 @@ public class Derived : Base
         static void validate(ModuleSymbol m)
         {
             var c = m.GlobalNamespace.GetTypeMember("C");
-            var ctors = c.GetMembers(".ctor").Cast<MethodSymbol>().ToArray();
+            var ctors = c.GetMembersAsImmutable(".ctor").Cast<MethodSymbol>().ToArray();
 
             Assert.Equal(2, ctors.Length);
 
@@ -6225,7 +6225,7 @@ public class Derived : Base
         static void validate(ModuleSymbol m)
         {
             var c = m.GlobalNamespace.GetTypeMember("Derived");
-            var ctors = c.GetMembers(".ctor").Cast<MethodSymbol>().ToArray();
+            var ctors = c.GetMembersAsImmutable(".ctor").Cast<MethodSymbol>().ToArray();
 
             Assert.Equal(2, ctors.Length);
 

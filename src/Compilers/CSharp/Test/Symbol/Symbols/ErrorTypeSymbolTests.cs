@@ -65,7 +65,7 @@ class C7 : A<string>.B<object> { }";
         private void CompareConstructedErrorTypes(CSharpCompilation compilation, bool missingTypes, bool fromSource)
         {
             // Get all root types.
-            var allTypes = compilation.GlobalNamespace.GetTypeMembers();
+            var allTypes = compilation.GlobalNamespace.GetTypeMembersAsImmutable();
 
             // Get base class for each type named "C?".
             var types = new[] { "C1", "C2", "C3", "C4", "C5", "C6", "C7" }.Select(name => allTypes.First(t => t.Name == name).BaseType()).ToArray();

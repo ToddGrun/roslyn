@@ -50,10 +50,10 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
 }
 ");
 
-            var acmeNamespace = (NamespaceSymbol)compilation.GlobalNamespace.GetMembers("Acme").Single();
-            var widgetClass = acmeNamespace.GetTypeMembers("Widget").Single();
+            var acmeNamespace = (NamespaceSymbol)compilation.GlobalNamespace.GetMembersAsImmutable("Acme").Single();
+            var widgetClass = acmeNamespace.GetTypeMembersAsImmutable("Widget").Single();
 
-            var symbol = widgetClass.GetMembers(symbolName).Single();
+            var symbol = widgetClass.GetMembersAsImmutable(symbolName).Single();
             Assert.Equal(documentationId, symbol.GetDocumentationCommentId());
             Assert.Equal(
 $@"<member name=""{documentationId}"">
@@ -112,10 +112,10 @@ class Widget
 }
 ");
 
-            var acmeNamespace = (NamespaceSymbol)compilation.GlobalNamespace.GetMembers("Acme").Single();
-            var widgetClass = acmeNamespace.GetTypeMembers("Widget").Single();
+            var acmeNamespace = (NamespaceSymbol)compilation.GlobalNamespace.GetMembersAsImmutable("Acme").Single();
+            var widgetClass = acmeNamespace.GetTypeMembersAsImmutable("Widget").Single();
 
-            var symbol = widgetClass.GetMembers(symbolName).Single();
+            var symbol = widgetClass.GetMembersAsImmutable(symbolName).Single();
             Assert.Equal(documentationId, symbol.GetDocumentationCommentId());
             Assert.Equal(
 $@"<member name=""{documentationId}"">

@@ -31,7 +31,7 @@ class C
     }
 }";
             var compilation = CreateCompilationWithMscorlib45(source).VerifyDiagnostics();
-            var method = (SourceMemberMethodSymbol)compilation.GlobalNamespace.GetTypeMembers("C").Single().GetMembers("M").Single();
+            var method = (SourceMemberMethodSymbol)compilation.GlobalNamespace.GetTypeMembersAsImmutable("C").Single().GetMembersAsImmutable("M").Single();
             Assert.True(method.IsAsync);
         }
 

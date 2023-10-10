@@ -3043,8 +3043,8 @@ namespace NS
             var model = compilation.GetSemanticModel(tree);
 
             var globalNS = compilation.SourceModule.GlobalNamespace;
-            var ns1 = globalNS.GetMembers("NS").Single() as NamespaceSymbol;
-            var mems = ns1.GetMembers("Test");
+            var ns1 = globalNS.GetMembersAsImmutable("NS").Single() as NamespaceSymbol;
+            var mems = ns1.GetMembersAsImmutable("Test");
             Assert.Equal(1, mems.Length);
 
             var nsSyntax = (root.Members[0] as NamespaceDeclarationSyntax);

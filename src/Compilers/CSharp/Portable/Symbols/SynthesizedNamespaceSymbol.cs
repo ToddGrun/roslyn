@@ -4,11 +4,12 @@
 
 #nullable disable
 
-using System.Collections.Immutable;
-using Roslyn.Utilities;
-using System.Diagnostics;
 using System;
+using System.Collections.Immutable;
+using System.Diagnostics;
+using Microsoft.CodeAnalysis.Collections;
 using Microsoft.CodeAnalysis.Emit;
+using Roslyn.Utilities;
 
 namespace Microsoft.CodeAnalysis.CSharp.Symbols
 {
@@ -64,19 +65,19 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         public override ImmutableArray<SyntaxReference> DeclaringSyntaxReferences
             => ImmutableArray<SyntaxReference>.Empty;
 
-        public override ImmutableArray<NamedTypeSymbol> GetTypeMembers()
-            => ImmutableArray<NamedTypeSymbol>.Empty;
+        public override ArrayWrapper<NamedTypeSymbol> GetTypeMembers()
+            => ArrayWrapper<NamedTypeSymbol>.Empty;
 
-        public override ImmutableArray<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name)
-            => ImmutableArray<NamedTypeSymbol>.Empty;
+        public override ArrayWrapper<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name)
+            => ArrayWrapper<NamedTypeSymbol>.Empty;
 
-        public override ImmutableArray<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name, int arity)
-            => ImmutableArray<NamedTypeSymbol>.Empty;
+        public override ArrayWrapper<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name, int arity)
+            => ArrayWrapper<NamedTypeSymbol>.Empty;
 
-        public override ImmutableArray<Symbol> GetMembers()
-            => ImmutableArray<Symbol>.Empty;
+        public override ArrayWrapper<Symbol> GetMembers()
+            => ArrayWrapper<Symbol>.Empty;
 
-        public override ImmutableArray<Symbol> GetMembers(ReadOnlyMemory<char> name)
-            => ImmutableArray<Symbol>.Empty;
+        public override ArrayWrapper<Symbol> GetMembers(ReadOnlyMemory<char> name)
+            => ArrayWrapper<Symbol>.Empty;
     }
 }

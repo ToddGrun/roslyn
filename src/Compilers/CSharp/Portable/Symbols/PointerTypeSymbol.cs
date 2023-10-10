@@ -5,9 +5,10 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using Roslyn.Utilities;
 using System.Diagnostics;
+using Microsoft.CodeAnalysis.Collections;
 using Microsoft.CodeAnalysis.PooledObjects;
+using Roslyn.Utilities;
 
 namespace Microsoft.CodeAnalysis.CSharp.Symbols
 {
@@ -129,29 +130,29 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             get { return null; }
         }
 
-        public override ImmutableArray<Symbol> GetMembers()
+        public override ArrayWrapper<Symbol> GetMembers()
         {
-            return ImmutableArray<Symbol>.Empty;
+            return ArrayWrapper<Symbol>.Empty;
         }
 
-        public override ImmutableArray<Symbol> GetMembers(string name)
+        public override ArrayWrapper<Symbol> GetMembers(string name)
         {
-            return ImmutableArray<Symbol>.Empty;
+            return ArrayWrapper<Symbol>.Empty;
         }
 
-        public override ImmutableArray<NamedTypeSymbol> GetTypeMembers()
+        public override ArrayWrapper<NamedTypeSymbol> GetTypeMembers()
         {
-            return ImmutableArray<NamedTypeSymbol>.Empty;
+            return ArrayWrapper<NamedTypeSymbol>.Empty;
         }
 
-        public override ImmutableArray<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name)
+        public override ArrayWrapper<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name)
         {
-            return ImmutableArray<NamedTypeSymbol>.Empty;
+            return ArrayWrapper<NamedTypeSymbol>.Empty;
         }
 
-        public override ImmutableArray<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name, int arity)
+        public override ArrayWrapper<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name, int arity)
         {
-            return ImmutableArray<NamedTypeSymbol>.Empty;
+            return ArrayWrapper<NamedTypeSymbol>.Empty;
         }
 
         public override SymbolKind Kind

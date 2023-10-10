@@ -48,9 +48,9 @@ interface Interface
             var comp = CreateCompilation(text);
             var global = comp.GlobalNamespace;
 
-            var @base = (NamedTypeSymbol)global.GetMembers("Base").Single();
+            var @base = (NamedTypeSymbol)global.GetMembersAsImmutable("Base").Single();
 
-            var baseMethod = @base.GetMembers("Method").Single();
+            var baseMethod = @base.GetMembersAsImmutable("Method").Single();
             Assert.Null(@base.FindImplementationForInterfaceMember(baseMethod)); //containing type is not an interface
 
             var baseProperty = @base.GetMember<PropertySymbol>("Property");
@@ -62,29 +62,29 @@ interface Interface
             var baseEvent = @base.GetMember<EventSymbol>("Event");
             Assert.Null(@base.FindImplementationForInterfaceMember(baseEvent)); //containing type is not an interface
 
-            var baseField = @base.GetMembers("Field").Single();
+            var baseField = @base.GetMembersAsImmutable("Field").Single();
             Assert.Null(@base.FindImplementationForInterfaceMember(baseField)); //not a method/property/event
 
-            var baseNestedInterface = @base.GetMembers("Interface").Single();
+            var baseNestedInterface = @base.GetMembersAsImmutable("Interface").Single();
             Assert.Null(@base.FindImplementationForInterfaceMember(baseNestedInterface)); //not a method/property/event
 
-            var baseNestedClass = @base.GetMembers("Class").Single();
+            var baseNestedClass = @base.GetMembersAsImmutable("Class").Single();
             Assert.Null(@base.FindImplementationForInterfaceMember(baseNestedClass)); //not a method/property/event
 
-            var baseNestedStruct = @base.GetMembers("Struct").Single();
+            var baseNestedStruct = @base.GetMembersAsImmutable("Struct").Single();
             Assert.Null(@base.FindImplementationForInterfaceMember(baseNestedStruct)); //not a method/property/event
 
-            var baseNestedEnum = @base.GetMembers("Enum").Single();
+            var baseNestedEnum = @base.GetMembersAsImmutable("Enum").Single();
             Assert.Null(@base.FindImplementationForInterfaceMember(baseNestedEnum)); //not a method/property/event
 
-            var baseNestedDelegate = @base.GetMembers("Delegate").Single();
+            var baseNestedDelegate = @base.GetMembersAsImmutable("Delegate").Single();
             Assert.Null(@base.FindImplementationForInterfaceMember(baseNestedDelegate)); //not a method/property/event
 
             Assert.Throws<ArgumentNullException>(() => @base.FindImplementationForInterfaceMember(null)); //not a method/property/event
 
-            var @interface = (NamedTypeSymbol)global.GetMembers("Interface").Single();
+            var @interface = (NamedTypeSymbol)global.GetMembersAsImmutable("Interface").Single();
 
-            var interfaceMethod = @base.GetMembers("Method").Single();
+            var interfaceMethod = @base.GetMembersAsImmutable("Method").Single();
             Assert.Null(@interface.FindImplementationForInterfaceMember(interfaceMethod)); //type is not a class or struct
 
             Assert.Null(@interface.FindImplementationForInterfaceMember(@interface)); //symbol containing type is null
@@ -119,21 +119,21 @@ class Class : Interface
             var comp = CreateCompilation(text);
             var global = comp.GlobalNamespace;
 
-            var baseInterface = (NamedTypeSymbol)global.GetMembers("BaseInterface").Single();
-            var baseInterfaceMethod = baseInterface.GetMembers("Method").Single();
+            var baseInterface = (NamedTypeSymbol)global.GetMembersAsImmutable("BaseInterface").Single();
+            var baseInterfaceMethod = baseInterface.GetMembersAsImmutable("Method").Single();
 
-            var @interface = (NamedTypeSymbol)global.GetMembers("Interface").Single();
-            var interfaceMethod = @interface.GetMembers("Method").Single();
+            var @interface = (NamedTypeSymbol)global.GetMembersAsImmutable("Interface").Single();
+            var interfaceMethod = @interface.GetMembersAsImmutable("Method").Single();
 
-            var @class = (NamedTypeSymbol)global.GetMembers("Class").Single();
+            var @class = (NamedTypeSymbol)global.GetMembersAsImmutable("Class").Single();
 
-            var classExplicitImplementationBase = (MethodSymbol)@class.GetMembers("BaseInterface.Method").Single();
+            var classExplicitImplementationBase = (MethodSymbol)@class.GetMembersAsImmutable("BaseInterface.Method").Single();
             Assert.Equal(MethodKind.ExplicitInterfaceImplementation, classExplicitImplementationBase.MethodKind);
 
-            var classExplicitImplementation = (MethodSymbol)@class.GetMembers("Interface.Method").Single();
+            var classExplicitImplementation = (MethodSymbol)@class.GetMembersAsImmutable("Interface.Method").Single();
             Assert.Equal(MethodKind.ExplicitInterfaceImplementation, classExplicitImplementation.MethodKind);
 
-            var classImplicitImplementation = (MethodSymbol)@class.GetMembers("Method").Single();
+            var classImplicitImplementation = (MethodSymbol)@class.GetMembersAsImmutable("Method").Single();
             Assert.Equal(MethodKind.Ordinary, classImplicitImplementation.MethodKind);
 
             Assert.NotSame(classImplicitImplementation, classExplicitImplementation);
@@ -175,13 +175,13 @@ class Class : Interface
             var comp = CreateCompilation(text);
             var global = comp.GlobalNamespace;
 
-            var baseInterface = (NamedTypeSymbol)global.GetMembers("BaseInterface").Single();
+            var baseInterface = (NamedTypeSymbol)global.GetMembersAsImmutable("BaseInterface").Single();
             var baseInterfaceIndexer = baseInterface.Indexers.Single();
 
-            var @interface = (NamedTypeSymbol)global.GetMembers("Interface").Single();
+            var @interface = (NamedTypeSymbol)global.GetMembersAsImmutable("Interface").Single();
             var interfaceIndexer = @interface.Indexers.Single();
 
-            var @class = (NamedTypeSymbol)global.GetMembers("Class").Single();
+            var @class = (NamedTypeSymbol)global.GetMembersAsImmutable("Class").Single();
 
             var classExplicitImplementationBase = @class.GetProperty("BaseInterface.this[]");
             var classExplicitImplementation = @class.GetProperty("Interface.this[]");
@@ -242,21 +242,21 @@ class Class : Interface
 
             var global = comp.GlobalNamespace;
 
-            var baseInterface1 = (NamedTypeSymbol)global.GetMembers("BaseInterface1").Single();
-            var baseInterface1Method = baseInterface1.GetMembers("BaseMethod").Single();
+            var baseInterface1 = (NamedTypeSymbol)global.GetMembersAsImmutable("BaseInterface1").Single();
+            var baseInterface1Method = baseInterface1.GetMembersAsImmutable("BaseMethod").Single();
 
-            var baseInterface2 = (NamedTypeSymbol)global.GetMembers("BaseInterface2").Single();
-            var baseInterface2Method = baseInterface2.GetMembers("BaseMethod").Single();
+            var baseInterface2 = (NamedTypeSymbol)global.GetMembersAsImmutable("BaseInterface2").Single();
+            var baseInterface2Method = baseInterface2.GetMembersAsImmutable("BaseMethod").Single();
 
-            var @interface = (NamedTypeSymbol)global.GetMembers("Interface").Single();
-            var interfaceMethod = @interface.GetMembers("Method").Single();
+            var @interface = (NamedTypeSymbol)global.GetMembersAsImmutable("Interface").Single();
+            var interfaceMethod = @interface.GetMembersAsImmutable("Method").Single();
 
-            var @class = (NamedTypeSymbol)global.GetMembers("Class").Single();
+            var @class = (NamedTypeSymbol)global.GetMembersAsImmutable("Class").Single();
 
-            var classImplicitImplementation = (MethodSymbol)@class.GetMembers("Method").Single();
+            var classImplicitImplementation = (MethodSymbol)@class.GetMembersAsImmutable("Method").Single();
             Assert.Equal(MethodKind.Ordinary, classImplicitImplementation.MethodKind);
 
-            var classImplicitImplementationBase = (MethodSymbol)@class.GetMembers("BaseMethod").Single();
+            var classImplicitImplementationBase = (MethodSymbol)@class.GetMembersAsImmutable("BaseMethod").Single();
             Assert.Equal(MethodKind.Ordinary, classImplicitImplementationBase.MethodKind);
 
             var implementingMethod = @class.FindImplementationForInterfaceMember(interfaceMethod);
@@ -314,16 +314,16 @@ class Class : Interface
 
             var global = comp.GlobalNamespace;
 
-            var baseInterface1 = (NamedTypeSymbol)global.GetMembers("BaseInterface1").Single();
+            var baseInterface1 = (NamedTypeSymbol)global.GetMembersAsImmutable("BaseInterface1").Single();
             var baseInterface1Indexer = baseInterface1.Indexers.Single();
 
-            var baseInterface2 = (NamedTypeSymbol)global.GetMembers("BaseInterface2").Single();
+            var baseInterface2 = (NamedTypeSymbol)global.GetMembersAsImmutable("BaseInterface2").Single();
             var baseInterface2Indexer = baseInterface2.Indexers.Single();
 
-            var @interface = (NamedTypeSymbol)global.GetMembers("Interface").Single();
+            var @interface = (NamedTypeSymbol)global.GetMembersAsImmutable("Interface").Single();
             var interfaceIndexer = @interface.Indexers.Single();
 
-            var @class = (NamedTypeSymbol)global.GetMembers("Class").Single();
+            var @class = (NamedTypeSymbol)global.GetMembersAsImmutable("Class").Single();
             var classImplicitImplementation = @class.Indexers.Single(p => p.Parameters.Length == 2);
             var classImplicitImplementationBase = @class.Indexers.Single(p => p.Parameters.Length == 1);
 
@@ -371,13 +371,13 @@ class Class2 : Interface
             var comp = CreateCompilation(text);
             var global = comp.GlobalNamespace;
 
-            var @interface = (NamedTypeSymbol)global.GetMembers("Interface").Single();
-            var interfaceMethod = @interface.GetMembers("Method").Single();
+            var @interface = (NamedTypeSymbol)global.GetMembersAsImmutable("Interface").Single();
+            var interfaceMethod = @interface.GetMembersAsImmutable("Method").Single();
 
-            var class1 = (NamedTypeSymbol)global.GetMembers("Class1").Single();
+            var class1 = (NamedTypeSymbol)global.GetMembersAsImmutable("Class1").Single();
             Assert.Null(class1.FindImplementationForInterfaceMember(interfaceMethod));
 
-            var class2 = (NamedTypeSymbol)global.GetMembers("Class2").Single();
+            var class2 = (NamedTypeSymbol)global.GetMembersAsImmutable("Class2").Single();
             Assert.Null(class2.FindImplementationForInterfaceMember(interfaceMethod));
         }
 
@@ -428,27 +428,27 @@ class Class2 : BaseClass //does not declare interface
 
             var global = comp.GlobalNamespace;
 
-            var baseInterface = (NamedTypeSymbol)global.GetMembers("BaseInterface").Single();
-            var baseInterfaceMethod = baseInterface.GetMembers("Method").Single();
+            var baseInterface = (NamedTypeSymbol)global.GetMembersAsImmutable("BaseInterface").Single();
+            var baseInterfaceMethod = baseInterface.GetMembersAsImmutable("Method").Single();
 
-            var @interface = (NamedTypeSymbol)global.GetMembers("Interface").Single();
-            var interfaceMethod = @interface.GetMembers("Method").Single();
+            var @interface = (NamedTypeSymbol)global.GetMembersAsImmutable("Interface").Single();
+            var interfaceMethod = @interface.GetMembersAsImmutable("Method").Single();
 
-            var baseClass = (NamedTypeSymbol)global.GetMembers("BaseClass").Single();
+            var baseClass = (NamedTypeSymbol)global.GetMembersAsImmutable("BaseClass").Single();
 
-            var baseClassExplicitImplementationBase = (MethodSymbol)baseClass.GetMembers("BaseInterface.Method").Single();
+            var baseClassExplicitImplementationBase = (MethodSymbol)baseClass.GetMembersAsImmutable("BaseInterface.Method").Single();
             Assert.Equal(MethodKind.ExplicitInterfaceImplementation, baseClassExplicitImplementationBase.MethodKind);
 
-            var baseClassExplicitImplementation = (MethodSymbol)baseClass.GetMembers("Interface.Method").Single();
+            var baseClassExplicitImplementation = (MethodSymbol)baseClass.GetMembersAsImmutable("Interface.Method").Single();
             Assert.Equal(MethodKind.ExplicitInterfaceImplementation, baseClassExplicitImplementation.MethodKind);
 
-            var baseClassImplicitImplementation = (MethodSymbol)baseClass.GetMembers("Method").Single();
+            var baseClassImplicitImplementation = (MethodSymbol)baseClass.GetMembersAsImmutable("Method").Single();
             Assert.Equal(MethodKind.Ordinary, baseClassImplicitImplementation.MethodKind);
 
             Assert.NotSame(baseClassImplicitImplementation, baseClassExplicitImplementation);
             Assert.NotSame(baseClassImplicitImplementation, baseClassExplicitImplementationBase);
 
-            var class1 = (NamedTypeSymbol)global.GetMembers("Class1").Single();
+            var class1 = (NamedTypeSymbol)global.GetMembersAsImmutable("Class1").Single();
 
             var class1ImplementingMethodBase = class1.FindImplementationForInterfaceMember(baseInterfaceMethod);
             Assert.Same(baseClassExplicitImplementationBase, class1ImplementingMethodBase);
@@ -456,7 +456,7 @@ class Class2 : BaseClass //does not declare interface
             var class1ImplementingMethod = class1.FindImplementationForInterfaceMember(interfaceMethod);
             Assert.Same(baseClassExplicitImplementation, class1ImplementingMethod);
 
-            var class2 = (NamedTypeSymbol)global.GetMembers("Class2").Single();
+            var class2 = (NamedTypeSymbol)global.GetMembersAsImmutable("Class2").Single();
 
             var class2ImplementingMethodBase = class2.FindImplementationForInterfaceMember(baseInterfaceMethod);
             Assert.Same(baseClassExplicitImplementationBase, class2ImplementingMethodBase);
@@ -504,24 +504,24 @@ class Class2 : BaseClass //does not declare interface
             var comp = CreateCompilation(text);
             var global = comp.GlobalNamespace;
 
-            var baseInterface1 = (NamedTypeSymbol)global.GetMembers("BaseInterface1").Single();
-            var baseInterface1Method = baseInterface1.GetMembers("BaseMethod").Single();
+            var baseInterface1 = (NamedTypeSymbol)global.GetMembersAsImmutable("BaseInterface1").Single();
+            var baseInterface1Method = baseInterface1.GetMembersAsImmutable("BaseMethod").Single();
 
-            var baseInterface2 = (NamedTypeSymbol)global.GetMembers("BaseInterface2").Single();
-            var baseInterface2Method = baseInterface2.GetMembers("BaseMethod").Single();
+            var baseInterface2 = (NamedTypeSymbol)global.GetMembersAsImmutable("BaseInterface2").Single();
+            var baseInterface2Method = baseInterface2.GetMembersAsImmutable("BaseMethod").Single();
 
-            var @interface = (NamedTypeSymbol)global.GetMembers("Interface").Single();
-            var interfaceMethod = @interface.GetMembers("Method").Single();
+            var @interface = (NamedTypeSymbol)global.GetMembersAsImmutable("Interface").Single();
+            var interfaceMethod = @interface.GetMembersAsImmutable("Method").Single();
 
-            var baseClass = (NamedTypeSymbol)global.GetMembers("BaseClass").Single();
+            var baseClass = (NamedTypeSymbol)global.GetMembersAsImmutable("BaseClass").Single();
 
-            var baseClassImplicitImplementation = (MethodSymbol)baseClass.GetMembers("Method").Single();
+            var baseClassImplicitImplementation = (MethodSymbol)baseClass.GetMembersAsImmutable("Method").Single();
             Assert.Equal(MethodKind.Ordinary, baseClassImplicitImplementation.MethodKind);
 
-            var baseClassImplicitImplementationBase = (MethodSymbol)baseClass.GetMembers("BaseMethod").Single();
+            var baseClassImplicitImplementationBase = (MethodSymbol)baseClass.GetMembersAsImmutable("BaseMethod").Single();
             Assert.Equal(MethodKind.Ordinary, baseClassImplicitImplementationBase.MethodKind);
 
-            var class1 = (NamedTypeSymbol)global.GetMembers("Class1").Single();
+            var class1 = (NamedTypeSymbol)global.GetMembersAsImmutable("Class1").Single();
 
             var class1ImplementingMethod = class1.FindImplementationForInterfaceMember(interfaceMethod);
             Assert.Same(baseClassImplicitImplementation, class1ImplementingMethod);
@@ -532,7 +532,7 @@ class Class2 : BaseClass //does not declare interface
             var class1ImplementingMethodBase2 = class1.FindImplementationForInterfaceMember(baseInterface2Method);
             Assert.Same(baseClassImplicitImplementationBase, class1ImplementingMethodBase2);
 
-            var class2 = (NamedTypeSymbol)global.GetMembers("Class2").Single();
+            var class2 = (NamedTypeSymbol)global.GetMembersAsImmutable("Class2").Single();
 
             var class2ImplementingMethod = class2.FindImplementationForInterfaceMember(interfaceMethod);
             Assert.Same(baseClassImplicitImplementation, class2ImplementingMethod);
@@ -572,20 +572,20 @@ class Class2 : BaseClass //does not declare interface
             var comp = CreateCompilation(text);
             var global = comp.GlobalNamespace;
 
-            var @interface = (NamedTypeSymbol)global.GetMembers("Interface").Single();
-            var interfaceMethod = @interface.GetMembers("Method").Single();
+            var @interface = (NamedTypeSymbol)global.GetMembersAsImmutable("Interface").Single();
+            var interfaceMethod = @interface.GetMembersAsImmutable("Method").Single();
 
-            var baseClass = (NamedTypeSymbol)global.GetMembers("BaseClass").Single();
+            var baseClass = (NamedTypeSymbol)global.GetMembersAsImmutable("BaseClass").Single();
             Assert.False(baseClass.AllInterfaces().Contains(@interface));
 
-            var baseClassMethod = (MethodSymbol)baseClass.GetMembers("Method").Single();
+            var baseClassMethod = (MethodSymbol)baseClass.GetMembersAsImmutable("Method").Single();
             Assert.Equal(MethodKind.Ordinary, baseClassMethod.MethodKind);
 
-            var class1 = (NamedTypeSymbol)global.GetMembers("Class1").Single();
+            var class1 = (NamedTypeSymbol)global.GetMembersAsImmutable("Class1").Single();
             Assert.Same(baseClass, class1.BaseType());
             Assert.True(class1.Interfaces().Contains(@interface));
 
-            var class2 = (NamedTypeSymbol)global.GetMembers("Class2").Single();
+            var class2 = (NamedTypeSymbol)global.GetMembersAsImmutable("Class2").Single();
             Assert.Same(baseClass, class2.BaseType());
             Assert.False(class2.AllInterfaces().Contains(@interface));
 
@@ -622,19 +622,19 @@ class Class2 : BaseClass //does not declare interface
             var comp = CreateCompilation(text);
             var global = comp.GlobalNamespace;
 
-            var @interface = (NamedTypeSymbol)global.GetMembers("Interface").Single();
+            var @interface = (NamedTypeSymbol)global.GetMembersAsImmutable("Interface").Single();
             var interfaceIndexer = @interface.Indexers.Single();
 
-            var baseClass = (NamedTypeSymbol)global.GetMembers("BaseClass").Single();
+            var baseClass = (NamedTypeSymbol)global.GetMembersAsImmutable("BaseClass").Single();
             Assert.False(baseClass.AllInterfaces().Contains(@interface));
 
             var baseClassIndexer = baseClass.Indexers.Single();
 
-            var class1 = (NamedTypeSymbol)global.GetMembers("Class1").Single();
+            var class1 = (NamedTypeSymbol)global.GetMembersAsImmutable("Class1").Single();
             Assert.Same(baseClass, class1.BaseType());
             Assert.True(class1.Interfaces().Contains(@interface));
 
-            var class2 = (NamedTypeSymbol)global.GetMembers("Class2").Single();
+            var class2 = (NamedTypeSymbol)global.GetMembersAsImmutable("Class2").Single();
             Assert.Same(baseClass, class2.BaseType());
             Assert.False(class2.AllInterfaces().Contains(@interface));
 
@@ -673,26 +673,26 @@ class Class2 : BaseClass //does not declare interface
             var comp = CreateCompilation(text);
             var global = comp.GlobalNamespace;
 
-            var @interface = (NamedTypeSymbol)global.GetMembers("Interface").Single();
-            var interfaceMethod = @interface.GetMembers("Method").Single();
+            var @interface = (NamedTypeSymbol)global.GetMembersAsImmutable("Interface").Single();
+            var interfaceMethod = @interface.GetMembersAsImmutable("Method").Single();
 
-            var baseClass = (NamedTypeSymbol)global.GetMembers("BaseClass").Single();
-            var baseClassMethod = (MethodSymbol)baseClass.GetMembers("Interface.Method").Single();
+            var baseClass = (NamedTypeSymbol)global.GetMembersAsImmutable("BaseClass").Single();
+            var baseClassMethod = (MethodSymbol)baseClass.GetMembersAsImmutable("Interface.Method").Single();
             Assert.Equal(MethodKind.ExplicitInterfaceImplementation, baseClassMethod.MethodKind);
 
             var baseClassImplementingMethod = baseClass.FindImplementationForInterfaceMember(interfaceMethod);
             Assert.Same(baseClassMethod, baseClassImplementingMethod);
 
-            var class1 = (NamedTypeSymbol)global.GetMembers("Class1").Single();
-            var class1Method = (MethodSymbol)class1.GetMembers("Method").Single();
+            var class1 = (NamedTypeSymbol)global.GetMembersAsImmutable("Class1").Single();
+            var class1Method = (MethodSymbol)class1.GetMembersAsImmutable("Method").Single();
             Assert.Equal(MethodKind.Ordinary, class1Method.MethodKind);
 
             var class1ImplementingMethod = class1.FindImplementationForInterfaceMember(interfaceMethod);
             Assert.Same(class1Method, class1ImplementingMethod);
             Assert.NotSame(baseClassMethod, class1ImplementingMethod);
 
-            var class2 = (NamedTypeSymbol)global.GetMembers("Class2").Single();
-            var class2Method = (MethodSymbol)class2.GetMembers("Method").Single();
+            var class2 = (NamedTypeSymbol)global.GetMembersAsImmutable("Class2").Single();
+            var class2Method = (MethodSymbol)class2.GetMembersAsImmutable("Method").Single();
             Assert.Equal(MethodKind.Ordinary, class2Method.MethodKind);
 
             var class2ImplementingMethod = class2.FindImplementationForInterfaceMember(interfaceMethod);
@@ -734,17 +734,17 @@ class Class2 : BaseClass //does not declare interface
             var comp = CreateCompilation(text);
             var global = comp.GlobalNamespace;
 
-            var @interface = (NamedTypeSymbol)global.GetMembers("Interface").Single();
-            var interfaceMethodVirtual = @interface.GetMembers("Virtual").Single();
-            var interfaceMethodNonVirtual = @interface.GetMembers("NonVirtual").Single();
+            var @interface = (NamedTypeSymbol)global.GetMembersAsImmutable("Interface").Single();
+            var interfaceMethodVirtual = @interface.GetMembersAsImmutable("Virtual").Single();
+            var interfaceMethodNonVirtual = @interface.GetMembersAsImmutable("NonVirtual").Single();
 
-            var baseClass = (NamedTypeSymbol)global.GetMembers("BaseClass").Single();
+            var baseClass = (NamedTypeSymbol)global.GetMembersAsImmutable("BaseClass").Single();
 
-            var baseClassMethodVirtual = (MethodSymbol)baseClass.GetMembers("Virtual").Single();
+            var baseClassMethodVirtual = (MethodSymbol)baseClass.GetMembersAsImmutable("Virtual").Single();
             Assert.Equal(MethodKind.Ordinary, baseClassMethodVirtual.MethodKind);
             Assert.True(baseClassMethodVirtual.IsVirtual);
 
-            var baseClassMethodNonVirtual = (MethodSymbol)baseClass.GetMembers("NonVirtual").Single();
+            var baseClassMethodNonVirtual = (MethodSymbol)baseClass.GetMembersAsImmutable("NonVirtual").Single();
             Assert.Equal(MethodKind.Ordinary, baseClassMethodNonVirtual.MethodKind);
             Assert.False(baseClassMethodNonVirtual.IsVirtual);
 
@@ -754,13 +754,13 @@ class Class2 : BaseClass //does not declare interface
             var baseClassImplementingMethodNonVirtual = baseClass.FindImplementationForInterfaceMember(interfaceMethodNonVirtual);
             Assert.Same(baseClassMethodNonVirtual, baseClassImplementingMethodNonVirtual);
 
-            var class1 = (NamedTypeSymbol)global.GetMembers("Class1").Single();
+            var class1 = (NamedTypeSymbol)global.GetMembersAsImmutable("Class1").Single();
 
-            var class1MethodVirtual = (MethodSymbol)class1.GetMembers("Virtual").Single();
+            var class1MethodVirtual = (MethodSymbol)class1.GetMembersAsImmutable("Virtual").Single();
             Assert.Equal(MethodKind.Ordinary, class1MethodVirtual.MethodKind);
             Assert.True(class1MethodVirtual.IsOverride);
 
-            var class1MethodNonVirtual = (MethodSymbol)class1.GetMembers("NonVirtual").Single();
+            var class1MethodNonVirtual = (MethodSymbol)class1.GetMembersAsImmutable("NonVirtual").Single();
             Assert.Equal(MethodKind.Ordinary, class1MethodNonVirtual.MethodKind);
             Assert.False(class1MethodNonVirtual.IsOverride);
 
@@ -772,13 +772,13 @@ class Class2 : BaseClass //does not declare interface
             Assert.Same(class1MethodNonVirtual, class1ImplementingMethodNonVirtual);
             Assert.NotSame(baseClassMethodNonVirtual, class1ImplementingMethodNonVirtual);
 
-            var class2 = (NamedTypeSymbol)global.GetMembers("Class2").Single();
+            var class2 = (NamedTypeSymbol)global.GetMembersAsImmutable("Class2").Single();
 
-            var class2MethodVirtual = (MethodSymbol)class2.GetMembers("Virtual").Single();
+            var class2MethodVirtual = (MethodSymbol)class2.GetMembersAsImmutable("Virtual").Single();
             Assert.Equal(MethodKind.Ordinary, class2MethodVirtual.MethodKind);
             Assert.True(class2MethodVirtual.IsOverride);
 
-            var class2MethodNonVirtual = (MethodSymbol)class2.GetMembers("NonVirtual").Single();
+            var class2MethodNonVirtual = (MethodSymbol)class2.GetMembersAsImmutable("NonVirtual").Single();
             Assert.Equal(MethodKind.Ordinary, class2MethodNonVirtual.MethodKind);
             Assert.False(class2MethodNonVirtual.IsOverride);
 
@@ -824,25 +824,25 @@ class DeclaringClass2 : NonDeclaringClass2, Interface
             var comp = CreateCompilation(text);
             var global = comp.GlobalNamespace;
 
-            var @interface = (NamedTypeSymbol)global.GetMembers("Interface").Single();
-            var interfaceMethod = @interface.GetMembers("Method").Single();
+            var @interface = (NamedTypeSymbol)global.GetMembersAsImmutable("Interface").Single();
+            var interfaceMethod = @interface.GetMembersAsImmutable("Method").Single();
 
-            var nonDeclaring1 = (NamedTypeSymbol)global.GetMembers("NonDeclaringClass1").Single();
+            var nonDeclaring1 = (NamedTypeSymbol)global.GetMembersAsImmutable("NonDeclaringClass1").Single();
             Assert.False(nonDeclaring1.InterfacesAndTheirBaseInterfacesNoUseSiteDiagnostics.ContainsKey(@interface));
 
-            var nonDeclaring1Method = nonDeclaring1.GetMembers("Method").Single();
+            var nonDeclaring1Method = nonDeclaring1.GetMembersAsImmutable("Method").Single();
 
-            var declaring1 = (NamedTypeSymbol)global.GetMembers("DeclaringClass1").Single();
+            var declaring1 = (NamedTypeSymbol)global.GetMembersAsImmutable("DeclaringClass1").Single();
             Assert.True(declaring1.InterfacesAndTheirBaseInterfacesNoUseSiteDiagnostics.ContainsKey(@interface));
             Assert.Equal(nonDeclaring1, declaring1.BaseType());
 
-            var nonDeclaring2 = (NamedTypeSymbol)global.GetMembers("NonDeclaringClass2").Single();
+            var nonDeclaring2 = (NamedTypeSymbol)global.GetMembersAsImmutable("NonDeclaringClass2").Single();
             Assert.False(nonDeclaring2.InterfacesAndTheirBaseInterfacesNoUseSiteDiagnostics.ContainsKey(@interface));
             Assert.Equal(declaring1, nonDeclaring2.BaseType());
 
-            var nonDeclaring2Method = nonDeclaring2.GetMembers("Method").Single();
+            var nonDeclaring2Method = nonDeclaring2.GetMembersAsImmutable("Method").Single();
 
-            var declaring2 = (NamedTypeSymbol)global.GetMembers("DeclaringClass2").Single();
+            var declaring2 = (NamedTypeSymbol)global.GetMembersAsImmutable("DeclaringClass2").Single();
             Assert.True(declaring2.InterfacesAndTheirBaseInterfacesNoUseSiteDiagnostics.ContainsKey(@interface));
             Assert.Equal(nonDeclaring2, declaring2.BaseType());
 
@@ -868,18 +868,18 @@ class DeclaringClass2 : NonDeclaringClass2, Interface
 
             var global = assemblies.ElementAt(1).GlobalNamespace;
 
-            var @interface = (NamedTypeSymbol)global.GetMembers("I1").Single();
-            var interfaceMethod = @interface.GetMembers("Method1").Single();
+            var @interface = (NamedTypeSymbol)global.GetMembersAsImmutable("I1").Single();
+            var interfaceMethod = @interface.GetMembersAsImmutable("Method1").Single();
 
-            var baseClass = (NamedTypeSymbol)global.GetMembers("BaseDeclaresInterface").Single();
+            var baseClass = (NamedTypeSymbol)global.GetMembersAsImmutable("BaseDeclaresInterface").Single();
             Assert.True(baseClass.Interfaces().Contains(@interface));
             Assert.Null(baseClass.FindImplementationForInterfaceMember(interfaceMethod));
 
-            var derivedClass = (NamedTypeSymbol)global.GetMembers("DerivedExplicitlyImplementsInterface").Single();
+            var derivedClass = (NamedTypeSymbol)global.GetMembersAsImmutable("DerivedExplicitlyImplementsInterface").Single();
             Assert.False(derivedClass.InterfacesAndTheirBaseInterfacesNoUseSiteDiagnostics.ContainsKey(@interface));
             Assert.True(derivedClass.AllInterfaces().Contains(@interface));
 
-            var derivedClassMethod = derivedClass.GetMembers("I1.Method1").Single();
+            var derivedClassMethod = derivedClass.GetMembersAsImmutable("I1.Method1").Single();
             Assert.Same(derivedClassMethod, derivedClass.FindImplementationForInterfaceMember(interfaceMethod));
         }
 
@@ -908,17 +908,17 @@ public class Derived : Base, Interface
 
             Assert.False(comp.GetDiagnostics().Any(), string.Join("\n", comp.GetDiagnostics()));
 
-            var @interface = (NamedTypeSymbol)global.GetMembers("Interface").Single();
-            var interfaceMethod = (MethodSymbol)@interface.GetMembers("Method").Single();
-            var interfaceProperty = (PropertySymbol)@interface.GetMembers("Property").Single();
+            var @interface = (NamedTypeSymbol)global.GetMembersAsImmutable("Interface").Single();
+            var interfaceMethod = (MethodSymbol)@interface.GetMembersAsImmutable("Method").Single();
+            var interfaceProperty = (PropertySymbol)@interface.GetMembersAsImmutable("Property").Single();
             var interfacePropertyGetter = interfaceProperty.GetMethod;
             var interfacePropertySetter = interfaceProperty.SetMethod;
 
-            var baseClass = (NamedTypeSymbol)global.GetMembers("Base").Single();
+            var baseClass = (NamedTypeSymbol)global.GetMembersAsImmutable("Base").Single();
             Assert.False(baseClass.AllInterfaces().Contains(@interface));
 
-            var baseClassMethod = (MethodSymbol)baseClass.GetMembers("Method").Single();
-            var baseClassProperty = (PropertySymbol)baseClass.GetMembers("Property").Single();
+            var baseClassMethod = (MethodSymbol)baseClass.GetMembersAsImmutable("Method").Single();
+            var baseClassProperty = (PropertySymbol)baseClass.GetMembersAsImmutable("Property").Single();
             var baseClassPropertyGetter = baseClassProperty.GetMethod;
             var baseClassPropertySetter = baseClassProperty.SetMethod;
 
@@ -927,7 +927,7 @@ public class Derived : Base, Interface
             Assert.False(baseClassPropertyGetter.IsVirtual);
             Assert.False(baseClassPropertySetter.IsVirtual);
 
-            var derivedClass = (SourceNamedTypeSymbol)global.GetMembers("Derived").Single();
+            var derivedClass = (SourceNamedTypeSymbol)global.GetMembersAsImmutable("Derived").Single();
             Assert.True(derivedClass.Interfaces().Contains(@interface));
 
             Assert.Same(baseClassMethod, derivedClass.FindImplementationForInterfaceMember(interfaceMethod));
@@ -977,17 +977,17 @@ public class Derived : Base, Interface
 
             var global = comp2.GlobalNamespace;
 
-            var @interface = (NamedTypeSymbol)global.GetMembers("Interface").Single();
-            var interfaceMethod = (MethodSymbol)@interface.GetMembers("Method").Single();
-            var interfaceProperty = (PropertySymbol)@interface.GetMembers("Property").Single();
+            var @interface = (NamedTypeSymbol)global.GetMembersAsImmutable("Interface").Single();
+            var interfaceMethod = (MethodSymbol)@interface.GetMembersAsImmutable("Method").Single();
+            var interfaceProperty = (PropertySymbol)@interface.GetMembersAsImmutable("Property").Single();
             var interfacePropertyGetter = interfaceProperty.GetMethod;
             var interfacePropertySetter = interfaceProperty.SetMethod;
 
-            var baseClass = (NamedTypeSymbol)global.GetMembers("Base").Single();
+            var baseClass = (NamedTypeSymbol)global.GetMembersAsImmutable("Base").Single();
             Assert.False(baseClass.AllInterfaces().Contains(@interface));
 
-            var baseClassMethod = (MethodSymbol)baseClass.GetMembers("Method").Single();
-            var baseClassProperty = (PropertySymbol)baseClass.GetMembers("Property").Single();
+            var baseClassMethod = (MethodSymbol)baseClass.GetMembersAsImmutable("Method").Single();
+            var baseClassProperty = (PropertySymbol)baseClass.GetMembersAsImmutable("Property").Single();
             var baseClassPropertyGetter = baseClassProperty.GetMethod;
             var baseClassPropertySetter = baseClassProperty.SetMethod;
 
@@ -996,7 +996,7 @@ public class Derived : Base, Interface
             Assert.False(baseClassPropertyGetter.IsVirtual);
             Assert.False(baseClassPropertySetter.IsVirtual);
 
-            var derivedClass = (SourceNamedTypeSymbol)global.GetMembers("Derived").Single();
+            var derivedClass = (SourceNamedTypeSymbol)global.GetMembersAsImmutable("Derived").Single();
             Assert.True(derivedClass.Interfaces().Contains(@interface));
 
             Assert.Same(baseClassMethod, derivedClass.FindImplementationForInterfaceMember(interfaceMethod));
@@ -1057,17 +1057,17 @@ class Class : CustomModifierOverridingD, Interface
             Assert.False(comp.GetDiagnostics().Any());
 
             //IL
-            var classD = global.GetTypeMembers("CustomModifierOverridingD").Single();
+            var classD = global.GetTypeMembersAsImmutable("CustomModifierOverridingD").Single();
 
-            var classDMethod1 = (MethodSymbol)classD.GetMembers("Method1").Single();
-            var classDMethod2 = (MethodSymbol)classD.GetMembers("Method2").Single();
+            var classDMethod1 = (MethodSymbol)classD.GetMembersAsImmutable("Method1").Single();
+            var classDMethod2 = (MethodSymbol)classD.GetMembersAsImmutable("Method2").Single();
 
             //Source
-            var @interface = global.GetTypeMembers("Interface").Single();
-            var interfaceMethod1 = (MethodSymbol)@interface.GetMembers("Method1").Single();
-            var interfaceMethod2 = (MethodSymbol)@interface.GetMembers("Method2").Single();
+            var @interface = global.GetTypeMembersAsImmutable("Interface").Single();
+            var interfaceMethod1 = (MethodSymbol)@interface.GetMembersAsImmutable("Method1").Single();
+            var interfaceMethod2 = (MethodSymbol)@interface.GetMembersAsImmutable("Method2").Single();
 
-            var @class = (SourceNamedTypeSymbol)global.GetTypeMembers("Class").Single();
+            var @class = (SourceNamedTypeSymbol)global.GetTypeMembersAsImmutable("Class").Single();
 
             //ignore custom modifiers (chooses most derived, even though less derived has fewer)
             var classMethod1Impl = @class.FindImplementationForInterfaceMember(interfaceMethod1);
@@ -1146,7 +1146,7 @@ public class c2 : c1, I1
 ";
             var comp = CreateCompilation(text);
             var global = comp.GlobalNamespace;
-            var type = comp.GlobalNamespace.GetTypeMembers("c2").Single();
+            var type = comp.GlobalNamespace.GetTypeMembersAsImmutable("c2").Single();
             Assert.NotEmpty(type.Interfaces());
             Assert.True(type.Interfaces().Any(@interface => @interface.Name == "I1"));
         }
@@ -1587,11 +1587,11 @@ static class Program
             var comp = CreateCompilation(text);
             comp.VerifyDiagnostics();
 
-            var typeSymbol = comp.GlobalNamespace.GetTypeMembers("C1").Single();
+            var typeSymbol = comp.GlobalNamespace.GetTypeMembersAsImmutable("C1").Single();
             var interfaceSymbol = typeSymbol.Interfaces().First();
             var gooMethod = typeSymbol.GetMember<MethodSymbol>("Goo");
 
-            var interfaceMembers = interfaceSymbol.GetMembers().OfType<MethodSymbol>();
+            var interfaceMembers = interfaceSymbol.GetMembersAsImmutable().OfType<MethodSymbol>();
             var firstInterfaceMethod = interfaceMembers.First();
             var secondInterfaceMethod = interfaceMembers.Last();
             Assert.Equal(gooMethod, typeSymbol.FindImplementationForInterfaceMember(firstInterfaceMethod));
@@ -2216,7 +2216,7 @@ Explicit implementation
             var interfaceEvent = @interface.GetMember<EventSymbol>("E");
             var interfaceAdder = interfaceEvent.AddMethod;
 
-            var baseAdder = baseType.GetMembers().OfType<MethodSymbol>().
+            var baseAdder = baseType.GetMembersAsImmutable().OfType<MethodSymbol>().
                 Where(m => m.MethodKind == MethodKind.ExplicitInterfaceImplementation).
                 Single(m => m.ExplicitInterfaceImplementations.Single().MethodKind == MethodKind.EventAdd);
 
@@ -2292,7 +2292,7 @@ public class Derived : Base, I
             var baseProperty = baseType.GetMember<PropertySymbol>("P");
             var baseGetter = baseProperty.GetMethod;
 
-            var derivedGetter = derivedType.GetMembers().OfType<MethodSymbol>().
+            var derivedGetter = derivedType.GetMembersAsImmutable().OfType<MethodSymbol>().
                 Single(m => m.MethodKind == MethodKind.ExplicitInterfaceImplementation);
 
             Assert.Equal(baseProperty, baseType.FindImplementationForInterfaceMember(interfaceProperty));

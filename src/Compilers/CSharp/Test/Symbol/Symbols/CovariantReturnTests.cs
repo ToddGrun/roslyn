@@ -357,7 +357,7 @@ namespace System.Runtime.CompilerServices
             var genericType = (NamedTypeSymbol)comp.GlobalNamespace.GetMember(containingTypeName);
             Assert.Equal(typeArguments.Length, genericType.Arity);
             var constructedType = genericType.Construct(typeArguments.Select(n => (TypeSymbol)comp.GlobalNamespace.GetMember(n)));
-            return constructedType.GetMembers(memberName).Single();
+            return constructedType.GetMembersAsImmutable(memberName).Single();
         }
 
         private static void VerifyNoOverride(CSharpCompilation comp, string methodName)

@@ -852,7 +852,8 @@ namespace Microsoft.CodeAnalysis.CSharp
             }
 
             // NOTE: visit the members in order so that the same one is always reported as a conflict.
-            foreach (Symbol member in symbol.GetMembers())
+            using var members = symbol.GetMembers();
+            foreach (Symbol member in members)
             {
                 // Filter out uninteresting members:
                 if (DoNotVisit(member) ||

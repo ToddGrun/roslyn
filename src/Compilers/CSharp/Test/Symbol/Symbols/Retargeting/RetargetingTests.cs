@@ -730,11 +730,11 @@ class C1<T>
             var comp1 = CreateEmptyCompilation(source, new[] { MscorlibRef_v20 }, TestOptions.ReleaseDll);
             comp1.VerifyDiagnostics();
 
-            NamedTypeSymbol c1 = comp1.Assembly.GlobalNamespace.GetTypeMembers("C1").Single();
+            NamedTypeSymbol c1 = comp1.Assembly.GlobalNamespace.GetTypeMembersAsImmutable("C1").Single();
 
             var comp2 = CreateEmptyCompilation("", new[] { MscorlibRef_v4_0_30316_17626, new CSharpCompilationReference(comp1) }, TestOptions.ReleaseDll);
 
-            NamedTypeSymbol c1r = comp2.GlobalNamespace.GetTypeMembers("C1").Single();
+            NamedTypeSymbol c1r = comp2.GlobalNamespace.GetTypeMembersAsImmutable("C1").Single();
 
             Assert.IsType<RetargetingNamedTypeSymbol>(c1r);
             Assert.Equal(c1.Name, c1r.Name);
@@ -1263,7 +1263,7 @@ public class C
             Assert.Equal(a.Name, b.Name);
             CheckSymbols(a.BaseType(), b.BaseType(), false);
             CheckSymbols(a.Interfaces(), b.Interfaces(), false);
-            CheckSymbols(a.GetMembers(), b.GetMembers(), true);
+            CheckSymbols(a.GetMembersAsImmutable(), b.GetMembersAsImmutable(), true);
         }
 
         public void CheckTypeParameters(TypeParameterSymbol a, TypeParameterSymbol b)

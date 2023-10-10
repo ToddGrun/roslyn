@@ -48,7 +48,7 @@ partial class Goo
 
             _compilation = CreateCompilation(new[] { tree1, tree2 });
 
-            _gooClass = _compilation.GlobalNamespace.GetTypeMembers("Goo").Single();
+            _gooClass = _compilation.GlobalNamespace.GetTypeMembersAsImmutable("Goo").Single();
         }
 
         [Fact]
@@ -65,7 +65,7 @@ partial class Goo
         [Fact]
         public void TestSummaryOfMethodWithNoImplementation()
         {
-            var method = _gooClass.GetMembers("MethodWithNoImplementation").Single();
+            var method = _gooClass.GetMembersAsImmutable("MethodWithNoImplementation").Single();
             Assert.Equal(
 @"<member name=""M:Goo.MethodWithNoImplementation"">
     <summary>Summary on MethodWithNoImplementation.</summary>
@@ -79,7 +79,7 @@ partial class Goo
             // This is an interesting behavior; as long as there is any XML at all on the implementation, it overrides
             // any XML on the latent declaration. Since we don't have a summary on this implementation, this should be
             // null!
-            var method = _gooClass.GetMembers("ImplementedMethodWithNoSummaryOnImpl").Single();
+            var method = _gooClass.GetMembersAsImmutable("ImplementedMethodWithNoSummaryOnImpl").Single();
             Assert.Equal(
 @"<member name=""M:Goo.ImplementedMethodWithNoSummaryOnImpl"">
     <remarks>Goo.</remarks>
@@ -90,7 +90,7 @@ partial class Goo
         [Fact]
         public void TestImplementedMethod()
         {
-            var method = _gooClass.GetMembers("ImplementedMethod").Single();
+            var method = _gooClass.GetMembersAsImmutable("ImplementedMethod").Single();
             Assert.Equal(
 @"<member name=""M:Goo.ImplementedMethod"">
     <summary>Implemented method.</summary>

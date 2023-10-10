@@ -59,8 +59,8 @@ class A {
 ";
             var comp = CreateEmptyCompilation(text);
             var global = comp.GlobalNamespace;
-            var a = global.GetTypeMembers("A", 0).Single();
-            var sym = a.GetMembers("F").Single() as FieldSymbol;
+            var a = global.GetTypeMembersAsImmutable("A", 0).Single();
+            var sym = a.GetMembersAsImmutable("F").Single() as FieldSymbol;
 
             Assert.Equal(TypeKind.Class, sym.Type.TypeKind);
             Assert.Equal<TypeSymbol>(a, sym.Type);
@@ -87,12 +87,12 @@ class A {
 ";
             var comp = CreateCompilation(text);
             var global = comp.GlobalNamespace;
-            var a = global.GetTypeMembers("A", 0).Single();
-            var f = a.GetMembers("F").Single() as FieldSymbol;
+            var a = global.GetTypeMembersAsImmutable("A", 0).Single();
+            var f = a.GetMembersAsImmutable("F").Single() as FieldSymbol;
             Assert.Equal(TypeKind.Class, f.Type.TypeKind);
             Assert.Equal<TypeSymbol>(a, f.Type);
             Assert.Equal(Accessibility.Private, f.DeclaredAccessibility);
-            var gs = a.GetMembers("G");
+            var gs = a.GetMembersAsImmutable("G");
             Assert.Equal(2, gs.Length);
             foreach (var g in gs)
             {
@@ -116,8 +116,8 @@ class A {
 ";
             var comp = CreateEmptyCompilation(text);
             var global = comp.GlobalNamespace;
-            var a = global.GetTypeMembers("A", 0).Single();
-            var fs = a.GetMembers("F");
+            var a = global.GetTypeMembersAsImmutable("A", 0).Single();
+            var fs = a.GetMembersAsImmutable("F");
             Assert.Equal(2, fs.Length);
             foreach (var f in fs)
             {
@@ -140,14 +140,14 @@ class A
 ";
             var comp = CreateEmptyCompilation(text);
             var global = comp.GlobalNamespace;
-            var a = global.GetTypeMembers("A", 0).Single();
-            var n1 = a.GetMembers("N1").Single() as FieldSymbol;
+            var a = global.GetTypeMembersAsImmutable("A", 0).Single();
+            var n1 = a.GetMembersAsImmutable("N1").Single() as FieldSymbol;
             Assert.True(n1.IsConst);
             Assert.False(n1.IsVolatile);
             Assert.True(n1.IsStatic);
             Assert.Equal(0, n1.TypeWithAnnotations.CustomModifiers.Length);
 
-            var n2 = a.GetMembers("N2").Single() as FieldSymbol;
+            var n2 = a.GetMembersAsImmutable("N2").Single() as FieldSymbol;
             Assert.False(n2.IsConst);
             Assert.True(n2.IsVolatile);
             Assert.False(n2.IsStatic);
@@ -156,7 +156,7 @@ class A
             Assert.False(mod.IsOptional);
             Assert.Equal("System.Runtime.CompilerServices.IsVolatile[missing]", mod.Modifier.ToTestDisplayString());
 
-            var n3 = a.GetMembers("N3").Single() as FieldSymbol;
+            var n3 = a.GetMembersAsImmutable("N3").Single() as FieldSymbol;
             Assert.False(n3.IsConst);
             Assert.False(n3.IsVolatile);
             Assert.True(n3.IsStatic);
@@ -174,8 +174,8 @@ class A {
 ";
             var comp = CreateCompilation(text);
             var global = comp.GlobalNamespace;
-            var a = global.GetTypeMembers("A", 0).Single();
-            var sym = a.GetMembers("F").Single() as FieldSymbol;
+            var a = global.GetTypeMembersAsImmutable("A", 0).Single();
+            var sym = a.GetMembersAsImmutable("F").Single() as FieldSymbol;
             Assert.Equal("System.Int32? A.F", sym.ToTestDisplayString());
             Assert.Equal(TypeKind.Struct, sym.Type.TypeKind);
             Assert.Equal("System.Int32?", sym.Type.ToTestDisplayString());
@@ -197,24 +197,24 @@ class A {
 }
 ";
             var comp = CreateCompilation(text);
-            var type1 = comp.GlobalNamespace.GetTypeMembers("C", 1).Single();
-            var type2 = type1.GetTypeMembers("S").Single();
+            var type1 = comp.GlobalNamespace.GetTypeMembersAsImmutable("C", 1).Single();
+            var type2 = type1.GetTypeMembersAsImmutable("S").Single();
 
-            var s = type2.GetMembers("M").Single() as MethodSymbol;
+            var s = type2.GetMembersAsImmutable("M").Single() as MethodSymbol;
             Assert.Equal("M", s.Name);
             Assert.Equal("System.Collections.Generic.List<T> C<T>.S<V>.M<V>(V p)", s.ToTestDisplayString());
 
-            var sym = type2.GetMembers("field1").Single() as FieldSymbol;
+            var sym = type2.GetMembersAsImmutable("field1").Single() as FieldSymbol;
             Assert.Equal("System.Collections.Generic.List<T> C<T>.S<V>.field1", sym.ToTestDisplayString());
             Assert.Equal(TypeKind.Class, sym.Type.TypeKind);
             Assert.Equal("System.Collections.Generic.List<T>", sym.Type.ToTestDisplayString());
 
-            sym = type2.GetMembers("field2").Single() as FieldSymbol;
+            sym = type2.GetMembersAsImmutable("field2").Single() as FieldSymbol;
             Assert.Equal("System.Collections.Generic.IList<V> C<T>.S<V>.field2", sym.ToTestDisplayString());
             Assert.Equal(TypeKind.Interface, sym.Type.TypeKind);
             Assert.Equal("System.Collections.Generic.IList<V>", sym.Type.ToTestDisplayString());
 
-            sym = type2.GetMembers("field3").Single() as FieldSymbol;
+            sym = type2.GetMembersAsImmutable("field3").Single() as FieldSymbol;
             Assert.Equal("C<T>.S<System.String> C<T>.S<V>.field3", sym.ToTestDisplayString());
             Assert.Equal(TypeKind.Struct, sym.Type.TypeKind);
             Assert.Equal("C<T>.S<System.String>", sym.Type.ToTestDisplayString());
@@ -232,8 +232,8 @@ class C1
 }
 ";
             var comp = CreateCompilation(Parse(text));
-            NamedTypeSymbol c1 = (NamedTypeSymbol)comp.SourceModule.GlobalNamespace.GetMembers("C1").Single();
-            FieldSymbol ein = (FieldSymbol)c1.GetMembers("in").Single();
+            NamedTypeSymbol c1 = (NamedTypeSymbol)comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("C1").Single();
+            FieldSymbol ein = (FieldSymbol)c1.GetMembersAsImmutable("in").Single();
             Assert.Equal("in", ein.Name);
             Assert.Equal("C1.@in", ein.ToString());
             NamedTypeSymbol dout = (NamedTypeSymbol)ein.Type;
@@ -252,8 +252,8 @@ class C
 }
 ";
             var comp = CreateCompilation(Parse(text));
-            NamedTypeSymbol type1 = (NamedTypeSymbol)comp.SourceModule.GlobalNamespace.GetMembers("C").Single();
-            FieldSymbol mem = (FieldSymbol)type1.GetMembers("x").Single();
+            NamedTypeSymbol type1 = (NamedTypeSymbol)comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("C").Single();
+            FieldSymbol mem = (FieldSymbol)type1.GetMembersAsImmutable("x").Single();
             Assert.Equal("x", mem.Name);
             Assert.True(mem.IsConst);
             Assert.False(mem.HasConstantValue);

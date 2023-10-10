@@ -163,11 +163,11 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             Assert.False(c3.HasUnsupportedMetadata);
             Assert.False(c3.ContainingSymbol.HasUnsupportedMetadata);
 
-            var f1 = c3.GetMembers("F1").Single();
+            var f1 = c3.GetMembersAsImmutable("F1").Single();
             Assert.NotNull(f1.GetUseSiteDiagnostic());
             Assert.False(f1.HasUnsupportedMetadata);
 
-            var m1 = c3.GetMembers("M1").Single();
+            var m1 = c3.GetMembersAsImmutable("M1").Single();
             Assert.NotNull(m1.GetUseSiteDiagnostic());
             Assert.False(m1.HasUnsupportedMetadata);
 
@@ -175,11 +175,11 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             Assert.Null(x.GetUseSiteDiagnostic());
             Assert.False(x.HasUnsupportedMetadata);
 
-            var e1 = c3.GetMembers("E1").Single();
+            var e1 = c3.GetMembersAsImmutable("E1").Single();
             Assert.NotNull(e1.GetUseSiteDiagnostic());
             Assert.False(e1.HasUnsupportedMetadata);
 
-            var p1 = c3.GetMembers("P1").Single();
+            var p1 = c3.GetMembersAsImmutable("P1").Single();
             Assert.NotNull(p1.GetUseSiteDiagnostic());
             Assert.False(p1.HasUnsupportedMetadata);
         }
@@ -367,11 +367,11 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             Assert.False(c3.HasUnsupportedMetadata);
             Assert.False(c3.ContainingSymbol.HasUnsupportedMetadata);
 
-            var f1 = c3.GetMembers("F1").Single();
+            var f1 = c3.GetMembersAsImmutable("F1").Single();
             Assert.NotNull(f1.GetUseSiteDiagnostic());
             Assert.True(f1.HasUnsupportedMetadata);
 
-            var m1 = c3.GetMembers("M1").Single();
+            var m1 = c3.GetMembersAsImmutable("M1").Single();
             Assert.NotNull(m1.GetUseSiteDiagnostic());
             Assert.True(m1.HasUnsupportedMetadata);
 
@@ -379,11 +379,11 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             Assert.Null(x.GetUseSiteDiagnostic());
             Assert.True(x.HasUnsupportedMetadata);
 
-            var e1 = c3.GetMembers("E1").Single();
+            var e1 = c3.GetMembersAsImmutable("E1").Single();
             Assert.NotNull(e1.GetUseSiteDiagnostic());
             Assert.True(e1.HasUnsupportedMetadata);
 
-            var p1 = c3.GetMembers("P1").Single();
+            var p1 = c3.GetMembersAsImmutable("P1").Single();
             Assert.NotNull(p1.GetUseSiteDiagnostic());
             Assert.True(p1.HasUnsupportedMetadata);
 

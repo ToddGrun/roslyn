@@ -2278,8 +2278,8 @@ class Program
             {
                 var comp = CreateCompilation(text);
 
-                var task1 = new Task(() => comp.GlobalNamespace.GetMember<NamedTypeSymbol>("A").GetMembers());
-                var task2 = new Task(() => comp.GlobalNamespace.GetMember<NamedTypeSymbol>("IA").GetMembers());
+                var task1 = new Task(() => comp.GlobalNamespace.GetMember<NamedTypeSymbol>("A").GetMembersAsImmutable());
+                var task2 = new Task(() => comp.GlobalNamespace.GetMember<NamedTypeSymbol>("IA").GetMembersAsImmutable());
 
                 if (i % 2 == 0)
                 {
@@ -2864,7 +2864,7 @@ struct S
             var comp = CreateCompilation(tree);
             var model = comp.GetSemanticModel(tree);
 
-            var conversions = comp.GlobalNamespace.GetMember<NamedTypeSymbol>("S").GetMembers(WellKnownMemberNames.ExplicitConversionName);
+            var conversions = comp.GlobalNamespace.GetMember<NamedTypeSymbol>("S").GetMembersAsImmutable(WellKnownMemberNames.ExplicitConversionName);
             Assert.Equal(0, conversions.Length);
 
             var expr = GetExprSyntaxForBinding(GetExprSyntaxList(tree));
@@ -2957,7 +2957,7 @@ class C
             var comp = CreateCompilation(tree);
             var model = comp.GetSemanticModel(tree);
 
-            var operators = comp.GlobalNamespace.GetMember<NamedTypeSymbol>("C").GetMembers(WellKnownMemberNames.UnaryPlusOperatorName);
+            var operators = comp.GlobalNamespace.GetMember<NamedTypeSymbol>("C").GetMembersAsImmutable(WellKnownMemberNames.UnaryPlusOperatorName);
             Assert.Equal(0, operators.Length);
 
             var expr = GetExprSyntaxForBinding(GetExprSyntaxList(tree));
@@ -3049,7 +3049,7 @@ class C
             var comp = CreateCompilation(tree);
             var model = comp.GetSemanticModel(tree);
 
-            var operators = comp.GlobalNamespace.GetMember<NamedTypeSymbol>("C").GetMembers(WellKnownMemberNames.IncrementOperatorName);
+            var operators = comp.GlobalNamespace.GetMember<NamedTypeSymbol>("C").GetMembersAsImmutable(WellKnownMemberNames.IncrementOperatorName);
             Assert.Equal(0, operators.Length);
 
             var expr = GetExprSyntaxForBinding(GetExprSyntaxList(tree));
@@ -3123,7 +3123,7 @@ class C
             var comp = CreateCompilation(tree);
             var model = comp.GetSemanticModel(tree);
 
-            var operators = comp.GlobalNamespace.GetMember<NamedTypeSymbol>("C").GetMembers(WellKnownMemberNames.AdditionOperatorName);
+            var operators = comp.GlobalNamespace.GetMember<NamedTypeSymbol>("C").GetMembersAsImmutable(WellKnownMemberNames.AdditionOperatorName);
             Assert.Equal(0, operators.Length);
 
             var expr = GetExprSyntaxForBinding(GetExprSyntaxList(tree));
@@ -3197,7 +3197,7 @@ class C
             var comp = CreateCompilation(tree);
             var model = comp.GetSemanticModel(tree);
 
-            var operators = comp.GlobalNamespace.GetMember<NamedTypeSymbol>("C").GetMembers(WellKnownMemberNames.AdditionOperatorName);
+            var operators = comp.GlobalNamespace.GetMember<NamedTypeSymbol>("C").GetMembersAsImmutable(WellKnownMemberNames.AdditionOperatorName);
             Assert.Equal(0, operators.Length);
 
             var expr = GetExprSyntaxForBinding(GetExprSyntaxList(tree));

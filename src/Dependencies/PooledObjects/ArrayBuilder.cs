@@ -6,6 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using Microsoft.CodeAnalysis.Collections;
+
 
 #if COMPILERCORE
 using Roslyn.Utilities;
@@ -562,6 +564,11 @@ namespace Microsoft.CodeAnalysis.PooledObjects
             {
                 Add(items[i]);
             }
+        }
+
+        public void AddRange(ArrayWrapper<T> items)
+        {
+            _builder.AddRange(items);
         }
 
         public void AddRange<S>(ImmutableArray<S> items) where S : class, T

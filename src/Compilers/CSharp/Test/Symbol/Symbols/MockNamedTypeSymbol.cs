@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using Microsoft.CodeAnalysis.Collections;
 using Microsoft.CodeAnalysis.CSharp.Symbols;
 using Roslyn.Utilities;
 
@@ -94,9 +95,9 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
 
         internal override bool HasDeclaredRequiredMembers => throw new NotImplementedException();
 
-        public override ImmutableArray<Symbol> GetMembers()
+        public override ArrayWrapper<Symbol> GetMembers()
         {
-            return _children.AsImmutable();
+            return new ArrayWrapper<Symbol>(_children.AsImmutable());
         }
 
         internal override IEnumerable<FieldSymbol> GetFieldsToEmit()
@@ -104,42 +105,46 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
             throw new NotImplementedException();
         }
 
-        public override ImmutableArray<Symbol> GetMembers(string name)
+        public override ArrayWrapper<Symbol> GetMembers(string name)
         {
-            return (from sym in _children
-                    where sym.Name == name
-                    select sym).ToArray().AsImmutableOrNull();
+            return new ArrayWrapper<Symbol>(
+                (from sym in _children
+                 where sym.Name == name
+                 select sym).ToImmutableArray());
         }
 
-        internal override ImmutableArray<Symbol> GetEarlyAttributeDecodingMembers()
+        internal override ArrayWrapper<Symbol> GetEarlyAttributeDecodingMembers()
         {
             return this.GetMembers();
         }
 
-        internal override ImmutableArray<Symbol> GetEarlyAttributeDecodingMembers(string name)
+        internal override ArrayWrapper<Symbol> GetEarlyAttributeDecodingMembers(string name)
         {
             return this.GetMembers(name);
         }
 
-        public override ImmutableArray<NamedTypeSymbol> GetTypeMembers()
+        public override ArrayWrapper<NamedTypeSymbol> GetTypeMembers()
         {
-            return (from sym in _children
-                    where sym is NamedTypeSymbol
-                    select (NamedTypeSymbol)sym).ToArray().AsImmutableOrNull();
+            return new ArrayWrapper<NamedTypeSymbol>(
+                (from sym in _children
+                 where sym is NamedTypeSymbol
+                 select (NamedTypeSymbol)sym).ToImmutableArray());
         }
 
-        public override ImmutableArray<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name, int arity)
+        public override ArrayWrapper<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name, int arity)
         {
-            return (from sym in _children
-                    where sym is NamedTypeSymbol namedType && sym.Name.AsSpan().SequenceEqual(name.Span) && namedType.Arity == arity
-                    select (NamedTypeSymbol)sym).ToArray().AsImmutableOrNull();
+            return new ArrayWrapper<NamedTypeSymbol>(
+                (from sym in _children
+                 where sym is NamedTypeSymbol namedType && sym.Name.AsSpan().SequenceEqual(name.Span) && namedType.Arity == arity
+                 select (NamedTypeSymbol)sym).ToImmutableArray());
         }
 
-        public override ImmutableArray<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name)
+        public override ArrayWrapper<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name)
         {
-            return (from sym in _children
-                    where sym is NamedTypeSymbol && sym.Name.AsSpan().SequenceEqual(name.Span)
-                    select (NamedTypeSymbol)sym).ToArray().AsImmutableOrNull();
+            return new ArrayWrapper<NamedTypeSymbol>(
+                (from sym in _children
+                 where sym is NamedTypeSymbol && sym.Name.AsSpan().SequenceEqual(name.Span)
+                 select (NamedTypeSymbol)sym).ToImmutableArray());
         }
 
         public override TypeKind TypeKind
@@ -248,7 +253,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
             throw new NotImplementedException();
         }
 
-        internal override ImmutableArray<NamedTypeSymbol> GetInterfacesToEmit()
+        internal override ArrayWrapper<NamedTypeSymbol> GetInterfacesToEmit()
         {
             throw new NotImplementedException();
         }
@@ -258,7 +263,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
             throw new NotImplementedException();
         }
 
-        internal override ImmutableArray<NamedTypeSymbol> GetDeclaredInterfaces(ConsList<TypeSymbol> basesBeingResolved)
+        internal override ArrayWrapper<NamedTypeSymbol> GetDeclaredInterfaces(ConsList<TypeSymbol> basesBeingResolved)
         {
             throw new NotImplementedException();
         }

@@ -12,6 +12,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.PooledObjects;
 using Microsoft.CodeAnalysis.Shared.Collections;
@@ -1233,7 +1234,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                         // Technically, CIL can define a field and a property with the same name. However, such a
                         // member results in an Ambiguous Member error, and we never get to this piece of code at all.
                         // See UnmanagedCallersOnly_PropertyAndFieldNamedCallConvs for an example
-                        bool isField = attribute.AttributeClass.GetMembers(key).Any(
+                        using var members = attribute.AttributeClass.GetMembers(key);
+                        bool isField = members.Any(
                             static (m, systemType) => m is FieldSymbol { Type: ArrayTypeSymbol { ElementType: NamedTypeSymbol elementType } } && elementType.Equals(systemType, TypeCompareKind.ConsiderEverything),
                             systemType);
 

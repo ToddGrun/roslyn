@@ -150,7 +150,7 @@ class C : I
                 // Can't use ValidateIndexer because explicit implementations aren't indexers in metadata.
 
                 var @class = module.GlobalNamespace.GetMember<NamedTypeSymbol>("C");
-                var indexer = @class.GetMembers().Where(member => member.Kind == SymbolKind.Property).Cast<PropertySymbol>().Single();
+                var indexer = @class.GetMembersAsImmutable().Where(member => member.Kind == SymbolKind.Property).Cast<PropertySymbol>().Single();
 
                 Assert.False(indexer.IsIndexer);
                 Assert.True(indexer.MustCallMethodsDirectly); //since has parameters, but isn't an indexer

@@ -2996,7 +2996,7 @@ class C
             var compilation = CreateCompilation(text);
             var type = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("C");
 
-            Assert.True(type.GetMembers().OfType<FieldSymbol>().All(field => field.Type.IsManagedTypeNoUseSiteDiagnostics));
+            Assert.True(type.GetMembersAsImmutable().OfType<FieldSymbol>().All(field => field.Type.IsManagedTypeNoUseSiteDiagnostics));
         }
 
         [Fact]
@@ -3013,7 +3013,7 @@ unsafe class C
             var compilation = CreateCompilation(text, options: TestOptions.UnsafeReleaseDll);
             var type = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("C");
 
-            Assert.True(type.GetMembers().OfType<FieldSymbol>().All(field => !field.Type.IsManagedTypeNoUseSiteDiagnostics));
+            Assert.True(type.GetMembersAsImmutable().OfType<FieldSymbol>().All(field => !field.Type.IsManagedTypeNoUseSiteDiagnostics));
         }
 
         [Fact]
@@ -3028,7 +3028,7 @@ class C
             var compilation = CreateCompilation(text);
             var type = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("C");
 
-            Assert.True(type.GetMembers().OfType<FieldSymbol>().All(field => field.Type.IsManagedTypeNoUseSiteDiagnostics));
+            Assert.True(type.GetMembersAsImmutable().OfType<FieldSymbol>().All(field => field.Type.IsManagedTypeNoUseSiteDiagnostics));
         }
 
         [Fact]
@@ -3045,7 +3045,7 @@ class C<T>
             var compilation = CreateCompilation(text);
             var type = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("C");
 
-            Assert.True(type.GetMembers().OfType<FieldSymbol>().All(field => field.Type.IsManagedTypeNoUseSiteDiagnostics));
+            Assert.True(type.GetMembersAsImmutable().OfType<FieldSymbol>().All(field => field.Type.IsManagedTypeNoUseSiteDiagnostics));
         }
 
         [Fact]
@@ -3061,7 +3061,7 @@ class C<T, U> where U : struct
             var compilation = CreateCompilation(text);
             var type = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("C");
 
-            Assert.True(type.GetMembers().OfType<FieldSymbol>().All(field => field.Type.IsManagedTypeNoUseSiteDiagnostics));
+            Assert.True(type.GetMembersAsImmutable().OfType<FieldSymbol>().All(field => field.Type.IsManagedTypeNoUseSiteDiagnostics));
         }
 
         [Fact]
@@ -3101,7 +3101,7 @@ class Outer
             var compilation = CreateCompilation(text);
             var type = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("Outer");
 
-            Assert.True(type.GetMembers().OfType<FieldSymbol>().All(field => field.Type.IsManagedTypeNoUseSiteDiagnostics));
+            Assert.True(type.GetMembersAsImmutable().OfType<FieldSymbol>().All(field => field.Type.IsManagedTypeNoUseSiteDiagnostics));
         }
 
         [Fact]
@@ -3121,7 +3121,7 @@ class Outer<T>
             var compilation = CreateCompilation(text);
             var type = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("Outer");
 
-            Assert.True(type.GetMembers().OfType<FieldSymbol>().All(field => field.Type.IsManagedTypeNoUseSiteDiagnostics));
+            Assert.True(type.GetMembersAsImmutable().OfType<FieldSymbol>().All(field => field.Type.IsManagedTypeNoUseSiteDiagnostics));
         }
 
         [Fact]
@@ -3138,7 +3138,7 @@ class C
             var compilation = CreateCompilation(text);
             var type = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("C");
 
-            foreach (var field in type.GetMembers().OfType<FieldSymbol>())
+            foreach (var field in type.GetMembersAsImmutable().OfType<FieldSymbol>())
             {
                 Assert.True(field.Type.IsManagedTypeNoUseSiteDiagnostics, field.ToString());
             }
@@ -3171,7 +3171,7 @@ class C
             var compilation = CreateCompilation(text);
             var type = compilation.GlobalNamespace.GetMember<NamedTypeSymbol>("C");
 
-            Assert.True(type.GetMembers().OfType<FieldSymbol>().All(field => !field.Type.IsManagedTypeNoUseSiteDiagnostics));
+            Assert.True(type.GetMembersAsImmutable().OfType<FieldSymbol>().All(field => !field.Type.IsManagedTypeNoUseSiteDiagnostics));
             Assert.Equal(ManagedKind.UnmanagedWithGenerics, type.GetField("f16").Type.ManagedKindNoUseSiteDiagnostics);
         }
 
@@ -5552,8 +5552,8 @@ struct S
 
             var structType = compilation.GlobalNamespace.GetMember<TypeSymbol>("S");
             var structPointerType = new PointerTypeSymbol(TypeWithAnnotations.Create(structType));
-            var structMethod1 = structType.GetMembers("M").OfType<MethodSymbol>().Single(m => m.ParameterCount == 0);
-            var structMethod2 = structType.GetMembers("M").OfType<MethodSymbol>().Single(m => m.ParameterCount == 1);
+            var structMethod1 = structType.GetMembersAsImmutable("M").OfType<MethodSymbol>().Single(m => m.ParameterCount == 0);
+            var structMethod2 = structType.GetMembersAsImmutable("M").OfType<MethodSymbol>().Single(m => m.ParameterCount == 1);
 
             var receiverSummary = model.GetSemanticInfoSummary(receiverSyntax);
             var receiverSymbol = receiverSummary.Symbol;
@@ -5618,8 +5618,8 @@ struct S
             var callSyntax = syntax.Parent;
 
             var structType = compilation.GlobalNamespace.GetMember<TypeSymbol>("S");
-            var structMethod1 = structType.GetMembers("M").OfType<MethodSymbol>().Single(m => m.ParameterCount == 0);
-            var structMethod2 = structType.GetMembers("M").OfType<MethodSymbol>().Single(m => m.ParameterCount == 1);
+            var structMethod1 = structType.GetMembersAsImmutable("M").OfType<MethodSymbol>().Single(m => m.ParameterCount == 0);
+            var structMethod2 = structType.GetMembersAsImmutable("M").OfType<MethodSymbol>().Single(m => m.ParameterCount == 1);
             var structMethods = ImmutableArray.Create<MethodSymbol>(structMethod1, structMethod2);
 
             var receiverSummary = model.GetSemanticInfoSummary(receiverSyntax);
@@ -10027,7 +10027,7 @@ unsafe struct S
 }
 ";
             var s = CreateCompilation(text).GlobalNamespace.GetMember<TypeSymbol>("S");
-            foreach (var member in s.GetMembers())
+            foreach (var member in s.GetMembersAsImmutable())
             {
                 var field = member as FieldSymbol;
                 if (field != null)

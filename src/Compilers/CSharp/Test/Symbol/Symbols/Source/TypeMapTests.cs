@@ -52,35 +52,35 @@ public class Top : A<E> { // base is A<E>
 ";
             var comp = CreateEmptyCompilation(text);
             var global = comp.GlobalNamespace;
-            var at = global.GetTypeMembers("A", 1).Single(); // A<T>
+            var at = global.GetTypeMembersAsImmutable("A", 1).Single(); // A<T>
             var t = at.TypeParameters[0];
-            Assert.Equal(t, TypeArg(at.GetTypeMembers("TBox", 0).Single().BaseType()));
-            var atbu = at.GetTypeMembers("B", 1).Single(); // A<T>.B<U>
+            Assert.Equal(t, TypeArg(at.GetTypeMembersAsImmutable("TBox", 0).Single().BaseType()));
+            var atbu = at.GetTypeMembersAsImmutable("B", 1).Single(); // A<T>.B<U>
             var u = atbu.TypeParameters[0];
-            var c = atbu.GetTypeMembers("C", 0).Single(); // A<T>.B<U>.C
+            var c = atbu.GetTypeMembersAsImmutable("C", 0).Single(); // A<T>.B<U>.C
             Assert.Equal(atbu, c.ContainingType);
             Assert.Equal(u, TypeArg(c.ContainingType));
             Assert.Equal(at, c.ContainingType.ContainingType);
             Assert.Equal(t, TypeArg(c.ContainingType.ContainingType));
-            var e = global.GetTypeMembers("E", 0).Single(); // E
-            var f = global.GetTypeMembers("F", 0).Single(); // F
-            var top = global.GetTypeMembers("Top", 0).Single(); // Top
+            var e = global.GetTypeMembersAsImmutable("E", 0).Single(); // E
+            var f = global.GetTypeMembersAsImmutable("F", 0).Single(); // F
+            var top = global.GetTypeMembersAsImmutable("Top", 0).Single(); // Top
             var ae = top.BaseType(); // A<E>
             Assert.Equal(at, ae.OriginalDefinition);
             Assert.Equal(at, at.ConstructedFrom);
             Assert.Equal(e, TypeArg(ae));
-            var bf = top.GetTypeMembers("BF", 0).Single(); // Top.BF
+            var bf = top.GetTypeMembersAsImmutable("BF", 0).Single(); // Top.BF
             Assert.Equal(top, bf.ContainingType);
             var aebf = bf.BaseType();
             Assert.Equal(f, TypeArg(aebf));
             Assert.Equal(ae, aebf.ContainingType);
-            var aebfc = aebf.GetTypeMembers("C", 0).Single(); // A<E>.B<F>.C
+            var aebfc = aebf.GetTypeMembersAsImmutable("C", 0).Single(); // A<E>.B<F>.C
             Assert.Equal(c, aebfc.OriginalDefinition);
             Assert.NotEqual(c, aebfc.ConstructedFrom);
             Assert.Equal(f, TypeArg(aebfc.ContainingType));
             Assert.Equal(e, TypeArg(aebfc.ContainingType.ContainingType));
-            Assert.Equal(e, TypeArg(aebfc.GetTypeMembers("TBox", 0).Single().BaseType()));
-            Assert.Equal(f, TypeArg(aebfc.GetTypeMembers("UBox", 0).Single().BaseType())); // exercises alpha-renaming.
+            Assert.Equal(e, TypeArg(aebfc.GetTypeMembersAsImmutable("TBox", 0).Single().BaseType()));
+            Assert.Equal(f, TypeArg(aebfc.GetTypeMembersAsImmutable("UBox", 0).Single().BaseType())); // exercises alpha-renaming.
             Assert.Equal(aebfc, DeepConstruct(c, ImmutableArray.Create<TypeSymbol>(e, f))); // exercise DeepConstruct
         }
 
@@ -111,8 +111,8 @@ class C
             var comp = CreateCompilation(tree);
 
             var global = comp.GlobalNamespace;
-            var c = global.GetTypeMembers("C", 0).Single() as NamedTypeSymbol;
-            var field = c.GetMembers("field").Single() as FieldSymbol;
+            var c = global.GetTypeMembersAsImmutable("C", 0).Single() as NamedTypeSymbol;
+            var field = c.GetMembersAsImmutable("field").Single() as FieldSymbol;
             var neti = field.Type as NamedTypeSymbol;
             Assert.Equal(SpecialType.System_Int32, neti.TypeArguments()[0].SpecialType);
         }
@@ -142,17 +142,17 @@ class C1<C1T1, C1T2>
 
             Assert.Equal("C1<System.Byte, System.Char>", c1OfByteChar.ToTestDisplayString());
 
-            var c1OfByteChar_c2 = (NamedTypeSymbol)(c1OfByteChar.GetMembers()[0]);
+            var c1OfByteChar_c2 = (NamedTypeSymbol)(c1OfByteChar.GetMembersAsImmutable()[0]);
             var c1OfByteChar_c2OfIntInt = c1OfByteChar_c2.Construct(_int, _int);
 
             Assert.Equal("C1<System.Byte, System.Char>.C2<System.Int32, System.Int32>", c1OfByteChar_c2OfIntInt.ToTestDisplayString());
 
-            var c1OfByteChar_c2OfIntInt_c3 = (NamedTypeSymbol)(c1OfByteChar_c2OfIntInt.GetMembers()[0]);
+            var c1OfByteChar_c2OfIntInt_c3 = (NamedTypeSymbol)(c1OfByteChar_c2OfIntInt.GetMembersAsImmutable()[0]);
             var c1OfByteChar_c2OfIntInt_c3OfIntByte = c1OfByteChar_c2OfIntInt_c3.Construct(_int, _byte);
 
             Assert.Equal("C1<System.Byte, System.Char>.C2<System.Int32, System.Int32>.C3<System.Int32, System.Byte>", c1OfByteChar_c2OfIntInt_c3OfIntByte.ToTestDisplayString());
 
-            var v1 = c1OfByteChar_c2OfIntInt_c3OfIntByte.GetMembers().OfType<FieldSymbol>().First();
+            var v1 = c1OfByteChar_c2OfIntInt_c3OfIntByte.GetMembersAsImmutable().OfType<FieldSymbol>().First();
             var type = v1.TypeWithAnnotations;
 
             Assert.Equal("C1<System.Int32, System.Byte>.C2<System.Byte, System.Byte>.C3<System.Char, System.Byte>", type.Type.ToTestDisplayString());
@@ -184,7 +184,7 @@ class C1<C1T1, C1T2>
             var c1OfByteChar = C1.Construct(_byte, _char);
 
             Assert.Equal("C1<System.Byte, System.Char>", c1OfByteChar.ToTestDisplayString());
-            var c1OfByteChar_c2 = (NamedTypeSymbol)(c1OfByteChar.GetMembers()[0]);
+            var c1OfByteChar_c2 = (NamedTypeSymbol)(c1OfByteChar.GetMembersAsImmutable()[0]);
             Assert.Throws<ArgumentException>(() =>
             {
                 var c1OfByteChar_c2OfIntInt = c1OfByteChar_c2.Construct(_byte, _char, _int, _int);

@@ -4,12 +4,12 @@
 
 #nullable disable
 
-using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
+using Microsoft.CodeAnalysis.Collections;
 using Microsoft.CodeAnalysis.CSharp.Emit;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.PooledObjects;
@@ -215,17 +215,36 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             get { return SpecializedCollections.SingletonEnumerable(FixedElementFieldName); }
         }
 
-        public override ImmutableArray<Symbol> GetMembers()
+        public override ArrayWrapper<Symbol> GetMembers()
         {
-            return ImmutableArray.Create<Symbol>(_constructor, _internalField);
+            var builder = ArrayBuilder<Symbol>.GetInstance();
+
+            builder.Add(_constructor);
+            builder.Add(_internalField);
+
+            return new ArrayWrapper<Symbol>(builder);
         }
 
-        public override ImmutableArray<Symbol> GetMembers(string name)
+        public override ArrayWrapper<Symbol> GetMembers(string name)
         {
-            return
-                (name == _constructor.Name) ? ImmutableArray.Create<Symbol>(_constructor) :
-                (name == FixedElementFieldName) ? ImmutableArray.Create<Symbol>(_internalField) :
-                ImmutableArray<Symbol>.Empty;
+            ArrayBuilder<Symbol> builder;
+
+            if (name == _constructor.Name)
+            {
+                builder = ArrayBuilder<Symbol>.GetInstance();
+                builder.Add(_constructor);
+            }
+            else if (name == FixedElementFieldName)
+            {
+                builder = ArrayBuilder<Symbol>.GetInstance();
+                builder.Add(_internalField);
+            }
+            else
+            {
+                return ArrayWrapper<Symbol>.Empty;
+            }
+
+            return new ArrayWrapper<Symbol>(builder);
         }
 
         public override Accessibility DeclaredAccessibility

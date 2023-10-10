@@ -4,13 +4,13 @@
 
 #nullable disable
 
-using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Reflection.Metadata;
 using System.Runtime.InteropServices;
 using Microsoft.Cci;
+using Microsoft.CodeAnalysis.Collections;
 using Microsoft.CodeAnalysis.CSharp.Emit;
 using Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE;
 using Microsoft.CodeAnalysis.Emit;
@@ -317,7 +317,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
             PEModuleBuilder moduleBeingBuilt = (PEModuleBuilder)context.Module;
 
-            foreach (var member in AdaptedNamedTypeSymbol.GetMembers())
+            using var members = AdaptedNamedTypeSymbol.GetMembers();
+            foreach (var member in members)
             {
                 if (member.Kind == SymbolKind.Method)
                 {
@@ -925,7 +926,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         {
             CheckDefinitionInvariant();
 
-            foreach (var m in this.GetMembers())
+            using var members = this.GetMembers();
+            foreach (var m in members)
             {
                 if (m.Kind == SymbolKind.Event)
                 {
@@ -939,9 +941,9 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// <summary>
         /// Gets the set of interfaces to emit on this type. This set can be different from the set returned by Interfaces property.
         /// </summary>
-        internal abstract ImmutableArray<NamedTypeSymbol> GetInterfacesToEmit();
+        internal abstract ArrayWrapper<NamedTypeSymbol> GetInterfacesToEmit();
 
-        protected ImmutableArray<NamedTypeSymbol> CalculateInterfacesToEmit()
+        protected ArrayWrapper<NamedTypeSymbol> CalculateInterfacesToEmit()
         {
             Debug.Assert(this.IsDefinition);
             Debug.Assert(this.ContainingModule is SourceModuleSymbol);
@@ -949,7 +951,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             ArrayBuilder<NamedTypeSymbol> builder = ArrayBuilder<NamedTypeSymbol>.GetInstance();
             HashSet<NamedTypeSymbol> seen = null;
             InterfacesVisit(this, builder, ref seen);
-            return builder.ToImmutableAndFree();
+            return new ArrayWrapper<NamedTypeSymbol>(builder);
         }
 
         /// <summary>
@@ -1004,7 +1006,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         {
             CheckDefinitionInvariant();
 
-            foreach (var m in this.GetMembers())
+            using var members = this.GetMembers();
+            foreach (var m in members)
             {
                 if (m.Kind == SymbolKind.Method)
                 {
@@ -1021,7 +1024,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         {
             CheckDefinitionInvariant();
 
-            foreach (var m in this.GetMembers())
+            using var members = this.GetMembers();
+            foreach (var m in members)
             {
                 if (m.Kind == SymbolKind.Property)
                 {

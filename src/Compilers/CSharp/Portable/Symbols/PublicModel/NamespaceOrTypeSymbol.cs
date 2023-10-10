@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Immutable;
+using System.Reflection.Metadata.Ecma335;
 
 namespace Microsoft.CodeAnalysis.CSharp.Symbols.PublicModel
 {
@@ -12,27 +13,42 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.PublicModel
 
         ImmutableArray<ISymbol> INamespaceOrTypeSymbol.GetMembers()
         {
-            return UnderlyingNamespaceOrTypeSymbol.GetMembers().GetPublicSymbols();
+            using var members = UnderlyingNamespaceOrTypeSymbol.GetMembers();
+            using var publicSymbols = members.GetPublicSymbols();
+
+            return publicSymbols.ToImmutableArray();
         }
 
         ImmutableArray<ISymbol> INamespaceOrTypeSymbol.GetMembers(string name)
         {
-            return UnderlyingNamespaceOrTypeSymbol.GetMembers(name).GetPublicSymbols();
+            using var members = UnderlyingNamespaceOrTypeSymbol.GetMembers(name);
+            using var publicSymbols = members.GetPublicSymbols();
+
+            return publicSymbols.ToImmutableArray();
         }
 
         ImmutableArray<INamedTypeSymbol> INamespaceOrTypeSymbol.GetTypeMembers()
         {
-            return UnderlyingNamespaceOrTypeSymbol.GetTypeMembers().GetPublicSymbols();
+            using var members = UnderlyingNamespaceOrTypeSymbol.GetTypeMembers();
+            using var publicSymbols = members.GetPublicSymbols();
+
+            return publicSymbols.ToImmutableArray();
         }
 
         ImmutableArray<INamedTypeSymbol> INamespaceOrTypeSymbol.GetTypeMembers(string name)
         {
-            return UnderlyingNamespaceOrTypeSymbol.GetTypeMembers(name).GetPublicSymbols();
+            using var members = UnderlyingNamespaceOrTypeSymbol.GetTypeMembers(name);
+            using var publicSymbols = members.GetPublicSymbols();
+
+            return publicSymbols.ToImmutableArray();
         }
 
         ImmutableArray<INamedTypeSymbol> INamespaceOrTypeSymbol.GetTypeMembers(string name, int arity)
         {
-            return UnderlyingNamespaceOrTypeSymbol.GetTypeMembers(name, arity).GetPublicSymbols();
+            using var members = UnderlyingNamespaceOrTypeSymbol.GetTypeMembers(name, arity);
+            using var publicSymbols = members.GetPublicSymbols();
+
+            return publicSymbols.ToImmutableArray();
         }
 
         bool INamespaceOrTypeSymbol.IsNamespace => UnderlyingSymbol.Kind == SymbolKind.Namespace;

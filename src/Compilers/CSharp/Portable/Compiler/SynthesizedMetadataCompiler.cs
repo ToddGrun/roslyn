@@ -53,7 +53,8 @@ namespace Microsoft.CodeAnalysis.CSharp
         {
             _cancellationToken.ThrowIfCancellationRequested();
 
-            foreach (var s in symbol.GetMembers())
+            using var members = symbol.GetMembers();
+            foreach (var s in members)
             {
                 s.Accept(this);
             }
@@ -79,7 +80,8 @@ namespace Microsoft.CodeAnalysis.CSharp
                 }
             }
 
-            foreach (Symbol member in symbol.GetMembers())
+            using var members = symbol.GetMembers();
+            foreach (Symbol member in members)
             {
                 switch (member.Kind)
                 {

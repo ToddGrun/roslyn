@@ -356,18 +356,18 @@ interface I
 
             var comp = CreateCompilation(text);
             var global = comp.GlobalNamespace;
-            var a = global.GetTypeMembers("A", 0).Single();
-            var i = global.GetTypeMembers("I", 0).Single();
+            var a = global.GetTypeMembersAsImmutable("A", 0).Single();
+            var i = global.GetTypeMembersAsImmutable("I", 0).Single();
 
-            var p = a.GetMembers("P").SingleOrDefault() as PropertySymbol;
+            var p = a.GetMembersAsImmutable("P").SingleOrDefault() as PropertySymbol;
             Assert.False(p.GetMethod.IsImplicitlyDeclared);
             Assert.False(p.SetMethod.IsImplicitlyDeclared);
 
-            p = a.GetMembers("P2").SingleOrDefault() as PropertySymbol;
+            p = a.GetMembersAsImmutable("P2").SingleOrDefault() as PropertySymbol;
             Assert.False(p.GetMethod.IsImplicitlyDeclared);
             Assert.False(p.SetMethod.IsImplicitlyDeclared);
 
-            var q = i.GetMembers("Q").SingleOrDefault() as PropertySymbol;
+            var q = i.GetMembersAsImmutable("Q").SingleOrDefault() as PropertySymbol;
             Assert.False(q.GetMethod.IsImplicitlyDeclared);
             Assert.False(q.SetMethod.IsImplicitlyDeclared);
         }
@@ -389,10 +389,10 @@ class C
 ";
             var comp = CreateCompilation(text);
             var global = comp.GlobalNamespace;
-            var type01 = global.GetTypeMembers("C").Single();
-            var type02 = type01.GetTypeMembers("S").Single();
+            var type01 = global.GetTypeMembersAsImmutable("C").Single();
+            var type02 = type01.GetTypeMembersAsImmutable("S").Single();
 
-            var mems = type01.GetMembers();
+            var mems = type01.GetMembersAsImmutable();
             FieldSymbol backField = null;
             // search but not use internal backfield name 
             // there is exact ONE field symbol in this test
@@ -407,11 +407,11 @@ class C
             // Back field location should be same as Property
             Assert.NotNull(backField);
             Assert.False(backField.Locations.IsEmpty);
-            var prop = type01.GetMembers("Prop").Single() as PropertySymbol;
+            var prop = type01.GetMembersAsImmutable("Prop").Single() as PropertySymbol;
             Assert.Equal(prop.Locations.Length, backField.Locations.Length);
             Assert.Equal(prop.Locations[0].ToString(), backField.Locations[0].ToString());
             // -------------------------------------
-            mems = type02.GetMembers();
+            mems = type02.GetMembersAsImmutable();
             backField = null;
             // search but not use internal backfield name 
             // there is exact ONE field symbol in this test
@@ -426,7 +426,7 @@ class C
             // Back field location should be same as Property
             Assert.NotNull(backField);
             Assert.False(backField.Locations.IsEmpty);
-            prop = type02.GetMembers("Prop").Single() as PropertySymbol;
+            prop = type02.GetMembersAsImmutable("Prop").Single() as PropertySymbol;
             Assert.Equal(prop.Locations.Length, backField.Locations.Length);
             Assert.Equal(prop.Locations[0].ToString(), backField.Locations[0].ToString());
         }
@@ -446,8 +446,8 @@ class C1
 }
 ";
             var comp = CreateCompilation(Parse(text));
-            NamedTypeSymbol c1 = (NamedTypeSymbol)comp.SourceModule.GlobalNamespace.GetMembers("C1").Single();
-            PropertySymbol ein = (PropertySymbol)c1.GetMembers("in").Single();
+            NamedTypeSymbol c1 = (NamedTypeSymbol)comp.SourceModule.GlobalNamespace.GetMembersAsImmutable("C1").Single();
+            PropertySymbol ein = (PropertySymbol)c1.GetMembersAsImmutable("in").Single();
             Assert.Equal("in", ein.Name);
             Assert.Equal("C1.@in", ein.ToString());
             NamedTypeSymbol dout = (NamedTypeSymbol)ein.Type;
@@ -597,7 +597,7 @@ class C : B<string>
             Assert.Equal(type, accessor.ContainingType);
             Assert.Equal(type, accessor.ContainingSymbol);
 
-            var method = type.GetMembers(accessor.Name).Single();
+            var method = type.GetMembersAsImmutable(accessor.Name).Single();
             Assert.NotNull(method);
             Assert.Equal(accessor, method);
 
@@ -625,17 +625,17 @@ class Program
                 new ErrorDescription { Code = (int)ErrorCode.ERR_NoSuchMemberOrExtension, Line = 6, Column = 11 },
                 new ErrorDescription { Code = (int)ErrorCode.ERR_NoSuchMember, Line = 6, Column = 34 });
 
-            var type = (PENamedTypeSymbol)compilation.GlobalNamespace.GetMembers("NoAccessors").Single();
+            var type = (PENamedTypeSymbol)compilation.GlobalNamespace.GetMembersAsImmutable("NoAccessors").Single();
 
             // Methods are available.
-            Assert.NotNull(type.GetMembers("StaticMethod").SingleOrDefault());
-            Assert.NotNull(type.GetMembers("InstanceMethod").SingleOrDefault());
-            Assert.Equal(2, type.GetMembers().OfType<MethodSymbol>().Count());
+            Assert.NotNull(type.GetMembersAsImmutable("StaticMethod").SingleOrDefault());
+            Assert.NotNull(type.GetMembersAsImmutable("InstanceMethod").SingleOrDefault());
+            Assert.Equal(2, type.GetMembersAsImmutable().OfType<MethodSymbol>().Count());
 
             // Properties are not available.
-            Assert.Null(type.GetMembers("Static").SingleOrDefault());
-            Assert.Null(type.GetMembers("Instance").SingleOrDefault());
-            Assert.Equal(0, type.GetMembers().OfType<PropertySymbol>().Count());
+            Assert.Null(type.GetMembersAsImmutable("Static").SingleOrDefault());
+            Assert.Null(type.GetMembersAsImmutable("Instance").SingleOrDefault());
+            Assert.Equal(0, type.GetMembersAsImmutable().OfType<PropertySymbol>().Count());
         }
 
         /// <summary>
@@ -713,9 +713,9 @@ class Program
 
             // Valid static property, property with signature that does not match accessors,
             // and property with accessors that do not match each other.
-            var goodStatic = (PEPropertySymbol)type.GetMembers("GoodStatic").Single();
-            var badStatic = (PEPropertySymbol)type.GetMembers("BadStatic").Single();
-            var mismatchedStatic = (PEPropertySymbol)type.GetMembers("MismatchedStatic").Single();
+            var goodStatic = (PEPropertySymbol)type.GetMembersAsImmutable("GoodStatic").Single();
+            var badStatic = (PEPropertySymbol)type.GetMembersAsImmutable("BadStatic").Single();
+            var mismatchedStatic = (PEPropertySymbol)type.GetMembersAsImmutable("MismatchedStatic").Single();
 
             Assert.False(goodStatic.MustCallMethodsDirectly);
             Assert.True(badStatic.MustCallMethodsDirectly);
@@ -730,9 +730,9 @@ class Program
 
             // Valid instance property, property with signature that does not match accessors,
             // and property with accessors that do not match each other.
-            var goodInstance = (PEPropertySymbol)type.GetMembers("GoodInstance").Single();
-            var badInstance = (PEPropertySymbol)type.GetMembers("BadInstance").Single();
-            var mismatchedInstance = (PEPropertySymbol)type.GetMembers("MismatchedInstance").Single();
+            var goodInstance = (PEPropertySymbol)type.GetMembersAsImmutable("GoodInstance").Single();
+            var badInstance = (PEPropertySymbol)type.GetMembersAsImmutable("BadInstance").Single();
+            var mismatchedInstance = (PEPropertySymbol)type.GetMembersAsImmutable("MismatchedInstance").Single();
 
             Assert.False(goodInstance.MustCallMethodsDirectly);
             Assert.True(badInstance.MustCallMethodsDirectly);
@@ -746,13 +746,13 @@ class Program
             VerifyAccessor(mismatchedInstance.SetMethod, null, MethodKind.Ordinary);
 
             // Mix of static and instance accessors.
-            var staticAndInstance = (PEPropertySymbol)type.GetMembers("StaticAndInstance").Single();
+            var staticAndInstance = (PEPropertySymbol)type.GetMembersAsImmutable("StaticAndInstance").Single();
             VerifyAccessor(staticAndInstance.GetMethod, goodStatic, MethodKind.PropertyGet);
             VerifyAccessor(staticAndInstance.SetMethod, goodInstance, MethodKind.PropertySet);
             Assert.True(staticAndInstance.MustCallMethodsDirectly);
 
             // Property with get and set accessors both referring to the same get method.
-            var getUsedAsSet = (PEPropertySymbol)type.GetMembers("GetUsedAsSet").Single();
+            var getUsedAsSet = (PEPropertySymbol)type.GetMembersAsImmutable("GetUsedAsSet").Single();
             VerifyAccessor(getUsedAsSet.GetMethod, goodInstance, MethodKind.PropertyGet);
             VerifyAccessor(getUsedAsSet.SetMethod, goodInstance, MethodKind.PropertyGet);
             Assert.True(getUsedAsSet.MustCallMethodsDirectly);
@@ -787,60 +787,60 @@ class Program
 }
 ";
             var compilation = CompileWithCustomPropertiesAssembly(source, TestOptions.ReleaseDll.WithMetadataImportOptions(MetadataImportOptions.Internal));
-            var type = (PENamedTypeSymbol)compilation.GlobalNamespace.GetMembers("FamilyAssembly").Single();
+            var type = (PENamedTypeSymbol)compilation.GlobalNamespace.GetMembersAsImmutable("FamilyAssembly").Single();
 
             VerifyAccessibility(
-                (PEPropertySymbol)type.GetMembers("FamilyGetAssemblySetStatic").Single(),
+                (PEPropertySymbol)type.GetMembersAsImmutable("FamilyGetAssemblySetStatic").Single(),
                 Accessibility.ProtectedOrInternal,
                 Accessibility.Protected,
                 Accessibility.Internal);
             VerifyAccessibility(
-                (PEPropertySymbol)type.GetMembers("FamilyGetFamilyOrAssemblySetStatic").Single(),
+                (PEPropertySymbol)type.GetMembersAsImmutable("FamilyGetFamilyOrAssemblySetStatic").Single(),
                 Accessibility.ProtectedOrInternal,
                 Accessibility.Protected,
                 Accessibility.ProtectedOrInternal);
             VerifyAccessibility(
-                (PEPropertySymbol)type.GetMembers("FamilyGetFamilyAndAssemblySetStatic").Single(),
+                (PEPropertySymbol)type.GetMembersAsImmutable("FamilyGetFamilyAndAssemblySetStatic").Single(),
                 Accessibility.Protected,
                 Accessibility.Protected,
                 Accessibility.ProtectedAndInternal);
             VerifyAccessibility(
-                (PEPropertySymbol)type.GetMembers("AssemblyGetFamilyOrAssemblySetStatic").Single(),
+                (PEPropertySymbol)type.GetMembersAsImmutable("AssemblyGetFamilyOrAssemblySetStatic").Single(),
                 Accessibility.ProtectedOrInternal,
                 Accessibility.Internal,
                 Accessibility.ProtectedOrInternal);
             VerifyAccessibility(
-                (PEPropertySymbol)type.GetMembers("AssemblyGetFamilyAndAssemblySetStatic").Single(),
+                (PEPropertySymbol)type.GetMembersAsImmutable("AssemblyGetFamilyAndAssemblySetStatic").Single(),
                 Accessibility.Internal,
                 Accessibility.Internal,
                 Accessibility.ProtectedAndInternal);
             VerifyAccessibility(
-                (PEPropertySymbol)type.GetMembers("FamilyOrAssemblyGetFamilyOrAssemblySetStatic").Single(),
+                (PEPropertySymbol)type.GetMembersAsImmutable("FamilyOrAssemblyGetFamilyOrAssemblySetStatic").Single(),
                 Accessibility.ProtectedOrInternal,
                 Accessibility.ProtectedOrInternal,
                 Accessibility.ProtectedOrInternal);
             VerifyAccessibility(
-                (PEPropertySymbol)type.GetMembers("FamilyOrAssemblyGetFamilyAndAssemblySetStatic").Single(),
+                (PEPropertySymbol)type.GetMembersAsImmutable("FamilyOrAssemblyGetFamilyAndAssemblySetStatic").Single(),
                 Accessibility.ProtectedOrInternal,
                 Accessibility.ProtectedOrInternal,
                 Accessibility.ProtectedAndInternal);
             VerifyAccessibility(
-                (PEPropertySymbol)type.GetMembers("FamilyAndAssemblyGetFamilyAndAssemblySetStatic").Single(),
+                (PEPropertySymbol)type.GetMembersAsImmutable("FamilyAndAssemblyGetFamilyAndAssemblySetStatic").Single(),
                 Accessibility.ProtectedAndInternal,
                 Accessibility.ProtectedAndInternal,
                 Accessibility.ProtectedAndInternal);
             VerifyAccessibility(
-                (PEPropertySymbol)type.GetMembers("FamilyAndAssemblyGetOnlyInstance").Single(),
+                (PEPropertySymbol)type.GetMembersAsImmutable("FamilyAndAssemblyGetOnlyInstance").Single(),
                 Accessibility.ProtectedAndInternal,
                 Accessibility.ProtectedAndInternal,
                 Accessibility.NotApplicable);
             VerifyAccessibility(
-                (PEPropertySymbol)type.GetMembers("FamilyOrAssemblySetOnlyInstance").Single(),
+                (PEPropertySymbol)type.GetMembersAsImmutable("FamilyOrAssemblySetOnlyInstance").Single(),
                 Accessibility.ProtectedOrInternal,
                 Accessibility.NotApplicable,
                 Accessibility.ProtectedOrInternal);
             VerifyAccessibility(
-                (PEPropertySymbol)type.GetMembers("FamilyAndAssemblyGetFamilyOrAssemblySetInstance").Single(),
+                (PEPropertySymbol)type.GetMembersAsImmutable("FamilyAndAssemblyGetFamilyOrAssemblySetInstance").Single(),
                 Accessibility.ProtectedOrInternal,
                 Accessibility.ProtectedAndInternal,
                 Accessibility.ProtectedOrInternal);
@@ -1746,16 +1746,16 @@ class C : I
 
             var globalNamespace = comp.GlobalNamespace;
 
-            var @interface = (NamedTypeSymbol)globalNamespace.GetTypeMembers("I").Single();
+            var @interface = (NamedTypeSymbol)globalNamespace.GetTypeMembersAsImmutable("I").Single();
             Assert.Equal(TypeKind.Interface, @interface.TypeKind);
 
-            var interfaceProperty = (PropertySymbol)@interface.GetMembers("P").Single();
+            var interfaceProperty = (PropertySymbol)@interface.GetMembersAsImmutable("P").Single();
 
-            var @class = (NamedTypeSymbol)globalNamespace.GetTypeMembers("C").Single();
+            var @class = (NamedTypeSymbol)globalNamespace.GetTypeMembersAsImmutable("C").Single();
             Assert.Equal(TypeKind.Class, @class.TypeKind);
             Assert.True(@class.Interfaces().Contains(@interface));
 
-            var classProperty = (PropertySymbol)@class.GetMembers("I.P").Single();
+            var classProperty = (PropertySymbol)@class.GetMembersAsImmutable("I.P").Single();
 
             CheckPropertyExplicitImplementation(@class, classProperty, interfaceProperty);
         }
@@ -1780,16 +1780,16 @@ class C : I
 
             var globalNamespace = comp.GlobalNamespace;
 
-            var @interface = (NamedTypeSymbol)globalNamespace.GetTypeMembers("I").Single();
+            var @interface = (NamedTypeSymbol)globalNamespace.GetTypeMembersAsImmutable("I").Single();
             Assert.Equal(TypeKind.Interface, @interface.TypeKind);
 
-            var interfaceProperty = (PropertySymbol)@interface.GetMembers("P").Single();
+            var interfaceProperty = (PropertySymbol)@interface.GetMembersAsImmutable("P").Single();
 
-            var @class = (NamedTypeSymbol)globalNamespace.GetTypeMembers("C").Single();
+            var @class = (NamedTypeSymbol)globalNamespace.GetTypeMembersAsImmutable("C").Single();
             Assert.Equal(TypeKind.Class, @class.TypeKind);
             Assert.True(@class.Interfaces().Contains(@interface));
 
-            var classProperty = (PropertySymbol)@class.GetMembers("I.P").Single();
+            var classProperty = (PropertySymbol)@class.GetMembersAsImmutable("I.P").Single();
             Assert.Equal(RefKind.Ref, classProperty.RefKind);
 
             CheckRefPropertyExplicitImplementation(@class, classProperty, interfaceProperty);
@@ -1816,22 +1816,22 @@ class C : N.I<int>
             var comp = CreateCompilation(Parse(text));
 
             var globalNamespace = comp.GlobalNamespace;
-            var @namespace = (NamespaceSymbol)globalNamespace.GetMembers("N").Single();
+            var @namespace = (NamespaceSymbol)globalNamespace.GetMembersAsImmutable("N").Single();
 
-            var @interface = (NamedTypeSymbol)@namespace.GetTypeMembers("I").Single();
+            var @interface = (NamedTypeSymbol)@namespace.GetTypeMembersAsImmutable("I").Single();
             Assert.Equal(TypeKind.Interface, @interface.TypeKind);
 
-            var interfaceProperty = (PropertySymbol)@interface.GetMembers("P").Single();
+            var interfaceProperty = (PropertySymbol)@interface.GetMembersAsImmutable("P").Single();
 
-            var @class = (NamedTypeSymbol)globalNamespace.GetTypeMembers("C").Single();
+            var @class = (NamedTypeSymbol)globalNamespace.GetTypeMembersAsImmutable("C").Single();
             Assert.Equal(TypeKind.Class, @class.TypeKind);
 
-            var classProperty = (PropertySymbol)@class.GetMembers("N.I<System.Int32>.P").Single();
+            var classProperty = (PropertySymbol)@class.GetMembersAsImmutable("N.I<System.Int32>.P").Single();
 
             var substitutedInterface = @class.Interfaces().Single();
             Assert.Equal(@interface, substitutedInterface.ConstructedFrom);
 
-            var substitutedInterfaceProperty = (PropertySymbol)substitutedInterface.GetMembers("P").Single();
+            var substitutedInterfaceProperty = (PropertySymbol)substitutedInterface.GetMembersAsImmutable("P").Single();
 
             CheckPropertyExplicitImplementation(@class, classProperty, substitutedInterfaceProperty);
         }
@@ -1876,7 +1876,7 @@ class Program
                 var type = field.Type;
                 // Non-generic type.
                 //var type = module.GlobalNamespace.GetMember<NamedTypeSymbol>("WithParameterizedProps");
-                var getters = type.GetMembers("get_P").OfType<MethodSymbol>();
+                var getters = type.GetMembersAsImmutable("get_P").OfType<MethodSymbol>();
                 Assert.Equal(2, getters.Count(getter => getter.Parameters.Length == 1));
                 Assert.Equal(1, getters.Count(getter => getter.Parameters.Length == 2));
 
@@ -1921,8 +1921,8 @@ public class A : Attribute
 ";
             var comp = CreateCompilation(text);
             var global = comp.GlobalNamespace;
-            var a = global.GetTypeMembers("A", 0).Single();
-            var xs = a.GetMembers("X");
+            var a = global.GetTypeMembersAsImmutable("A", 0).Single();
+            var xs = a.GetMembersAsImmutable("X");
             Assert.Equal(2, xs.Length);
             foreach (var x in xs)
             {
@@ -1953,17 +1953,17 @@ class Test
 
             var globalNamespace = comp.SourceModule.GlobalNamespace;
 
-            var @class = (NamedTypeSymbol)globalNamespace.GetTypeMembers("Test").Single();
+            var @class = (NamedTypeSymbol)globalNamespace.GetTypeMembersAsImmutable("Test").Single();
             Assert.Equal(TypeKind.Class, @class.TypeKind);
 
-            var accessor = @class.GetMembers("get_Item").Single() as MethodSymbol;
+            var accessor = @class.GetMembersAsImmutable("get_Item").Single() as MethodSymbol;
             Assert.Equal(1, accessor.Parameters.Length);
             var locs = accessor.Parameters[0].Locations;
             // i
             Assert.Equal(1, locs.Length);
             Assert.True(locs[0].IsInSource, "InSource");
 
-            accessor = @class.GetMembers("set_Item").Single() as MethodSymbol;
+            accessor = @class.GetMembersAsImmutable("set_Item").Single() as MethodSymbol;
             Assert.Equal(2, accessor.Parameters.Length);
             // i
             locs = accessor.Parameters[0].Locations;
@@ -2763,7 +2763,7 @@ public interface IA
             {
                 var actualMembers =
                     m.GlobalNamespace.GetMember<NamespaceSymbol>("Test").
-                    GetMember<NamedTypeSymbol>("C").GetMembers().ToArray();
+                    GetMember<NamedTypeSymbol>("C").GetMembersAsImmutable().ToArray();
 
                 AssertEx.SetEqual(actualMembers.Select(s => s.Name), expectedMembers);
             };

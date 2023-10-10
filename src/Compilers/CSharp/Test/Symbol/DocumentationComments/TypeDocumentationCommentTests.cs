@@ -43,26 +43,26 @@ namespace Acme
 	}
 }");
 
-            _acmeNamespace = (NamespaceSymbol)_compilation.GlobalNamespace.GetMembers("Acme").Single();
-            _widgetClass = _acmeNamespace.GetTypeMembers("Widget").Single();
+            _acmeNamespace = (NamespaceSymbol)_compilation.GlobalNamespace.GetMembersAsImmutable("Acme").Single();
+            _widgetClass = _acmeNamespace.GetTypeMembersAsImmutable("Widget").Single();
         }
 
         [Fact]
         public void TestEnum()
         {
-            Assert.Equal("T:Color", _compilation.GlobalNamespace.GetTypeMembers("Color").Single().GetDocumentationCommentId());
+            Assert.Equal("T:Color", _compilation.GlobalNamespace.GetTypeMembersAsImmutable("Color").Single().GetDocumentationCommentId());
         }
 
         [Fact]
         public void TestInterface()
         {
-            Assert.Equal("T:Acme.IProcess", _acmeNamespace.GetTypeMembers("IProcess").Single().GetDocumentationCommentId());
+            Assert.Equal("T:Acme.IProcess", _acmeNamespace.GetTypeMembersAsImmutable("IProcess").Single().GetDocumentationCommentId());
         }
 
         [Fact]
         public void TestStruct()
         {
-            Assert.Equal("T:Acme.ValueType", _acmeNamespace.GetTypeMembers("ValueType").Single().GetDocumentationCommentId());
+            Assert.Equal("T:Acme.ValueType", _acmeNamespace.GetTypeMembersAsImmutable("ValueType").Single().GetDocumentationCommentId());
         }
 
         [Fact]
@@ -74,7 +74,7 @@ namespace Acme
         [Fact]
         public void TestNestedClass()
         {
-            var classSymbol = _widgetClass.GetTypeMembers("NestedClass").Single();
+            var classSymbol = _widgetClass.GetTypeMembersAsImmutable("NestedClass").Single();
             Assert.Equal("T:Acme.Widget.NestedClass", classSymbol.GetDocumentationCommentId());
             Assert.Equal(
 @"<member name=""T:Acme.Widget.NestedClass"">
@@ -88,32 +88,32 @@ namespace Acme
         [Fact]
         public void TestNestedInterface()
         {
-            Assert.Equal("T:Acme.Widget.IMenuItem", _widgetClass.GetMembers("IMenuItem").Single().GetDocumentationCommentId());
+            Assert.Equal("T:Acme.Widget.IMenuItem", _widgetClass.GetMembersAsImmutable("IMenuItem").Single().GetDocumentationCommentId());
         }
 
         [Fact]
         public void TestNestedDelegate()
         {
-            Assert.Equal("T:Acme.Widget.Del", _widgetClass.GetTypeMembers("Del").Single().GetDocumentationCommentId());
+            Assert.Equal("T:Acme.Widget.Del", _widgetClass.GetTypeMembersAsImmutable("Del").Single().GetDocumentationCommentId());
         }
 
         [Fact]
         public void TestNestedEnum()
         {
-            Assert.Equal("T:Acme.Widget.Direction", _widgetClass.GetTypeMembers("Direction").Single().GetDocumentationCommentId());
+            Assert.Equal("T:Acme.Widget.Direction", _widgetClass.GetTypeMembersAsImmutable("Direction").Single().GetDocumentationCommentId());
         }
 
         [Fact]
         public void TestGenericType()
         {
-            Assert.Equal("T:Acme.MyList`1", _acmeNamespace.GetTypeMembers("MyList", 1).Single().GetDocumentationCommentId());
+            Assert.Equal("T:Acme.MyList`1", _acmeNamespace.GetTypeMembersAsImmutable("MyList", 1).Single().GetDocumentationCommentId());
         }
 
         [Fact]
         public void TestNestedGenericType()
         {
-            Assert.Equal("T:Acme.MyList`1.Helper`2", _acmeNamespace.GetTypeMembers("MyList", 1).Single()
-                                                                  .GetTypeMembers("Helper", 2).Single().GetDocumentationCommentId());
+            Assert.Equal("T:Acme.MyList`1.Helper`2", _acmeNamespace.GetTypeMembersAsImmutable("MyList", 1).Single()
+                                                                  .GetTypeMembersAsImmutable("Helper", 2).Single().GetDocumentationCommentId());
         }
 
         [Fact]

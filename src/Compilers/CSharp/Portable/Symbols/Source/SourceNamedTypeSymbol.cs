@@ -13,6 +13,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Microsoft.CodeAnalysis.CSharp.Emit;
+using Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.PooledObjects;
 using Microsoft.CodeAnalysis.Symbols;
@@ -1785,17 +1786,18 @@ next:;
             // already, or the original author ignored this warning.
 
             // Obsolete states should have already been calculated by this point in the pipeline.
+            using var members = GetMembers();
             Debug.Assert(ObsoleteKind != ObsoleteAttributeKind.Uninitialized);
-            Debug.Assert(GetMembers().All(m => m.ObsoleteKind != ObsoleteAttributeKind.Uninitialized));
+            Debug.Assert(members.All(m => m.ObsoleteKind != ObsoleteAttributeKind.Uninitialized));
 
             if (ObsoleteKind != ObsoleteAttributeKind.None
-                || GetMembers().All(m => m is not MethodSymbol { MethodKind: MethodKind.Constructor, ObsoleteKind: ObsoleteAttributeKind.None } method
+                || members.All(m => m is not MethodSymbol { MethodKind: MethodKind.Constructor, ObsoleteKind: ObsoleteAttributeKind.None } method
                                          || !method.ShouldCheckRequiredMembers()))
             {
                 return;
             }
 
-            foreach (var member in GetMembers())
+            foreach (var member in members)
             {
                 if (!member.IsRequired())
                 {

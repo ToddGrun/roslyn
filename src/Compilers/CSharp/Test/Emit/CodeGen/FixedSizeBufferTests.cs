@@ -573,7 +573,7 @@ class Program
                 references: new MetadataReference[] { MetadataReference.CreateFromStream(comp1.EmitToStream()) },
                 expectedOutput: "12", verify: Verification.Fails).Compilation;
 
-            var f = (FieldSymbol)comp2.GlobalNamespace.GetTypeMembers("S")[0].GetMembers("x")[0];
+            var f = (FieldSymbol)comp2.GlobalNamespace.GetTypeMembersAsImmutable("S")[0].GetMembersAsImmutable("x")[0];
             Assert.Equal("x", f.Name);
             Assert.True(f.IsFixedSizeBuffer);
             Assert.Equal("int*", f.TypeWithAnnotations.ToString());
@@ -982,7 +982,7 @@ public unsafe struct Test
                             Assert.Equal(layout, test.Layout.Kind);
                             Assert.Equal(charSet == CharSet.None ? CharSet.Ansi : charSet, test.MarshallingCharSet);
 
-                            var bufferType = test.GetTypeMembers().Single();
+                            var bufferType = test.GetTypeMembersAsImmutable().Single();
                             Assert.Equal("Test.<Field>e__FixedBuffer", bufferType.ToTestDisplayString());
                             Assert.Equal(LayoutKind.Sequential, bufferType.Layout.Kind);
                             Assert.Equal(charSet == CharSet.None ? CharSet.Ansi : charSet, bufferType.MarshallingCharSet);
@@ -1014,7 +1014,7 @@ public unsafe struct Test
                         Assert.Equal(layout, test.Layout.Kind);
                         Assert.Equal(CharSet.Ansi, test.MarshallingCharSet);
 
-                        var bufferType = test.GetTypeMembers().Single();
+                        var bufferType = test.GetTypeMembersAsImmutable().Single();
                         Assert.Equal("Test.<Field>e__FixedBuffer", bufferType.ToTestDisplayString());
                         Assert.Equal(LayoutKind.Sequential, bufferType.Layout.Kind);
                         Assert.Equal(CharSet.Ansi, bufferType.MarshallingCharSet);

@@ -7,6 +7,8 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using Microsoft.CodeAnalysis.Collections;
+using Microsoft.CodeAnalysis.PooledObjects;
 using Roslyn.Utilities;
 
 namespace Microsoft.CodeAnalysis.CSharp.Symbols
@@ -138,16 +140,16 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// </summary>
         /// <returns>An ImmutableArray containing all the members of this symbol. If this symbol has no members,
         /// returns an empty ImmutableArray. Never returns Null.</returns>
-        public override ImmutableArray<Symbol> GetMembers()
+        public override ArrayWrapper<Symbol> GetMembers()
         {
             if (IsTupleType)
             {
                 var result = MakeSynthesizedTupleMembers(ImmutableArray<Symbol>.Empty);
                 RoslynDebug.Assert(result is object);
-                return result.ToImmutableAndFree();
+                return new ArrayWrapper<Symbol>(result);
             }
 
-            return ImmutableArray<Symbol>.Empty;
+            return ArrayWrapper<Symbol>.Empty;
         }
 
         /// <summary>
@@ -155,9 +157,21 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// </summary>
         /// <returns>An ImmutableArray containing all the members of this symbol with the given name. If there are
         /// no members with this name, returns an empty ImmutableArray. Never returns Null.</returns>
-        public override ImmutableArray<Symbol> GetMembers(string name)
+        public override ArrayWrapper<Symbol> GetMembers(string name)
         {
-            return GetMembers().WhereAsArray((m, name) => m.Name == name, name);
+            using var members = GetMembers();
+            ArrayBuilder<Symbol>? builder = null;
+
+            foreach (var member in members)
+            {
+                if (member.Name == name)
+                {
+                    builder ??= ArrayBuilder<Symbol>.GetInstance();
+                    builder.Add(member);
+                }
+            }
+
+            return new ArrayWrapper<Symbol>(builder);
         }
 
         internal sealed override IEnumerable<FieldSymbol> GetFieldsToEmit()
@@ -165,14 +179,14 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             throw ExceptionUtilities.Unreachable();
         }
 
-        internal override ImmutableArray<Symbol> GetEarlyAttributeDecodingMembers()
+        internal override ArrayWrapper<Symbol> GetEarlyAttributeDecodingMembers()
         {
-            return this.GetMembersUnordered();
+            return GetMembersUnordered();
         }
 
-        internal override ImmutableArray<Symbol> GetEarlyAttributeDecodingMembers(string name)
+        internal override ArrayWrapper<Symbol> GetEarlyAttributeDecodingMembers(string name)
         {
-            return this.GetMembers(name);
+            return GetMembers();
         }
 
         /// <summary>
@@ -180,9 +194,9 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// </summary>
         /// <returns>An ImmutableArray containing all the types that are members of this symbol. If this symbol has no type members,
         /// returns an empty ImmutableArray. Never returns null.</returns>
-        public override ImmutableArray<NamedTypeSymbol> GetTypeMembers()
+        public override ArrayWrapper<NamedTypeSymbol> GetTypeMembers()
         {
-            return ImmutableArray<NamedTypeSymbol>.Empty;
+            return ArrayWrapper<NamedTypeSymbol>.Empty;
         }
 
         /// <summary>
@@ -191,9 +205,9 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// <returns>An ImmutableArray containing all the types that are members of this symbol with the given name.
         /// If this symbol has no type members with this name,
         /// returns an empty ImmutableArray. Never returns null.</returns>
-        public override ImmutableArray<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name)
+        public override ArrayWrapper<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name)
         {
-            return ImmutableArray<NamedTypeSymbol>.Empty;
+            return ArrayWrapper<NamedTypeSymbol>.Empty;
         }
 
         /// <summary>
@@ -202,9 +216,9 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// <returns>An ImmutableArray containing all the types that are members of this symbol with the given name and arity.
         /// If this symbol has no type members with this name and arity,
         /// returns an empty ImmutableArray. Never returns null.</returns>
-        public override ImmutableArray<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name, int arity)
+        public override ArrayWrapper<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory<char> name, int arity)
         {
-            return ImmutableArray<NamedTypeSymbol>.Empty;
+            return ArrayWrapper<NamedTypeSymbol>.Empty;
         }
 
         /// <summary>
@@ -441,9 +455,9 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             return ImmutableArray<NamedTypeSymbol>.Empty;
         }
 
-        internal override ImmutableArray<NamedTypeSymbol> GetInterfacesToEmit()
+        internal override ArrayWrapper<NamedTypeSymbol> GetInterfacesToEmit()
         {
-            return ImmutableArray<NamedTypeSymbol>.Empty;
+            return ArrayWrapper<NamedTypeSymbol>.Empty;
         }
 
         internal override NamedTypeSymbol? GetDeclaredBaseType(ConsList<TypeSymbol> basesBeingResolved)
@@ -451,9 +465,9 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             return null;
         }
 
-        internal override ImmutableArray<NamedTypeSymbol> GetDeclaredInterfaces(ConsList<TypeSymbol> basesBeingResolved)
+        internal override ArrayWrapper<NamedTypeSymbol> GetDeclaredInterfaces(ConsList<TypeSymbol> basesBeingResolved)
         {
-            return ImmutableArray<NamedTypeSymbol>.Empty;
+            return ArrayWrapper<NamedTypeSymbol>.Empty;
         }
 
         protected override NamedTypeSymbol ConstructCore(ImmutableArray<TypeWithAnnotations> typeArguments, bool unbound)

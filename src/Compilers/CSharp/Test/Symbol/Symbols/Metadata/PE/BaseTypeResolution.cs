@@ -58,18 +58,18 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
         {
             var module0 = assembly.Modules[0];
 
-            var sys = module0.GlobalNamespace.GetMembers("System");
-            var collections = ((NamespaceSymbol)sys[0]).GetMembers("Collections");
-            var generic = ((NamespaceSymbol)collections[0]).GetMembers("Generic");
-            var dictionary = ((NamespaceSymbol)generic[0]).GetMembers("Dictionary");
+            var sys = module0.GlobalNamespace.GetMembersAsImmutable("System");
+            var collections = ((NamespaceSymbol)sys[0]).GetMembersAsImmutable("Collections");
+            var generic = ((NamespaceSymbol)collections[0]).GetMembersAsImmutable("Generic");
+            var dictionary = ((NamespaceSymbol)generic[0]).GetMembersAsImmutable("Dictionary");
             var @base = ((NamedTypeSymbol)dictionary[0]).BaseType();
 
             AssertBaseType(@base, "System.Object");
             Assert.Null(@base.BaseType());
 
-            var concurrent = ((NamespaceSymbol)collections[0]).GetMembers("Concurrent");
+            var concurrent = ((NamespaceSymbol)collections[0]).GetMembersAsImmutable("Concurrent");
 
-            var orderablePartitioners = ((NamespaceSymbol)concurrent[0]).GetMembers("OrderablePartitioner");
+            var orderablePartitioners = ((NamespaceSymbol)concurrent[0]).GetMembersAsImmutable("OrderablePartitioner");
             NamedTypeSymbol orderablePartitioner = null;
 
             foreach (var p in orderablePartitioners)
@@ -88,7 +88,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             AssertBaseType(@base, "System.Collections.Concurrent.Partitioner<TSource>");
             Assert.Same(((NamedTypeSymbol)@base).TypeArguments()[0], orderablePartitioner.TypeParameters[0]);
 
-            var partitioners = ((NamespaceSymbol)concurrent[0]).GetMembers("Partitioner");
+            var partitioners = ((NamespaceSymbol)concurrent[0]).GetMembersAsImmutable("Partitioner");
             NamedTypeSymbol partitioner = null;
 
             foreach (var p in partitioners)
@@ -110,23 +110,23 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             var module1 = assemblies[0].Modules[0];
             var module2 = assemblies[1].Modules[0];
 
-            var varTC2 = module1.GlobalNamespace.GetTypeMembers("TC2").Single();
-            var varTC3 = module1.GlobalNamespace.GetTypeMembers("TC3").Single();
-            var varTC4 = module1.GlobalNamespace.GetTypeMembers("TC4").Single();
+            var varTC2 = module1.GlobalNamespace.GetTypeMembersAsImmutable("TC2").Single();
+            var varTC3 = module1.GlobalNamespace.GetTypeMembersAsImmutable("TC3").Single();
+            var varTC4 = module1.GlobalNamespace.GetTypeMembersAsImmutable("TC4").Single();
 
             AssertBaseType(varTC2.BaseType(), "C1<TC2_T1>.C2<TC2_T2>");
             AssertBaseType(varTC3.BaseType(), "C1<TC3_T1>.C3");
             AssertBaseType(varTC4.BaseType(), "C1<TC4_T1>.C3.C4<TC4_T2>");
 
-            var varC1 = module1.GlobalNamespace.GetTypeMembers("C1").Single();
+            var varC1 = module1.GlobalNamespace.GetTypeMembersAsImmutable("C1").Single();
             AssertBaseType(varC1.BaseType(), "System.Object");
             Assert.Equal(0, varC1.Interfaces().Length);
 
-            var varTC5 = module2.GlobalNamespace.GetTypeMembers("TC5").Single();
-            var varTC6 = module2.GlobalNamespace.GetTypeMembers("TC6").Single();
-            var varTC7 = module2.GlobalNamespace.GetTypeMembers("TC7").Single();
-            var varTC8 = module2.GlobalNamespace.GetTypeMembers("TC8").Single();
-            var varTC9 = varTC6.GetTypeMembers("TC9").Single();
+            var varTC5 = module2.GlobalNamespace.GetTypeMembersAsImmutable("TC5").Single();
+            var varTC6 = module2.GlobalNamespace.GetTypeMembersAsImmutable("TC6").Single();
+            var varTC7 = module2.GlobalNamespace.GetTypeMembersAsImmutable("TC7").Single();
+            var varTC8 = module2.GlobalNamespace.GetTypeMembersAsImmutable("TC8").Single();
+            var varTC9 = varTC6.GetTypeMembersAsImmutable("TC9").Single();
 
             AssertBaseType(varTC5.BaseType(), "C1<TC5_T1>.C2<TC5_T2>");
             AssertBaseType(varTC6.BaseType(), "C1<TC6_T1>.C3");
@@ -134,24 +134,24 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             AssertBaseType(varTC8.BaseType(), "C1<System.Type>");
             AssertBaseType(varTC9.BaseType(), "TC6<TC6_T1>");
 
-            var varCorTypes = module2.GlobalNamespace.GetMembers("CorTypes").OfType<NamespaceSymbol>().Single();
+            var varCorTypes = module2.GlobalNamespace.GetMembersAsImmutable("CorTypes").OfType<NamespaceSymbol>().Single();
 
-            var varCorTypes_Derived = varCorTypes.GetTypeMembers("Derived").Single();
+            var varCorTypes_Derived = varCorTypes.GetTypeMembersAsImmutable("Derived").Single();
             AssertBaseType(varCorTypes_Derived.BaseType(),
                            "CorTypes.NS.Base<System.Boolean, System.SByte, System.Byte, System.Int16, System.UInt16, System.Int32, System.UInt32, System.Int64, System.UInt64, System.Single, System.Double, System.Char, System.String, System.IntPtr, System.UIntPtr, System.Object>");
 
-            var varCorTypes_Derived1 = varCorTypes.GetTypeMembers("Derived1").Single();
+            var varCorTypes_Derived1 = varCorTypes.GetTypeMembersAsImmutable("Derived1").Single();
             AssertBaseType(varCorTypes_Derived1.BaseType(),
                            "CorTypes.Base<System.Int32[], System.Double[,]>");
 
-            var varI101 = module1.GlobalNamespace.GetTypeMembers("I101").Single();
-            var varI102 = module1.GlobalNamespace.GetTypeMembers("I102").Single();
+            var varI101 = module1.GlobalNamespace.GetTypeMembersAsImmutable("I101").Single();
+            var varI102 = module1.GlobalNamespace.GetTypeMembersAsImmutable("I102").Single();
 
-            var varC203 = module1.GlobalNamespace.GetTypeMembers("C203").Single();
+            var varC203 = module1.GlobalNamespace.GetTypeMembersAsImmutable("C203").Single();
             Assert.Equal(1, varC203.Interfaces().Length);
             Assert.Same(varI101, varC203.Interfaces()[0]);
 
-            var varC204 = module1.GlobalNamespace.GetTypeMembers("C204").Single();
+            var varC204 = module1.GlobalNamespace.GetTypeMembersAsImmutable("C204").Single();
             Assert.Equal(2, varC204.Interfaces().Length);
             Assert.Same(varI101, varC204.Interfaces()[0]);
             Assert.Same(varI102, varC204.Interfaces()[1]);
@@ -162,9 +162,9 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             var module1 = assemblies[0].Modules[0];
             var module2 = assemblies[1].Modules[0];
 
-            var varCorTypes = module2.GlobalNamespace.GetMembers("CorTypes").OfType<NamespaceSymbol>().Single();
+            var varCorTypes = module2.GlobalNamespace.GetMembersAsImmutable("CorTypes").OfType<NamespaceSymbol>().Single();
 
-            var varCorTypes_Derived = varCorTypes.GetTypeMembers("Derived").Single();
+            var varCorTypes_Derived = varCorTypes.GetTypeMembersAsImmutable("Derived").Single();
             AssertBaseType(varCorTypes_Derived.BaseType(),
                            "CorTypes.NS.Base<System.Boolean,System.SByte,System.Byte,System.Int16,System.UInt16,System.Int32,System.UInt32,System.Int64,System.UInt64,System.Single,System.Double,System.Char,System.String,System.IntPtr,System.UIntPtr,System.Object>");
 
@@ -181,22 +181,22 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
             var module3 = assemblies[0].Modules[2];
             var module0 = assemblies[1].Modules[0];
 
-            var derived1 = module0.GlobalNamespace.GetTypeMembers("Derived1").Single();
+            var derived1 = module0.GlobalNamespace.GetTypeMembersAsImmutable("Derived1").Single();
             var base1 = derived1.BaseType();
 
-            var derived2 = module0.GlobalNamespace.GetTypeMembers("Derived2").Single();
+            var derived2 = module0.GlobalNamespace.GetTypeMembersAsImmutable("Derived2").Single();
             var base2 = derived2.BaseType();
 
-            var derived3 = module0.GlobalNamespace.GetTypeMembers("Derived3").Single();
+            var derived3 = module0.GlobalNamespace.GetTypeMembersAsImmutable("Derived3").Single();
             var base3 = derived3.BaseType();
 
             AssertBaseType(base1, "Class1");
             AssertBaseType(base2, "Class2");
             AssertBaseType(base3, "Class3");
 
-            Assert.Same(base1, module1.GlobalNamespace.GetTypeMembers("Class1").Single());
-            Assert.Same(base2, module2.GlobalNamespace.GetTypeMembers("Class2").Single());
-            Assert.Same(base3, module3.GlobalNamespace.GetTypeMembers("Class3").Single());
+            Assert.Same(base1, module1.GlobalNamespace.GetTypeMembersAsImmutable("Class1").Single());
+            Assert.Same(base2, module2.GlobalNamespace.GetTypeMembersAsImmutable("Class2").Single());
+            Assert.Same(base3, module3.GlobalNamespace.GetTypeMembersAsImmutable("Class3").Single());
 
             return;
         }
@@ -221,49 +221,49 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests.Symbols.Metadata.PE
 
             var bases = new HashSet<NamedTypeSymbol>();
 
-            var localTC1 = module0.GlobalNamespace.GetTypeMembers("TC1").Single();
+            var localTC1 = module0.GlobalNamespace.GetTypeMembersAsImmutable("TC1").Single();
             var base1 = localTC1.BaseType();
             bases.Add(base1);
             Assert.NotEqual(SymbolKind.ErrorType, base1.Kind);
             Assert.Equal("SomeName.Dummy", base1.ToTestDisplayString());
 
-            var localTC2 = module0.GlobalNamespace.GetTypeMembers("TC2").Single();
+            var localTC2 = module0.GlobalNamespace.GetTypeMembersAsImmutable("TC2").Single();
             var base2 = localTC2.BaseType();
             bases.Add(base2);
             Assert.NotEqual(SymbolKind.ErrorType, base2.Kind);
             Assert.Equal("somEnamE", base2.ToTestDisplayString());
 
-            var localTC3 = module0.GlobalNamespace.GetTypeMembers("TC3").Single();
+            var localTC3 = module0.GlobalNamespace.GetTypeMembersAsImmutable("TC3").Single();
             var base3 = localTC3.BaseType();
             bases.Add(base3);
             Assert.NotEqual(SymbolKind.ErrorType, base3.Kind);
             Assert.Equal("somEnamE1", base3.ToTestDisplayString());
 
-            var localTC4 = module0.GlobalNamespace.GetTypeMembers("TC4").Single();
+            var localTC4 = module0.GlobalNamespace.GetTypeMembersAsImmutable("TC4").Single();
             var base4 = localTC4.BaseType();
             bases.Add(base4);
             Assert.NotEqual(SymbolKind.ErrorType, base4.Kind);
             Assert.Equal("SomeName1", base4.ToTestDisplayString());
 
-            var localTC5 = module0.GlobalNamespace.GetTypeMembers("TC5").Single();
+            var localTC5 = module0.GlobalNamespace.GetTypeMembersAsImmutable("TC5").Single();
             var base5 = localTC5.BaseType();
             bases.Add(base5);
             Assert.NotEqual(SymbolKind.ErrorType, base5.Kind);
             Assert.Equal("somEnamE2.OtherName", base5.ToTestDisplayString());
 
-            var localTC6 = module0.GlobalNamespace.GetTypeMembers("TC6").Single();
+            var localTC6 = module0.GlobalNamespace.GetTypeMembersAsImmutable("TC6").Single();
             var base6 = localTC6.BaseType();
             bases.Add(base6);
             Assert.NotEqual(SymbolKind.ErrorType, base6.Kind);
             Assert.Equal("SomeName2.OtherName", base6.ToTestDisplayString());
 
-            var localTC7 = module0.GlobalNamespace.GetTypeMembers("TC7").Single();
+            var localTC7 = module0.GlobalNamespace.GetTypeMembersAsImmutable("TC7").Single();
             var base7 = localTC7.BaseType();
             bases.Add(base7);
             Assert.NotEqual(SymbolKind.ErrorType, base7.Kind);
             Assert.Equal("NestingClass.somEnamE3", base7.ToTestDisplayString());
 
-            var localTC8 = module0.GlobalNamespace.GetTypeMembers("TC8").Single();
+            var localTC8 = module0.GlobalNamespace.GetTypeMembersAsImmutable("TC8").Single();
             var base8 = localTC8.BaseType();
             bases.Add(base8);
             Assert.NotEqual(SymbolKind.ErrorType, base8.Kind);

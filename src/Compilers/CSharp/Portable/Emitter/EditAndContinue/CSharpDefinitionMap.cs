@@ -71,7 +71,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Emit
             var awaiters = new Dictionary<Cci.ITypeReference, int>(Cci.SymbolEquivalentEqualityComparer.Instance);
             int maxAwaiterSlotIndex = -1;
 
-            foreach (var member in ((TypeSymbol)stateMachineType).GetMembers())
+            using var members = ((TypeSymbol)stateMachineType).GetMembers();
+            foreach (var member in members)
             {
                 if (member.Kind == SymbolKind.Field)
                 {

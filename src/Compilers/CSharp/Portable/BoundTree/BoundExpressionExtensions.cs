@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp.Symbols;
+using Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE;
 using Microsoft.CodeAnalysis.PooledObjects;
 using Roslyn.Utilities;
 
@@ -192,13 +193,16 @@ namespace Microsoft.CodeAnalysis.CSharp
                     break;
 
                 case BoundKind.DelegateCreationExpression:
-                    var expr = (BoundDelegateCreationExpression)node;
-                    var ctor = expr.Type.GetMembers(WellKnownMemberNames.InstanceConstructorName).FirstOrDefault();
-                    if (ctor is { })
                     {
-                        symbols.Add(ctor);
+                        var expr = (BoundDelegateCreationExpression)node;
+                        using var exprMembers = expr.Type.GetMembers(WellKnownMemberNames.InstanceConstructorName);
+                        var ctor = exprMembers.FirstOrDefault();
+                        if (ctor is { })
+                        {
+                            symbols.Add(ctor);
+                        }
+                        break;
                     }
-                    break;
 
                 case BoundKind.Call:
                     // Either overload resolution succeeded for this call or it did not. If it did not

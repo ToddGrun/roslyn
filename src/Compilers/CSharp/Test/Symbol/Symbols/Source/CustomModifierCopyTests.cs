@@ -564,7 +564,7 @@ class Explicit : CppCli.CppIndexerInterface
             var @class = global.GetMember<SourceNamedTypeSymbol>("Explicit");
 
             // explicit implementation copies custom modifiers
-            var classIndexer = (PropertySymbol)@class.GetMembers().Where(s => s.Kind == SymbolKind.Property).Single();
+            var classIndexer = (PropertySymbol)@class.GetMembersAsImmutable().Where(s => s.Kind == SymbolKind.Property).Single();
             AssertAllParametersHaveConstModOpt(classIndexer);
 
             Assert.Equal(0, @class.GetSynthesizedExplicitImplementations(CancellationToken.None).ForwardingMethods.Length);
@@ -597,7 +597,7 @@ class Implicit : CppCli.CppIndexerInterface
             var @class = global.GetMember<SourceNamedTypeSymbol>("Implicit");
 
             // implicit implementation does not copy custom modifiers
-            var classIndexer = (PropertySymbol)@class.GetMembers().Where(s => s.Kind == SymbolKind.Property).Single();
+            var classIndexer = (PropertySymbol)@class.GetMembersAsImmutable().Where(s => s.Kind == SymbolKind.Property).Single();
             AssertNoParameterHasModOpts(classIndexer);
 
             // bridge methods for implicit implementations have custom modifiers
@@ -638,7 +638,7 @@ class Override : CppCli.CppIndexerBase
             var @class = global.GetMember<SourceNamedTypeSymbol>("Override");
 
             // implicit implementation does not copy custom modifiers
-            var classIndexer = (PropertySymbol)@class.GetMembers().Where(s => s.Kind == SymbolKind.Property).Single();
+            var classIndexer = (PropertySymbol)@class.GetMembersAsImmutable().Where(s => s.Kind == SymbolKind.Property).Single();
             AssertAllParametersHaveConstModOpt(classIndexer);
 
             Assert.Equal(0, @class.GetSynthesizedExplicitImplementations(CancellationToken.None).ForwardingMethods.Length);
@@ -677,16 +677,16 @@ public class Derived2 : Derived
             var global = comp.GlobalNamespace;
 
             var baseClass = global.GetMember<NamedTypeSymbol>("Base");
-            var baseIndexer1 = (PropertySymbol)baseClass.GetMembers().Where(IsPropertyWithSingleParameter(SpecialType.System_Int32, isArrayType: true)).Single();
-            var baseIndexer2 = (PropertySymbol)baseClass.GetMembers().Where(IsPropertyWithSingleParameter(SpecialType.System_Int64, isArrayType: true)).Single();
+            var baseIndexer1 = (PropertySymbol)baseClass.GetMembersAsImmutable().Where(IsPropertyWithSingleParameter(SpecialType.System_Int32, isArrayType: true)).Single();
+            var baseIndexer2 = (PropertySymbol)baseClass.GetMembersAsImmutable().Where(IsPropertyWithSingleParameter(SpecialType.System_Int64, isArrayType: true)).Single();
 
             var derivedClass = global.GetMember<NamedTypeSymbol>("Derived");
-            var derivedIndexer1 = (PropertySymbol)derivedClass.GetMembers().Where(IsPropertyWithSingleParameter(SpecialType.System_Int32, isArrayType: true)).Single();
-            var derivedIndexer2 = (PropertySymbol)derivedClass.GetMembers().Where(IsPropertyWithSingleParameter(SpecialType.System_Int64, isArrayType: true)).Single();
+            var derivedIndexer1 = (PropertySymbol)derivedClass.GetMembersAsImmutable().Where(IsPropertyWithSingleParameter(SpecialType.System_Int32, isArrayType: true)).Single();
+            var derivedIndexer2 = (PropertySymbol)derivedClass.GetMembersAsImmutable().Where(IsPropertyWithSingleParameter(SpecialType.System_Int64, isArrayType: true)).Single();
 
             var derived2Class = global.GetMember<NamedTypeSymbol>("Derived2");
-            var derived2Indexer1 = (PropertySymbol)derived2Class.GetMembers().Where(IsPropertyWithSingleParameter(SpecialType.System_Int32, isArrayType: true)).Single();
-            var derived2Indexer2 = (PropertySymbol)derived2Class.GetMembers().Where(IsPropertyWithSingleParameter(SpecialType.System_Int64, isArrayType: true)).Single();
+            var derived2Indexer1 = (PropertySymbol)derived2Class.GetMembersAsImmutable().Where(IsPropertyWithSingleParameter(SpecialType.System_Int32, isArrayType: true)).Single();
+            var derived2Indexer2 = (PropertySymbol)derived2Class.GetMembersAsImmutable().Where(IsPropertyWithSingleParameter(SpecialType.System_Int64, isArrayType: true)).Single();
 
             Assert.True(baseIndexer1.Parameters.Single().IsParams, "Base.Indexer1.IsParams should be true");
             Assert.False(baseIndexer2.Parameters.Single().IsParams, "Base.Indexer2.IsParams should be false");
@@ -1339,7 +1339,7 @@ public class C : I<byte, char>
 
             var global = comp.GlobalNamespace;
             var interfaceMethod = global.GetMember<NamedTypeSymbol>("I").GetMember<MethodSymbol>("M");
-            var classMethod = global.GetMember<NamedTypeSymbol>("C").GetMembers().OfType<MethodSymbol>().Single(
+            var classMethod = global.GetMember<NamedTypeSymbol>("C").GetMembersAsImmutable().OfType<MethodSymbol>().Single(
                 m => m.MethodKind == MethodKind.ExplicitInterfaceImplementation);
 
             Assert.Equal("void I<T, U>.M(ref modopt(System.Int64) I<System.Object modopt(System.Int16) [], dynamic modopt(System.Int32) []> c)", interfaceMethod.ToTestDisplayString());
@@ -1383,7 +1383,7 @@ public class C : I<byte, char>
 
             var global = comp.GlobalNamespace;
             var interfaceMethod = global.GetMember<NamedTypeSymbol>("I").GetMember<MethodSymbol>("M");
-            var classMethod = global.GetMember<NamedTypeSymbol>("C").GetMembers().OfType<MethodSymbol>().Single(
+            var classMethod = global.GetMember<NamedTypeSymbol>("C").GetMembersAsImmutable().OfType<MethodSymbol>().Single(
                 m => m.MethodKind == MethodKind.ExplicitInterfaceImplementation);
 
             Assert.Equal("I<System.Object modopt(System.Int16) [], dynamic modopt(System.Int32) []> modopt(System.Int64) I<T, U>.M()", interfaceMethod.ToTestDisplayString());

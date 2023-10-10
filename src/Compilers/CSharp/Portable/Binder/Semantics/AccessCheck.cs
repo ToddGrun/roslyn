@@ -4,9 +4,8 @@
 
 #nullable disable
 
-using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Diagnostics;
+using Microsoft.CodeAnalysis.Collections;
 using Microsoft.CodeAnalysis.CSharp.Symbols;
 using Microsoft.CodeAnalysis.PooledObjects;
 using Roslyn.Utilities;
@@ -639,12 +638,12 @@ namespace Microsoft.CodeAnalysis.CSharp
                     return;
                 }
 
-                ImmutableArray<NamedTypeSymbol> declaredInterfaces;
+                ArrayWrapper<NamedTypeSymbol> declaredInterfaces;
 
                 switch (derived)
                 {
                     case TypeParameterSymbol typeParameter:
-                        declaredInterfaces = typeParameter.AllEffectiveInterfacesNoUseSiteDiagnostics;
+                        declaredInterfaces = new ArrayWrapper<NamedTypeSymbol>(typeParameter.AllEffectiveInterfacesNoUseSiteDiagnostics);
                         break;
 
                     case NamedTypeSymbol namedType:
@@ -652,7 +651,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                         break;
 
                     default:
-                        declaredInterfaces = derived.InterfacesNoUseSiteDiagnostics(basesBeingResolved);
+                        declaredInterfaces = new ArrayWrapper<NamedTypeSymbol>(derived.InterfacesNoUseSiteDiagnostics(basesBeingResolved));
                         break;
                 }
 

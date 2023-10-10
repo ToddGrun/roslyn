@@ -14,6 +14,7 @@ using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Symbols;
+using Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.PooledObjects;
 using Microsoft.CodeAnalysis.Text;
@@ -231,6 +232,62 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
             return members;
         }
 
+        public static ImmutableArray<Symbol> GetMembersAsImmutable(this NamespaceOrTypeSymbol symbol)
+        {
+            using var members = symbol.GetMembers();
+
+            return members.ToImmutableArray();
+        }
+
+        public static ImmutableArray<NamedTypeSymbol> GetTypeMembersAsImmutable(this NamespaceOrTypeSymbol symbol)
+        {
+            using var members = symbol.GetTypeMembers();
+
+            return members.ToImmutableArray();
+        }
+
+        public static ImmutableArray<NamedTypeSymbol> GetTypeMembersAsImmutable(this NamespaceOrTypeSymbol symbol, string name)
+        {
+            using var members = symbol.GetTypeMembers(name);
+
+            return members.ToImmutableArray();
+        }
+
+        public static ImmutableArray<NamedTypeSymbol> GetTypeMembersAsImmutable(this NamespaceOrTypeSymbol symbol, string name, int arity)
+        {
+            using var members = symbol.GetTypeMembers(name, arity);
+
+            return members.ToImmutableArray();
+        }
+
+        public static ImmutableArray<Symbol> GetMembersAsImmutable(this NamespaceOrTypeSymbol symbol, string name)
+        {
+            using var members = symbol.GetMembers(name);
+
+            return members.ToImmutableArray();
+        }
+
+        public static ImmutableArray<Symbol> GetMembersUnorderedAsImmutable(this NamespaceOrTypeSymbol symbol)
+        {
+            using var members = symbol.GetMembers();
+
+            return members.ToImmutableArray();
+        }
+
+        public static ImmutableArray<Symbol> GetMembersUnorderedAsImmutable(this NamespaceOrTypeSymbol symbol, string name)
+        {
+            using var members = symbol.GetMembers(name);
+
+            return members.ToImmutableArray();
+        }
+
+        public static ImmutableArray<NamedTypeSymbol> GetDeclaredInterfacesAsImmutable(this NamedTypeSymbol symbol, ConsList<TypeSymbol> basesBeingResolved)
+        {
+            using var interfaces = symbol.GetDeclaredInterfaces(basesBeingResolved);
+
+            return interfaces.ToImmutableArray();
+        }
+
         private static ImmutableArray<Symbol> GetMembers(NamespaceOrTypeSymbol container, string qualifiedName, out NamespaceOrTypeSymbol lastContainer)
         {
             var parts = SplitMemberName(qualifiedName);
@@ -243,7 +300,8 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
                 {
                     // If there wasn't a nested namespace or type with that name, assume it's a
                     // member name that includes dots (e.g. explicit interface implementation).
-                    return lastContainer.GetMembers(string.Join(".", parts.Skip(i)));
+                    using var result = lastContainer.GetMembers(string.Join(".", parts.Skip(i)));
+                    return result.ToImmutableArray();
                 }
                 else
                 {
@@ -251,7 +309,8 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
                 }
             }
 
-            return lastContainer.GetMembers(parts[parts.Length - 1]);
+            using var finalResult = lastContainer.GetMembers(parts[parts.Length - 1]);
+            return finalResult.ToImmutableArray();
         }
 
         private static ImmutableArray<ISymbol> GetMembers(INamespaceOrTypeSymbol container, string qualifiedName, out INamespaceOrTypeSymbol lastContainer)

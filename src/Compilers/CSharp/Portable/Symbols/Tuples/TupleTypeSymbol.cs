@@ -8,6 +8,7 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using Microsoft.CodeAnalysis.Collections;
 using Microsoft.CodeAnalysis.PooledObjects;
 using Microsoft.CodeAnalysis.RuntimeMembers;
 using Roslyn.Utilities;
@@ -525,7 +526,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 Debug.Assert(type.IsDefinition);
 
                 MemberDescriptor relativeDescriptor = WellKnownMembers.GetDescriptor(relativeMember);
-                var members = type.GetMembers(relativeDescriptor.Name);
+                using var members = type.GetMembers(relativeDescriptor.Name);
 
                 return CSharpCompilation.GetRuntimeMember(members, relativeDescriptor, CSharpCompilation.SpecialMembersSignatureComparer.Instance,
                                                           accessWithinOpt: null); // force lookup of public members only
@@ -721,7 +722,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 if (currentValueTuple.Arity != ValueTupleRestPosition)
                 {
                     // refresh members and target fields
-                    currentMembers = currentValueTuple.GetMembers();
+                    using var currentValueTupleMembers = currentValueTuple.GetMembers();
+                    currentMembers = currentValueTupleMembers.ToImmutableArray();
                     currentFieldsForElements.Clear();
                     collectTargetTupleFields(currentValueTuple.Arity, getOriginalFields(currentMembers), currentFieldsForElements);
                 }
@@ -818,7 +820,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 Debug.Assert(relativeMember >= WellKnownMember.System_ValueTuple_T1__Item1 && relativeMember <= WellKnownMember.System_ValueTuple_TRest__ctor);
 
                 MemberDescriptor relativeDescriptor = WellKnownMembers.GetDescriptor(relativeMember);
-                return CSharpCompilation.GetRuntimeMember(members, relativeDescriptor, CSharpCompilation.SpecialMembersSignatureComparer.Instance,
+                return CSharpCompilation.GetRuntimeMember(new ArrayWrapper<Symbol>(members), relativeDescriptor, CSharpCompilation.SpecialMembersSignatureComparer.Instance,
                                                           accessWithinOpt: null); // force lookup of public members only
             }
 
@@ -1017,7 +1019,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 {
                     var builder = ArrayBuilder<FieldSymbol>.GetInstance(TupleElementTypesWithAnnotations(tuple).Length, fillWithValue: null!);
 
-                    foreach (var member in tuple.GetMembers())
+                    using var members = tuple.GetMembers();
+                    foreach (var member in members)
                     {
                         if (member.Kind != SymbolKind.Field)
                         {
@@ -1057,11 +1060,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     SmallDictionary<Symbol, Symbol> computeDefinitionToMemberMap()
                     {
                         var map = new SmallDictionary<Symbol, Symbol>(ReferenceEqualityComparer.Instance);
-                        var members = TupleUnderlyingType.GetMembers();
+                        using var members = TupleUnderlyingType.GetMembers();
 
                         // Go in reverse because we want members with default name, which precede the ones with
                         // friendly names, to be in the map.
-                        for (int i = members.Length - 1; i >= 0; i--)
+                        for (int i = members.Count - 1; i >= 0; i--)
                         {
                             var member = members[i];
                             switch (member.Kind)
