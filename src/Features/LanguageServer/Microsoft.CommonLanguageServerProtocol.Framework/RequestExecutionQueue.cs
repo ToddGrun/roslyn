@@ -194,6 +194,9 @@ public class RequestExecutionQueue<TRequestContext> : IRequestExecutionQueue<TRe
                     CancellationTokenSource? currentWorkCts = null;
                     lspServices = work.LspServices;
 
+                    // Record when the work item was been de-queued and the request context preparation started.
+                    work.Metrics.RecordExecutionStart();
+
                     if (CancelInProgressWorkUponMutatingRequest)
                     {
                         try

@@ -39,6 +39,8 @@ internal class QueueItem<TRequest, TResponse, TRequestContext> : IQueueItem<TReq
 
     public IMethodHandler MethodHandler { get; }
 
+    public RequestMetrics Metrics { get; }
+
     private QueueItem(
         bool mutatesSolutionState,
         string methodName,
@@ -51,6 +53,8 @@ internal class QueueItem<TRequest, TResponse, TRequestContext> : IQueueItem<TReq
     {
         // Set the tcs state to cancelled if the token gets cancelled outside of our callback (for example the server shutting down).
         cancellationToken.Register(() => _completionSource.TrySetCanceled(cancellationToken));
+
+        Metrics = new RequestMetrics(methodName, telemetryLogger);
 
         _handler = handler;
         _logger = logger;
@@ -117,6 +121,7 @@ internal class QueueItem<TRequest, TResponse, TRequestContext> : IQueueItem<TReq
                 // If that turns out to be the case, we could defer to the individual handler to decide
                 // what to do.
                 _logger.LogWarning($"Could not get request context for {MethodName}");
+                this.Metrics.RecordFailure();
                 _completionSource.TrySetException(new InvalidOperationException($"Unable to create request context for {MethodName}"));
             }
             else if (_handler is IRequestHandler<TRequest, TResponse, TRequestContext> requestHandler)
@@ -149,11 +154,14 @@ internal class QueueItem<TRequest, TResponse, TRequestContext> : IQueueItem<TReq
             {
                 throw new NotImplementedException($"Unrecognized {nameof(IMethodHandler)} implementation {_handler.GetType()}. ");
             }
+
+            Metrics.RecordSuccess();
         }
         catch (OperationCanceledException ex)
         {
             // Record logs + metrics on cancellation.
             _logger.LogInformation($"{MethodName} - Canceled");
+            Metrics.RecordCancellation();
 
             _completionSource.TrySetCanceled(ex.CancellationToken);
         }
@@ -162,6 +170,7 @@ internal class QueueItem<TRequest, TResponse, TRequestContext> : IQueueItem<TReq
             // Record logs and metrics on the exception.
             // It's important that this can NEVER throw, or the queue will hang.
             _logger.LogException(ex);
+            Metrics.RecordFailure();
 
             _completionSource.TrySetException(ex);
         }

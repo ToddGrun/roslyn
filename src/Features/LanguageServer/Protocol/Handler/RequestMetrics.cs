@@ -4,6 +4,7 @@
 
 using System;
 using Microsoft.CommonLanguageServerProtocol.Framework;
+using Newtonsoft.Json.Linq;
 using Roslyn.Utilities;
 
 namespace Microsoft.CodeAnalysis.LanguageServer.Handler
@@ -46,7 +47,9 @@ namespace Microsoft.CodeAnalysis.LanguageServer.Handler
 
         private void RecordCompletion(RequestTelemetryLogger.Result result)
         {
-            Contract.ThrowIfNull(_queuedDuration, "RecordExecutionStart was not called");
+            if (_queuedDuration is null)
+                throw new InvalidOperationException("RecordExecutionStart was not called");
+
             var overallDuration = _sharedStopWatch.Elapsed;
             _requestTelemetryLogger.UpdateTelemetryData(_methodName, _queuedDuration.Value, overallDuration, result);
         }

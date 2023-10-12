@@ -46,4 +46,6 @@ public interface IQueueItem<TRequestContext>
     /// The handler which will run this operation.
     /// </summary>
     IMethodHandler MethodHandler { get; }
+
+    RequestMetrics Metrics { get; }
 }
