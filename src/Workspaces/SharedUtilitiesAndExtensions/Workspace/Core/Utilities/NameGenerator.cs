@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.CodeAnalysis.PooledObjects;
+using Microsoft.CodeAnalysis.SQLite.Interop;
 using Roslyn.Utilities;
 
 namespace Microsoft.CodeAnalysis.Shared.Utilities
@@ -21,24 +22,38 @@ namespace Microsoft.CodeAnalysis.Shared.Utilities
             IEnumerable<string> reservedNames,
             bool isCaseSensitive = true)
         {
-            using var namesDisposer = ArrayBuilder<string>.GetInstance(out var names);
-            using var isFixedDisposer = ArrayBuilder<bool>.GetInstance(out var isFixed);
-            using var nameSetDisposer = PooledHashSet<string>.GetInstance(out var nameSet);
+            // TODO: Merge with other methods. Use case sensitivity in pool
 
-            names.Add(baseName);
-            isFixed.Add(false);
+            var comparer = isCaseSensitive ? StringComparer.Ordinal : StringComparer.OrdinalIgnoreCase;
+            var nameSet = new HashSet<string>(reservedNames, comparer);
 
-            foreach (var reservedName in reservedNames)
+            var index = 1;
+            var result = baseName;
+            while (nameSet.Contains(result))
             {
-                if (nameSet.Add(reservedName))
-                {
-                    names.Add(reservedName);
-                    isFixed.Add(true);
-                }
+                result = baseName + index;
             }
 
-            EnsureUniquenessInPlace(names, isFixed, isCaseSensitive: isCaseSensitive);
-            return names.First();
+            return result;
+
+            //using var namesDisposer = ArrayBuilder<string>.GetInstance(out var names);
+            //using var isFixedDisposer = ArrayBuilder<bool>.GetInstance(out var isFixed);
+            //using var nameSetDisposer = PooledHashSet<string>.GetInstance(out var nameSet);
+
+            //names.Add(baseName);
+            //isFixed.Add(false);
+
+            //foreach (var reservedName in reservedNames)
+            //{
+            //    if (nameSet.Add(reservedName))
+            //    {
+            //        names.Add(reservedName);
+            //        isFixed.Add(true);
+            //    }
+            //}
+
+            //EnsureUniquenessInPlace(names, isFixed, isCaseSensitive: isCaseSensitive);
+            //return names.First();
         }
 
         public static ImmutableArray<string> EnsureUniqueness(
@@ -46,12 +61,56 @@ namespace Microsoft.CodeAnalysis.Shared.Utilities
             Func<string, bool>? canUse = null,
             bool isCaseSensitive = true)
         {
-            using var isFixedDisposer = ArrayBuilder<bool>.GetInstance(names.Length, fillWithValue: false, out var isFixed);
+            canUse ??= Functions<string>.True;
 
-            var result = ArrayBuilder<string>.GetInstance(names.Length);
-            result.AddRange(names);
-            EnsureUniquenessInPlace(result, isFixed, canUse, isCaseSensitive);
-            return result.ToImmutableAndFree();
+            // TODO: POOL!
+            var comparer = isCaseSensitive ? StringComparer.Ordinal : StringComparer.OrdinalIgnoreCase;
+            var collisionMap = new Dictionary<string, ArrayBuilder<int>>(comparer);
+            var duplicatedNameSet = new HashSet<string>(comparer);
+            for (var i = 0; i < names.Length; i++)
+            {
+                var name = names[i];
+                if (!collisionMap.TryGetValue(name, out var collisionIndexes))
+                {
+                    collisionIndexes = ArrayBuilder<int>.GetInstance();
+                    collisionMap.Add(name, collisionIndexes);
+                }
+
+                collisionIndexes.Add(i);
+            }
+            using var _ = ArrayBuilder<string>.GetInstance(names.Length, out var result);
+            foreach ((var baseName, var collisionIndices) in collisionMap)
+            {
+                if (coll)
+            }
+
+            foreach (var name in names)
+            {
+                if (!duplicatedNameSet.Contains(name) && canUse(name))
+                {
+                    result.Add(name);
+                }
+                else
+                {
+
+                }
+                //var index = 1;
+                //var result = baseName;
+                //while (nameSet.Contains(result))
+                //{
+                //    result = baseName + index;
+                //}
+            }
+
+
+
+
+            //using var isFixedDisposer = ArrayBuilder<bool>.GetInstance(names.Length, fillWithValue: false, out var isFixed);
+
+            //var result = ArrayBuilder<string>.GetInstance(names.Length);
+            //result.AddRange(names);
+            //EnsureUniquenessInPlace(result, isFixed, canUse, isCaseSensitive);
+            //return result.ToImmutableAndFree();
         }
 
         /// <summary>
