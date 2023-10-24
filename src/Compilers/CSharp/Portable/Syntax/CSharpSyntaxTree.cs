@@ -730,25 +730,26 @@ namespace Microsoft.CodeAnalysis.CSharp
 
         internal bool IsGeneratedCode(SyntaxTreeOptionsProvider? provider, CancellationToken cancellationToken)
         {
-            return provider?.IsGenerated(this, cancellationToken) switch
+            if (!_lazyIsGeneratedCode.HasValue)
             {
-                null or GeneratedKind.Unknown => isGeneratedHeuristic(),
-                GeneratedKind kind => kind != GeneratedKind.NotGenerated
-            };
+                _lazyIsGeneratedCode = provider?.IsGenerated(this, cancellationToken) switch
+                {
+                    null or GeneratedKind.Unknown => isGeneratedHeuristic(),
+                    GeneratedKind kind => kind != GeneratedKind.NotGenerated
+                };
+            }
+
+            return _lazyIsGeneratedCode.Value;
 
             bool isGeneratedHeuristic()
             {
-                if (_lazyIsGeneratedCode == GeneratedKind.Unknown)
-                {
-                    // Create the generated code status on demand
-                    bool isGenerated = GeneratedCodeUtilities.IsGeneratedCode(
-                            this,
-                            isComment: trivia => trivia.Kind() == SyntaxKind.SingleLineCommentTrivia || trivia.Kind() == SyntaxKind.MultiLineCommentTrivia,
-                            cancellationToken: default);
-                    _lazyIsGeneratedCode = isGenerated ? GeneratedKind.MarkedGenerated : GeneratedKind.NotGenerated;
-                }
+                // Create the generated code status on demand
+                bool isGenerated = GeneratedCodeUtilities.IsGeneratedCode(
+                        this,
+                        isComment: trivia => trivia.Kind() == SyntaxKind.SingleLineCommentTrivia || trivia.Kind() == SyntaxKind.MultiLineCommentTrivia,
+                        cancellationToken: default);
 
-                return _lazyIsGeneratedCode == GeneratedKind.MarkedGenerated;
+                return isGenerated;
             }
         }
 
@@ -756,7 +757,7 @@ namespace Microsoft.CodeAnalysis.CSharp
         private CSharpPragmaWarningStateMap? _lazyPragmaWarningStateMap;
         private StrongBox<NullableContextStateMap>? _lazyNullableContextStateMap;
 
-        private GeneratedKind _lazyIsGeneratedCode = GeneratedKind.Unknown;
+        private bool? _lazyIsGeneratedCode;
 
         private LinePosition GetLinePosition(int position, CancellationToken cancellationToken)
             => GetText(cancellationToken).Lines.GetLinePosition(position);

@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
@@ -145,7 +146,7 @@ namespace Roslyn.Utilities
             return false;
         }
 
-        internal static GeneratedKind GetIsGeneratedCodeFromOptions(ImmutableDictionary<string, string> options)
+        internal static GeneratedKind GetIsGeneratedCodeFromOptions(IReadOnlyDictionary<string, string> options)
         {
             // Check for explicit user configuration for generated code.
             //     generated_code = true | false

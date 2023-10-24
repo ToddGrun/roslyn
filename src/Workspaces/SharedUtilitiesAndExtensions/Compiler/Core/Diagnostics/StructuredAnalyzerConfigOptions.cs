@@ -60,9 +60,8 @@ internal abstract class StructuredAnalyzerConfigOptions : AnalyzerConfigOptions,
 
     public abstract NamingStylePreferences GetNamingStylePreferences();
 
-    public static StructuredAnalyzerConfigOptions Create(ImmutableDictionary<string, string> options)
+    public static StructuredAnalyzerConfigOptions Create(IReadOnlyDictionary<string, string> options)
     {
-        Contract.ThrowIfFalse(options.KeyComparer == KeyComparer);
         return new Implementation(new DictionaryAnalyzerConfigOptions(options));
     }
 

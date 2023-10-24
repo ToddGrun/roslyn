@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
@@ -34,8 +35,8 @@ namespace Microsoft.CodeAnalysis.Shared.Extensions
         public static ReportDiagnostic GetEffectiveSeverity(
             this DiagnosticDescriptor descriptor,
             CompilationOptions compilationOptions,
-            ImmutableDictionary<string, string>? analyzerOptions,
-            ImmutableDictionary<string, ReportDiagnostic>? treeOptions)
+            IReadOnlyDictionary<string, string>? analyzerOptions,
+            IReadOnlyDictionary<string, ReportDiagnostic>? treeOptions)
         {
             var effectiveSeverity = descriptor.GetEffectiveSeverity(compilationOptions);
 
@@ -213,7 +214,7 @@ namespace Microsoft.CodeAnalysis.Shared.Extensions
         /// </summary>
         private static bool TryGetSeverityFromBulkConfiguration(
             DiagnosticDescriptor descriptor,
-            ImmutableDictionary<string, string> analyzerOptions,
+            IReadOnlyDictionary<string, string> analyzerOptions,
             out ReportDiagnostic severity)
         {
             // Analyzer bulk configuration does not apply to:

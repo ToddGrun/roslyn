@@ -10,16 +10,28 @@ namespace Microsoft.CodeAnalysis.Diagnostics
 {
     internal sealed class DictionaryAnalyzerConfigOptions : AnalyzerConfigOptions
     {
-        internal static readonly ImmutableDictionary<string, string> EmptyDictionary = ImmutableDictionary.Create<string, string>(KeyComparer);
+        internal static readonly IReadOnlyDictionary<string, string> EmptyDictionary = new Dictionary<string, string>(KeyComparer);
 
         public static DictionaryAnalyzerConfigOptions Empty { get; } = new DictionaryAnalyzerConfigOptions(EmptyDictionary);
 
         // Note: Do not rename. Older versions of analyzers access this field via reflection.
         // https://github.com/dotnet/roslyn/blob/8e3d62a30b833631baaa4e84c5892298f16a8c9e/src/Workspaces/SharedUtilitiesAndExtensions/Compiler/Core/Options/EditorConfig/EditorConfigStorageLocationExtensions.cs#L21
-        internal readonly ImmutableDictionary<string, string> Options;
+        private ImmutableDictionary<string, string>? _options;
+        internal ImmutableDictionary<string, string> Options
+        {
+            get
+            {
+                if (_options is null)
+                    _options = OptionsInternal.ToImmutableDictionary();
 
-        public DictionaryAnalyzerConfigOptions(ImmutableDictionary<string, string> options)
-            => Options = options;
+                return _options;
+            }
+        }
+
+        internal IReadOnlyDictionary<string, string> OptionsInternal { get; }
+
+        public DictionaryAnalyzerConfigOptions(IReadOnlyDictionary<string, string> options)
+            => OptionsInternal = options;
 
         public override bool TryGetValue(string key, [NotNullWhen(true)] out string? value)
             => Options.TryGetValue(key, out value);

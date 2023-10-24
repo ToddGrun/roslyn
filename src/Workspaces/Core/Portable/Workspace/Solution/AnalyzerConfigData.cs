@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Collections.Immutable;
+using System.Collections.Generic;
 using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Microsoft.CodeAnalysis;
@@ -12,7 +12,7 @@ namespace Microsoft.CodeAnalysis;
 /// </summary>
 internal readonly struct AnalyzerConfigData(AnalyzerConfigOptionsResult result)
 {
-    public readonly StructuredAnalyzerConfigOptions ConfigOptions = StructuredAnalyzerConfigOptions.Create(result.AnalyzerOptions);
-    public readonly ImmutableDictionary<string, string> AnalyzerOptions = result.AnalyzerOptions;
-    public readonly ImmutableDictionary<string, ReportDiagnostic> TreeOptions = result.TreeOptions;
+    public readonly StructuredAnalyzerConfigOptions ConfigOptions = StructuredAnalyzerConfigOptions.Create(result.GetAnalyzerOptions());
+    public readonly IReadOnlyDictionary<string, string> AnalyzerOptions = result.GetAnalyzerOptions();
+    public readonly IReadOnlyDictionary<string, ReportDiagnostic> TreeOptions = result.GetTreeOptions();
 }

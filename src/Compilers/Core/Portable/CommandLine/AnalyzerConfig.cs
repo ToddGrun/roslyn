@@ -291,7 +291,7 @@ namespace Microsoft.CodeAnalysis
             /// </summary>
             public static StringComparer PropertiesKeyComparer { get; } = CaseInsensitiveComparison.Comparer;
 
-            public Section(string name, ImmutableDictionary<string, string> properties)
+            public Section(string name, IReadOnlyDictionary<string, string> properties)
             {
                 Name = name;
                 Properties = properties;
@@ -310,7 +310,7 @@ namespace Microsoft.CodeAnalysis
             /// or if the corresponding key is in <see cref="ReservedKeys" />. Otherwise,
             /// the values are the literal values present in the source.
             /// </summary>
-            public ImmutableDictionary<string, string> Properties { get; }
+            public IReadOnlyDictionary<string, string> Properties { get; }
         }
     }
 }

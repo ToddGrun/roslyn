@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Threading;
 using Roslyn.Utilities;
@@ -31,14 +32,14 @@ namespace Microsoft.CodeAnalysis
         private readonly struct Options
         {
             public readonly GeneratedKind IsGenerated;
-            public readonly ImmutableDictionary<string, ReportDiagnostic> DiagnosticOptions;
+            public readonly IReadOnlyDictionary<string, ReportDiagnostic> DiagnosticOptions;
 
             public Options(AnalyzerConfigOptionsResult? result)
             {
                 if (result is AnalyzerConfigOptionsResult r)
                 {
-                    DiagnosticOptions = r.TreeOptions;
-                    IsGenerated = GeneratedCodeUtilities.GetIsGeneratedCodeFromOptions(r.AnalyzerOptions);
+                    DiagnosticOptions = r.GetTreeOptions();
+                    IsGenerated = GeneratedCodeUtilities.GetIsGeneratedCodeFromOptions(r.GetAnalyzerOptions());
                 }
                 else
                 {
@@ -86,9 +87,9 @@ namespace Microsoft.CodeAnalysis
 
         public override bool TryGetGlobalDiagnosticValue(string diagnosticId, CancellationToken _, out ReportDiagnostic severity)
         {
-            if (_globalOptions.TreeOptions is object)
+            if (_globalOptions.GetTreeOptions() is object)
             {
-                return _globalOptions.TreeOptions.TryGetValue(diagnosticId, out severity);
+                return _globalOptions.GetTreeOptions().TryGetValue(diagnosticId, out severity);
             }
             severity = ReportDiagnostic.Default;
             return false;

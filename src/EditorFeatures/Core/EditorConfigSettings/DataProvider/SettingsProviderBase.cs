@@ -172,7 +172,7 @@ namespace Microsoft.CodeAnalysis.Editor.EditorConfigSettings.DataProvider
                     {
                         var diagnosticKey = "dotnet_diagnostic." + key + ".severity";
                         if (!_fileDirectoryConfigData.ConfigOptions.TryGetValue(diagnosticKey, out _) &&
-                            !_projectDirectoryConfigData.Value.AnalyzerOptions.TryGetKey(diagnosticKey, out _))
+                            !_projectDirectoryConfigData.Value.AnalyzerOptions.ContainsKey(diagnosticKey))
                         {
                             yield return diagnosticKey;
                         }

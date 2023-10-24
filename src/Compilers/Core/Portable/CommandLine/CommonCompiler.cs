@@ -1003,7 +1003,7 @@ namespace Microsoft.CodeAnalysis
             foreach (var syntaxTree in syntaxTrees)
             {
 
-                var options = sourceFileAnalyzerConfigOptions[i].AnalyzerOptions;
+                var options = sourceFileAnalyzerConfigOptions[i].GetAnalyzerOptions();
 
                 // Optimization: don't create a bunch of entries pointing to a no-op
                 if (options.Count > 0)
@@ -1018,7 +1018,7 @@ namespace Microsoft.CodeAnalysis
             {
                 for (i = 0; i < additionalFiles.Length; i++)
                 {
-                    var options = additionalFileOptions[i].AnalyzerOptions;
+                    var options = additionalFileOptions[i].GetAnalyzerOptions();
 
                     // Optimization: don't create a bunch of entries pointing to a no-op
                     if (options.Count > 0)
@@ -1071,7 +1071,7 @@ namespace Microsoft.CodeAnalysis
                 if (Arguments.AnalyzerConfigPaths.Length > 0)
                 {
                     Debug.Assert(analyzerConfigSet is object);
-                    analyzerConfigProvider = analyzerConfigProvider.WithGlobalOptions(new DictionaryAnalyzerConfigOptions(analyzerConfigSet.GetOptionsForSourcePath(string.Empty).AnalyzerOptions));
+                    analyzerConfigProvider = analyzerConfigProvider.WithGlobalOptions(new DictionaryAnalyzerConfigOptions(analyzerConfigSet.GetOptionsForSourcePath(string.Empty).GetAnalyzerOptions()));
 
                     // TODO(https://github.com/dotnet/roslyn/issues/31916): The compiler currently doesn't support
                     // configuring diagnostic reporting on additional text files individually.
