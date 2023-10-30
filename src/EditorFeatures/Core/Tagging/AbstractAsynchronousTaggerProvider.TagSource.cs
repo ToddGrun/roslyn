@@ -67,12 +67,12 @@ namespace Microsoft.CodeAnalysis.Editor.Tagging
             /// <summary>
             /// Work queue that collects high priority requests to call TagsChanged with.
             /// </summary>
-            private readonly AsyncBatchingWorkQueue<NormalizedSnapshotSpanCollection> _highPriTagsChangedQueue;
+            private readonly AsyncBatchingWorkQueue<(NormalizedSnapshotSpanCollection, TaggerContext<TTag>)> _highPriTagsChangedQueue;
 
             /// <summary>
             /// Work queue that collects normal priority requests to call TagsChanged with.
             /// </summary>
-            private readonly AsyncBatchingWorkQueue<NormalizedSnapshotSpanCollection> _normalPriTagsChangedQueue;
+            private readonly AsyncBatchingWorkQueue<(NormalizedSnapshotSpanCollection, TaggerContext<TTag>)> _normalPriTagsChangedQueue;
 
             /// <summary>
             /// Boolean specifies if this is the initial set of tags being computed or not.  This queue is used to batch
@@ -171,7 +171,7 @@ namespace Microsoft.CodeAnalysis.Editor.Tagging
                     asyncListener,
                     _disposalTokenSource.Token);
 
-                _highPriTagsChangedQueue = new AsyncBatchingWorkQueue<NormalizedSnapshotSpanCollection>(
+                _highPriTagsChangedQueue = new AsyncBatchingWorkQueue<(NormalizedSnapshotSpanCollection, TaggerContext<TTag>)>(
                     TaggerDelay.NearImmediate.ComputeTimeDelay(),
                     ProcessTagsChangedAsync,
                     equalityComparer: null,
@@ -186,7 +186,7 @@ namespace Microsoft.CodeAnalysis.Editor.Tagging
                 }
                 else
                 {
-                    _normalPriTagsChangedQueue = new AsyncBatchingWorkQueue<NormalizedSnapshotSpanCollection>(
+                    _normalPriTagsChangedQueue = new AsyncBatchingWorkQueue<(NormalizedSnapshotSpanCollection, TaggerContext<TTag>)>(
                         _dataSource.AddedTagNotificationDelay.ComputeTimeDelay(),
                         ProcessTagsChangedAsync,
                         equalityComparer: null,

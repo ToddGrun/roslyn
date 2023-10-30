@@ -11,6 +11,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.Collections;
 using Microsoft.CodeAnalysis.Editor.Shared.Extensions;
 using Microsoft.CodeAnalysis.Editor.Shared.Options;
 using Microsoft.CodeAnalysis.Editor.Shared.Utilities;
@@ -94,6 +95,9 @@ namespace Microsoft.CodeAnalysis.Editor.Tagging
         /// Whether or not events from the <see cref="ITaggerEventSource"/> should cancel in-flight tag-computation.
         /// </summary>
         protected virtual bool CancelOnNewWork { get; }
+
+        protected virtual ImmutableSegmentedList<NormalizedSnapshotSpanCollection> AugmentTagsChangedSpans(ImmutableSegmentedList<NormalizedSnapshotSpanCollection> spans, ITextBuffer subjectBuffer)
+            => spans;
 
         /// <summary>
         /// Comparer used to check if two tags are the same.  Used so that when new tags are produced, they can be

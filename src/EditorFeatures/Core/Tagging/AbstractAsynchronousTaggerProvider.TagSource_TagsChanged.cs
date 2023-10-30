@@ -23,7 +23,9 @@ namespace Microsoft.CodeAnalysis.Editor.Tagging
             public event EventHandler<SnapshotSpanEventArgs>? TagsChanged;
 
             private void OnTagsChangedForBuffer(
-                ICollection<KeyValuePair<ITextBuffer, DiffResult>> changes, bool highPriority)
+                ICollection<KeyValuePair<ITextBuffer, DiffResult>> changes,
+                TaggerContext<TTag> context,
+                bool highPriority)
             {
                 _dataSource.ThreadingContext.ThrowIfNotOnUIThread();
 
@@ -34,22 +36,24 @@ namespace Microsoft.CodeAnalysis.Editor.Tagging
 
                     // Removed tags are always treated as high pri, so we can clean their stale
                     // data out from the ui immediately.
-                    _highPriTagsChangedQueue.AddWork(change.Value.Removed);
+                    _highPriTagsChangedQueue.AddWork((change.Value.Removed, context));
 
                     // Added tags are run at the requested priority.
                     var addedTagsQueue = highPriority ? _highPriTagsChangedQueue : _normalPriTagsChangedQueue;
-                    addedTagsQueue.AddWork(change.Value.Added);
+                    addedTagsQueue.AddWork((change.Value.Added, context));
                 }
             }
 
             private ValueTask ProcessTagsChangedAsync(
-                ImmutableSegmentedList<NormalizedSnapshotSpanCollection> snapshotSpans, CancellationToken cancellationToken)
+                ImmutableSegmentedList<(NormalizedSnapshotSpanCollection SnapshotSpans, TaggerContext<TTag> Context)> changed, CancellationToken cancellationToken)
             {
                 var tagsChanged = this.TagsChanged;
                 if (tagsChanged == null)
                     return ValueTaskFactory.CompletedTask;
 
-                foreach (var collection in snapshotSpans)
+                snapshotSpans = _dataSource.AugmentTagsChangedSpans(snapshotSpans, _subjectBuffer);
+
+                foreach ((var collection, var _) in changed)
                 {
                     if (collection.Count == 0)
                         continue;

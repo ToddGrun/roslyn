@@ -28,6 +28,7 @@ namespace Microsoft.CodeAnalysis.Editor.Tagging
 
         public ImmutableArray<DocumentSnapshotSpan> SpansToTag { get; }
         public SnapshotPoint? CaretPosition { get; }
+        public ITextSnapshot Snapshot { get; }
 
         /// <summary>
         /// The text that has changed between the last successful tagging and this new request to
@@ -52,7 +53,7 @@ namespace Microsoft.CodeAnalysis.Editor.Tagging
             SnapshotPoint? caretPosition = null,
             TextChangeRange? textChangeRange = null)
             : this(state: null, ImmutableArray.Create(new DocumentSnapshotSpan(document, snapshot.GetFullSpan())),
-                   caretPosition, textChangeRange, existingTags: null)
+                   caretPosition, snapshot, textChangeRange, existingTags: null)
         {
         }
 
@@ -60,6 +61,7 @@ namespace Microsoft.CodeAnalysis.Editor.Tagging
             object state,
             ImmutableArray<DocumentSnapshotSpan> spansToTag,
             SnapshotPoint? caretPosition,
+            ITextSnapshot snapshot,
             TextChangeRange? textChangeRange,
             ImmutableDictionary<ITextBuffer, TagSpanIntervalTree<TTag>> existingTags)
         {
@@ -67,6 +69,7 @@ namespace Microsoft.CodeAnalysis.Editor.Tagging
             this.SpansToTag = spansToTag;
             this.CaretPosition = caretPosition;
             this.TextChangeRange = textChangeRange;
+            this.Snapshot = snapshot;
 
             _spansTagged = spansToTag.SelectAsArray(ds => ds.SnapshotSpan);
             _existingTags = existingTags;

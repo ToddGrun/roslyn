@@ -231,7 +231,8 @@ namespace Microsoft.CodeAnalysis.Editor.Tagging
                     var oldState = this.State;
 
                     var textChangeRange = this.AccumulatedTextChanges;
-                    var subjectBufferVersion = _subjectBuffer.CurrentSnapshot.Version.VersionNumber;
+                    var subjectSnapshot = _subjectBuffer.CurrentSnapshot;
+                    var subjectBufferVersion = subjectSnapshot.Version.VersionNumber;
 
                     await TaskScheduler.Default;
 
@@ -240,7 +241,7 @@ namespace Microsoft.CodeAnalysis.Editor.Tagging
 
                     // Create a context to store pass the information along and collect the results.
                     var context = new TaggerContext<TTag>(
-                        oldState, spansToTag, caretPosition, textChangeRange, oldTagTrees);
+                        oldState, spansToTag, caretPosition, subjectSnapshot, textChangeRange, oldTagTrees);
                     await ProduceTagsAsync(context, cancellationToken).ConfigureAwait(false);
 
                     if (cancellationToken.IsCancellationRequested)
@@ -274,7 +275,7 @@ namespace Microsoft.CodeAnalysis.Editor.Tagging
                         this.AccumulatedTextChanges = null;
                     }
 
-                    OnTagsChangedForBuffer(bufferToChanges, highPriority);
+                    OnTagsChangedForBuffer(bufferToChanges, context, highPriority);
 
                     // Once we've computed tags, pause ourselves if we're no longer visible.  That way we don't consume any
                     // machine resources that the user won't even notice.

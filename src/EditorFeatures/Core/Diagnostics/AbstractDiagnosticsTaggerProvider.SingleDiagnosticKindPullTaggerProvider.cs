@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Collections;
 using Microsoft.CodeAnalysis.Editor;
 using Microsoft.CodeAnalysis.Editor.Shared.Extensions;
 using Microsoft.CodeAnalysis.Editor.Shared.Preview;
@@ -23,6 +24,7 @@ using Microsoft.CodeAnalysis.Text.Shared.Extensions;
 using Microsoft.CodeAnalysis.Workspaces;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
+using Microsoft.VisualStudio.Text.Tagging;
 
 namespace Microsoft.CodeAnalysis.Diagnostics;
 
@@ -70,6 +72,20 @@ internal abstract partial class AbstractDiagnosticsTaggerProvider<TTag>
             TaggerContext<TTag> context, DocumentSnapshotSpan spanToTag, int? caretPosition, CancellationToken cancellationToken)
         {
             return ProduceTagsAsync(context, spanToTag, cancellationToken);
+        }
+
+        protected override ImmutableSegmentedList<NormalizedSnapshotSpanCollection> AugmentTagsChangedSpans(ImmutableSegmentedList<NormalizedSnapshotSpanCollection> spans, ITextBuffer subjectBuffer)
+        {
+            if (spans.Count == 0)
+            {
+                if (!subjectBuffer.Properties.ContainsProperty("syntax-squiggle-count"))
+                {
+                    spans.Add()
+                    subjectBuffer.Properties.AddProperty("syntax-squiggle-count", -1);
+                }
+            }
+
+            return spans;
         }
 
         private async Task ProduceTagsAsync(
