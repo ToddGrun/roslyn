@@ -14,7 +14,6 @@ using Microsoft.CodeAnalysis.Editor.Shared.Preview;
 using Microsoft.CodeAnalysis.Editor.Shared.Utilities;
 using Microsoft.CodeAnalysis.Editor.Tagging;
 using Microsoft.CodeAnalysis.ErrorReporting;
-using Microsoft.CodeAnalysis.Host;
 using Microsoft.CodeAnalysis.Options;
 using Microsoft.CodeAnalysis.Shared.Extensions;
 using Microsoft.CodeAnalysis.Shared.TestHooks;
@@ -23,6 +22,7 @@ using Microsoft.CodeAnalysis.Text.Shared.Extensions;
 using Microsoft.CodeAnalysis.Workspaces;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
+using Microsoft.VisualStudio.Text.Tagging;
 
 namespace Microsoft.CodeAnalysis.Diagnostics;
 
@@ -72,6 +72,42 @@ internal abstract partial class AbstractDiagnosticsTaggerProvider<TTag>
             return ProduceTagsAsync(context, spanToTag, cancellationToken);
         }
 
+        private static readonly bool s_requiresBeforeTagsChangedNotification = typeof(TTag).IsAssignableFrom(typeof(IErrorTag));
+        private static readonly object s_initialDiagnosticRequestInfoKey = new();
+        private const string SyntaxSquiggleCountPropertyName = "syntax-squiggle-count";
+        private const string SyntaxSquiggleTypePropertyName = "syntax-squiggle-type";
+
+        protected override void BeforeTagsChanged(ITextSnapshot snapshot)
+        {
+            if (!s_requiresBeforeTagsChangedNotification)
+                return;
+
+            var buffer = snapshot.TextBuffer;
+
+            if (buffer.Properties.GetProperty<int>(s_initialDiagnosticRequestInfoKey) == snapshot.Version.VersionNumber)
+            {
+                if (!buffer.Properties.ContainsProperty(SyntaxSquiggleCountPropertyName))
+                {
+                    // If we reach this point, there was an error for a request on the initial snapshot. This property's
+                    // presence is used to determine how long initial errors in the document take to be calculated.
+                    buffer.Properties[SyntaxSquiggleCountPropertyName] = -1;
+                    buffer.Properties[SyntaxSquiggleTypePropertyName] = _diagnosticKind.ToString();
+                }
+            }
+        }
+
+        private static void CacheInitialDiagnosticRequestInfo(ITextSnapshot snapshot)
+        {
+            if (!s_requiresBeforeTagsChangedNotification)
+                return;
+
+            var properties = snapshot.TextBuffer.Properties;
+            if (!properties.ContainsProperty(s_initialDiagnosticRequestInfoKey))
+            {
+                properties[s_initialDiagnosticRequestInfoKey] = snapshot.Version.VersionNumber;
+            }
+        }
+
         private async Task ProduceTagsAsync(
             TaggerContext<TTag> context, DocumentSnapshotSpan documentSpanToTag, CancellationToken cancellationToken)
         {
@@ -96,13 +132,15 @@ internal abstract partial class AbstractDiagnosticsTaggerProvider<TTag>
             // is generating code that it doesn't want errors shown for.
             var buffer = snapshot.TextBuffer;
             var suppressedDiagnosticsSpans = (NormalizedSnapshotSpanCollection?)null;
-            buffer?.Properties.TryGetProperty(PredefinedPreviewTaggerKeys.SuppressDiagnosticsSpansKey, out suppressedDiagnosticsSpans);
+            buffer.Properties.TryGetProperty(PredefinedPreviewTaggerKeys.SuppressDiagnosticsSpansKey, out suppressedDiagnosticsSpans);
 
             var sourceText = snapshot.AsText();
 
             try
             {
                 var requestedSpan = documentSpanToTag.SnapshotSpan;
+
+                CacheInitialDiagnosticRequestInfo(snapshot);
 
                 // NOTE: We pass 'includeSuppressedDiagnostics: true' to ensure that IDE0079 (unnecessary suppressions)
                 // are flagged and faded in the editor. IDE0079 analyzer requires all source suppressed diagnostics to
