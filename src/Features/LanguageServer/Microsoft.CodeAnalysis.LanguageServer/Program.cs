@@ -118,7 +118,7 @@ static async Task RunAsync(ServerConfiguration serverConfiguration, Cancellation
     // Wait for connection from client
     await pipeServer.WaitForConnectionAsync(cancellationToken);
 
-    var server = new LanguageServerHost(pipeServer, pipeServer, exportProvider, languageServerLogger);
+    var server = new LanguageServerHost(pipeServer, pipeServer, exportProvider, languageServerLogger, telemetryReporter);
     server.Start();
 
     logger.LogInformation("Language server initialized");
