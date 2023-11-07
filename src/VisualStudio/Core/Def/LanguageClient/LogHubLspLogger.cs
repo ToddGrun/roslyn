@@ -3,11 +3,17 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.Internal.Log;
 using Microsoft.CodeAnalysis.LanguageServer;
+using Microsoft.CodeAnalysis.PooledObjects;
+using Microsoft.CodeAnalysis.Telemetry;
+using Microsoft.CommonLanguageServerProtocol.Framework;
 using Microsoft.VisualStudio.LogHub;
+using Microsoft.VisualStudio.Telemetry;
 using Roslyn.Utilities;
 
 namespace Microsoft.VisualStudio.LanguageServices.Implementation.LanguageClient
@@ -70,6 +76,72 @@ namespace Microsoft.VisualStudio.LanguageServices.Implementation.LanguageClient
         public void LogEndContext(string message, params object[] @params)
         {
             _traceSource.TraceEvent(TraceEventType.Stop, id: 0, message);
+        }
+
+        public ILspLoggerScope BeginScope(string message)
+        {
+            return new TelemetryScope(message, this);
+        }
+
+        internal class TelemetryScope : ILspLoggerScope
+        {
+            private readonly string _name;
+            private readonly ILspServiceLogger _hostLogger;
+            private readonly ArrayBuilder<(string, object?)> _properties;
+            private readonly SharedStopwatch _stopwatch;
+
+            public TelemetryScope(string name, ILspServiceLogger hostLogger)
+            {
+                _name = name;
+                _properties = ArrayBuilder<(string, object?)>.GetInstance();
+                _stopwatch = SharedStopwatch.StartNew();
+
+                _hostLogger = hostLogger;
+                _hostLogger.LogStartContext(_name);
+            }
+
+            public void AddProperty(string name, object? value)
+            {
+                _properties.Add(new(name, value));
+            }
+
+            public void AddProperties(ImmutableArray<(string, object?)> properties)
+            {
+                _properties.AddRange(properties);
+            }
+
+            public void AddException(Exception exception, string? message = null, params object[] @params)
+            {
+                AddProperty("exception", exception.ToString());
+
+                _hostLogger.LogException(exception, message, @params);
+            }
+
+            public void AddWarning(string message, params object[] @params)
+            {
+                AddProperty("warning", message);
+
+                _hostLogger.LogWarning(message, @params);
+            }
+
+            public void Dispose()
+            {
+                AddProperty("eventscope.method", _name);
+                AddProperty("eventscope.ellapsedms", _stopwatch.Elapsed.Milliseconds);
+                AddProperty("eventscope.correlationid", Trace.CorrelationManager.ActivityId);
+
+                var message = KeyValueLogMessage.Create(LogType.Trace, m =>
+                {
+                    foreach (var (name, value) in _properties)
+                    {
+                        m[name] = value;
+                    }
+                });
+
+                TelemetryLogging.Log(FunctionId.LSP_RequestDuration, message);
+
+                _hostLogger.LogEndContext(_name);
+            }
         }
     }
 }

@@ -35,4 +35,9 @@ public class NoOpLspLogger : ILspLogger
     public void LogWarning(string message, params object[] @params)
     {
     }
+
+    public ILspLoggerScope BeginScope(string message)
+    {
+        throw new NotImplementedException();
+    }
 }
