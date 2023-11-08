@@ -10,6 +10,7 @@ using Microsoft.CodeAnalysis.Common;
 using Microsoft.CodeAnalysis.Contracts.Telemetry;
 using Microsoft.CodeAnalysis.ErrorReporting;
 using Microsoft.CodeAnalysis.Internal.Log;
+using Microsoft.CodeAnalysis.PooledObjects;
 using Roslyn.Utilities;
 
 namespace Microsoft.CodeAnalysis.LanguageServer.Logging
@@ -230,28 +231,28 @@ namespace Microsoft.CodeAnalysis.LanguageServer.Logging
                                         _ => LogType.Trace
                                     };
 
-        private static ImmutableDictionary<string, object?> GetProperties(FunctionId id, LogMessage logMessage, int? delta)
+        private static ImmutableArray<(string, object?)> GetProperties(FunctionId id, LogMessage logMessage, int? delta)
         {
-            var builder = ImmutableDictionary.CreateBuilder<string, object?>();
+            using var _ = ArrayBuilder<(string, object?)>.GetInstance(out var builder);
 
             if (logMessage is KeyValueLogMessage kvLogMessage)
             {
                 foreach (var (name, val) in kvLogMessage.Properties)
                 {
-                    builder.Add(GetPropertyName(id, name), val);
+                    builder.Add(new(GetPropertyName(id, name), val));
                 }
             }
             else
             {
-                builder.Add(GetPropertyName(id, "Message"), logMessage.GetMessage());
+                builder.Add(new(GetPropertyName(id, "Message"), logMessage.GetMessage()));
             }
 
             if (delta.HasValue)
             {
-                builder.Add(GetPropertyName(id, "Delta"), delta.Value);
+                builder.Add(new(GetPropertyName(id, "Delta"), delta.Value));
             }
 
-            return builder.ToImmutableDictionary();
+            return builder.ToImmutable();
         }
     }
 }

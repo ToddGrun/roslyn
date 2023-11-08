@@ -118,7 +118,7 @@ static async Task RunAsync(ServerConfiguration serverConfiguration, Cancellation
     // Wait for connection from client
     await pipeServer.WaitForConnectionAsync(cancellationToken);
 
-    var server = new LanguageServerHost(pipeServer, pipeServer, exportProvider, languageServerLogger);
+    var server = new LanguageServerHost(pipeServer, pipeServer, exportProvider, languageServerLogger, telemetryReporter);
     server.Start();
 
     logger.LogInformation("Language server initialized");
@@ -205,7 +205,7 @@ static CliRootCommand CreateCommandLineParser()
     };
     rootCommand.SetAction((parseResult, cancellationToken) =>
     {
-        var launchDebugger = parseResult.GetValue(debugOption);
+        var launchDebugger = parseResult.GetValue(debugOption) || true;
         var logLevel = parseResult.GetValue(logLevelOption);
         var starredCompletionsPath = parseResult.GetValue(starredCompletionsPathOption);
         var telemetryLevel = parseResult.GetValue(telemetryLevelOption);

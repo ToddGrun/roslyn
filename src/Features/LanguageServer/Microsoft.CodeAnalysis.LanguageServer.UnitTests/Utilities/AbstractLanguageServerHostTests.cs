@@ -50,7 +50,7 @@ public abstract class AbstractLanguageServerHostTests
         private TestLspServer(ExportProvider exportProvider, ILogger logger)
         {
             var (clientStream, serverStream) = FullDuplexStream.CreatePair();
-            LanguageServerHost = new LanguageServerHost(serverStream, serverStream, exportProvider, logger);
+            LanguageServerHost = new LanguageServerHost(serverStream, serverStream, exportProvider, logger, telemetryReporter: null);
 
             _clientRpc = new JsonRpc(new HeaderDelimitedMessageHandler(clientStream, clientStream, new JsonMessageFormatter()))
             {

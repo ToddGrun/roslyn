@@ -5,6 +5,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.CommonLanguageServerProtocol.Framework;
 
 namespace Microsoft.CodeAnalysis.LanguageServer
 {
@@ -36,6 +37,11 @@ namespace Microsoft.CodeAnalysis.LanguageServer
 
         public void LogEndContext(string message, params object[] @params)
         {
+        }
+
+        public ILspLoggerScope BeginScope(string message)
+        {
+            throw new NotImplementedException();
         }
     }
 }
