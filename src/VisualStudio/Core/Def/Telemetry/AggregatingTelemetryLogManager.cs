@@ -19,7 +19,7 @@ namespace Microsoft.CodeAnalysis.Telemetry
     /// </summary>
     internal sealed class AggregatingTelemetryLogManager
     {
-        private static readonly TimeSpan s_batchedTelemetryCollectionPeriod = TimeSpan.FromMinutes(30);
+        private static readonly TimeSpan s_batchedTelemetryCollectionPeriod = TimeSpan.FromMinutes(3);
 
         private readonly TelemetrySession _session;
         private readonly AsyncBatchingWorkQueue _postTelemetryQueue;

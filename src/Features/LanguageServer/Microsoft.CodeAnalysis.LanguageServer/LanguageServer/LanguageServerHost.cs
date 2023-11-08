@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using Microsoft.CodeAnalysis.Contracts.Telemetry;
 using Microsoft.CodeAnalysis.LanguageServer.Handler;
 using Microsoft.CodeAnalysis.LanguageServer.Logging;
 using Microsoft.CommonLanguageServerProtocol.Framework;
@@ -26,7 +27,7 @@ internal sealed class LanguageServerHost
     private readonly AbstractLanguageServer<RequestContext> _roslynLanguageServer;
     private readonly JsonRpc _jsonRpc;
 
-    public LanguageServerHost(Stream inputStream, Stream outputStream, ExportProvider exportProvider, ILogger logger)
+    public LanguageServerHost(Stream inputStream, Stream outputStream, ExportProvider exportProvider, ILogger logger, ITelemetryReporter? telemetryReporter)
     {
         var handler = new HeaderDelimitedMessageHandler(outputStream, inputStream, new JsonMessageFormatter());
 
@@ -40,7 +41,7 @@ internal sealed class LanguageServerHost
         var capabilitiesProvider = new ServerCapabilitiesProvider(exportProvider.GetExportedValue<ExperimentalCapabilitiesProvider>());
 
         _logger = logger;
-        var lspLogger = new LspServiceLogger(_logger);
+        var lspLogger = new LspServiceLogger(_logger, telemetryReporter);
 
         var hostServices = exportProvider.GetExportedValue<HostServicesProvider>().HostServices;
         _roslynLanguageServer = roslynLspFactory.Create(_jsonRpc, capabilitiesProvider, WellKnownLspServerKinds.CSharpVisualBasicLspServer, lspLogger, hostServices);

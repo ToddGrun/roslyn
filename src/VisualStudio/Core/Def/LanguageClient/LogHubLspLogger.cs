@@ -3,10 +3,13 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
-using System.Threading;
-using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.Internal.Log;
 using Microsoft.CodeAnalysis.LanguageServer;
+using Microsoft.CodeAnalysis.PooledObjects;
+using Microsoft.CodeAnalysis.Telemetry;
+using Microsoft.CommonLanguageServerProtocol.Framework;
 using Microsoft.VisualStudio.LogHub;
 using Roslyn.Utilities;
 
@@ -70,6 +73,64 @@ namespace Microsoft.VisualStudio.LanguageServices.Implementation.LanguageClient
         public void LogEndContext(string message, params object[] @params)
         {
             _traceSource.TraceEvent(TraceEventType.Stop, id: 0, message);
+        }
+
+        public ILspLoggerScope BeginScope(string message)
+        {
+            return new LspTelemetryScope(message, this);
+        }
+
+        internal sealed class LspTelemetryScope : LspLoggerScope
+        {
+            private readonly ILspServiceLogger _hostLogger;
+            private static readonly ObjectPool<List<(string, object?)>> s_pool = new ObjectPool<List<(string, object?)>>(() => new(), trimOnFree: true);
+            private readonly IDisposable? _telemetryBlockDisposer;
+
+            public LspTelemetryScope(string name, ILspServiceLogger hostLogger)
+                : base(name, s_pool.Allocate())
+            {
+                _hostLogger = hostLogger;
+                _hostLogger.LogStartContext(Name);
+
+                var message = KeyValueLogMessage.Create(LogType.Trace, m =>
+                {
+                    foreach (var (name, value) in Properties)
+                    {
+                        m[name] = value;
+                    }
+                });
+
+                _telemetryBlockDisposer = TelemetryLogging.LogBlockTime(FunctionId.LSP_RequestDuration, message, minThresholdMs: (int)DurationThreshold);
+            }
+
+            public override void AddException(Exception exception, string? message = null, params object[] @params)
+            {
+                base.AddException(exception, message, @params);
+
+                _hostLogger.LogException(exception, message, @params);
+            }
+
+            public override void AddWarning(string message, params object[] @params)
+            {
+                base.AddWarning(message, @params);
+
+                _hostLogger.LogWarning(message, @params);
+            }
+
+            public override void Dispose()
+            {
+                base.Dispose();
+
+                // Fire the telemetry event if the timing threshold is exceeded
+                _telemetryBlockDisposer?.Dispose();
+
+                _hostLogger.LogEndContext(Name);
+
+                // Add aggregated telemetry information
+                TelemetryLogging.LogAggregated(FunctionId.LSP_RequestDuration, $"{Name}", (int)RequestDuration);
+
+                s_pool.Free(Properties);
+            }
         }
     }
 }
