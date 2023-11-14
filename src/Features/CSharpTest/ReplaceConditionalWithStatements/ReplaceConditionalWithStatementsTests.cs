@@ -1262,4 +1262,38 @@ public class ReplaceConditionalWithStatementsTests
             }
             """);
     }
+
+    [Fact]
+    public async Task TestAssignment_DeepNesting()
+    {
+        var value = string.Join("+", Enumerable.Repeat(" 1 ", 20000));
+        await VerifyCS.VerifyRefactoringAsync(
+            $$"""
+            class C
+            {
+                void M(bool b)
+                {
+                    object a;
+                    a = $$b ? {{value}} : 1L;
+                }
+            }
+            """,
+            $$"""
+            class C
+            {
+                void M(bool b)
+                {
+                    object a;
+                    if (b)
+                    {
+                        a = {{value}};
+                    }
+                    else
+                    {
+                        a = 1L;
+                    }
+                }
+            }
+            """);
+    }
 }
