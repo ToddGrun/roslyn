@@ -11,6 +11,8 @@ using System.Text;
 using System.Threading;
 using Microsoft.CodeAnalysis.Contracts.Telemetry;
 using Microsoft.CodeAnalysis.Host.Mef;
+using Microsoft.CommonLanguageServerProtocol.Framework;
+using Microsoft.VisualStudio.LanguageServices.DevKit.Logging;
 using Microsoft.VisualStudio.Telemetry;
 
 namespace Microsoft.CodeAnalysis.LanguageServer.Logging;
@@ -48,7 +50,7 @@ internal sealed class VSCodeTelemetryLogger : ITelemetryReporter
         _telemetrySession = session;
     }
 
-    public void Log(string name, List<Property> properties)
+    public void Log(string name, List<KeyValuePair<string, object?>> properties)
     {
         Debug.Assert(_telemetrySession != null);
 
@@ -69,7 +71,7 @@ internal sealed class VSCodeTelemetryLogger : ITelemetryReporter
         };
     }
 
-    public void LogBlockEnd(int blockId, List<Property> properties, CancellationToken cancellationToken)
+    public void LogBlockEnd(int blockId, List<KeyValuePair<string, object?>> properties, CancellationToken cancellationToken)
     {
         var found = _pendingScopes.TryRemove(blockId, out var scope);
         Debug.Assert(found);
@@ -85,6 +87,11 @@ internal sealed class VSCodeTelemetryLogger : ITelemetryReporter
             userTask.End(result);
         else
             throw new InvalidCastException($"Unexpected value for scope: {scope}");
+    }
+
+    public ILspLoggerScope BeginScope(string eventName)
+    {
+        return new LspTelemetryScope(eventName, this);
     }
 
     public void ReportFault(string eventName, string description, int logLevel, bool forceDump, int processId, Exception exception)
@@ -183,11 +190,11 @@ internal sealed class VSCodeTelemetryLogger : ITelemetryReporter
             _ => throw new InvalidCastException($"Unexpected value for scope: {scope}")
         };
 
-    private static void SetProperties(TelemetryEvent telemetryEvent, List<Property> properties)
+    private static void SetProperties(TelemetryEvent telemetryEvent, List<KeyValuePair<string, object?>> properties)
     {
         foreach (var property in properties)
         {
-            telemetryEvent.Properties.Add(property.Name, property.Value);
+            telemetryEvent.Properties.Add(property);
         }
     }
 }
