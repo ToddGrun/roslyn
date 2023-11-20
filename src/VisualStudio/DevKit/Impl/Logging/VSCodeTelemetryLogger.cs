@@ -11,6 +11,8 @@ using System.Text;
 using System.Threading;
 using Microsoft.CodeAnalysis.Contracts.Telemetry;
 using Microsoft.CodeAnalysis.Host.Mef;
+using Microsoft.CommonLanguageServerProtocol.Framework;
+using Microsoft.VisualStudio.LanguageServices.DevKit.Logging;
 using Microsoft.VisualStudio.Telemetry;
 
 namespace Microsoft.CodeAnalysis.LanguageServer.Logging;
@@ -85,6 +87,11 @@ internal sealed class VSCodeTelemetryLogger : ITelemetryReporter
             userTask.End(result);
         else
             throw new InvalidCastException($"Unexpected value for scope: {scope}");
+    }
+
+    public ILspLoggerScope BeginScope(string eventName)
+    {
+        return new LspTelemetryScope(eventName, this);
     }
 
     public void ReportFault(string eventName, string description, int logLevel, bool forceDump, int processId, Exception exception)
