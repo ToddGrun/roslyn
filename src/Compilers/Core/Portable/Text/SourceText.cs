@@ -25,11 +25,11 @@ namespace Microsoft.CodeAnalysis.Text
     /// </summary>
     public abstract class SourceText
     {
-        private const int CharBufferSize = 32 * 1024;
+        internal const int CharBufferSize = 32 * 1024;
         private const int CharBufferCount = 5;
         internal const int LargeObjectHeapLimitInChars = 40 * 1024; // 40KB
 
-        private static readonly ObjectPool<char[]> s_charArrayPool = new ObjectPool<char[]>(() => new char[CharBufferSize], CharBufferCount);
+        internal static ObjectPool<char[]> CharArrayPool { get; } = new ObjectPool<char[]>(() => new char[CharBufferSize], CharBufferCount);
         private static readonly ObjectPool<XxHash128> s_contentHashPool = new ObjectPool<XxHash128>(() => new XxHash128());
 
         private readonly SourceHashAlgorithm _checksumAlgorithm;
@@ -549,7 +549,7 @@ namespace Microsoft.CodeAnalysis.Text
         {
             CheckSubSpan(span);
 
-            var buffer = s_charArrayPool.Allocate();
+            var buffer = CharArrayPool.Allocate();
             try
             {
                 int offset = span.Start;
@@ -566,7 +566,7 @@ namespace Microsoft.CodeAnalysis.Text
             }
             finally
             {
-                s_charArrayPool.Free(buffer);
+                CharArrayPool.Free(buffer);
             }
         }
 
@@ -628,7 +628,7 @@ namespace Microsoft.CodeAnalysis.Text
             ImmutableArray<byte> computeContentHash()
             {
                 var hash = s_contentHashPool.Allocate();
-                var charBuffer = s_charArrayPool.Allocate();
+                var charBuffer = CharArrayPool.Allocate();
                 Debug.Assert(charBuffer.Length == CharBufferSize);
                 try
                 {
@@ -651,7 +651,7 @@ namespace Microsoft.CodeAnalysis.Text
                 }
                 finally
                 {
-                    s_charArrayPool.Free(charBuffer);
+                    CharArrayPool.Free(charBuffer);
 
                     // Technically not needed.  But adding this reset out of an abundance of paranoia.
                     hash.Reset();
@@ -660,8 +660,16 @@ namespace Microsoft.CodeAnalysis.Text
             }
         }
 
+        private static bool s_doAssert = true;
+
         internal static ImmutableArray<byte> CalculateChecksum(byte[] buffer, int offset, int count, SourceHashAlgorithm algorithmId)
         {
+            if (s_doAssert)
+            {
+                Debugger.Launch();
+                s_doAssert = false;
+            }
+
             using (var algorithm = CryptographicHashProvider.TryGetAlgorithm(algorithmId))
             {
                 RoslynDebug.Assert(algorithm != null);
@@ -671,6 +679,12 @@ namespace Microsoft.CodeAnalysis.Text
 
         internal static ImmutableArray<byte> CalculateChecksum(Stream stream, SourceHashAlgorithm algorithmId)
         {
+            if (s_doAssert)
+            {
+                Debugger.Launch();
+                s_doAssert = false;
+            }
+
             using (var algorithm = CryptographicHashProvider.TryGetAlgorithm(algorithmId))
             {
                 RoslynDebug.Assert(algorithm != null);
@@ -700,7 +714,7 @@ namespace Microsoft.CodeAnalysis.Text
 
             // default implementation constructs text using CopyTo
             var builder = PooledStringBuilder.GetInstance();
-            var buffer = s_charArrayPool.Allocate();
+            var buffer = CharArrayPool.Allocate();
 
             int position = Math.Max(Math.Min(span.Start, this.Length), 0);
             int length = Math.Min(span.End, this.Length) - position;
@@ -715,7 +729,7 @@ namespace Microsoft.CodeAnalysis.Text
                 position += copyLength;
             }
 
-            s_charArrayPool.Free(buffer);
+            CharArrayPool.Free(buffer);
 
             return builder.ToStringAndFree();
         }
@@ -1023,7 +1037,7 @@ namespace Microsoft.CodeAnalysis.Text
         private void EnumerateChars(Action<int, char[], int> action)
         {
             var position = 0;
-            var buffer = s_charArrayPool.Allocate();
+            var buffer = CharArrayPool.Allocate();
 
             var length = this.Length;
             while (position < length)
@@ -1037,7 +1051,7 @@ namespace Microsoft.CodeAnalysis.Text
             // once more with zero length to signal the end
             action(position, buffer, 0);
 
-            s_charArrayPool.Free(buffer);
+            CharArrayPool.Free(buffer);
         }
 
         private int[] ParseLineStarts()
@@ -1158,8 +1172,8 @@ namespace Microsoft.CodeAnalysis.Text
                 return false;
             }
 
-            var buffer1 = s_charArrayPool.Allocate();
-            var buffer2 = s_charArrayPool.Allocate();
+            var buffer1 = CharArrayPool.Allocate();
+            var buffer2 = CharArrayPool.Allocate();
             Debug.Assert(buffer1.Length == buffer2.Length);
             Debug.Assert(buffer1.Length == CharBufferSize);
 
@@ -1179,8 +1193,8 @@ namespace Microsoft.CodeAnalysis.Text
             }
             finally
             {
-                s_charArrayPool.Free(buffer2);
-                s_charArrayPool.Free(buffer1);
+                CharArrayPool.Free(buffer2);
+                CharArrayPool.Free(buffer1);
             }
         }
 

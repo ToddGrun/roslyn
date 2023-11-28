@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
@@ -22,11 +23,17 @@ namespace Microsoft.CodeAnalysis.Text
         private int _position;
         private int _sourceOffset;
         private readonly char[] _charBuffer;
+        private readonly int _bufferUsageSize;
         private int _bufferOffset;
         private int _bufferUnreadChars;
         private bool _preambleWritten;
+        private bool _disposed;
 
         private static readonly Encoding s_utf8EncodingWithNoBOM = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: false);
+
+        private static int s_currentConcurrentUsage = 0;
+        private static int s_maxConcurrentUsage = 0;
+        private static readonly object s_lock = new();
 
         public SourceTextStream(SourceText source, int bufferSize = 2048, bool useDefaultEncodingIfNull = false)
         {
@@ -38,10 +45,19 @@ namespace Microsoft.CodeAnalysis.Text
             _minimumTargetBufferCount = _encoding.GetMaxByteCount(charCount: 1);
             _sourceOffset = 0;
             _position = 0;
-            _charBuffer = new char[Math.Min(bufferSize, _source.Length)];
+            _bufferUsageSize = Math.Min(bufferSize, _source.Length);
+            _charBuffer = _bufferUsageSize <= SourceText.CharBufferSize ? SourceText.CharArrayPool.Allocate() : new char[_bufferUsageSize];
             _bufferOffset = 0;
             _bufferUnreadChars = 0;
             _preambleWritten = false;
+            _disposed = false;
+
+            lock (s_lock)
+            {
+                s_currentConcurrentUsage++;
+                if (s_currentConcurrentUsage > s_maxConcurrentUsage)
+                    s_maxConcurrentUsage = s_currentConcurrentUsage;
+            }
         }
 
         public override bool CanRead
@@ -131,7 +147,7 @@ namespace Microsoft.CodeAnalysis.Text
 
         private void FillBuffer()
         {
-            int charsToRead = Math.Min(_charBuffer.Length, _source.Length - _sourceOffset);
+            int charsToRead = Math.Min(_bufferUsageSize, _source.Length - _sourceOffset);
             _source.CopyTo(_sourceOffset, _charBuffer, 0, charsToRead);
             _sourceOffset += charsToRead;
             _bufferOffset = 0;
@@ -151,6 +167,26 @@ namespace Microsoft.CodeAnalysis.Text
         public override void Write(byte[] buffer, int offset, int count)
         {
             throw new NotSupportedException();
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                _disposed = true;
+
+                if (_charBuffer.Length <= SourceText.CharBufferSize)
+                {
+                    SourceText.CharArrayPool.Free(_charBuffer);
+
+                    lock (s_lock)
+                    {
+                        s_currentConcurrentUsage--;
+                    }
+                }
+            }
+
+            base.Dispose(disposing);
         }
     }
 }
