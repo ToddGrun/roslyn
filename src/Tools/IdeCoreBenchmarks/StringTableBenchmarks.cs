@@ -177,16 +177,16 @@ internal sealed class TernaryStringTableNew : IStringTable
             while (true)
             {
                 Node node = _nodes[nodeIndex];
-                if (node.Value.Length > 0)
+                if (node.Value != null)
                 {
                     // This node has a value. We must compare the current word against the value of the node to determine which
                     // direction we should traverse (Low, Mid, or High).
-                    int comparer = Compare(node.Value, wordIt.Current);
+                    int comparer = Compare(node.Value, wordIt.Current.Span);
                     if (comparer < 0) // Traverse the Low node.
                     {
                         if (node.LowNodeId == 0) // This node does not have a low node so we must create it.
                         {
-                            int newIndex = NewNode(nodeIndex, ReadOnlyMemory<char>.Empty);
+                            int newIndex = NewNode(nodeIndex);
                             node.LowNodeId = newIndex;
                             _nodes[nodeIndex] = node;
                         }
@@ -197,7 +197,7 @@ internal sealed class TernaryStringTableNew : IStringTable
                     {
                         if (node.MidNodeId == 0) // This node does not have a mid node so we must create it.
                         {
-                            int newIndex = NewNode(nodeIndex, ReadOnlyMemory<char>.Empty);
+                            int newIndex = NewNode(nodeIndex);
                             node.MidNodeId = newIndex;
                             _nodes[nodeIndex] = node;
                         }
@@ -213,7 +213,7 @@ internal sealed class TernaryStringTableNew : IStringTable
                     {
                         if (node.HighNodeId == 0) // This node does not have a high node so we must create it.
                         {
-                            int newIndex = NewNode(nodeIndex, ReadOnlyMemory<char>.Empty);
+                            int newIndex = NewNode(nodeIndex);
                             node.HighNodeId = newIndex;
                             _nodes[nodeIndex] = node;
                         }
@@ -224,14 +224,14 @@ internal sealed class TernaryStringTableNew : IStringTable
                 else
                 {
                     // This node does not have a value.
-                    node.Value = wordIt.Current.ToString().AsMemory();
+                    node.Value = wordIt.Current.ToString();
                     _nodes[nodeIndex] = node;
 
                     // This string no longer shares prefixes with any other strings, so create mid _nodes with the remaining parts.
                     while (wordIt.MoveNext())
                     {
                         node = _nodes[nodeIndex];
-                        int newIndex = NewNode(nodeIndex, wordIt.Current.ToString().AsMemory());
+                        int newIndex = NewNode(nodeIndex, wordIt.Current.ToString());
                         node.MidNodeId = newIndex;
                         _nodes[nodeIndex] = node;
                         nodeIndex = newIndex;
@@ -255,13 +255,13 @@ internal sealed class TernaryStringTableNew : IStringTable
             return string.Empty;
         }
 
-        Stack<ReadOnlyMemory<char>> parts = new Stack<ReadOnlyMemory<char>>();
+        Stack<string> parts = new Stack<string>();
 
         int currentIndex = index;
         while (true)
         {
             Node node = _nodes[currentIndex];
-            if (index == currentIndex && node.Value.Length > 0)
+            if (index == currentIndex && node.Value != null)
             {
                 parts.Push(node.Value);
             }
@@ -329,64 +329,39 @@ internal sealed class TernaryStringTableNew : IStringTable
         return _cachedSplitList;
     }
 
-    private int Compare(ReadOnlyMemory<char> left, ReadOnlyMemory<char> right)
+    private int Compare(string left, ReadOnlySpan<char> right)
     {
         // The strings don't have to be compared lexicographically, it just needs a deterministic comparer.
         // We can use hash code for a quick comparison which avoids a character by character comparison in many cases
         // and also keeps the tree balanced in the case where strings are added lexicographically.
 
-        int hasCodeDelta = ReadOnlyMemoryOfCharComparer.GetHashCode(left) - ReadOnlyMemoryOfCharComparer.GetHashCode(right);
+        int hasCodeDelta = GetHashCode(left.AsSpan()) - GetHashCode(right);
         if (hasCodeDelta == 0)
         {
-            return left.Span.CompareTo(right.Span, StringComparison.Ordinal);
+            return left.AsSpan().CompareTo(right, StringComparison.Ordinal);
         }
 
         return hasCodeDelta;
     }
 
-    internal static class ReadOnlyMemoryOfCharComparer
+    internal const int FnvOffsetBias = unchecked((int)2166136261);
+    internal const int FnvPrime = 16777619;
+
+    public static int GetHashCode(ReadOnlySpan<char> s)
     {
-        public static bool Equals(ReadOnlySpan<char> x, ReadOnlyMemory<char> y)
-            => x.SequenceEqual(y.Span);
-
-        public static bool Equals(ReadOnlyMemory<char> x, ReadOnlyMemory<char> y)
-            => x.Span.SequenceEqual(y.Span);
-
-        public static int GetHashCode(ReadOnlyMemory<char> obj)
+        int hashCode = FnvOffsetBias;
+        for (int i = 0; i < s.Length; i++)
         {
-#if NET
-        return string.GetHashCode(obj.Span);
-#else
-            return Hash.GetFNVHashCode(obj.Span);
-#endif
+            hashCode = unchecked((hashCode ^ s[i]) * FnvPrime);
         }
 
-        internal static class Hash
-        {
-            internal const int FnvOffsetBias = unchecked((int)2166136261);
-            internal const int FnvPrime = 16777619;
-
-            internal static int GetFNVHashCode(ReadOnlySpan<char> data)
-            {
-                return CombineFNVHash(Hash.FnvOffsetBias, data);
-            }
-
-            internal static int CombineFNVHash(int hashCode, ReadOnlySpan<char> data)
-            {
-                for (int i = 0; i < data.Length; i++)
-                {
-                    hashCode = unchecked((hashCode ^ data[i]) * Hash.FnvPrime);
-                }
-
-                return hashCode;
-            }
-        }
+        return hashCode;
     }
 
     /// <summary>
     /// Creates a node with the specified parentId and returns its Id.
     /// </summary>
-    private int NewNode(int parentId, ReadOnlyMemory<char> value)
+    private int NewNode(int parentId, string value = null)
     {
         int id = _nodes.Count;
         _nodes.Add(new Node
@@ -407,7 +382,7 @@ internal sealed class TernaryStringTableNew : IStringTable
         public int MidNodeId;
         public int HighNodeId;
         public int ParentNodeId;
-        public ReadOnlyMemory<char> Value;
+        public string Value;
     }
 }
 
