@@ -95,5 +95,10 @@ namespace Microsoft.CodeAnalysis.Telemetry
         {
             return s_logProvider?.GetAggregatingLog(functionId, bucketBoundaries);
         }
+
+        public static void Flush()
+        {
+            s_logProvider?.Flush();
+        }
     }
 }

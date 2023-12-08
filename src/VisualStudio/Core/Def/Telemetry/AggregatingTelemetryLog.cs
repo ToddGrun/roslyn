@@ -29,7 +29,7 @@ namespace Microsoft.CodeAnalysis.Telemetry
         private readonly string _eventName;
         private readonly AggregatingTelemetryLogManager _aggregatingTelemetryLogManager;
 
-        private ImmutableDictionary<string, IHistogram<long>> _histograms = ImmutableDictionary<string, IHistogram<long>>.Empty;
+        private ImmutableDictionary<string, (IHistogram<long> Histogram, TelemetryEvent TelemetryEvent)> _histograms = ImmutableDictionary<string, (IHistogram<long>, TelemetryEvent )>.Empty;
 
         /// <summary>
         /// Creates a new aggregating telemetry log
@@ -70,7 +70,16 @@ namespace Microsoft.CodeAnalysis.Telemetry
             if (!logMessage.Properties.TryGetValue(TelemetryLogging.KeyValue, out var valueValue) || valueValue is not int value)
                 throw ExceptionUtilities.Unreachable();
 
-            var histogram = ImmutableInterlocked.GetOrAdd(ref _histograms, metricName, metricName => _meter.CreateHistogram<long>(metricName, _histogramConfiguration));
+            (var histogram, _) = ImmutableInterlocked.GetOrAdd(ref _histograms, metricName, metricName =>
+            {
+                var telemetryEvent = new TelemetryEvent(_eventName);
+
+                // TODO: set properties on telemetry event
+
+                var histogram = _meter.CreateHistogram<long>(metricName, _histogramConfiguration);
+
+                return (histogram, telemetryEvent);
+            });
 
             histogram.Record(value);
 
@@ -90,17 +99,16 @@ namespace Microsoft.CodeAnalysis.Telemetry
 
         private bool IsEnabled => _session.IsOptedIn;
 
-        public void PostTelemetry(TelemetrySession session)
+        public void Flush()
         {
-            foreach (var histogram in _histograms.Values)
+            foreach (var (histogram, telemetryEvent) in _histograms.Values)
             {
-                var telemetryEvent = new TelemetryEvent(_eventName);
                 var histogramEvent = new TelemetryHistogramEvent<long>(telemetryEvent, histogram);
 
-                session.PostMetricEvent(histogramEvent);
+                _session.PostMetricEvent(histogramEvent);
             }
 
-            _histograms = ImmutableDictionary<string, IHistogram<long>>.Empty;
+            _histograms = ImmutableDictionary<string, (IHistogram<long>, TelemetryEvent)>.Empty;
         }
     }
 }
