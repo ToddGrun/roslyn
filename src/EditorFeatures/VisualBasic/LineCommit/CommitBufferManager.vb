@@ -216,6 +216,10 @@ Namespace Microsoft.CodeAnalysis.Editor.VisualBasic.LineCommit
                 finalSpanStart = dirtySpan.Snapshot.GetLineFromLineNumber(startingLine.LineNumber - 1).End
             End If
 
+            If (finalSpanEnd - finalSpanStart > 1000) Then
+                Debug.Assert(False, "committing large region")
+            End If
+
             formattingInfo.SpanToFormat = New SnapshotSpan(dirtySpan.Snapshot, Span.FromBounds(finalSpanStart, finalSpanEnd))
             Return True
         End Function

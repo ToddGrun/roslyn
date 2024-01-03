@@ -10,14 +10,20 @@ Namespace Microsoft.CodeAnalysis.Editor.VisualBasic.LineCommit
             Private ReadOnly _dirtyRegion As ITrackingSpan
             Private ReadOnly _baseSnapshot As ITextSnapshot
             Private ReadOnly _baseDocument As Document
+            Private ReadOnly _baseSpan As SnapshotSpan
 
             Public Sub New(span As SnapshotSpan, baseSnapshot As ITextSnapshot, baseDocument As Document)
                 Contract.ThrowIfNull(baseDocument)
                 Contract.ThrowIfNull(baseSnapshot)
 
                 _dirtyRegion = span.CreateTrackingSpan(SpanTrackingMode.EdgeInclusive)
+                _baseSpan = span
                 _baseSnapshot = baseSnapshot
                 _baseDocument = baseDocument
+
+                If (span.Length > 1000) Then
+                    Debug.Assert(False, "long DirtyState span created")
+                End If
             End Sub
 
             Public Function WithExpandedDirtySpan(includeSpan As SnapshotSpan) As DirtyState
