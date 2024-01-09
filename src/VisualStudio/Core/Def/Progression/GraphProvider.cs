@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Editing;
@@ -172,16 +173,41 @@ internal abstract class AbstractGraphProvider : IGraphProvider
             .CompletesAsyncOperation(asyncToken);
     }
 
+    private static readonly Stopwatch s_swOld = new Stopwatch();
+    private static readonly Stopwatch s_swNew = new Stopwatch();
+
     public IEnumerable<GraphCommand> GetCommands(IEnumerable<GraphNode> nodes)
+    {
+        //IEnumerable<GraphCommand> oldCommands = null!;
+        //IEnumerable<GraphCommand> newCommands = null!;
+
+        //for (var i = 0; i < 1000; i++)
+        //{
+        //    s_swNew.Start();
+        //    newCommands = GetCommandsNew(nodes).ToList();
+        //    s_swNew.Stop();
+
+        //    s_swOld.Start();
+        //    oldCommands = GetCommandsOld(nodes).ToList();
+        //    s_swOld.Stop();
+        //}
+
+        //if (oldCommands.Count() > 1)
+        //    return oldCommands;
+
+        var newCommands = GetCommandsNew(nodes).ToList();
+
+        return newCommands;
+    }
+
+    private IEnumerable<GraphCommand> GetCommandsOld(IEnumerable<GraphNode> nodes)
     {
         EnsureInitialized();
 
-        var isSymbolKindNamedType = nodes.Any(static n => IsAnySymbolKind(n, SymbolKind.NamedType));
-
         // Only nodes that explicitly state that they contain children (e.g., source files) and named types should
         // be expandable.
-        if (isSymbolKindNamedType ||
-            nodes.Any(static n => n.Properties.Any(static p => p.Key == DgmlNodeProperties.ContainsChildren)))
+        if (nodes.Any(n => n.Properties.Any(p => p.Key == DgmlNodeProperties.ContainsChildren)) ||
+            nodes.Any(n => IsAnySymbolKind(n, SymbolKind.NamedType)))
         {
             yield return new GraphCommand(
                 GraphCommandDefinition.Contains,
@@ -196,13 +222,9 @@ internal abstract class AbstractGraphProvider : IGraphProvider
             yield break;
         }
 
-        var isSymbolKindEventMethodOrProperty = nodes.Any(static n => IsAnySymbolKind(n, SymbolKind.Event, SymbolKind.Method, SymbolKind.Property));
-        var isTypeKindClassOrStruct = nodes.Any(static n => IsAnyTypeKind(n, TypeKind.Class, TypeKind.Struct));
-
         // Only show 'Base Types' and 'Derived Types' on a class or interface.
-        if (isSymbolKindNamedType &&
-            (isTypeKindClassOrStruct ||
-             nodes.Any(static n => IsAnyTypeKind(n, TypeKind.Interface, TypeKind.Enum, TypeKind.Delegate))))
+        if (nodes.Any(n => IsAnySymbolKind(n, SymbolKind.NamedType) &&
+                           IsAnyTypeKind(n, TypeKind.Class, TypeKind.Interface, TypeKind.Struct, TypeKind.Enum, TypeKind.Delegate)))
         {
             yield return new GraphCommand(
                 GraphCommandDefinition.BaseTypes,
@@ -218,8 +240,7 @@ internal abstract class AbstractGraphProvider : IGraphProvider
         }
 
         // Only show 'Calls' on an applicable member in a class or struct
-        if (isSymbolKindEventMethodOrProperty ||
-            nodes.Any(static n => IsAnySymbolKind(n, SymbolKind.Field)))
+        if (nodes.Any(n => IsAnySymbolKind(n, SymbolKind.Event, SymbolKind.Method, SymbolKind.Property, SymbolKind.Field)))
         {
             yield return new GraphCommand(
                 GraphCommandDefinition.Calls,
@@ -229,8 +250,8 @@ internal abstract class AbstractGraphProvider : IGraphProvider
         }
 
         // Only show 'Is Called By' on an applicable member in a class or struct
-        if (isSymbolKindEventMethodOrProperty &&
-            isTypeKindClassOrStruct)
+        if (nodes.Any(n => IsAnySymbolKind(n, SymbolKind.Event, SymbolKind.Method, SymbolKind.Property) &&
+                           IsAnyTypeKind(n, TypeKind.Class, TypeKind.Struct)))
         {
             yield return new GraphCommand(
                 GraphCommandDefinition.IsCalledBy,
@@ -247,8 +268,8 @@ internal abstract class AbstractGraphProvider : IGraphProvider
             trackChanges: true);
 
         // Show 'Implements' on a class or struct, or an applicable member in a class or struct.
-        if (isSymbolKindNamedType &&
-            isTypeKindClassOrStruct)
+        if (nodes.Any(n => IsAnySymbolKind(n, SymbolKind.NamedType) &&
+                           IsAnyTypeKind(n, TypeKind.Class, TypeKind.Struct)))
         {
             yield return new GraphCommand(
                 s_implementsCommandDefinition,
@@ -259,8 +280,207 @@ internal abstract class AbstractGraphProvider : IGraphProvider
 
         // Show 'Implements' on public, non-static members of a class or struct.  Note: we should
         // also show it on explicit interface impls in C#.
-        if (isSymbolKindEventMethodOrProperty &&
-            isTypeKindClassOrStruct &&
+        if (nodes.Any(n => IsAnySymbolKind(n, SymbolKind.Event, SymbolKind.Method, SymbolKind.Property) &&
+                           IsAnyTypeKind(n, TypeKind.Class, TypeKind.Struct) &&
+                           !GetModifiers(n).IsStatic))
+        {
+            if (nodes.Any(n => CheckAccessibility(n, Accessibility.Public) ||
+                               HasExplicitInterfaces(n)))
+            {
+                yield return new GraphCommand(
+                    s_implementsCommandDefinition,
+                    targetCategories: null,
+                    linkCategories: new[] { CodeLinkCategories.Implements },
+                    trackChanges: true);
+            }
+        }
+
+        // Show 'Implemented By' on an interface.
+        if (nodes.Any(n => IsAnySymbolKind(n, SymbolKind.NamedType) &&
+                           IsAnyTypeKind(n, TypeKind.Interface)))
+        {
+            yield return new GraphCommand(
+                s_implementedByCommandDefinition,
+                targetCategories: null,
+                linkCategories: new[] { CodeLinkCategories.Implements },
+                trackChanges: true);
+        }
+
+        // Show 'Implemented By' on any member of an interface.
+        if (nodes.Any(n => IsAnySymbolKind(n, SymbolKind.Event, SymbolKind.Method, SymbolKind.Property) &&
+                           IsAnyTypeKind(n, TypeKind.Interface)))
+        {
+            yield return new GraphCommand(
+                s_implementedByCommandDefinition,
+                targetCategories: null,
+                linkCategories: new[] { CodeLinkCategories.Implements },
+                trackChanges: true);
+        }
+
+        // Show 'Overrides' on any applicable member of a class or struct
+        if (nodes.Any(n => IsAnySymbolKind(n, SymbolKind.Event, SymbolKind.Method, SymbolKind.Property) &&
+                           IsAnyTypeKind(n, TypeKind.Class, TypeKind.Struct) &&
+                           GetModifiers(n).IsOverride))
+        {
+            yield return new GraphCommand(
+                s_overridesCommandDefinition,
+                targetCategories: null,
+                linkCategories: new[] { RoslynGraphCategories.Overrides },
+                trackChanges: true);
+        }
+
+        // Show 'Overridden By' on any applicable member of a class or struct
+        if (nodes.Any(n => IsAnySymbolKind(n, SymbolKind.Event, SymbolKind.Method, SymbolKind.Property) &&
+                           IsAnyTypeKind(n, TypeKind.Class, TypeKind.Struct) &&
+                           IsOverridable(n)))
+        {
+            yield return new GraphCommand(
+                s_overriddenByCommandDefinition,
+                targetCategories: null,
+                linkCategories: new[] { RoslynGraphCategories.Overrides },
+                trackChanges: true);
+        }
+    }
+
+    private IEnumerable<GraphCommand> GetCommandsNew(IEnumerable<GraphNode> nodes)
+    {
+        EnsureInitialized();
+
+        var containsSymbolKindNamedType = false;
+        var containsSymbolKindEventMethodOrProperty = false;
+        var containsSymbolKindField = false;
+        var containsTypeKindClassOrStruct = false;
+        var containsTypeKindInterface = false;
+        var containsTypeKindEnumOrDelegate = false;
+        var containsAllRoslynNodes = true;
+
+        foreach (var node in nodes)
+        {
+            var symbolKindObj = node[RoslynGraphProperties.SymbolKind];
+            if (symbolKindObj is SymbolKind symbolKind)
+            {
+                switch (symbolKind)
+                {
+                    case SymbolKind.NamedType:
+                        containsSymbolKindNamedType = true;
+                        break;
+                    case SymbolKind.Event:
+                    case SymbolKind.Method:
+                    case SymbolKind.Property:
+                        containsSymbolKindEventMethodOrProperty = true;
+                        break;
+                    case SymbolKind.Field:
+                        containsSymbolKindField = true;
+                        break;
+                }
+            }
+            else
+            {
+                containsAllRoslynNodes = false;
+            }
+
+            var typeKindObj = node[RoslynGraphProperties.TypeKind];
+            if (typeKindObj is TypeKind typeKind)
+            {
+                switch (typeKind)
+                {
+                    case TypeKind.Class:
+                    case TypeKind.Struct:
+                        containsTypeKindClassOrStruct = true;
+                        break;
+                    case TypeKind.Interface:
+                        containsTypeKindInterface = true;
+                        break;
+                    case TypeKind.Enum:
+                    case TypeKind.Delegate:
+                        containsTypeKindEnumOrDelegate = true;
+                        break;
+                }
+            }
+            else
+            {
+                containsAllRoslynNodes = false;
+            }
+        }
+
+        // Only nodes that explicitly state that they contain children (e.g., source files) and named types should
+        // be expandable.
+        if (containsSymbolKindNamedType ||
+            nodes.Any(static n => n.Properties.Any(static p => p.Key == DgmlNodeProperties.ContainsChildren)))
+        {
+            yield return new GraphCommand(
+                GraphCommandDefinition.Contains,
+                targetCategories: null,
+                linkCategories: new[] { GraphCommonSchema.Contains },
+                trackChanges: true);
+        }
+
+        // All graph commands below this point apply only to Roslyn-owned nodes.
+        if (!containsAllRoslynNodes)
+        {
+            yield break;
+        }
+
+        // Only show 'Base Types' and 'Derived Types' on a class or interface.
+        if (containsSymbolKindNamedType &&
+            (containsTypeKindClassOrStruct || containsTypeKindInterface || containsTypeKindEnumOrDelegate))
+        {
+            yield return new GraphCommand(
+                GraphCommandDefinition.BaseTypes,
+                targetCategories: null,
+                linkCategories: new[] { CodeLinkCategories.InheritsFrom },
+                trackChanges: true);
+
+            yield return new GraphCommand(
+                GraphCommandDefinition.DerivedTypes,
+                targetCategories: null,
+                linkCategories: new[] { CodeLinkCategories.InheritsFrom },
+                trackChanges: true);
+        }
+
+        // Only show 'Calls' on an applicable member in a class or struct
+        if (containsSymbolKindEventMethodOrProperty || containsSymbolKindField)
+        {
+            yield return new GraphCommand(
+                GraphCommandDefinition.Calls,
+                targetCategories: null,
+                linkCategories: new[] { CodeLinkCategories.Calls },
+                trackChanges: true);
+        }
+
+        // Only show 'Is Called By' on an applicable member in a class or struct
+        if (containsSymbolKindEventMethodOrProperty &&
+            containsTypeKindClassOrStruct)
+        {
+            yield return new GraphCommand(
+                GraphCommandDefinition.IsCalledBy,
+                targetCategories: null,
+                linkCategories: new[] { CodeLinkCategories.Calls },
+                trackChanges: true);
+        }
+
+        // Show 'Is Used By'
+        yield return new GraphCommand(
+            GraphCommandDefinition.IsUsedBy,
+            targetCategories: new[] { CodeNodeCategories.SourceLocation },
+            linkCategories: new[] { CodeLinkCategories.SourceReferences },
+            trackChanges: true);
+
+        // Show 'Implements' on a class or struct, or an applicable member in a class or struct.
+        if (containsSymbolKindNamedType &&
+            containsTypeKindClassOrStruct)
+        {
+            yield return new GraphCommand(
+                s_implementsCommandDefinition,
+                targetCategories: null,
+                linkCategories: new[] { CodeLinkCategories.Implements },
+                trackChanges: true);
+        }
+
+        // Show 'Implements' on public, non-static members of a class or struct.  Note: we should
+        // also show it on explicit interface impls in C#.
+        if (containsSymbolKindEventMethodOrProperty &&
+            containsTypeKindClassOrStruct &&
             nodes.Any(static n => !GetModifiers(n).IsStatic))
         {
             if (nodes.Any(static n => CheckAccessibility(n, Accessibility.Public) ||
@@ -275,8 +495,8 @@ internal abstract class AbstractGraphProvider : IGraphProvider
         }
 
         // Show 'Implemented By' on an interface.
-        if (isSymbolKindNamedType &&
-            nodes.Any(static n => IsAnyTypeKind(n, TypeKind.Interface)))
+        if (containsSymbolKindNamedType &&
+            containsTypeKindInterface)
         {
             yield return new GraphCommand(
                 s_implementedByCommandDefinition,
@@ -286,8 +506,8 @@ internal abstract class AbstractGraphProvider : IGraphProvider
         }
 
         // Show 'Implemented By' on any member of an interface.
-        if (isSymbolKindEventMethodOrProperty &&
-            nodes.Any(static n => IsAnyTypeKind(n, TypeKind.Interface)))
+        if (containsSymbolKindEventMethodOrProperty &&
+            containsTypeKindInterface)
         {
             yield return new GraphCommand(
                 s_implementedByCommandDefinition,
@@ -297,8 +517,8 @@ internal abstract class AbstractGraphProvider : IGraphProvider
         }
 
         // Show 'Overrides' on any applicable member of a class or struct
-        if (isSymbolKindEventMethodOrProperty &&
-            isTypeKindClassOrStruct &&
+        if (containsSymbolKindEventMethodOrProperty &&
+            containsTypeKindClassOrStruct &&
             nodes.Any(static n => GetModifiers(n).IsOverride))
         {
             yield return new GraphCommand(
@@ -309,8 +529,8 @@ internal abstract class AbstractGraphProvider : IGraphProvider
         }
 
         // Show 'Overridden By' on any applicable member of a class or struct
-        if (isSymbolKindEventMethodOrProperty &&
-            isTypeKindClassOrStruct &&
+        if (containsSymbolKindEventMethodOrProperty &&
+            containsTypeKindClassOrStruct &&
             nodes.Any(static n => IsOverridable(n)))
         {
             yield return new GraphCommand(
