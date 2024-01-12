@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CodeActions;
@@ -87,10 +88,19 @@ namespace Microsoft.CodeAnalysis.Editor.Implementation.Suggestions
                 () => actionWithOptions.GetOperationsAsync(this.OriginalSolution, options, progressTracker, cancellationToken), cancellationToken);
         }
 
-        protected Task<ImmutableArray<CodeActionOperation>> GetPreviewOperationsAsync(CancellationToken cancellationToken)
+        private static List<int> s_diffs = new();
+        protected async Task<ImmutableArray<CodeActionOperation>> GetPreviewOperationsAsync(CancellationToken cancellationToken)
         {
-            return Task.Run(
-                () => CodeAction.GetPreviewOperationsAsync(this.OriginalSolution, cancellationToken), cancellationToken);
+            var sw = SharedStopwatch.StartNew();
+
+            (var result, var elapsed) = await Task.Run(
+                () => CodeAction.TestGetPreviewOperationsAsync(this.OriginalSolution, cancellationToken), cancellationToken).ConfigureAwait(false);
+
+            var myElapsed = (int)sw.Elapsed.TotalMilliseconds;
+
+            s_diffs.Add(myElapsed - elapsed);
+
+            return result;
         }
 
         public void Invoke(CancellationToken cancellationToken)

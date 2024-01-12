@@ -60,22 +60,20 @@ internal sealed class RequestTelemetryLogger : IDisposable, ILspService
         Result result)
     {
         // Store the request time metrics per LSP method.
-        TelemetryLogging.LogAggregated(FunctionId.LSP_TimeInQueue, KeyValueLogMessage.Create(m =>
-        {
-            m[TelemetryLogging.KeyName] = _serverTypeName;
-            m[TelemetryLogging.KeyValue] = queuedDuration.Milliseconds;
-            m[TelemetryLogging.KeyMetricName] = "TimeInQueue";
-            m["server"] = _serverTypeName;
-        }));
+        using var timeInQueueLogMessage = KeyValueLogMessage.Create(
+            TelemetryLogging.KeyName, _serverTypeName,
+            TelemetryLogging.KeyValue, queuedDuration.Milliseconds,
+            TelemetryLogging.KeyMetricName, "TimeInQueue",
+            "server", _serverTypeName);
+        TelemetryLogging.LogAggregated(FunctionId.LSP_TimeInQueue, timeInQueueLogMessage);
 
-        TelemetryLogging.LogAggregated(FunctionId.LSP_RequestDuration, KeyValueLogMessage.Create(m =>
-        {
-            m[TelemetryLogging.KeyName] = _serverTypeName + "." + methodName;
-            m[TelemetryLogging.KeyValue] = requestDuration.Milliseconds;
-            m[TelemetryLogging.KeyMetricName] = "RequestDuration";
-            m["server"] = _serverTypeName;
-            m["method"] = methodName;
-        }));
+        using var requestDurationLogMessage = KeyValueLogMessage.Create(
+            TelemetryLogging.KeyName, _serverTypeName + "." + methodName,
+            TelemetryLogging.KeyValue, requestDuration.Milliseconds,
+            TelemetryLogging.KeyMetricName, "RequestDuration",
+            "server", _serverTypeName,
+            "method", methodName);
+        TelemetryLogging.LogAggregated(FunctionId.LSP_RequestDuration, requestDurationLogMessage);
 
         _requestCounters.GetOrAdd(methodName, (_) => new Counter()).IncrementCount(result);
     }
@@ -93,17 +91,16 @@ internal sealed class RequestTelemetryLogger : IDisposable, ILspService
 
         foreach (var kvp in _requestCounters)
         {
-            TelemetryLogging.Log(FunctionId.LSP_RequestCounter, KeyValueLogMessage.Create(LogType.Trace, m =>
-            {
-                m["server"] = _serverTypeName;
-                m["method"] = kvp.Key;
-                m["successful"] = kvp.Value.SucceededCount;
-                m["failed"] = kvp.Value.FailedCount;
-                m["cancelled"] = kvp.Value.CancelledCount;
-            }));
+            using var requestCounterMessage = KeyValueLogMessage.Create(
+                "server", _serverTypeName,
+                "method", kvp.Key,
+                "successful", kvp.Value.SucceededCount,
+                "failed", kvp.Value.FailedCount,
+                "cancelled", kvp.Value.CancelledCount);
+            TelemetryLogging.Log(FunctionId.LSP_RequestCounter, requestCounterMessage);
         }
 
-        TelemetryLogging.Log(FunctionId.LSP_FindDocumentInWorkspace, KeyValueLogMessage.Create(LogType.Trace, m =>
+        using var findDocumentInWorkspaceMessage = KeyValueLogMessage.Create(LogType.Trace, m =>
         {
             m["server"] = _serverTypeName;
             foreach (var kvp in _findDocumentResults)
@@ -111,9 +108,10 @@ internal sealed class RequestTelemetryLogger : IDisposable, ILspService
                 var info = kvp.Key.ToString()!;
                 m[info] = kvp.Value.GetCount();
             }
-        }));
+        });
+        TelemetryLogging.Log(FunctionId.LSP_FindDocumentInWorkspace, findDocumentInWorkspaceMessage);
 
-        TelemetryLogging.Log(FunctionId.LSP_UsedForkedSolution, KeyValueLogMessage.Create(LogType.Trace, m =>
+        using var usedForkedSolutionMessage = KeyValueLogMessage.Create(LogType.Trace, m =>
         {
             m["server"] = _serverTypeName;
             foreach (var kvp in _usedForkedSolutionCounter)
@@ -121,7 +119,8 @@ internal sealed class RequestTelemetryLogger : IDisposable, ILspService
                 var info = kvp.Key.ToString()!;
                 m[info] = kvp.Value.GetCount();
             }
-        }));
+        });
+        TelemetryLogging.Log(FunctionId.LSP_UsedForkedSolution, usedForkedSolutionMessage);
 
         // Flush all telemetry logged through TelemetryLogging
         TelemetryLogging.Flush();

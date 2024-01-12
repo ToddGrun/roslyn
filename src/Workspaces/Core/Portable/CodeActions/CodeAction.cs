@@ -204,6 +204,27 @@ namespace Microsoft.CodeAnalysis.CodeActions
 
         internal Guid GetTelemetryId(FixAllScope? fixAllScope = null)
         {
+            var type = GetTelemetryType();
+
+            // Additionally, we also add the equivalence key and fixAllScope ID (if non-null)
+            // to the telemetry ID.
+            var scope = fixAllScope?.GetScopeIdForTelemetry() ?? 0;
+            return type.GetTelemetryId(scope, EquivalenceKey);
+        }
+
+        private string GetTelemetryString()
+        {
+            const string CodeAnalysisNamespace = nameof(Microsoft) + "." + nameof(CodeAnalysis);
+
+            var type = GetTelemetryType();
+            if (type.FullName != null && type.FullName.StartsWith(CodeAnalysisNamespace))
+                return type.Name;
+
+            return GetTelemetryId().ToString();
+        }
+
+        private Type GetTelemetryType()
+        {
             // We need to identify the type name to use for CodeAction's telemetry ID.
             // For code actions created from 'CodeAction.Create' factory methods,
             // we use the provider type for telemetry.  For the rest of the code actions
@@ -214,10 +235,7 @@ namespace Microsoft.CodeAnalysis.CodeActions
                 ? _providerTypeForTelemetry
                 : this.GetType();
 
-            // Additionally, we also add the equivalence key and fixAllScope ID (if non-null)
-            // to the telemetry ID.
-            var scope = fixAllScope?.GetScopeIdForTelemetry() ?? 0;
-            return type.GetTelemetryId(scope, EquivalenceKey);
+            return type;
         }
 
         /// <summary>
@@ -254,19 +272,67 @@ namespace Microsoft.CodeAnalysis.CodeActions
         public Task<ImmutableArray<CodeActionOperation>> GetPreviewOperationsAsync(CancellationToken cancellationToken)
             => GetPreviewOperationsAsync(originalSolution: null!, cancellationToken);
 
-        internal async Task<ImmutableArray<CodeActionOperation>> GetPreviewOperationsAsync(
+        internal async Task<(ImmutableArray<CodeActionOperation>, int)> TestGetPreviewOperationsAsync(
             Solution originalSolution, CancellationToken cancellationToken)
         {
+            // Log an individual telemetry event for slow codeaction preview computations to
+            // allow targeted trace notifications for further investigation. 2 seconds seemed like
+            // a good value so as to not be too noisy, but if fired, indicates a potential
+            // area needing investigation.
+            const int CodeActionPreviewTelemetryDelay = 100;
+
+            var sw = SharedStopwatch.StartNew();
+
             using var _ = TelemetryLogging.LogBlockTimeAggregated(FunctionId.SuggestedAction_Preview_Summary, $"Total");
 
             var operations = await this.ComputePreviewOperationsAsync(cancellationToken).ConfigureAwait(false);
+            var result = ImmutableArray<CodeActionOperation>.Empty;
 
             if (operations != null)
+                result = await this.PostProcessAsync(originalSolution, operations, cancellationToken).ConfigureAwait(false);
+
+            var elapsed = (int)sw.Elapsed.TotalMilliseconds;
+            if (elapsed >= CodeActionPreviewTelemetryDelay)
             {
-                return await this.PostProcessAsync(originalSolution, operations, cancellationToken).ConfigureAwait(false);
+                using var logMessage = KeyValueLogMessage.Create(
+                    "CodeActionType", GetTelemetryString(),
+                    TelemetryLogging.KeyValue, elapsed);
+
+                TelemetryLogging.Log(FunctionId.SuggestedAction_Preview_Delay, logMessage);
             }
 
-            return ImmutableArray<CodeActionOperation>.Empty;
+            return (result, elapsed);
+        }
+        internal async Task<ImmutableArray<CodeActionOperation>> GetPreviewOperationsAsync(
+            Solution originalSolution, CancellationToken cancellationToken)
+        {
+            // Log an individual telemetry event for slow codeaction preview computations to
+            // allow targeted trace notifications for further investigation. 2 seconds seemed like
+            // a good value so as to not be too noisy, but if fired, indicates a potential
+            // area needing investigation.
+            const int CodeActionPreviewTelemetryDelay = 100;
+
+            var sw = SharedStopwatch.StartNew();
+
+            using var _ = TelemetryLogging.LogBlockTimeAggregated(FunctionId.SuggestedAction_Preview_Summary, $"Total");
+
+            var operations = await this.ComputePreviewOperationsAsync(cancellationToken).ConfigureAwait(false);
+            var result = ImmutableArray<CodeActionOperation>.Empty;
+
+            if (operations != null)
+                result = await this.PostProcessAsync(originalSolution, operations, cancellationToken).ConfigureAwait(false);
+
+            var elapsed = (int)sw.Elapsed.TotalMilliseconds;
+            if (elapsed >= CodeActionPreviewTelemetryDelay)
+            {
+                using var logMessage = KeyValueLogMessage.Create(
+                    "CodeActionType", GetTelemetryString(),
+                    TelemetryLogging.KeyValue, elapsed);
+
+                TelemetryLogging.Log(FunctionId.SuggestedAction_Preview_Delay, logMessage);
+            }
+
+            return result;
         }
 
         /// <summary>

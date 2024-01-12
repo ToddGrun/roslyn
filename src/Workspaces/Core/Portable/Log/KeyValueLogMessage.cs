@@ -15,7 +15,7 @@ namespace Microsoft.CodeAnalysis.Internal.Log
     /// <summary>
     /// LogMessage that creates key value map lazily
     /// </summary>
-    internal sealed class KeyValueLogMessage : LogMessage
+    internal sealed class KeyValueLogMessage : LogMessage, IDisposable
     {
         private static readonly ObjectPool<KeyValueLogMessage> s_pool = new(() => new KeyValueLogMessage(), 20);
 
@@ -40,6 +40,66 @@ namespace Microsoft.CodeAnalysis.Internal.Log
         {
             var logMessage = s_pool.Allocate();
             logMessage.Initialize(kind, propertySetter, logLevel);
+
+            return logMessage;
+        }
+
+        public static KeyValueLogMessage Create(string key1, object? value1)
+        {
+            var logMessage = Create(LogType.Trace);
+
+            logMessage.EnsureMap();
+            logMessage._lazyMap.Add(key1, value1);
+
+            return logMessage;
+        }
+
+        public static KeyValueLogMessage Create(string key1, object? value1, string key2, object? value2)
+        {
+            var logMessage = Create(LogType.Trace);
+
+            logMessage.EnsureMap();
+            logMessage._lazyMap.Add(key1, value1);
+            logMessage._lazyMap.Add(key2, value2);
+
+            return logMessage;
+        }
+
+        public static KeyValueLogMessage Create(string key1, object? value1, string key2, object? value2, string key3, object? value3)
+        {
+            var logMessage = Create(LogType.Trace);
+
+            logMessage.EnsureMap();
+            logMessage._lazyMap.Add(key1, value1);
+            logMessage._lazyMap.Add(key2, value2);
+            logMessage._lazyMap.Add(key3, value3);
+
+            return logMessage;
+        }
+
+        public static KeyValueLogMessage Create(string key1, object? value1, string key2, object? value2, string key3, object? value3, string key4, object? value4)
+        {
+            var logMessage = Create(LogType.Trace);
+
+            logMessage.EnsureMap();
+            logMessage._lazyMap.Add(key1, value1);
+            logMessage._lazyMap.Add(key2, value2);
+            logMessage._lazyMap.Add(key3, value3);
+            logMessage._lazyMap.Add(key4, value4);
+
+            return logMessage;
+        }
+
+        public static KeyValueLogMessage Create(string key1, object? value1, string key2, object? value2, string key3, object? value3, string key4, object? value4, string key5, object? value5)
+        {
+            var logMessage = Create(LogType.Trace);
+
+            logMessage.EnsureMap();
+            logMessage._lazyMap.Add(key1, value1);
+            logMessage._lazyMap.Add(key2, value2);
+            logMessage._lazyMap.Add(key3, value3);
+            logMessage._lazyMap.Add(key4, value4);
+            logMessage._lazyMap.Add(key5, value5);
 
             return logMessage;
         }
@@ -154,6 +214,11 @@ namespace Microsoft.CodeAnalysis.Internal.Log
 
             // always pool it back
             s_pool.Free(this);
+        }
+
+        public void Dispose()
+        {
+            Free();
         }
 
         [MemberNotNull(nameof(_lazyMap))]
