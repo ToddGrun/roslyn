@@ -244,7 +244,8 @@ namespace Microsoft.CodeAnalysis.SQLite.v2.Interop
             }
             catch (SqlException ex)
             {
-                Logger.Log(FunctionId.SQLite_SqlException, SQLitePersistentStorage.GetLogMessage(ex));
+                using var logMessage = SQLitePersistentStorage.GetLogMessage(ex);
+                Logger.Log(FunctionId.SQLite_SqlException, logMessage);
 
                 // See documentation here: https://sqlite.org/lang_transaction.html
                 //

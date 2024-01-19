@@ -121,17 +121,19 @@ internal abstract class AbstractFixAllGetFixesService : IFixAllGetFixesService
             _ => throw ExceptionUtilities.UnexpectedValue(fixAllKind)
         };
 
+        using var logMessage = KeyValueLogMessage.Create(LogType.UserAction, m =>
+        {
+            // only set when correlation id is given
+            // we might not have this info for suppression
+            if (correlationId.HasValue)
+            {
+                m[FixAllLogger.CorrelationId] = correlationId;
+            }
+        });
+
         using (Logger.LogBlock(
             functionId,
-            KeyValueLogMessage.Create(LogType.UserAction, m =>
-            {
-                // only set when correlation id is given
-                // we might not have this info for suppression
-                if (correlationId.HasValue)
-                {
-                    m[FixAllLogger.CorrelationId] = correlationId;
-                }
-            }),
+            logMessage,
             cancellationToken))
         {
             var glyph = language == null
@@ -165,13 +167,15 @@ internal abstract class AbstractFixAllGetFixesService : IFixAllGetFixesService
             _ => throw ExceptionUtilities.UnexpectedValue(fixAllKind)
         };
 
+        using var logMessage = KeyValueLogMessage.Create(LogType.UserAction, m =>
+        {
+            m[FixAllLogger.CorrelationId] = fixAllContext.State.CorrelationId;
+            m[FixAllLogger.FixAllScope] = fixAllContext.State.Scope.ToString();
+        });
+
         using (Logger.LogBlock(
             functionId,
-            KeyValueLogMessage.Create(LogType.UserAction, m =>
-            {
-                m[FixAllLogger.CorrelationId] = fixAllContext.State.CorrelationId;
-                m[FixAllLogger.FixAllScope] = fixAllContext.State.Scope.ToString();
-            }),
+            logMessage,
             fixAllContext.CancellationToken))
         {
             CodeAction? action = null;

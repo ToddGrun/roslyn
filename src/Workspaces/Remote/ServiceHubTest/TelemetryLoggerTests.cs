@@ -89,12 +89,13 @@ namespace Microsoft.CodeAnalysis.UnitTests
         {
             var logger = new TestLogger();
 
-            logger.Log(FunctionId.Debugging_EncSession_EditSession_EmitDeltaErrorId, KeyValueLogMessage.Create(p =>
+            using var logMessage = KeyValueLogMessage.Create(p =>
             {
                 p.Add("test1", 1);
                 p.Add("test2", new PiiValue(2));
                 p.Add("test3", new object[] { 3, new PiiValue(4) });
-            }));
+            });
+            logger.Log(FunctionId.Debugging_EncSession_EditSession_EmitDeltaErrorId, logMessage);
 
             var postedEvent = logger.PostedEvents.Single();
 
@@ -113,12 +114,14 @@ namespace Microsoft.CodeAnalysis.UnitTests
         {
             var logger = new TestLogger(logDelta);
 
-            logger.LogBlockStart(FunctionId.Debugging_EncSession_EditSession_EmitDeltaErrorId, KeyValueLogMessage.Create(p => p.Add("test", "start"), logLevel: LogLevel.Information), blockId: 1, CancellationToken.None);
+            using var startLogMessage = KeyValueLogMessage.Create(p => p.Add("test", "start"), logLevel: LogLevel.Information);
+            logger.LogBlockStart(FunctionId.Debugging_EncSession_EditSession_EmitDeltaErrorId, startLogMessage, blockId: 1, CancellationToken.None);
 
             var scope = logger.OpenedScopes.Single();
             Assert.Equal(LogType.Trace, scope.Type);
 
-            logger.LogBlockEnd(FunctionId.Debugging_EncSession_EditSession_EmitDeltaErrorId, KeyValueLogMessage.Create(p => p.Add("test", "end")), blockId: 1, delta: 100, CancellationToken.None);
+            using var endLogMessage = KeyValueLogMessage.Create(p => p.Add("test", "end"));
+            logger.LogBlockEnd(FunctionId.Debugging_EncSession_EditSession_EmitDeltaErrorId, endLogMessage, blockId: 1, delta: 100, CancellationToken.None);
 
             Assert.Equal("vs/ide/vbcs/debugging/encsession/editsession/emitdeltaerrorid", scope.EndEvent.Name);
 

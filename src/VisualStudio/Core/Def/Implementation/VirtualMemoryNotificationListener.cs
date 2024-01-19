@@ -96,12 +96,13 @@ namespace Microsoft.VisualStudio.LanguageServices
                         if (!_alreadyLogged)
                         {
                             // record that we had hit critical memory barrier
-                            Logger.Log(FunctionId.VirtualMemory_MemoryLow, KeyValueLogMessage.Create(m =>
+                            using var logMessage = KeyValueLogMessage.Create(m =>
                             {
                                 // which message we are logging and memory left in bytes when this is called.
                                 m["MSG"] = msg;
                                 m["MemoryLeft"] = (long)wParam;
-                            }));
+                            });
+                            Logger.Log(FunctionId.VirtualMemory_MemoryLow, logMessage);
 
                             _alreadyLogged = true;
                         }

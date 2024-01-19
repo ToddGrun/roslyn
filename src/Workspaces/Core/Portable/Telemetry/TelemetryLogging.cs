@@ -54,7 +54,7 @@ namespace Microsoft.CodeAnalysis.Telemetry
             if (GetAggregatingLog(functionId) is not { } aggregatingLog)
                 return;
 
-            var logMessage = KeyValueLogMessage.Create(m =>
+            using var logMessage = KeyValueLogMessage.Create(m =>
             {
                 m[KeyName] = name.GetFormattedText();
                 m[KeyValue] = value;
@@ -81,7 +81,7 @@ namespace Microsoft.CodeAnalysis.Telemetry
             if (GetAggregatingLog(functionId) is not { } aggregatingLog)
                 return null;
 
-            var logMessage = KeyValueLogMessage.Create(m =>
+            using var logMessage = KeyValueLogMessage.Create(m =>
             {
                 m[KeyName] = metricName.GetFormattedText();
             });

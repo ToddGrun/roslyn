@@ -19,7 +19,8 @@ namespace Microsoft.VisualStudio.LanguageServices.Implementation.Options
         {
             foreach (var (optionKey, oldValue, newValue) in changedOptions)
             {
-                Logger.Log(FunctionId.Run_Environment_Options, Create(optionKey, oldValue, newValue));
+                using var logMessage = Create(optionKey, oldValue, newValue);
+                Logger.Log(FunctionId.Run_Environment_Options, logMessage);
             }
         }
 

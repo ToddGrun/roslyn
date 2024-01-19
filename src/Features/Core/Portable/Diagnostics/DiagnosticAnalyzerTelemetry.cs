@@ -68,7 +68,7 @@ namespace Microsoft.CodeAnalysis.Diagnostics
 
             foreach (var (analyzerType, analyzerInfo) in map)
             {
-                Logger.Log(FunctionId.DiagnosticAnalyzerDriver_AnalyzerTypeCount, KeyValueLogMessage.Create(m =>
+                using var logMessage = KeyValueLogMessage.Create(m =>
                 {
                     m["Id"] = correlationId;
 
@@ -103,7 +103,9 @@ namespace Microsoft.CodeAnalysis.Diagnostics
                     m["Analyzer.SymbolStart"] = analyzerInfo.SymbolStartActionsCount;
                     m["Analyzer.SymbolEnd"] = analyzerInfo.SymbolEndActionsCount;
                     m["Analyzer.Suppression"] = analyzerInfo.SuppressionActionsCount;
-                }));
+                });
+
+                Logger.Log(FunctionId.DiagnosticAnalyzerDriver_AnalyzerTypeCount, logMessage);
             }
         }
     }

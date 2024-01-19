@@ -164,8 +164,9 @@ namespace Microsoft.CodeAnalysis.Editor.Implementation.Suggestions
                 // We'll now show progress as we apply the action.
                 progressTracker.Report(CodeAnalysisProgress.Clear());
 
+                using var logMessage = KeyValueLogMessage.Create(LogType.UserAction, m => CreateLogProperties(m));
                 using (Logger.LogBlock(
-                    FunctionId.CodeFixes_ApplyChanges, KeyValueLogMessage.Create(LogType.UserAction, m => CreateLogProperties(m)), cancellationToken))
+                    FunctionId.CodeFixes_ApplyChanges, logMessage, cancellationToken))
                 {
                     var document = this.SubjectBuffer.CurrentSnapshot.GetOpenDocumentInCurrentContextWithChanges();
 

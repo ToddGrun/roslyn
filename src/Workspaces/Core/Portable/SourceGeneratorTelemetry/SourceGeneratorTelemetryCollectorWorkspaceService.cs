@@ -63,7 +63,7 @@ internal sealed class SourceGeneratorTelemetryCollectorWorkspaceService : ISourc
         foreach (var (telemetryKey, elapsedTimeCounter) in _elapsedTimeByGenerator)
         {
             // We'll log one event per generator
-            Logger.Log(functionId, KeyValueLogMessage.Create(map =>
+            using var logMessage = KeyValueLogMessage.Create(map =>
             {
                 // TODO: have a policy for when we don't have to hash them
                 map[nameof(telemetryKey.Identity.AssemblyName) + "Hashed"] = AnalyzerNameForTelemetry.ComputeSha256Hash(telemetryKey.Identity.AssemblyName);
@@ -76,7 +76,8 @@ internal sealed class SourceGeneratorTelemetryCollectorWorkspaceService : ISourc
 
                 var producedFileCount = _producedFilesByGenerator.GetStatisticResult(telemetryKey);
                 producedFileCount.WriteTelemetryPropertiesTo(map, prefix: "GeneratedFileCountPerRun");
-            }));
+            });
+            Logger.Log(functionId, logMessage);
         }
     }
 }

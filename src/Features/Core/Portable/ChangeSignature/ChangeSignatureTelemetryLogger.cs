@@ -182,7 +182,7 @@ namespace Microsoft.CodeAnalysis.ChangeSignature
 
         internal static void ReportTelemetry()
         {
-            Logger.Log(FunctionId.ChangeSignature_Data, KeyValueLogMessage.Create(m =>
+            using var logMessage = KeyValueLogMessage.Create(m =>
             {
                 foreach (var kv in s_countLogAggregator)
                 {
@@ -199,7 +199,8 @@ namespace Microsoft.CodeAnalysis.ChangeSignature
                 {
                     kv.Value.WriteTelemetryPropertiesTo(m, prefix: kv.Key.ToString());
                 }
-            }));
+            });
+            Logger.Log(FunctionId.ChangeSignature_Data, logMessage);
         }
     }
 }

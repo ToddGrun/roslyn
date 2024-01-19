@@ -22,15 +22,22 @@ namespace Microsoft.VisualStudio.LanguageServices.InheritanceMargin
                 ActionInfo.GetInheritanceMarginMembers, elapsedTime);
 
         public static void LogInheritanceTargetsMenuOpen()
-            => Logger.Log(FunctionId.InheritanceMargin_TargetsMenuOpen, KeyValueLogMessage.Create(LogType.UserAction));
+        {
+            using var logMessage = KeyValueLogMessage.Create(LogType.UserAction);
+
+            Logger.Log(FunctionId.InheritanceMargin_TargetsMenuOpen, logMessage);
+        }
 
         public static void LogNavigateToTarget()
-            => Logger.Log(FunctionId.InheritanceMargin_NavigateToTarget, KeyValueLogMessage.Create(LogType.UserAction));
+        {
+            using var logMessage = KeyValueLogMessage.Create(LogType.UserAction);
+
+            Logger.Log(FunctionId.InheritanceMargin_NavigateToTarget, logMessage);
+        }
 
         public static void ReportTelemetry()
         {
-            Logger.Log(FunctionId.InheritanceMargin_GetInheritanceMemberItems,
-                KeyValueLogMessage.Create(
+            using var logMessage = KeyValueLogMessage.Create(
                 m =>
                 {
                     var histogramLogAggragator = s_histogramLogAggregator.GetValue(ActionInfo.GetInheritanceMarginMembers);
@@ -38,7 +45,10 @@ namespace Microsoft.VisualStudio.LanguageServices.InheritanceMargin
                     {
                         histogramLogAggragator.WriteTelemetryPropertiesTo(m, nameof(ActionInfo.GetInheritanceMarginMembers) + ".");
                     }
-                }));
+                });
+
+            Logger.Log(FunctionId.InheritanceMargin_GetInheritanceMemberItems,
+                logMessage);
         }
     }
 }

@@ -382,10 +382,11 @@ namespace Microsoft.CodeAnalysis.Editor.Implementation.InlineRename
         {
             if (args.Kind != WorkspaceChangeKind.DocumentChanged)
             {
-                Logger.Log(FunctionId.Rename_InlineSession_Cancel_NonDocumentChangedWorkspaceChange, KeyValueLogMessage.Create(m =>
+                using var logMessage = KeyValueLogMessage.Create(m =>
                 {
                     m["Kind"] = Enum.GetName(typeof(WorkspaceChangeKind), args.Kind);
-                }));
+                });
+                Logger.Log(FunctionId.Rename_InlineSession_Cancel_NonDocumentChangedWorkspaceChange, logMessage);
 
                 Cancel();
             }
@@ -617,22 +618,24 @@ namespace Microsoft.CodeAnalysis.Editor.Implementation.InlineRename
                 var result = _conflictResolutionTask.Task.Result;
                 var replacementKinds = result.GetAllReplacementKinds().ToList();
 
-                Logger.Log(FunctionId.Rename_InlineSession_Session, RenameLogMessage.Create(
+                using var logMessage = RenameLogMessage.Create(
                     _options,
                     outcome,
                     conflictResolutionFinishedComputing,
                     previewChanges,
-                    replacementKinds));
+                    replacementKinds);
+                Logger.Log(FunctionId.Rename_InlineSession_Session, logMessage);
             }
             else
             {
                 Debug.Assert(outcome.HasFlag(RenameLogMessage.UserActionOutcome.Canceled));
-                Logger.Log(FunctionId.Rename_InlineSession_Session, RenameLogMessage.Create(
+                using var logMessage = RenameLogMessage.Create(
                     _options,
                     outcome,
                     conflictResolutionFinishedComputing,
                     previewChanges,
-                    SpecializedCollections.EmptyList<InlineRenameReplacementKind>()));
+                    SpecializedCollections.EmptyList<InlineRenameReplacementKind>());
+                Logger.Log(FunctionId.Rename_InlineSession_Session, logMessage);
             }
         }
 
@@ -806,7 +809,9 @@ namespace Microsoft.CodeAnalysis.Editor.Implementation.InlineRename
         {
             var cancellationToken = operationContext.UserCancellationToken;
             var eventName = previewChanges ? FunctionId.Rename_CommitCoreWithPreview : FunctionId.Rename_CommitCore;
-            using (Logger.LogBlock(eventName, KeyValueLogMessage.Create(LogType.UserAction), cancellationToken))
+
+            using var logMessage = KeyValueLogMessage.Create(LogType.UserAction);
+            using (Logger.LogBlock(eventName, logMessage, cancellationToken))
             {
                 var info = await _conflictResolutionTask.JoinAsync(cancellationToken).ConfigureAwait(true);
                 var newSolution = info.NewSolution;

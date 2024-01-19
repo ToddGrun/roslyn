@@ -244,11 +244,12 @@ namespace Microsoft.CodeAnalysis
             if (fileLength > MaxFileLength)
             {
                 // log max file length which will log to VS telemetry in VS host
-                Logger.Log(FunctionId.FileTextLoader_FileLengthThresholdExceeded, KeyValueLogMessage.Create(m =>
+                using var logMessage = KeyValueLogMessage.Create(m =>
                 {
                     m["FileLength"] = fileLength;
                     m["Ext"] = PathUtilities.GetExtension(path);
-                }));
+                });
+                Logger.Log(FunctionId.FileTextLoader_FileLengthThresholdExceeded, logMessage);
 
                 var message = string.Format(WorkspacesResources.File_0_size_of_1_exceeds_maximum_allowed_size_of_2, path, fileLength, MaxFileLength);
                 throw new InvalidDataException(message);

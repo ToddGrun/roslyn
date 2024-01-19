@@ -131,7 +131,8 @@ namespace Microsoft.CodeAnalysis.SQLite.v2
 
         private void DisableStorage(SqlException exception)
         {
-            Logger.Log(FunctionId.SQLite_StorageDisabled, GetLogMessage(exception));
+            using var logMessage = GetLogMessage(exception);
+            Logger.Log(FunctionId.SQLite_StorageDisabled, logMessage);
             base.DisableStorage();
         }
 

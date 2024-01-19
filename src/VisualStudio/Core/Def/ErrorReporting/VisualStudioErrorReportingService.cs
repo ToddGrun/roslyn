@@ -46,11 +46,12 @@ namespace Microsoft.CodeAnalysis.ErrorReporting
             LogGlobalErrorToActivityLog(message, stackTrace);
             _infoBar.ShowInfoBar(message, items);
 
-            Logger.Log(FunctionId.VS_ErrorReportingService_ShowGlobalErrorInfo, KeyValueLogMessage.Create(LogType.UserAction, m =>
+            using var logMessage = KeyValueLogMessage.Create(LogType.UserAction, m =>
             {
                 m["Message"] = message;
                 m["FeatureName"] = featureName.ToString();
-            }));
+            });
+            Logger.Log(FunctionId.VS_ErrorReportingService_ShowGlobalErrorInfo, logMessage);
         }
 
         public void ShowDetailedErrorInfo(Exception exception)

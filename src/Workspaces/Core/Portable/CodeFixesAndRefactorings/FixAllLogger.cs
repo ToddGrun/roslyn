@@ -59,7 +59,7 @@ namespace Microsoft.CodeAnalysis.CodeFixesAndRefactorings
                     throw ExceptionUtilities.UnexpectedValue(fixAllState.FixAllKind);
             }
 
-            Logger.Log(functionId, KeyValueLogMessage.Create(m =>
+            using var logMessage = KeyValueLogMessage.Create(m =>
             {
                 m[CorrelationId] = fixAllState.CorrelationId;
 
@@ -87,7 +87,8 @@ namespace Microsoft.CodeAnalysis.CodeFixesAndRefactorings
                         m[DocumentCount] = fixAllState.Solution.Projects.Sum(p => p.DocumentIds.Count);
                         break;
                 }
-            }));
+            });
+            Logger.Log(functionId, logMessage);
         }
 
         public static void LogComputationResult(FixAllKind fixAllKind, int correlationId, bool completed, bool timedOut = false)
@@ -115,11 +116,12 @@ namespace Microsoft.CodeAnalysis.CodeFixesAndRefactorings
                 _ => throw ExceptionUtilities.UnexpectedValue(fixAllKind)
             };
 
-            Logger.Log(functionId, KeyValueLogMessage.Create(m =>
+            using var logMessage = KeyValueLogMessage.Create(m =>
             {
                 m[CorrelationId] = correlationId;
                 m[Result] = value;
-            }));
+            });
+            Logger.Log(functionId, logMessage);
         }
 
         public static void LogPreviewChangesResult(FixAllKind fixAllKind, int? correlationId, bool applied, bool allChangesApplied = true)
@@ -141,7 +143,7 @@ namespace Microsoft.CodeAnalysis.CodeFixesAndRefactorings
                 _ => throw ExceptionUtilities.UnexpectedValue(fixAllKind)
             };
 
-            Logger.Log(functionId, KeyValueLogMessage.Create(m =>
+            using var logMessage = KeyValueLogMessage.Create(m =>
             {
                 // we might not have this info for suppression
                 if (correlationId.HasValue)
@@ -150,39 +152,46 @@ namespace Microsoft.CodeAnalysis.CodeFixesAndRefactorings
                 }
 
                 m[Result] = value;
-            }));
+            });
+            Logger.Log(functionId, logMessage);
         }
 
         public static void LogDiagnosticsStats(int correlationId, ImmutableDictionary<Document, ImmutableArray<Diagnostic>> documentsAndDiagnosticsToFixMap)
         {
-            Logger.Log(FunctionId.CodeFixes_FixAllOccurrencesComputation_Document_Diagnostics, KeyValueLogMessage.Create(m =>
+            using var logMessage = KeyValueLogMessage.Create(m =>
             {
                 m[CorrelationId] = correlationId;
                 m[DocumentsWithDiagnosticsToFix] = documentsAndDiagnosticsToFixMap.Count;
                 m[TotalDiagnosticsToFix] = documentsAndDiagnosticsToFixMap.Values.Sum(v => v.Length);
-            }));
+            });
+
+            Logger.Log(FunctionId.CodeFixes_FixAllOccurrencesComputation_Document_Diagnostics, logMessage);
         }
 
         public static void LogDiagnosticsStats(int correlationId, ImmutableDictionary<Project, ImmutableArray<Diagnostic>> projectsAndDiagnosticsToFixMap)
         {
-            Logger.Log(FunctionId.CodeFixes_FixAllOccurrencesComputation_Project_Diagnostics, KeyValueLogMessage.Create(m =>
+            using var logMessage = KeyValueLogMessage.Create(m =>
             {
                 m[CorrelationId] = correlationId;
                 m[ProjectsWithDiagnosticsToFix] = projectsAndDiagnosticsToFixMap.Count;
                 m[TotalDiagnosticsToFix] = projectsAndDiagnosticsToFixMap.Values.Sum(v => v.Length);
-            }));
+            });
+
+            Logger.Log(FunctionId.CodeFixes_FixAllOccurrencesComputation_Project_Diagnostics, logMessage);
         }
 
         public static void LogFixesToMergeStats(FunctionId functionId, int correlationId, int count)
         {
-            Logger.Log(functionId, KeyValueLogMessage.Create(m =>
+            using var logMessage = KeyValueLogMessage.Create(m =>
             {
                 m[CorrelationId] = correlationId;
                 m[TotalFixesToMerge] = count;
-            }));
+            });
+
+            Logger.Log(functionId, logMessage);
         }
 
-        public static LogMessage CreateCorrelationLogMessage(int correlationId)
+        public static KeyValueLogMessage CreateCorrelationLogMessage(int correlationId)
             => KeyValueLogMessage.Create(LogType.UserAction, m => m[CorrelationId] = correlationId);
     }
 }

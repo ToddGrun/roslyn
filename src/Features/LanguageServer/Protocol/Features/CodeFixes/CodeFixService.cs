@@ -512,7 +512,7 @@ namespace Microsoft.CodeAnalysis.CodeFixes
                         const int CodeFixTelemetryDelay = 500;
 
                         var fixerName = fixer.GetType().Name;
-                        var logMessage = KeyValueLogMessage.Create(m =>
+                        using var logMessage = KeyValueLogMessage.Create(m =>
                         {
                             m[TelemetryLogging.KeyName] = fixerName;
                             m[TelemetryLogging.KeyLanguageName] = document.Project.Language;

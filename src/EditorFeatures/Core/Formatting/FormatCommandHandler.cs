@@ -58,7 +58,8 @@ namespace Microsoft.CodeAnalysis.Formatting
         {
             var formattingService = document.GetRequiredLanguageService<IFormattingInteractionService>();
 
-            using (Logger.LogBlock(FunctionId.CommandHandler_FormatCommand, KeyValueLogMessage.Create(LogType.UserAction, m => m["Span"] = selectionOpt?.Length ?? -1), cancellationToken))
+            using var logMessage = KeyValueLogMessage.Create(LogType.UserAction, m => m["Span"] = selectionOpt?.Length ?? -1);
+            using (Logger.LogBlock(FunctionId.CommandHandler_FormatCommand, logMessage, cancellationToken))
             using (var transaction = CreateEditTransaction(textView, EditorFeaturesResources.Formatting))
             {
                 // Note: C# always completes synchronously, TypeScript is async

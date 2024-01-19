@@ -53,9 +53,10 @@ namespace Microsoft.CodeAnalysis.CodeFixes
                         return fixMultipleDiagnosticProvider.DocumentDiagnosticsMap;
                     }
 
+                    using var logMessage = FixAllLogger.CreateCorrelationLogMessage(fixAllContext.State.CorrelationId);
                     using (Logger.LogBlock(
                             FunctionId.CodeFixes_FixAllOccurrencesComputation_Document_Diagnostics,
-                            FixAllLogger.CreateCorrelationLogMessage(fixAllContext.State.CorrelationId),
+                            logMessage,
                             fixAllContext.CancellationToken))
                     {
                         return await FixAllContextHelper.GetDocumentDiagnosticsToFixAsync(fixAllContext).ConfigureAwait(false);
@@ -66,9 +67,10 @@ namespace Microsoft.CodeAnalysis.CodeFixes
             internal static async Task<ImmutableDictionary<Project, ImmutableArray<Diagnostic>>> GetProjectDiagnosticsToFixAsync(
                 FixAllContext fixAllContext)
             {
+                using var logMessage = FixAllLogger.CreateCorrelationLogMessage(fixAllContext.State.CorrelationId);
                 using (Logger.LogBlock(
                     FunctionId.CodeFixes_FixAllOccurrencesComputation_Project_Diagnostics,
-                    FixAllLogger.CreateCorrelationLogMessage(fixAllContext.State.CorrelationId),
+                    logMessage,
                     fixAllContext.CancellationToken))
                 {
                     var project = fixAllContext.Project;

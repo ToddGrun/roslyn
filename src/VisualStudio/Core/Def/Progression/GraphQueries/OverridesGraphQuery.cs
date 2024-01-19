@@ -17,7 +17,8 @@ namespace Microsoft.VisualStudio.LanguageServices.Implementation.Progression
     {
         public async Task<GraphBuilder> GetGraphAsync(Solution solution, IGraphContext context, CancellationToken cancellationToken)
         {
-            using (Logger.LogBlock(FunctionId.GraphQuery_Overrides, KeyValueLogMessage.Create(LogType.UserAction), cancellationToken))
+            using var logMessage = KeyValueLogMessage.Create(LogType.UserAction);
+            using (Logger.LogBlock(FunctionId.GraphQuery_Overrides, logMessage, cancellationToken))
             {
                 var graphBuilder = await GraphBuilder.CreateForInputNodesAsync(solution, context.InputNodes, cancellationToken).ConfigureAwait(false);
 

@@ -68,7 +68,8 @@ namespace Microsoft.VisualStudio.LanguageServices.Implementation.Diagnostics
 
             private static void LogWorkspaceAnalyzerCount(int analyzerCount)
             {
-                Logger.Log(FunctionId.DiagnosticAnalyzerService_Analyzers, KeyValueLogMessage.Create(m => m["AnalyzerCount"] = analyzerCount, LogLevel.Debug));
+                using var logMessage = KeyValueLogMessage.Create(m => m["AnalyzerCount"] = analyzerCount, LogLevel.Debug);
+                Logger.Log(FunctionId.DiagnosticAnalyzerService_Analyzers, logMessage);
             }
         }
     }

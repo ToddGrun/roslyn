@@ -58,7 +58,8 @@ namespace Microsoft.CodeAnalysis.CodeFixes.Suppression
                 if (diagnosticsAndCodeActions.Length > 0)
                 {
                     var functionId = FunctionId.CodeFixes_FixAllOccurrencesComputation_Document_Merge;
-                    using (Logger.LogBlock(functionId, FixAllLogger.CreateCorrelationLogMessage(fixAllState.CorrelationId), cancellationToken))
+                    using var logMessage = FixAllLogger.CreateCorrelationLogMessage(fixAllState.CorrelationId);
+                    using (Logger.LogBlock(functionId, logMessage, cancellationToken))
                     {
                         FixAllLogger.LogFixesToMergeStats(functionId, fixAllState.CorrelationId, diagnosticsAndCodeActions.Length);
                         return await TryGetMergedFixAsync(
@@ -78,9 +79,10 @@ namespace Microsoft.CodeAnalysis.CodeFixes.Suppression
             var fixAllState = fixAllContext.State;
             var fixesBag = new ConcurrentBag<(Diagnostic diagnostic, CodeAction action)>();
 
+            using var logMessage = FixAllLogger.CreateCorrelationLogMessage(fixAllState.CorrelationId);
             using (Logger.LogBlock(
                 FunctionId.CodeFixes_FixAllOccurrencesComputation_Document_Fixes,
-                FixAllLogger.CreateCorrelationLogMessage(fixAllState.CorrelationId),
+                logMessage,
                 cancellationToken))
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -168,9 +170,10 @@ namespace Microsoft.CodeAnalysis.CodeFixes.Suppression
                 FixAllLogger.LogDiagnosticsStats(fixAllState.CorrelationId, projectsAndDiagnosticsToFixMap);
 
                 var bag = new ConcurrentBag<(Diagnostic diagnostic, CodeAction action)>();
+                using var logMessage = FixAllLogger.CreateCorrelationLogMessage(fixAllState.CorrelationId);
                 using (Logger.LogBlock(
                     FunctionId.CodeFixes_FixAllOccurrencesComputation_Project_Fixes,
-                    FixAllLogger.CreateCorrelationLogMessage(fixAllState.CorrelationId),
+                    logMessage,
                     cancellationToken))
                 {
                     var projects = projectsAndDiagnosticsToFixMap.Keys;

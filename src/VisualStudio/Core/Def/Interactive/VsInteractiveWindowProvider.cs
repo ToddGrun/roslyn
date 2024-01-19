@@ -147,16 +147,22 @@ namespace Microsoft.VisualStudio.LanguageServices.Interactive
         }
 
         protected void LogSession(string key, string value)
-            => Logger.Log(InteractiveWindowFunctionId, KeyValueLogMessage.Create(m => m.Add(key, value)));
+        {
+            using var logMessage = KeyValueLogMessage.Create(m => m.Add(key, value));
+
+            Logger.Log(InteractiveWindowFunctionId, logMessage);
+        }
 
         private void LogCloseSession(int languageBufferCount)
         {
+            using var logMessage = KeyValueLogMessage.Create(m =>
+            {
+                m.Add(LogMessage.Window, LogMessage.Close);
+                m.Add(LogMessage.LanguageBufferCount, languageBufferCount);
+            });
+
             Logger.Log(InteractiveWindowFunctionId,
-                KeyValueLogMessage.Create(m =>
-                {
-                    m.Add(LogMessage.Window, LogMessage.Close);
-                    m.Add(LogMessage.LanguageBufferCount, languageBufferCount);
-                }));
+                logMessage);
         }
 
         private static ImmutableArray<IInteractiveWindowCommand> GetApplicableCommands(IInteractiveWindowCommand[] commands, string coreContentType, string specializedContentType)

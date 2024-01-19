@@ -145,7 +145,8 @@ namespace Microsoft.VisualStudio.LanguageServices.Implementation
                     }
 
                     var completionTask = status.WaitForCompletionAsync();
-                    Logger.Log(FunctionId.PartialLoad_FullyLoaded, KeyValueLogMessage.Create(LogType.Trace, m => m["AlreadyFullyLoaded"] = completionTask.IsCompleted, LogLevel.Debug));
+                    using var logMessage = KeyValueLogMessage.Create(LogType.Trace, m => m["AlreadyFullyLoaded"] = completionTask.IsCompleted, LogLevel.Debug);
+                    Logger.Log(FunctionId.PartialLoad_FullyLoaded, logMessage);
 
                     // TODO: WaitForCompletionAsync should accept cancellation directly.
                     //       for now, use WithCancellation to indirectly add cancellation

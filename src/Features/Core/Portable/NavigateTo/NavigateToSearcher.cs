@@ -132,7 +132,8 @@ namespace Microsoft.CodeAnalysis.NavigateTo
 
             try
             {
-                using var navigateToSearch = Logger.LogBlock(FunctionId.NavigateTo_Search, KeyValueLogMessage.Create(LogType.UserAction), cancellationToken);
+                using var logMessage = KeyValueLogMessage.Create(LogType.UserAction);
+                using var navigateToSearch = Logger.LogBlock(FunctionId.NavigateTo_Search, logMessage, cancellationToken);
 
                 if (searchCurrentDocument)
                 {

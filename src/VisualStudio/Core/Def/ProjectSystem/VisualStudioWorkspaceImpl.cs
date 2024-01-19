@@ -226,8 +226,8 @@ namespace Microsoft.VisualStudio.LanguageServices.Implementation.ProjectSystem
             var telemetryService = (VisualStudioWorkspaceTelemetryService)Services.GetRequiredService<IWorkspaceTelemetryService>();
             telemetryService.InitializeTelemetrySession(telemetrySession, logDelta);
 
-            Logger.Log(FunctionId.Run_Environment,
-                KeyValueLogMessage.Create(m => m["Version"] = FileVersionInfo.GetVersionInfo(typeof(VisualStudioWorkspace).Assembly.Location).FileVersion));
+            using var logMessage = KeyValueLogMessage.Create(m => m["Version"] = FileVersionInfo.GetVersionInfo(typeof(VisualStudioWorkspace).Assembly.Location).FileVersion);
+            Logger.Log(FunctionId.Run_Environment, logMessage);
 
             // Initialize task-list in BG.
             var taskListService = this.Services.SolutionServices.ExportProvider.GetExports<VisualStudioTaskListService>().Single().Value;

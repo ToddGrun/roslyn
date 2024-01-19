@@ -60,11 +60,12 @@ namespace Microsoft.CodeAnalysis.Remote
                 FaultReporter.InitializeFatalErrorHandlers();
 
                 // log telemetry that service hub started
-                RoslynLogger.Log(FunctionId.RemoteHost_Connect, KeyValueLogMessage.Create(m =>
+                using var logMessage = KeyValueLogMessage.Create(m =>
                 {
                     m["Host"] = hostProcessId;
                     m["Framework"] = RuntimeInformation.FrameworkDescription;
-                }));
+                });
+                RoslynLogger.Log(FunctionId.RemoteHost_Connect, logMessage);
 
                 // start performance reporter
                 var diagnosticAnalyzerPerformanceTracker = services.GetService<IPerformanceTrackerService>();

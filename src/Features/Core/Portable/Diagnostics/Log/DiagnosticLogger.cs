@@ -22,13 +22,15 @@ namespace Microsoft.CodeAnalysis.Diagnostics.Log
             bool telemetry,
             string uri)
         {
-            Logger.Log(FunctionId.Diagnostics_HyperLink, KeyValueLogMessage.Create(m =>
+            using var logMessage = KeyValueLogMessage.Create(m =>
             {
                 m[From] = from;
                 m[Id] = telemetry ? id : id.GetHashCode().ToString();
                 m[HasDescription] = description;
                 m[Uri] = telemetry ? uri : uri.GetHashCode().ToString();
-            }));
+            });
+
+            Logger.Log(FunctionId.Diagnostics_HyperLink, logMessage);
         }
     }
 }

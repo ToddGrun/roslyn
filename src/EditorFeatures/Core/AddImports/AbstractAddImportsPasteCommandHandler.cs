@@ -147,7 +147,8 @@ namespace Microsoft.CodeAnalysis.AddImport
 
             // We're going to log the same thing on success or failure since this blocks the UI thread. This measurement is 
             // intended to tell us how long we're blocking the user from typing with this action. 
-            using var blockLogger = Logger.LogBlock(FunctionId.CommandHandler_Paste_ImportsOnPaste, KeyValueLogMessage.Create(LogType.UserAction), cancellationToken);
+            using var logMessage = KeyValueLogMessage.Create(LogType.UserAction);
+            using var blockLogger = Logger.LogBlock(FunctionId.CommandHandler_Paste_ImportsOnPaste, logMessage, cancellationToken);
 
             await TaskScheduler.Default;
 

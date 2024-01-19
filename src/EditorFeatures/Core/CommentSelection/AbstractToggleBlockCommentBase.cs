@@ -75,11 +75,13 @@ namespace Microsoft.CodeAnalysis.CommentSelection
         internal override CommentSelectionResult CollectEdits(Document document, ICommentSelectionService service,
             ITextBuffer subjectBuffer, NormalizedSnapshotSpanCollection selectedSpans, ValueTuple command, CancellationToken cancellationToken)
         {
-            using (Logger.LogBlock(FunctionId.CommandHandler_ToggleBlockComment, KeyValueLogMessage.Create(LogType.UserAction, m =>
+            using var logMessage = KeyValueLogMessage.Create(LogType.UserAction, m =>
             {
                 m[LanguageNameString] = document.Project.Language;
                 m[LengthString] = subjectBuffer.CurrentSnapshot.Length;
-            }), cancellationToken))
+            });
+
+            using (Logger.LogBlock(FunctionId.CommandHandler_ToggleBlockComment, logMessage, cancellationToken))
             {
                 var navigator = _navigatorSelectorService.GetTextStructureNavigator(subjectBuffer);
 

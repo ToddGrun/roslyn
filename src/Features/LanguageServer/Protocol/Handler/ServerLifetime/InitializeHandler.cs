@@ -38,11 +38,12 @@ internal class InitializeHandler : ILspServiceRequestHandler<InitializeParams, I
 
         // Record a telemetry event indicating what capabilities are being provided by the server.
         // Useful for figuring out if a particular session is opted into an LSP feature.
-        Logger.Log(FunctionId.LSP_Initialize, KeyValueLogMessage.Create(m =>
+        using var logMessage = KeyValueLogMessage.Create(m =>
         {
             m["serverKind"] = context.ServerKind.ToTelemetryString();
             m["capabilities"] = JsonConvert.SerializeObject(serverCapabilities);
-        }));
+        });
+        Logger.Log(FunctionId.LSP_Initialize, logMessage);
 
         return Task.FromResult(new InitializeResult
         {

@@ -22,7 +22,7 @@ namespace Microsoft.CodeAnalysis.MetadataAsSource
 
         public TelemetryMessage(CancellationToken cancellationToken)
         {
-            var logMessage = KeyValueLogMessage.Create(LogType.UserAction, SetLogProperties);
+            using var logMessage = KeyValueLogMessage.Create(LogType.UserAction, SetLogProperties);
             _logBlock = Logger.LogBlock(FunctionId.NavigateToExternalSources, logMessage, cancellationToken);
         }
 

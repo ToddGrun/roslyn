@@ -37,12 +37,13 @@ namespace Microsoft.CodeAnalysis.Storage
                 return;
             }
 
-            Logger.Log(FunctionId.StorageDatabase_Exceptions, KeyValueLogMessage.Create(m =>
+            using var logMessage = KeyValueLogMessage.Create(m =>
             {
                 // this is okay since it is our exception
                 m[Kind] = ex.GetType().ToString();
                 m[Reason] = ex.ToString();
-            }));
+            });
+            Logger.Log(FunctionId.StorageDatabase_Exceptions, logMessage);
         }
     }
 }

@@ -292,14 +292,15 @@ namespace Microsoft.CodeAnalysis.Workspaces.ProjectSystem
 
             if (parsedTrees > 0 || hadCompilation)
             {
-                Logger.Log(FunctionId.Workspace_Project_CompilationThrownAway, KeyValueLogMessage.Create(m =>
+                using var logMessage = KeyValueLogMessage.Create(m =>
                 {
                     // Note: Not using our project Id. This is the same ProjectGuid that the project system uses
                     // so data can be correlated
                     m["ProjectGuid"] = projectState.ProjectInfo.Attributes.TelemetryId.ToString("B");
                     m["SyntaxTreesParsed"] = parsedTrees;
                     m["HadCompilation"] = hadCompilation;
-                }));
+                });
+                Logger.Log(FunctionId.Workspace_Project_CompilationThrownAway, logMessage);
             }
         }
 

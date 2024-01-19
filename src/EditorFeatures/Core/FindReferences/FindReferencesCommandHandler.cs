@@ -130,9 +130,11 @@ namespace Microsoft.CodeAnalysis.FindReferences
                     includeContainingTypeAndMemberColumns: document.Project.SupportsCompilation,
                     includeKindColumn: document.Project.Language != LanguageNames.FSharp);
 
+                using var logMessage = KeyValueLogMessage.Create(LogType.UserAction, m => m["type"] = "streaming");
+
                 using (Logger.LogBlock(
                     FunctionId.CommandHandler_FindAllReference,
-                    KeyValueLogMessage.Create(LogType.UserAction, m => m["type"] = "streaming"),
+                    logMessage,
                     cancellationToken))
                 {
                     try

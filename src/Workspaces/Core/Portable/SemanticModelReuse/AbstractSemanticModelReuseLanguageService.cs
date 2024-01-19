@@ -31,11 +31,12 @@ namespace Microsoft.CodeAnalysis.SemanticModelReuse
 
         public void Dispose()
         {
-            Logger.Log(FunctionId.SemanticModelReuseLanguageService_TryGetSpeculativeSemanticModelAsync_Equivalent, KeyValueLogMessage.Create(m =>
+            using var logMessage = KeyValueLogMessage.Create(m =>
             {
                 foreach (var kv in _logAggregator)
                     m[kv.Key.ToString()] = kv.Value.GetCount();
-            }));
+            });
+            Logger.Log(FunctionId.SemanticModelReuseLanguageService_TryGetSpeculativeSemanticModelAsync_Equivalent, logMessage);
         }
 
         public async Task<SemanticModel?> TryGetSpeculativeSemanticModelAsync(SemanticModel previousSemanticModel, SyntaxNode currentBodyNode, CancellationToken cancellationToken)

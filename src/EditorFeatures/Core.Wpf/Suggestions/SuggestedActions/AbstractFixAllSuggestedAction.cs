@@ -66,7 +66,8 @@ namespace Microsoft.CodeAnalysis.Editor.Implementation.Suggestions
                 _ => throw ExceptionUtilities.UnexpectedValue(fixAllKind)
             };
 
-            using (Logger.LogBlock(functionId, FixAllLogger.CreateCorrelationLogMessage(FixAllState.CorrelationId), cancellationToken))
+            using var logMessage = FixAllLogger.CreateCorrelationLogMessage(FixAllState.CorrelationId);
+            using (Logger.LogBlock(functionId, logMessage, cancellationToken))
             {
                 await base.InnerInvokeAsync(progress, cancellationToken).ConfigureAwait(false);
             }

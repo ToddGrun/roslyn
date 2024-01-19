@@ -78,7 +78,7 @@ namespace Microsoft.CodeAnalysis.Remote.Diagnostics
 
                     var analyzerId = perfInfo.BuiltIn ? perfInfo.AnalyzerId : perfInfo.BuiltIn.GetHashCode().ToString();
 
-                    var logMessage = KeyValueLogMessage.Create(m =>
+                    using var logMessage = KeyValueLogMessage.Create(m =>
                     {
                         m[AnalyzerId] = analyzerId;
                         m[Delay] = delay;

@@ -315,11 +315,12 @@ namespace Microsoft.CodeAnalysis.Editor.CSharp.CompleteStatement
                 // actually move it.
                 if (!speculative)
                 {
-                    Logger.Log(FunctionId.CommandHandler_CompleteStatement, KeyValueLogMessage.Create(LogType.UserAction, m =>
+                    using var logMessage = KeyValueLogMessage.Create(LogType.UserAction, m =>
                     {
                         m[nameof(isInsideDelimiters)] = isInsideDelimiters;
                         m[nameof(statementNode)] = statementNode.Kind();
-                    }));
+                    });
+                    Logger.Log(FunctionId.CommandHandler_CompleteStatement, logMessage);
 
                     if (!args.TextView.TryMoveCaretToAndEnsureVisible(targetPosition))
                         return SemicolonBehavior.None;

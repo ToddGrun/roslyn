@@ -76,7 +76,7 @@ namespace Microsoft.CodeAnalysis.Editor.Implementation.IntelliSense.AsyncComplet
 
         internal static void ReportTelemetry()
         {
-            Logger.Log(FunctionId.Intellisense_AsyncCompletion_Data, KeyValueLogMessage.Create(m =>
+            using var logMessage = KeyValueLogMessage.Create(m =>
             {
                 foreach (var kv in s_statisticLogAggregator)
                 {
@@ -93,7 +93,8 @@ namespace Microsoft.CodeAnalysis.Editor.Implementation.IntelliSense.AsyncComplet
                 {
                     kv.Value.WriteTelemetryPropertiesTo(m, prefix: kv.Key.ToString());
                 }
-            }));
+            });
+            Logger.Log(FunctionId.Intellisense_AsyncCompletion_Data, logMessage);
         }
     }
 }

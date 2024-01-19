@@ -46,19 +46,21 @@ namespace Microsoft.CodeAnalysis.ExternalAccess.UnitTesting.SolutionCrawler
 
         public static void LogRegistration(int correlationId, string workspaceKind)
         {
-            Logger.Log(FunctionId.WorkCoordinatorRegistrationService_Register, KeyValueLogMessage.Create(m =>
+            using var logMessage = KeyValueLogMessage.Create(m =>
             {
                 m[Id] = correlationId;
                 m[Kind] = workspaceKind;
-            }));
+            });
+            Logger.Log(FunctionId.WorkCoordinatorRegistrationService_Register, logMessage);
         }
 
         public static void LogUnregistration(int correlationId)
         {
-            Logger.Log(FunctionId.WorkCoordinatorRegistrationService_Unregister, KeyValueLogMessage.Create(m =>
+            using var logMessage = KeyValueLogMessage.Create(m =>
             {
                 m[Id] = correlationId;
-            }));
+            });
+            Logger.Log(FunctionId.WorkCoordinatorRegistrationService_Unregister, logMessage);
         }
 
         public static void LogReanalyze(
@@ -67,13 +69,14 @@ namespace Microsoft.CodeAnalysis.ExternalAccess.UnitTesting.SolutionCrawler
             int documentCount,
             string languages)
         {
-            Logger.Log(FunctionId.WorkCoordinatorRegistrationService_Reanalyze, KeyValueLogMessage.Create(m =>
+            using var logMessage = KeyValueLogMessage.Create(m =>
             {
                 m[Id] = correlationId;
                 m[Analyzer] = analyzer.ToString();
                 m[DocumentCount] = documentCount;
                 m[Languages] = languages;
-            }));
+            });
+            Logger.Log(FunctionId.WorkCoordinatorRegistrationService_Reanalyze, logMessage);
         }
 
         public static void LogAnalyzers(int correlationId, string workspaceKind, ImmutableArray<IUnitTestingIncrementalAnalyzer> reordered, bool onlyHighPriorityAnalyzer)
@@ -101,28 +104,31 @@ namespace Microsoft.CodeAnalysis.ExternalAccess.UnitTesting.SolutionCrawler
             }
 
             // log registered analyzers.
-            Logger.Log(analyzersId, KeyValueLogMessage.Create(m =>
+            using var analyzerCountLogMessage = KeyValueLogMessage.Create(m =>
             {
                 m[Id] = correlationId;
                 m[AnalyzerCount] = reordered.Length;
-            }));
+            });
+            Logger.Log(analyzersId, analyzerCountLogMessage);
 
             foreach (var analyzer in reordered)
             {
-                Logger.Log(analyzerId, KeyValueLogMessage.Create(m =>
+                using var analyzerNameLogMessage = KeyValueLogMessage.Create(m =>
                 {
                     m[Id] = correlationId;
                     m[Analyzer] = analyzer.ToString();
-                }));
+                });
+                Logger.Log(analyzerId, analyzerNameLogMessage);
             }
         }
 
         public static void LogWorkCoordinatorShutdownTimeout(int correlationId)
         {
-            Logger.Log(FunctionId.WorkCoordinator_ShutdownTimeout, KeyValueLogMessage.Create(m =>
+            using var logMessage = KeyValueLogMessage.Create(m =>
             {
                 m[Id] = correlationId;
-            }));
+            });
+            Logger.Log(FunctionId.WorkCoordinator_ShutdownTimeout, logMessage);
         }
 
         public static void LogWorkspaceEvent(CountLogAggregator<WorkspaceChangeKind> logAggregator, WorkspaceChangeKind kind)
@@ -130,7 +136,7 @@ namespace Microsoft.CodeAnalysis.ExternalAccess.UnitTesting.SolutionCrawler
 
         public static void LogWorkCoordinatorShutdown(int correlationId, CountLogAggregator<WorkspaceChangeKind> logAggregator)
         {
-            Logger.Log(FunctionId.WorkCoordinator_Shutdown, KeyValueLogMessage.Create(m =>
+            using var logMessage = KeyValueLogMessage.Create(m =>
             {
                 m[Id] = correlationId;
 
@@ -139,7 +145,8 @@ namespace Microsoft.CodeAnalysis.ExternalAccess.UnitTesting.SolutionCrawler
                     var change = kv.Key.ToString();
                     m[change] = kv.Value.GetCount();
                 }
-            }));
+            });
+            Logger.Log(FunctionId.WorkCoordinator_Shutdown, logMessage);
         }
 
         public static void LogGlobalOperation(CountLogAggregator<object> logAggregator)
@@ -185,7 +192,7 @@ namespace Microsoft.CodeAnalysis.ExternalAccess.UnitTesting.SolutionCrawler
 
         public static void LogIncrementalAnalyzerProcessorStatistics(int correlationId, Solution solution, CountLogAggregator<object> logAggregator)
         {
-            Logger.Log(FunctionId.IncrementalAnalyzerProcessor_Shutdown, KeyValueLogMessage.Create(m =>
+            using var logMessage = KeyValueLogMessage.Create(m =>
             {
                 var solutionHash = GetSolutionHash(solution);
 
@@ -216,7 +223,9 @@ namespace Microsoft.CodeAnalysis.ExternalAccess.UnitTesting.SolutionCrawler
 
                     result.WriteTelemetryPropertiesTo(m, prefix: propertyName);
                 }
-            }));
+            });
+
+            Logger.Log(FunctionId.IncrementalAnalyzerProcessor_Shutdown, logMessage);
         }
 
         private static int GetSolutionHash(Solution solution)

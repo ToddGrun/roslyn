@@ -53,11 +53,13 @@ namespace Microsoft.CodeAnalysis.ExternalAccess.IntelliCode
             var languageName = currentDocument.Project.Language;
             if (!_lazyIntentProviders.TryGetValue((LanguageName: languageName, IntentName: intentRequestContext.IntentName), out var provider))
             {
-                Logger.Log(FunctionId.Intellicode_UnknownIntent, KeyValueLogMessage.Create(LogType.UserAction, m =>
+                using var logMessage = KeyValueLogMessage.Create(LogType.UserAction, m =>
                 {
                     m["intent"] = intentRequestContext.IntentName;
                     m["language"] = languageName;
-                }));
+                });
+
+                Logger.Log(FunctionId.Intellicode_UnknownIntent, logMessage);
 
                 return ImmutableArray<IntentSource>.Empty;
             }

@@ -87,9 +87,10 @@ namespace Microsoft.VisualStudio.LanguageServices.Implementation.SolutionExplore
                     Workspace.WorkspaceChanged += OnWorkspaceChangedLookForOptionsChanges;
                 }
 
+                using var logMessage = KeyValueLogMessage.Create(m => m["Count"] = _items.Count);
                 Logger.Log(
                     FunctionId.SolutionExplorer_DiagnosticItemSource_GetItems,
-                    KeyValueLogMessage.Create(m => m["Count"] = _items.Count));
+                    logMessage);
 
                 return _items;
             }

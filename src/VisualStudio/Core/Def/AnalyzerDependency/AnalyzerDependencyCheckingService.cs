@@ -189,25 +189,27 @@ namespace Microsoft.VisualStudio.LanguageServices.Implementation
 
         private static void LogConflict(AnalyzerDependencyConflict conflict)
         {
+            using var logMessage = KeyValueLogMessage.Create(m =>
+            {
+                m["Identity"] = conflict.Identity.ToString();
+                m["Analyzer1"] = conflict.AnalyzerFilePath1;
+                m["Analyzer2"] = conflict.AnalyzerFilePath2;
+            });
             Logger.Log(
                 FunctionId.AnalyzerDependencyCheckingService_LogConflict,
-                KeyValueLogMessage.Create(m =>
-                {
-                    m["Identity"] = conflict.Identity.ToString();
-                    m["Analyzer1"] = conflict.AnalyzerFilePath1;
-                    m["Analyzer2"] = conflict.AnalyzerFilePath2;
-                }));
+                logMessage);
         }
 
         private static void LogMissingDependency(MissingAnalyzerDependency missingDependency)
         {
+            using var logMessage = KeyValueLogMessage.Create(m =>
+            {
+                m["Analyzer"] = missingDependency.AnalyzerPath;
+                m["Identity"] = missingDependency.DependencyIdentity;
+            });
             Logger.Log(
                 FunctionId.AnalyzerDependencyCheckingService_LogMissingDependency,
-                KeyValueLogMessage.Create(m =>
-                {
-                    m["Analyzer"] = missingDependency.AnalyzerPath;
-                    m["Identity"] = missingDependency.DependencyIdentity;
-                }));
+                logMessage);
         }
 
         private static IEnumerable<AssemblyIdentity> GetExplicitlyIgnoredAssemblyIdentities()

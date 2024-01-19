@@ -138,7 +138,7 @@ namespace Microsoft.CodeAnalysis.CodeRefactorings
                         var providerName = provider.GetType().Name;
                         RefactoringToMetadataMap.TryGetValue(provider, out var providerMetadata);
 
-                        var logMessage = KeyValueLogMessage.Create(m =>
+                        using var logMessage = KeyValueLogMessage.Create(m =>
                         {
                             m[TelemetryLogging.KeyName] = providerName;
                             m[TelemetryLogging.KeyLanguageName] = document.Project.Language;

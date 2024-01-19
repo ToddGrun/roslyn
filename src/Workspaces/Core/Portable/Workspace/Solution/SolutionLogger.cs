@@ -29,14 +29,15 @@ namespace Microsoft.CodeAnalysis.Logging
 
         public static void ReportTelemetry()
         {
-            Logger.Log(FunctionId.Workspace_Solution_Info, KeyValueLogMessage.Create(m =>
+            using var logMessage = KeyValueLogMessage.Create(m =>
             {
                 m[nameof(UseExistingPartialProjectState)] = s_logAggregator.GetCount(nameof(UseExistingPartialProjectState));
                 m[nameof(UseExistingFullProjectState)] = s_logAggregator.GetCount(nameof(UseExistingFullProjectState));
                 m[nameof(CreatePartialProjectState)] = s_logAggregator.GetCount(nameof(CreatePartialProjectState));
                 m[nameof(UseExistingPartialSolution)] = s_logAggregator.GetCount(nameof(UseExistingPartialSolution));
                 m[nameof(CreatePartialSolution)] = s_logAggregator.GetCount(nameof(CreatePartialSolution));
-            }));
+            });
+            Logger.Log(FunctionId.Workspace_Solution_Info, logMessage);
         }
     }
 }

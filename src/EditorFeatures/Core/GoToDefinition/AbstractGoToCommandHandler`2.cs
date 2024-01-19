@@ -249,7 +249,8 @@ internal abstract class AbstractGoToCommandHandler<TLanguageService, TCommandArg
     private async Task FindResultsAsync(
         IFindUsagesContext findContext, Document document, int position, CancellationToken cancellationToken)
     {
-        using (Logger.LogBlock(FunctionId, KeyValueLogMessage.Create(LogType.UserAction), cancellationToken))
+        using var logMessage = KeyValueLogMessage.Create(LogType.UserAction);
+        using (Logger.LogBlock(FunctionId, logMessage, cancellationToken))
         {
             await findContext.SetSearchTitleAsync(DisplayName, cancellationToken).ConfigureAwait(false);
 

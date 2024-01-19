@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.CodeAnalysis.Internal.Log;
 using Roslyn.Utilities;
@@ -16,7 +17,7 @@ namespace Microsoft.CodeAnalysis.Telemetry
     internal sealed class TimedTelemetryLogBlock : IDisposable
     {
 #pragma warning disable IDE0052 // Remove unread private members - Not used in debug builds
-        private readonly KeyValueLogMessage _logMessage;
+        private readonly IReadOnlyDictionary<string, object?> _messageProperties;
         private readonly int _minThresholdMs;
         private readonly ITelemetryLog _telemetryLog;
         private readonly SharedStopwatch _stopwatch;
@@ -24,7 +25,7 @@ namespace Microsoft.CodeAnalysis.Telemetry
 
         public TimedTelemetryLogBlock(KeyValueLogMessage logMessage, int minThresholdMs, ITelemetryLog telemetryLog)
         {
-            _logMessage = logMessage;
+            _messageProperties = logMessage.Properties;
             _minThresholdMs = minThresholdMs;
             _telemetryLog = telemetryLog;
             _stopwatch = SharedStopwatch.StartNew();
@@ -40,11 +41,11 @@ namespace Microsoft.CodeAnalysis.Telemetry
             var elapsed = (int)_stopwatch.Elapsed.TotalMilliseconds;
             if (elapsed >= _minThresholdMs)
             {
-                var logMessage = KeyValueLogMessage.Create(m =>
+                using var logMessage = KeyValueLogMessage.Create(m =>
                 {
                     m[TelemetryLogging.KeyValue] = elapsed;
 
-                    m.AddRange(_logMessage.Properties);
+                    m.AddRange(_messageProperties);
                 });
 
                 _telemetryLog.Log(logMessage);
