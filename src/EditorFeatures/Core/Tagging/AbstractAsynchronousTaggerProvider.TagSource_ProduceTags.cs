@@ -29,6 +29,8 @@ namespace Microsoft.CodeAnalysis.Editor.Tagging
     {
         private partial class TagSource
         {
+            private static List<Action> s_tagActionsNeedingProcessed = new();
+
             private void OnCaretPositionChanged(object? _, CaretPositionChangedEventArgs e)
             {
                 _dataSource.ThreadingContext.ThrowIfNotOnUIThread();
@@ -248,33 +250,58 @@ namespace Microsoft.CodeAnalysis.Editor.Tagging
                     var newTagTrees = ComputeNewTagTrees(oldTagTrees, context);
                     var bufferToChanges = ProcessNewTagTrees(spansToTag, oldTagTrees, newTagTrees, cancellationToken);
 
-                    // Then switch back to the UI thread to update our state and kick off the work to notify the editor.
-                    await _dataSource.ThreadingContext.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken).NoThrowAwaitable();
-                    if (cancellationToken.IsCancellationRequested)
-                        return default;
-
-                    // Once we assign our state, we're uncancellable.  We must report the changed information
-                    // to the editor.  The only case where it's ok not to is if the tagger itself is disposed.
-                    cancellationToken = CancellationToken.None;
-
-                    this.CachedTagTrees = newTagTrees;
-                    this.State = context.State;
-                    if (this._subjectBuffer.CurrentSnapshot.Version.VersionNumber == subjectBufferVersion)
+                    var responsibleForMainThreadSwitch = false;
+                    lock (s_tagActionsNeedingProcessed)
                     {
-                        // Only clear the accumulated text changes if the subject buffer didn't change during the
-                        // tagging operation. Otherwise, it is impossible to know which changes occurred prior to the
-                        // request to tag, and which ones occurred during the tagging itself. Since
-                        // AccumulatedTextChanges is a conservative representation of the work that needs to be done, in
-                        // the event this value is not cleared the only potential impact will be slightly more work
-                        // being done during the next classification pass.
-                        this.AccumulatedTextChanges = null;
+                        s_tagActionsNeedingProcessed.Add(ProcessOnMainThread);
+                        if (s_tagActionsNeedingProcessed.Count == 1)
+                            responsibleForMainThreadSwitch = true;
                     }
 
-                    OnTagsChangedForBuffer(bufferToChanges, highPriority);
+                    if (responsibleForMainThreadSwitch)
+                    {
+                        // Then switch back to the UI thread to update our state and kick off the work to notify the editor.
+                        await _dataSource.ThreadingContext.JoinableTaskFactory.SwitchToMainThreadAsync(CancellationToken.None);
 
-                    // Once we've computed tags, pause ourselves if we're no longer visible.  That way we don't consume any
-                    // machine resources that the user won't even notice.
-                    PauseIfNotVisible();
+                        List<Action> tagActionsNeedingProcessed;
+                        lock (s_tagActionsNeedingProcessed)
+                        {
+                            tagActionsNeedingProcessed = s_tagActionsNeedingProcessed;
+                            s_tagActionsNeedingProcessed = new();
+                        }
+
+                        foreach (var tagAction in tagActionsNeedingProcessed)
+                            tagAction();
+                    }
+
+                    void ProcessOnMainThread()
+                    {
+                        if (cancellationToken.IsCancellationRequested)
+                            return;
+
+                        // Once we assign our state, we're uncancellable.  We must report the changed information
+                        // to the editor.  The only case where it's ok not to is if the tagger itself is disposed.
+                        cancellationToken = CancellationToken.None;
+
+                        this.CachedTagTrees = newTagTrees;
+                        this.State = context.State;
+                        if (this._subjectBuffer.CurrentSnapshot.Version.VersionNumber == subjectBufferVersion)
+                        {
+                            // Only clear the accumulated text changes if the subject buffer didn't change during the
+                            // tagging operation. Otherwise, it is impossible to know which changes occurred prior to the
+                            // request to tag, and which ones occurred during the tagging itself. Since
+                            // AccumulatedTextChanges is a conservative representation of the work that needs to be done, in
+                            // the event this value is not cleared the only potential impact will be slightly more work
+                            // being done during the next classification pass.
+                            this.AccumulatedTextChanges = null;
+                        }
+
+                        OnTagsChangedForBuffer(bufferToChanges, highPriority);
+
+                        // Once we've computed tags, pause ourselves if we're no longer visible.  That way we don't consume any
+                        // machine resources that the user won't even notice.
+                        PauseIfNotVisible();
+                    }
                 }
 
                 return default;
