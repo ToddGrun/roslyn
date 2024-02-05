@@ -896,7 +896,8 @@ namespace Microsoft.CodeAnalysis.Diagnostics
         {
             var uniqueDiagnosticIds = PooledHashSet<string>.GetInstance();
             var analyzersSuppressedForSomeTree = SuppressedAnalyzersForTreeMap.SelectMany(kvp => kvp.Value).ToImmutableHashSet();
-            totalAnalyzerExecutionTime = AnalyzerExecutionTimes.Sum(kvp => kvp.Value.TotalSeconds);
+            var analyzerExecutionTimes = GetAnalyzerExecutionTimes();
+            totalAnalyzerExecutionTime = analyzerExecutionTimes.Sum(kvp => kvp.Value.TotalSeconds);
 
             var builder = ArrayBuilder<(DiagnosticDescriptor Descriptor, DiagnosticDescriptorErrorLoggerInfo Info)>.GetInstance();
             foreach (var analyzer in Analyzers)
@@ -909,7 +910,7 @@ namespace Microsoft.CodeAnalysis.Diagnostics
                     analyzersSuppressedForSomeTree.Contains(analyzer);
 
                 double analyzerExecutionTime = 0;
-                if (AnalyzerExecutionTimes.TryGetValue(analyzer, out var analyzerExecutionTimeSpan))
+                if (analyzerExecutionTimes.TryGetValue(analyzer, out var analyzerExecutionTimeSpan))
                 {
                     analyzerExecutionTime = analyzerExecutionTimeSpan.TotalSeconds;
                 }
@@ -1447,7 +1448,7 @@ namespace Microsoft.CodeAnalysis.Diagnostics
             }
         }
 
-        internal ImmutableDictionary<DiagnosticAnalyzer, TimeSpan> AnalyzerExecutionTimes => AnalyzerExecutor.AnalyzerExecutionTimes;
+        internal ImmutableDictionary<DiagnosticAnalyzer, TimeSpan> GetAnalyzerExecutionTimes() => AnalyzerExecutor.GetAnalyzerExecutionTimes();
         internal TimeSpan ResetAnalyzerExecutionTime(DiagnosticAnalyzer analyzer) => AnalyzerExecutor.ResetAnalyzerExecutionTime(analyzer);
 
         private static ImmutableArray<(DiagnosticAnalyzer, ImmutableArray<ImmutableArray<SymbolAnalyzerAction>>)> MakeSymbolActionsByKind(in AnalyzerActions analyzerActions)

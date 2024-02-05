@@ -54,6 +54,45 @@ namespace Microsoft.CodeAnalysis
 
     internal readonly record struct NodeStateEntry<T>(T Item, EntryState State, int OutputIndex, IncrementalGeneratorRunStep? Step);
 
+    internal static class EntryStateStatics
+    {
+        public static readonly ImmutableArray<EntryState> AllAddedEntries = ImmutableArray.Create(EntryState.Added);
+        public static readonly ImmutableArray<EntryState> AllCachedEntries = ImmutableArray.Create(EntryState.Cached);
+        public static readonly ImmutableArray<EntryState> AllModifiedEntries = ImmutableArray.Create(EntryState.Modified);
+
+        /// <summary>
+        /// All items removed as part of a transformation from non-empty input.
+        /// </summary>
+        public static readonly ImmutableArray<EntryState> AllRemovedEntries = ImmutableArray.Create(EntryState.Removed);
+
+        /// <summary>
+        /// All items removed because the input has been removed.
+        /// </summary>
+        public static readonly ImmutableArray<EntryState> AllRemovedDueToInputRemoval = ImmutableArray.Create(EntryState.Removed);
+
+        private static readonly ImmutableArray<string> s_stateNames = ImmutableArray.Create([
+            nameof(EntryState.Added),
+            nameof(EntryState.Removed),
+            nameof(EntryState.Modified),
+            nameof(EntryState.Cached)]);
+
+#if DEBUG
+        static EntryStateStatics()
+        {
+            Debug.Assert((int)EntryState.Added == 0);
+            Debug.Assert((int)EntryState.Removed == 1);
+            Debug.Assert((int)EntryState.Modified == 2);
+            Debug.Assert((int)EntryState.Cached == 3);
+            Debug.Assert(Enum.GetNames(typeof(EntryState)).Length == 4);
+        }
+#endif
+
+        public static string GetStateName(EntryState state)
+        {
+            return s_stateNames[(int)state];
+        }
+    }
+
     /// <summary>
     /// A data structure that tracks the inputs and output of an execution node
     /// </summary>
@@ -204,7 +243,9 @@ namespace Microsoft.CodeAnalysis
             {
                 for (int i = 0; i < state.Count; i++)
                 {
-                    pooled.Builder.Append(state.GetState(i).ToString()[0]);
+                    var entryState = state.GetState(i);
+                    var stateName = EntryStateStatics.GetStateName(entryState);
+                    pooled.Builder.Append(stateName[0]);
                 }
                 pooled.Builder.Append(',');
             }
@@ -557,20 +598,6 @@ namespace Microsoft.CodeAnalysis
 
         internal readonly struct TableEntry
         {
-            private static readonly ImmutableArray<EntryState> s_allAddedEntries = ImmutableArray.Create(EntryState.Added);
-            private static readonly ImmutableArray<EntryState> s_allCachedEntries = ImmutableArray.Create(EntryState.Cached);
-            private static readonly ImmutableArray<EntryState> s_allModifiedEntries = ImmutableArray.Create(EntryState.Modified);
-
-            /// <summary>
-            /// All items removed as part of a transformation from non-empty input.
-            /// </summary>
-            private static readonly ImmutableArray<EntryState> s_allRemovedEntries = ImmutableArray.Create(EntryState.Removed);
-
-            /// <summary>
-            /// All items removed because the input has been removed.
-            /// </summary>
-            private static readonly ImmutableArray<EntryState> s_allRemovedDueToInputRemoval = ImmutableArray.Create(EntryState.Removed);
-
             private readonly OneOrMany<T> _items;
             private readonly bool _anyRemoved;
 
@@ -610,9 +637,9 @@ namespace Microsoft.CodeAnalysis
                 return true;
             }
 
-            public bool IsCached => this._states == s_allCachedEntries || this._states.All(s => s == EntryState.Cached);
+            public bool IsCached => this._states == EntryStateStatics.AllCachedEntries || this._states.All(s => s == EntryState.Cached);
 
-            public bool IsRemovedDueToInputRemoval => this._states == s_allRemovedDueToInputRemoval;
+            public bool IsRemovedDueToInputRemoval => this._states == EntryStateStatics.AllRemovedDueToInputRemoval;
 
             public int Count => _items.Count;
 
@@ -626,7 +653,7 @@ namespace Microsoft.CodeAnalysis
             {
                 if (!_anyRemoved)
                 {
-                    return new TableEntry(_items, s_allCachedEntries, anyRemoved: false);
+                    return new TableEntry(_items, EntryStateStatics.AllCachedEntries, anyRemoved: false);
                 }
 
                 var itemBuilder = ArrayBuilder<T>.GetInstance();
@@ -639,17 +666,17 @@ namespace Microsoft.CodeAnalysis
                 }
 
                 Debug.Assert(itemBuilder.Count < this.Count);
-                return new TableEntry(OneOrMany.Create(itemBuilder.ToImmutableArray()), s_allCachedEntries, anyRemoved: false);
+                return new TableEntry(OneOrMany.Create(itemBuilder.ToImmutableArray()), EntryStateStatics.AllCachedEntries, anyRemoved: false);
             }
 
-            public TableEntry AsRemovedDueToInputRemoval() => new(_items, s_allRemovedDueToInputRemoval, anyRemoved: true);
+            public TableEntry AsRemovedDueToInputRemoval() => new(_items, EntryStateStatics.AllRemovedDueToInputRemoval, anyRemoved: true);
 
             private static ImmutableArray<EntryState> GetSingleArray(EntryState state) => state switch
             {
-                EntryState.Added => s_allAddedEntries,
-                EntryState.Cached => s_allCachedEntries,
-                EntryState.Modified => s_allModifiedEntries,
-                EntryState.Removed => s_allRemovedEntries,
+                EntryState.Added => EntryStateStatics.AllAddedEntries,
+                EntryState.Cached => EntryStateStatics.AllCachedEntries,
+                EntryState.Modified => EntryStateStatics.AllModifiedEntries,
+                EntryState.Removed => EntryStateStatics.AllRemovedEntries,
                 _ => throw ExceptionUtilities.Unreachable()
             };
 

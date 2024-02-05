@@ -59,24 +59,24 @@ namespace Microsoft.CodeAnalysis.LanguageServer.Handler.Completion
             var completionItemResolveData = capabilityHelper.SupportCompletionListData || capabilityHelper.SupportVSInternalCompletionListData
                 ? null : resolveData;
 
-            using var _ = ArrayBuilder<LSP.CompletionItem>.GetInstance(out var lspCompletionItems);
+            var lspCompletionItems = new LSP.CompletionItem[list.ItemsList.Count];
             var commitCharactersRuleCache = new Dictionary<ImmutableArray<CharacterSetModificationRule>, string[]>(CommitCharacterArrayComparer.Instance);
 
-            var creationService = document.Project.Solution.Services.GetRequiredService<ILspCompletionResultCreationService>();
             var completionService = document.GetRequiredLanguageService<CompletionService>();
 
             var defaultSpan = list.Span;
             var typedText = documentText.GetSubText(defaultSpan).ToString();
-            foreach (var item in list.ItemsList)
+            for (var i = 0; i < list.ItemsList.Count; i++)
             {
+                var item = list.ItemsList[i];
                 item.Span = defaultSpan;    // item.Span will be used to generate change, adjust it if needed
-                lspCompletionItems.Add(await CreateLSPCompletionItemAsync(item, typedText).ConfigureAwait(false));
+                lspCompletionItems[i] = await CreateLSPCompletionItemAsync(item, typedText).ConfigureAwait(false);
             }
 
             var completionList = new LSP.VSInternalCompletionList
             {
                 // public LSP
-                Items = lspCompletionItems.ToArray(),
+                Items = lspCompletionItems,
                 IsIncomplete = isIncomplete,
                 ItemDefaults = new LSP.CompletionListItemDefaults
                 {

@@ -64,13 +64,14 @@ namespace Microsoft.CodeAnalysis
 
         private static void ReportAnalyzerExecutionTime(TextWriter consoleOutput, AnalyzerDriver analyzerDriver, CultureInfo culture)
         {
-            Debug.Assert(analyzerDriver.AnalyzerExecutionTimes != null);
-            if (analyzerDriver.AnalyzerExecutionTimes.IsEmpty)
+            var analyzerExecutionTimes = analyzerDriver.GetAnalyzerExecutionTimes();
+            Debug.Assert(analyzerExecutionTimes != null);
+            if (analyzerExecutionTimes.IsEmpty)
             {
                 return;
             }
 
-            var totalAnalyzerExecutionTime = analyzerDriver.AnalyzerExecutionTimes.Sum(kvp => kvp.Value.TotalSeconds);
+            var totalAnalyzerExecutionTime = analyzerExecutionTimes.Sum(kvp => kvp.Value.TotalSeconds);
             consoleOutput.WriteLine(string.Format(CodeAnalysisResources.AnalyzerTotalExecutionTime, totalAnalyzerExecutionTime.ToString("##0.000", culture)));
             consoleOutput.WriteLine();
 
@@ -78,7 +79,7 @@ namespace Microsoft.CodeAnalysis
             consoleOutput.WriteLine(GetColumnHeader(CodeAnalysisResources.AnalyzerNameColumnHeader));
 
             // Table rows grouped by assembly.
-            var analyzersByAssembly = analyzerDriver.AnalyzerExecutionTimes
+            var analyzersByAssembly = analyzerExecutionTimes
                 .GroupBy(kvp => kvp.Key.GetType().Assembly)
                 .OrderByDescending(kvp => kvp.Sum(entry => entry.Value.Ticks));
             foreach (var analyzerGroup in analyzersByAssembly)

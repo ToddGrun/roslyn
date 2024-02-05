@@ -177,13 +177,10 @@ namespace Microsoft.CodeAnalysis.Diagnostics
 
         internal Action<Exception, DiagnosticAnalyzer, Diagnostic, CancellationToken> OnAnalyzerException { get; }
 
-        internal ImmutableDictionary<DiagnosticAnalyzer, TimeSpan> AnalyzerExecutionTimes
+        internal ImmutableDictionary<DiagnosticAnalyzer, TimeSpan> GetAnalyzerExecutionTimes()
         {
-            get
-            {
-                Debug.Assert(_analyzerExecutionTimeMap != null);
-                return _analyzerExecutionTimeMap.ToImmutableDictionary(pair => pair.Key, pair => TimeSpan.FromTicks(pair.Value.Value));
-            }
+            Debug.Assert(_analyzerExecutionTimeMap != null);
+            return _analyzerExecutionTimeMap.ToImmutableDictionary(pair => pair.Key, pair => TimeSpan.FromTicks(pair.Value.Value));
         }
 
         /// <summary>

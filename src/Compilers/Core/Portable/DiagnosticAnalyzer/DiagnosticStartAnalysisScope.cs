@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
@@ -501,6 +502,27 @@ namespace Microsoft.CodeAnalysis.Diagnostics
     {
         private readonly ConcurrentDictionary<DiagnosticAnalyzer, StrongBox<AnalyzerActions>> _analyzerActions = new ConcurrentDictionary<DiagnosticAnalyzer, StrongBox<AnalyzerActions>>();
 
+        private static int s_creationCount = 0;
+        private static object s_lock = new();
+        private static Dictionary<Type, int> s_typeCount = new();
+
+        public HostAnalysisScope()
+        {
+            Interlocked.Increment(ref s_creationCount);
+            var type = this.GetType();
+            lock (s_lock)
+            {
+                if (!s_typeCount.TryGetValue(type, out int curCount))
+                {
+                    s_typeCount[type] = 1;
+                }
+                else
+                {
+                    s_typeCount[type] = curCount + 1;
+                }
+            }
+        }
+
         public virtual AnalyzerActions GetAnalyzerActions(DiagnosticAnalyzer analyzer)
         {
             return this.GetOrCreateAnalyzerActions(analyzer).Value;
@@ -654,7 +676,15 @@ namespace Microsoft.CodeAnalysis.Diagnostics
 
         protected StrongBox<AnalyzerActions> GetOrCreateAnalyzerActions(DiagnosticAnalyzer analyzer)
         {
-            return _analyzerActions.GetOrAdd(analyzer, _ => new StrongBox<AnalyzerActions>(AnalyzerActions.Empty));
+            var result = _analyzerActions.GetOrAdd(analyzer, _ => new StrongBox<AnalyzerActions>(AnalyzerActions.Empty));
+
+            if (_analyzerActions.Count != 1)
+            {
+                System.Diagnostics.Debugger.Launch();
+                System.Diagnostics.Debug.Fail("count: " + _analyzerActions.Count);
+            }
+
+            return result;
         }
     }
 
