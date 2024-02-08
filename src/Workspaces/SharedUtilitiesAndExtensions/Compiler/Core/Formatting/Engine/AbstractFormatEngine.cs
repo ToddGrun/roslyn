@@ -91,7 +91,7 @@ namespace Microsoft.CodeAnalysis.Formatting
             using (Logger.LogBlock(FunctionId.Formatting_Format, FormatSummary, cancellationToken))
             {
                 // setup environment
-                var nodeOperations = CreateNodeOperations(cancellationToken);
+                using var nodeOperations = CreateNodeOperations(cancellationToken);
 
                 var tokenStream = new TokenStream(this.TreeData, Options, this.SpanToFormat, CreateTriviaFactory());
                 using var tokenOperations = s_tokenPairListPool.GetPooledObject();
@@ -133,10 +133,10 @@ namespace Microsoft.CodeAnalysis.Formatting
 
             var nodeOperations = new NodeOperations();
 
-            var indentBlockOperation = new List<IndentBlockOperation>();
-            var suppressOperation = new List<SuppressOperation>();
-            var alignmentOperation = new List<AlignTokensOperation>();
-            var anchorIndentationOperations = new List<AnchorIndentationOperation>();
+            var indentBlockOperation = NodeOperations.IndentBlockOperationPool.Allocate();
+            var suppressOperation = NodeOperations.SuppressOperationPool.Allocate();
+            var alignmentOperation = NodeOperations.AlignTokensOperationPool.Allocate();
+            var anchorIndentationOperations = NodeOperations.AnchorIndentationOperationPool.Allocate();
 
             // Cache delegates out here to avoid allocation overhead.
 
@@ -158,6 +158,18 @@ namespace Microsoft.CodeAnalysis.Formatting
 
             // make sure we order align operation from left to right
             alignmentOperation.Sort(static (o1, o2) => o1.BaseToken.Span.CompareTo(o2.BaseToken.Span));
+
+            indentBlockOperation.Clear();
+            NodeOperations.IndentBlockOperationPool.Free(indentBlockOperation);
+
+            suppressOperation.Clear();
+            NodeOperations.SuppressOperationPool.Free(suppressOperation);
+
+            alignmentOperation.Clear();
+            NodeOperations.AlignTokensOperationPool.Free(alignmentOperation);
+
+            anchorIndentationOperations.Clear();
+            NodeOperations.AnchorIndentationOperationPool.Free(anchorIndentationOperations);
 
             return nodeOperations;
         }
