@@ -69,6 +69,10 @@ namespace Microsoft.CodeAnalysis.Diagnostics
                 _gate = new object();
             }
 
+            private static int s_sessionScopesCreated = 0;
+            private static int s_compilationStartScopesCreated = 0;
+            private static int s_symbolStartScopresCreated = 0;
+
             [PerformanceSensitive(
                 "https://github.com/dotnet/roslyn/issues/26778",
                 AllowCaptures = false)]
@@ -90,6 +94,7 @@ namespace Microsoft.CodeAnalysis.Diagnostics
                     {
                         return Task.Run(() =>
                         {
+                            Interlocked.Increment(ref s_sessionScopesCreated);
                             var sessionScope = new HostSessionStartAnalysisScope();
                             executor.ExecuteInitializeMethod(context._analyzer, sessionScope, executor.SeverityFilter, cancellationToken);
                             return sessionScope;
@@ -117,6 +122,7 @@ namespace Microsoft.CodeAnalysis.Diagnostics
                     {
                         _lazyCompilationScopeTask = Task.Run(() =>
                         {
+                            Interlocked.Increment(ref s_compilationStartScopesCreated);
                             var compilationAnalysisScope = new HostCompilationStartAnalysisScope(sessionScope);
                             analyzerExecutor.ExecuteCompilationStartActions(sessionScope.GetAnalyzerActions(_analyzer).CompilationStartActions, compilationAnalysisScope, cancellationToken);
                             return compilationAnalysisScope;
@@ -157,6 +163,7 @@ namespace Microsoft.CodeAnalysis.Diagnostics
 
                     HostSymbolStartAnalysisScope getSymbolAnalysisScopeCore()
                     {
+                        Interlocked.Increment(ref s_symbolStartScopresCreated);
                         var symbolAnalysisScope = new HostSymbolStartAnalysisScope();
                         analyzerExecutor.ExecuteSymbolStartActions(symbol, _analyzer, symbolStartActions, symbolAnalysisScope, isGeneratedCodeSymbol, filterTree, filterSpan, cancellationToken);
 
