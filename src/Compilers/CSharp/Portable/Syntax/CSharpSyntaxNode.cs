@@ -229,10 +229,14 @@ namespace Microsoft.CodeAnalysis.CSharp
         /// </summary>
         public DirectiveTriviaSyntax? GetFirstDirective(Func<DirectiveTriviaSyntax, bool>? predicate = null)
         {
-            foreach (var child in this.ChildNodesAndTokens())
+            var childIndex = 0;
+
+            foreach (var greenChild in this.Green.ChildNodesAndTokens())
             {
-                if (child.ContainsDirectives)
+                if (greenChild.ContainsDirectives)
                 {
+                    var child = ChildSyntaxList.ItemInternal(this, childIndex);
+
                     if (child.AsNode(out var node))
                     {
                         var d = node.GetFirstDirective(predicate);
@@ -259,6 +263,8 @@ namespace Microsoft.CodeAnalysis.CSharp
                         }
                     }
                 }
+
+                childIndex++;
             }
 
             return null;
@@ -269,10 +275,15 @@ namespace Microsoft.CodeAnalysis.CSharp
         /// </summary>
         public DirectiveTriviaSyntax? GetLastDirective(Func<DirectiveTriviaSyntax, bool>? predicate = null)
         {
-            foreach (var child in this.ChildNodesAndTokens().Reverse())
+            var greenChildren = this.Green.ChildNodesAndTokens();
+            var childIndex = greenChildren.Count - 1;
+
+            foreach (var greenChild in greenChildren.Reverse())
             {
-                if (child.ContainsDirectives)
+                if (greenChild.ContainsDirectives)
                 {
+                    var child = ChildSyntaxList.ItemInternal(this, childIndex);
+
                     if (child.AsNode(out var node))
                     {
                         var d = node.GetLastDirective(predicate);
@@ -299,6 +310,8 @@ namespace Microsoft.CodeAnalysis.CSharp
                         }
                     }
                 }
+
+                childIndex--;
             }
 
             return null;

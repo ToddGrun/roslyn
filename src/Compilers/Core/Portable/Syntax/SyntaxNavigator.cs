@@ -135,6 +135,69 @@ namespace Microsoft.CodeAnalysis
             }
         }
 
+        private static readonly ObjectPool<List<(int ChildIndex, Syntax.InternalSyntax.ChildSyntaxList.Enumerator Enumerator)>> s_greenChildIndexAndEnumeratorStackPool
+            = new(() => new(), 10);
+
+        internal SyntaxToken GetFirstToken(SyntaxNode current, Func<GreenNode, bool>? predicateIsTokenMatch, Func<GreenNode, bool>? predicateInspectNode)
+        {
+            var stack = s_greenChildIndexAndEnumeratorStackPool.Allocate();
+
+            try
+            {
+                stack.Add((0, current.Green.ChildNodesAndTokens().GetEnumerator()));
+
+                while (stack.Count > 0)
+                {
+                    var stackIndex = stack.Count - 1;
+                    var (childIndex, en) = stack[stackIndex];
+
+                    if (en.MoveNext())
+                    {
+                        var child = en.Current;
+
+                        if (child.IsToken &&
+                            (predicateIsTokenMatch is null || predicateIsTokenMatch(child)))
+                        {
+                            for (int i = 0; i < stackIndex; i++)
+                            {
+                                // Subtract one because the index is incremented before enumerating children
+                                var currentChildIndex = stack[i].ChildIndex - 1;
+                                current = ChildSyntaxList.ItemInternalAsNode(current, currentChildIndex)!;
+                            }
+
+                            return ChildSyntaxList.ItemInternal(current, stack[^1].ChildIndex).AsToken();
+                        }
+
+                        // replace this enumerator, not done yet
+                        stack[stackIndex] = (childIndex + 1, en);
+
+                        if (!child.IsToken &&
+                            (predicateInspectNode is null || predicateInspectNode(child)))
+                        {
+                            var childEnumerator = child.ChildNodesAndTokens().GetEnumerator();
+                            if (childEnumerator.MoveNext())
+                            {
+                                childEnumerator.Reset();
+                                stack.Add((0, childEnumerator));
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // Done with this enumerator
+                        stack.RemoveAt(stackIndex);
+                    }
+                }
+
+                return default;
+            }
+            finally
+            {
+                stack.Clear();
+                s_greenChildIndexAndEnumeratorStackPool.Free(stack);
+            }
+        }
+
         private static readonly ObjectPool<Stack<ChildSyntaxList.Reversed.Enumerator>> s_childReversedEnumeratorStackPool
             = new ObjectPool<Stack<ChildSyntaxList.Reversed.Enumerator>>(() => new Stack<ChildSyntaxList.Reversed.Enumerator>(), 10);
 
@@ -477,6 +540,67 @@ namespace Microsoft.CodeAnalysis
             return default;
         }
 
+        internal SyntaxToken GetNextToken(
+            SyntaxNode node,
+            Func<GreenNode, bool>? predicateIsTokenMatch,
+            Func<GreenNode, bool>? predicateInspectNode)
+        {
+            while (node.Parent != null)
+            {
+                if (predicateInspectNode == null || predicateInspectNode(node.Parent.Green))
+                {
+                    // walk forward in parent's child list until we find ourselves and then return the
+                    // next token
+                    bool returnNext = false;
+                    int index = 0;
+                    foreach (var child in node.Parent.Green.ChildNodesAndTokens())
+                    {
+                        if (returnNext)
+                        {
+                            if (child.IsToken)
+                            {
+                                if (predicateIsTokenMatch != null && predicateIsTokenMatch(child))
+                                {
+                                    return ChildSyntaxList.ItemInternal(node.Parent, index).AsToken();
+                                }
+                            }
+                            else
+                            {
+                                var redChild = ChildSyntaxList.ItemInternalAsNode(node.Parent, index)!;
+                                var token = GetFirstToken(redChild, predicateIsTokenMatch, predicateInspectNode);
+                                if (token.RawKind != None)
+                                {
+                                    return token;
+                                }
+
+                                if (node.IsList)
+                                {
+                                    index += node.SlotCount - 1;
+                                }
+                            }
+                        }
+                        else if (!child.IsToken && child == node.Green)
+                        {
+                            returnNext = true;
+                        }
+
+                        index++;
+                    }
+                }
+
+                // didn't find the next token in my parent's children, look up the tree
+                node = node.Parent;
+            }
+
+            // TODO: Don't think this is necessary for the directive case
+            //if (node.IsStructuredTrivia)
+            //{
+            //    return GetNextToken(((IStructuredTriviaSyntax)node).ParentTrivia, predicate);
+            //}
+
+            return default;
+        }
+
         internal SyntaxToken GetPreviousToken(
             SyntaxNode node,
             Func<SyntaxToken, bool> predicate,
@@ -575,6 +699,58 @@ namespace Microsoft.CodeAnalysis
 
                 // otherwise get next token from the parent's parent, and so on
                 return GetNextToken(current.Parent, predicate, stepInto);
+            }
+
+            return default;
+        }
+
+        internal SyntaxToken GetNextToken(in SyntaxToken current, Func<GreenNode, bool>? predicateIsTokenMatch, Func<GreenNode, bool>? predicateInspectNode)
+        {
+            if (current.Parent != null)
+            {
+                // walk forward in parent's child list until we find ourself 
+                // and then return the next token
+                bool returnNext = false;
+                int index = 0;
+                foreach (var child in current.Parent.Green.ChildNodesAndTokens())
+                {
+                    if (returnNext)
+                    {
+                        if (child.IsToken)
+                        {
+                            if (predicateIsTokenMatch != null && predicateIsTokenMatch(child))
+                            {
+                                return ChildSyntaxList.ItemInternal(current.Parent, index).AsToken();
+                            }
+                        }
+                        else
+                        {
+                            if (predicateInspectNode == null || predicateInspectNode(child))
+                            {
+                                var redChild = ChildSyntaxList.ItemInternalAsNode(current.Parent, index)!;
+                                var token = GetFirstToken(redChild, predicateIsTokenMatch, predicateInspectNode);
+                                if (token.RawKind != None)
+                                {
+                                    return token;
+                                }
+                            }
+
+                            if (child.IsList)
+                            {
+                                index += child.SlotCount - 1;
+                            }
+                        }
+                    }
+                    else if (child.IsToken && child == current.Node)
+                    {
+                        returnNext = true;
+                    }
+
+                    index++;
+                }
+
+                // otherwise get next token from the parent's parent, and so on
+                return GetNextToken(current.Parent, predicateIsTokenMatch, predicateInspectNode);
             }
 
             return default;

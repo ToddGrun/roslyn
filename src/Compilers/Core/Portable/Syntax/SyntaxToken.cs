@@ -605,6 +605,16 @@ namespace Microsoft.CodeAnalysis
             return SyntaxNavigator.Instance.GetNextToken(this, predicate, stepInto);
         }
 
+        internal SyntaxToken GetNextToken(Func<GreenNode, bool> predicate, Func<GreenNode, bool>? predicateInspectNode)
+        {
+            if (Node == null)
+            {
+                return default(SyntaxToken);
+            }
+
+            return SyntaxNavigator.Instance.GetNextToken(this, predicate, predicateInspectNode);
+        }
+
         /// <summary>
         /// Gets the token that precedes this token in the syntax tree.
         /// </summary>

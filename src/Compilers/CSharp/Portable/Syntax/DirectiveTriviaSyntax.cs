@@ -89,7 +89,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Syntax
                     }
                 }
 
-                token = token.GetNextToken(s_hasDirectivesFunction);
+                token = token.GetNextToken(s_hasDirectivesFunction2, s_hasDirectivesFunction2);
             }
 
             return null;
@@ -354,6 +354,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Syntax
             return null;
         }
 
+        private static readonly Func<GreenNode, bool> s_hasDirectivesFunction2 = t => t.ContainsDirectives;
         private static readonly Func<SyntaxToken, bool> s_hasDirectivesFunction = t => t.ContainsDirectives;
     }
 }

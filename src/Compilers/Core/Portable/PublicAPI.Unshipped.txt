@@ -10,6 +10,15 @@ Microsoft.CodeAnalysis.Operations.ISpreadOperation.ElementType.get -> Microsoft.
 Microsoft.CodeAnalysis.Operations.ISpreadOperation.Operand.get -> Microsoft.CodeAnalysis.IOperation!
 Microsoft.CodeAnalysis.SeparatedSyntaxList
 Microsoft.CodeAnalysis.SyntaxList
+Microsoft.CodeAnalysis.SyntaxNode.DescendantNodes2(Microsoft.CodeAnalysis.Text.TextSpan span, System.Func<Microsoft.CodeAnalysis.SyntaxNode.NodeTraversalContext, Microsoft.CodeAnalysis.SyntaxNode.NodeTraversalBehavior>! getNodeBehavior) -> System.Collections.Generic.IEnumerable<Microsoft.CodeAnalysis.SyntaxNode!>!
+Microsoft.CodeAnalysis.SyntaxNode.NodeTraversalBehavior
+Microsoft.CodeAnalysis.SyntaxNode.NodeTraversalBehavior.IncludeInResult = 2 -> Microsoft.CodeAnalysis.SyntaxNode.NodeTraversalBehavior
+Microsoft.CodeAnalysis.SyntaxNode.NodeTraversalBehavior.TraverseInside = 1 -> Microsoft.CodeAnalysis.SyntaxNode.NodeTraversalBehavior
+Microsoft.CodeAnalysis.SyntaxNode.NodeTraversalContext
+Microsoft.CodeAnalysis.SyntaxNode.NodeTraversalContext.ContainsDirectives.get -> bool
+Microsoft.CodeAnalysis.SyntaxNode.NodeTraversalContext.Kind.get -> int
+Microsoft.CodeAnalysis.SyntaxNode.NodeTraversalContext.NodeTraversalContext() -> void
+Microsoft.CodeAnalysis.SyntaxNode.NodeTraversalContext.NodeTraversalContext(int kind, bool containsDirectives) -> void
 static Microsoft.CodeAnalysis.SeparatedSyntaxList.Create<TNode>(System.ReadOnlySpan<TNode!> nodes) -> Microsoft.CodeAnalysis.SeparatedSyntaxList<TNode!>
 static Microsoft.CodeAnalysis.SyntaxList.Create<TNode>(System.ReadOnlySpan<TNode!> nodes) -> Microsoft.CodeAnalysis.SyntaxList<TNode!>
 static Microsoft.CodeAnalysis.SyntaxNodeOrTokenList.Create(System.ReadOnlySpan<Microsoft.CodeAnalysis.SyntaxNodeOrToken> nodesAndTokens) -> Microsoft.CodeAnalysis.SyntaxNodeOrTokenList

@@ -110,6 +110,9 @@ namespace Microsoft.CodeAnalysis.RemoveUnnecessaryNullableDirective
             NullableDirectiveTriviaSyntax? currentOptionsDirective = null;
             var currentOptions = retainedOptions;
 
+            SyntaxToken t;
+            t.Dire
+            root.direct
             for (var directive = root.GetFirstDirective(); directive is not null; directive = directive.GetNextDirective())
             {
                 context.CancellationToken.ThrowIfCancellationRequested();

@@ -38,7 +38,9 @@ namespace Microsoft.CodeAnalysis.CSharp.NewLines.ConditionalExpressionPlacement
             if (option.Value || ShouldSkipAnalysis(context, compilationOptions, option.Notification))
                 return;
 
-            Recurse(context, option.Notification, context.GetAnalysisRoot(findInTrivia: false));
+            var root = context.GetAnalysisRoot(findInTrivia: false);
+            root.DescendantNodes(context.FilterSpan)
+            Recurse(context, option.Notification, root);
         }
 
         private void Recurse(SyntaxTreeAnalysisContext context, NotificationOption2 notificationOption, SyntaxNode node)
@@ -50,6 +52,7 @@ namespace Microsoft.CodeAnalysis.CSharp.NewLines.ConditionalExpressionPlacement
 
             foreach (var child in node.ChildNodesAndTokens())
             {
+                child.RawKind
                 if (!context.ShouldAnalyzeSpan(child.Span))
                     continue;
 

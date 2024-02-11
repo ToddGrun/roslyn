@@ -20,7 +20,7 @@ namespace Microsoft.CodeAnalysis.LanguageServer.Handler
 {
     [ExportCSharpVisualBasicStatelessLspService(typeof(SignatureHelpHandler)), Shared]
     [Method(LSP.Methods.TextDocumentSignatureHelpName)]
-    internal class SignatureHelpHandler : ILspServiceDocumentRequestHandler<LSP.TextDocumentPositionParams, LSP.SignatureHelp?>
+    internal class SignatureHelpHandler : ILspServiceDocumentRequestHandler<LSP.SignatureHelpParams, LSP.SignatureHelp?>
     {
         private readonly IEnumerable<Lazy<ISignatureHelpProvider, OrderableLanguageMetadata>> _allProviders;
         private readonly IGlobalOptionService _globalOptions;
@@ -38,10 +38,14 @@ namespace Microsoft.CodeAnalysis.LanguageServer.Handler
         public bool MutatesSolutionState => false;
         public bool RequiresLSPSolution => true;
 
-        public LSP.TextDocumentIdentifier GetTextDocumentIdentifier(LSP.TextDocumentPositionParams request) => request.TextDocument;
+        public LSP.TextDocumentIdentifier GetTextDocumentIdentifier(LSP.SignatureHelpParams request) => request.TextDocument;
 
-        public async Task<LSP.SignatureHelp?> HandleRequestAsync(LSP.TextDocumentPositionParams request, RequestContext context, CancellationToken cancellationToken)
+        public static List<object> s_debugInfo = new();
+
+        public async Task<LSP.SignatureHelp?> HandleRequestAsync(LSP.SignatureHelpParams request, RequestContext context, CancellationToken cancellationToken)
         {
+            s_debugInfo.Add(request);
+
             var clientCapabilities = context.GetRequiredClientCapabilities();
             var document = context.Document;
             if (document == null)
