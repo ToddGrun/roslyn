@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -94,6 +95,264 @@ class C {
             Assert.Equal(SyntaxKind.ParenthesizedExpression, nodes[5].Kind());
             Assert.Equal(SyntaxKind.AddExpression, nodes[6].Kind());
         }
+
+        [Fact]
+        public void TestDescendants2_All()
+        {
+            var text = "a + (b - (c * (d / e)))";
+            var expression = SyntaxFactory.ParseExpression(text);
+            var nodes = expression.DescendantNodes2().ToList();
+
+            Assert.Equal(11, nodes.Count);
+            Assert.Equal(SyntaxKind.IdentifierName, nodes[0].Kind());
+            Assert.Equal(SyntaxKind.ParenthesizedExpression, nodes[1].Kind());
+            Assert.Equal(SyntaxKind.SubtractExpression, nodes[2].Kind());
+            Assert.Equal(SyntaxKind.IdentifierName, nodes[3].Kind());
+            Assert.Equal(SyntaxKind.ParenthesizedExpression, nodes[4].Kind());
+            Assert.Equal(SyntaxKind.MultiplyExpression, nodes[5].Kind());
+            Assert.Equal(SyntaxKind.IdentifierName, nodes[6].Kind());
+            Assert.Equal(SyntaxKind.ParenthesizedExpression, nodes[7].Kind());
+            Assert.Equal(SyntaxKind.DivideExpression, nodes[8].Kind());
+            Assert.Equal(SyntaxKind.IdentifierName, nodes[9].Kind());
+            Assert.Equal(SyntaxKind.IdentifierName, nodes[10].Kind());
+        }
+
+        [Fact]
+        public void TestDescendants2_ExcludeResults()
+        {
+            var text = "a + (b - (c * (d / e)))";
+            var expression = SyntaxFactory.ParseExpression(text);
+            var nodes = expression.DescendantNodes2(getNodeBehavior).ToList();
+
+            Assert.Equal(5, nodes.Count);
+            Assert.Equal(SyntaxKind.IdentifierName, nodes[0].Kind());
+            Assert.Equal(SyntaxKind.IdentifierName, nodes[1].Kind());
+            Assert.Equal(SyntaxKind.IdentifierName, nodes[2].Kind());
+            Assert.Equal(SyntaxKind.IdentifierName, nodes[3].Kind());
+            Assert.Equal(SyntaxKind.IdentifierName, nodes[4].Kind());
+
+            SyntaxNode.NodeTraversalBehavior getNodeBehavior(SyntaxNode.NodeTraversalContext context)
+            {
+                var includeInResult = context.Kind == (int)SyntaxKind.IdentifierName ? SyntaxNode.NodeTraversalBehavior.IncludeInResult : 0;
+
+                return includeInResult | SyntaxNode.NodeTraversalBehavior.TraverseInside;
+            }
+        }
+
+        [Fact]
+        public void TestDescendants2_NoTraversalInside()
+        {
+            var text = "a + (b - (c * (d / e)))";
+            var expression = SyntaxFactory.ParseExpression(text);
+            var nodes = expression.DescendantNodes2(getNodeBehavior).ToList();
+
+            Assert.Equal(6, nodes.Count);
+            Assert.Equal(SyntaxKind.IdentifierName, nodes[0].Kind());
+            Assert.Equal(SyntaxKind.ParenthesizedExpression, nodes[1].Kind());
+            Assert.Equal(SyntaxKind.SubtractExpression, nodes[2].Kind());
+            Assert.Equal(SyntaxKind.IdentifierName, nodes[3].Kind());
+            Assert.Equal(SyntaxKind.ParenthesizedExpression, nodes[4].Kind());
+            Assert.Equal(SyntaxKind.MultiplyExpression, nodes[5].Kind());
+
+            SyntaxNode.NodeTraversalBehavior getNodeBehavior(SyntaxNode.NodeTraversalContext context)
+            {
+                var traverseInsideResult = context.Kind == (int)SyntaxKind.MultiplyExpression ? 0 : SyntaxNode.NodeTraversalBehavior.TraverseInside;
+
+                return traverseInsideResult | SyntaxNode.NodeTraversalBehavior.IncludeInResult;
+            }
+        }
+
+        [Fact]
+        public void TestDescendants2_ContainsDirectives()
+        {
+            var tree = SyntaxFactory.ParseSyntaxTree(
+                """
+                #define GOO
+                #define BAR
+                class C {
+                #if GOO
+                   void M() { }
+                #endif
+                }
+                """);
+
+            var nodes = tree.GetRoot().DescendantNodes2(getNodeBehavior).ToList();
+
+            Assert.Equal(1, nodes.Count);
+            Assert.Equal(SyntaxKind.ClassDeclaration, nodes[0].Kind());
+
+            SyntaxNode.NodeTraversalBehavior getNodeBehavior(SyntaxNode.NodeTraversalContext context)
+            {
+                var traverseInsideResult = context.ContainsDirectives ? 0 : SyntaxNode.NodeTraversalBehavior.TraverseInside;
+
+                return traverseInsideResult | SyntaxNode.NodeTraversalBehavior.IncludeInResult;
+            }
+        }
+
+        [Fact]
+        public void TestDescendants2_SpanInclusive()
+        {
+            var text = "a + (b - (c * (d / e)))";
+            var inclusiveBLocation = text.IndexOf('b');
+            var inclusiveDLocation = text.IndexOf('d') + 1;
+            var expression = SyntaxFactory.ParseExpression(text);
+            var nodes = expression.DescendantNodes2(new TextSpan(inclusiveBLocation, inclusiveDLocation - inclusiveBLocation), getNodeBehavior: null).ToList();
+
+            Assert.Equal(9, nodes.Count);
+            Assert.Equal(SyntaxKind.ParenthesizedExpression, nodes[0].Kind());
+            Assert.Equal(SyntaxKind.SubtractExpression, nodes[1].Kind());
+            Assert.Equal(SyntaxKind.IdentifierName, nodes[2].Kind());
+            Assert.Equal(SyntaxKind.ParenthesizedExpression, nodes[3].Kind());
+            Assert.Equal(SyntaxKind.MultiplyExpression, nodes[4].Kind());
+            Assert.Equal(SyntaxKind.IdentifierName, nodes[5].Kind());
+            Assert.Equal(SyntaxKind.ParenthesizedExpression, nodes[6].Kind());
+            Assert.Equal(SyntaxKind.DivideExpression, nodes[7].Kind());
+            Assert.Equal(SyntaxKind.IdentifierName, nodes[8].Kind());
+        }
+
+        [Fact]
+        public void TestDescendants2_SpanExclusive()
+        {
+            var text = "a + (b - (c * (d / e)))";
+            var exclusiveBLocation = text.IndexOf('b') + 2;
+            var exclusiveDLocation = text.IndexOf('d');
+            var expression = SyntaxFactory.ParseExpression(text);
+            var nodes = expression.DescendantNodes2(new TextSpan(exclusiveBLocation, exclusiveDLocation - exclusiveBLocation), getNodeBehavior: null).ToList();
+
+            Assert.Equal(6, nodes.Count);
+            Assert.Equal(SyntaxKind.ParenthesizedExpression, nodes[0].Kind());
+            Assert.Equal(SyntaxKind.SubtractExpression, nodes[1].Kind());
+            Assert.Equal(SyntaxKind.ParenthesizedExpression, nodes[2].Kind());
+            Assert.Equal(SyntaxKind.MultiplyExpression, nodes[3].Kind());
+            Assert.Equal(SyntaxKind.IdentifierName, nodes[4].Kind());
+            Assert.Equal(SyntaxKind.ParenthesizedExpression, nodes[5].Kind());
+        }
+
+        [Fact]
+        public void TestDescendants2_EqualToOldAll()
+        {
+            var text = System.IO.File.ReadAllText(@"c:\sources\Roslyn\src\Compilers\CSharp\Portable\Parser\LanguageParser.cs");
+            var oldTree = SyntaxFactory.ParseSyntaxTree(text);
+            var newTree = SyntaxFactory.ParseSyntaxTree(text);
+
+            var oldNodes = oldTree.GetRoot().DescendantNodes().ToList();
+            var newNodes = newTree.GetRoot().DescendantNodes2(static _ => SyntaxNode.NodeTraversalBehavior.IncludeInResult | SyntaxNode.NodeTraversalBehavior.TraverseInside).ToList();
+
+            var oldNodeSpanAndKind = oldNodes.Select(n => (n.FullSpan, n.RawKind)).ToList();
+            var newNodeSpanAndKind = newNodes.Select(n => (n.FullSpan, n.RawKind)).ToList();
+
+            Assert.True(newNodeSpanAndKind.SequenceEqual(oldNodeSpanAndKind));
+        }
+
+        [Fact]
+        public void TestDescendants2_EqualToOldForKind()
+        {
+            var text = System.IO.File.ReadAllText(@"c:\sources\Roslyn\src\Compilers\CSharp\Portable\Parser\LanguageParser.cs");
+            var oldTree = SyntaxFactory.ParseSyntaxTree(text);
+            var newTree = SyntaxFactory.ParseSyntaxTree(text);
+
+            var oldNodes = oldTree.GetRoot().DescendantNodes().Where(n => n is ConditionalExpressionSyntax).ToList();
+            var newNodes = newTree.GetRoot().DescendantNodes2(getNodeBehavior).ToList();
+
+            var oldNodeSpanAndKind = oldNodes.Select(n => (n.FullSpan, n.RawKind)).ToList();
+            var newNodeSpanAndKind = newNodes.Select(n => (n.FullSpan, n.RawKind)).ToList();
+
+            Assert.True(newNodeSpanAndKind.SequenceEqual(oldNodeSpanAndKind));
+
+            SyntaxNode.NodeTraversalBehavior getNodeBehavior(SyntaxNode.NodeTraversalContext context)
+            {
+                var includeInResult = context.Kind == (int)SyntaxKind.ConditionalExpression ? SyntaxNode.NodeTraversalBehavior.IncludeInResult : 0;
+
+                return includeInResult | SyntaxNode.NodeTraversalBehavior.TraverseInside;
+            }
+        }
+
+        private static long s_oldTime = 0;
+        private static long s_newTime = 0;
+
+
+        [Fact]
+        public void TestDescendants2_ForProfiling()
+        {
+            var text = System.IO.File.ReadAllText(@"c:\sources\Roslyn\src\Compilers\CSharp\Portable\Parser\LanguageParser.cs");
+            var root = SyntaxFactory.ParseSyntaxTree(text).GetRoot();
+            root.DescendantNodes().ToList(); // Realize all the nodes
+
+            Stopwatch swOld = Stopwatch.StartNew();
+            Old_ForProfiling(root);
+            swOld.Stop();
+            s_oldTime = swOld.ElapsedMilliseconds;
+
+            Stopwatch swNew = Stopwatch.StartNew();
+            New_ForProfiling(root);
+            swNew.Stop();
+            s_newTime = swNew.ElapsedMilliseconds;
+        }
+
+        private void New_ForProfiling(SyntaxNode root)
+        {
+            for (var i = 0; i < 1000; i++)
+                root.DescendantNodes2().ToList();
+        }
+
+        private void Old_ForProfiling(SyntaxNode root)
+        {
+            for (var i = 0; i < 1000; i++)
+                root.DescendantNodes().ToList();
+        }
+
+        //[Fact]
+        //public void TestDescendants2_CountNodesCreatedUnderDirectives()
+        //{
+        //    var text = System.IO.File.ReadAllText(@"d:\sources\Roslyn\src\Compilers\CSharp\Portable\Parser\LanguageParser.cs");
+        //    var treeOld = SyntaxFactory.ParseSyntaxTree(text);
+        //    var treeNew = SyntaxFactory.ParseSyntaxTree(text);
+
+        //    //SyntaxNode.s_nodesCreated = 0;
+        //    treeOld.GetRoot().DescendantNodes(getOldDescendIntoChildren).ToList();
+        //    var nodesCreatedOld = SyntaxNode.s_nodesCreated;
+
+        //    SyntaxNode.s_nodesCreated = 0;
+
+        //    treeNew.GetRoot().DescendantNodes2(getNodeBehavior).ToList();
+        //    var nodesCreatedNew = SyntaxNode.s_nodesCreated;
+
+        //    bool getOldDescendIntoChildren(SyntaxNode node)
+        //    {
+        //        return node.ContainsDirectives;
+        //    }
+
+        //    SyntaxNode.NodeTraversalBehavior getNodeBehavior(SyntaxNode.NodeTraversalContext context)
+        //    {
+        //        var traverseInsideResult = context.ContainsDirectives ? SyntaxNode.NodeTraversalBehavior.TraverseInside : 0;
+
+        //        return traverseInsideResult | SyntaxNode.NodeTraversalBehavior.IncludeInResult;
+        //    }
+        //}
+
+        //[Fact]
+        //public void TestDescendants2_CountNodesCreatedForKind()
+        //{
+        //    var text = System.IO.File.ReadAllText(@"d:\sources\Roslyn\src\Compilers\CSharp\Portable\Parser\LanguageParser.cs");
+        //    var treeOld = SyntaxFactory.ParseSyntaxTree(text);
+        //    var treeNew = SyntaxFactory.ParseSyntaxTree(text);
+
+        //    SyntaxNode.s_nodesCreated = 0;
+        //    treeOld.GetRoot().DescendantNodes().Where(n => n is ConditionalExpressionSyntax).ToList();
+        //    var nodesCreatedOld = SyntaxNode.s_nodesCreated;
+
+        //    SyntaxNode.s_nodesCreated = 0;
+
+        //    treeNew.GetRoot().DescendantNodes2(getNodeBehavior).ToList();
+        //    var nodesCreatedNew = SyntaxNode.s_nodesCreated;
+
+        //    SyntaxNode.NodeTraversalBehavior getNodeBehavior(SyntaxNode.NodeTraversalContext context)
+        //    {
+        //        var includeInResult = context.Kind == (int)SyntaxKind.ConditionalExpression ? SyntaxNode.NodeTraversalBehavior.IncludeInResult : 0;
+
+        //        return includeInResult | SyntaxNode.NodeTraversalBehavior.TraverseInside;
+        //    }
+        //}
 
         [Fact]
         public void TestAncestorsAndSelf()
