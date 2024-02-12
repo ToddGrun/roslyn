@@ -17,6 +17,11 @@ namespace Microsoft.CodeAnalysis.Syntax.InternalSyntax
             internal Enumerator(GreenNode? node)
             {
                 _node = node;
+                Reset();
+            }
+
+            public void Reset()
+            {
                 _childIndex = -1;
                 _listIndex = -1;
                 _list = null;
