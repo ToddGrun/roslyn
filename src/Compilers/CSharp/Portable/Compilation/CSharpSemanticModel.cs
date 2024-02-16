@@ -1678,10 +1678,9 @@ namespace Microsoft.CodeAnalysis.CSharp
                 lookupResult.Free();
             }
 
-            ImmutableArray<ISymbol> sealedResults = results.ToImmutableAndFree();
             return name == null
-                ? FilterNotReferencable(sealedResults)
-                : sealedResults;
+                ? FilterNotReferenceableAndFree(results)
+                : results.ToImmutableAndFree();
         }
 
         private void AppendSymbolsWithName(ArrayBuilder<ISymbol> results, string name, Binder binder, NamespaceOrTypeSymbol container, LookupOptions options, LookupSymbolsInfo info)
@@ -1795,25 +1794,19 @@ namespace Microsoft.CodeAnalysis.CSharp
         /// </summary>
         internal abstract Symbol RemapSymbolIfNecessaryCore(Symbol symbol);
 
-        private static ImmutableArray<ISymbol> FilterNotReferencable(ImmutableArray<ISymbol> sealedResults)
+        private static ImmutableArray<ISymbol> FilterNotReferenceableAndFree(ArrayBuilder<ISymbol> sealedResults)
         {
-            ArrayBuilder<ISymbol> builder = null;
-            int pos = 0;
-            foreach (var result in sealedResults)
-            {
-                if (result.CanBeReferencedByName)
-                {
-                    builder?.Add(result);
-                }
-                else if (builder == null)
-                {
-                    builder = ArrayBuilder<ISymbol>.GetInstance();
-                    builder.AddRange(sealedResults, pos);
-                }
-                pos++;
-            }
+            var cannotBeReferencedByNameCount = sealedResults.Count(static s => !s.CanBeReferencedByName);
 
-            return builder?.ToImmutableAndFree() ?? sealedResults;
+            if (cannotBeReferencedByNameCount == 0)
+                return sealedResults.ToImmutableAndFree();
+
+            var builder = ImmutableArray.CreateBuilder<ISymbol>(sealedResults.Count - cannotBeReferencedByNameCount);
+            builder.AddRange(sealedResults.Where(s => s.CanBeReferencedByName));
+
+            sealedResults.Free();
+
+            return builder.ToImmutable();
         }
 
         /// <summary>

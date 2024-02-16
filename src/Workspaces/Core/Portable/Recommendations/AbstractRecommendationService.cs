@@ -31,12 +31,9 @@ namespace Microsoft.CodeAnalysis.Recommendations
             var namedSymbols = result.NamedSymbols;
             var unnamedSymbols = result.UnnamedSymbols;
 
-            namedSymbols = namedSymbols.FilterToVisibleAndBrowsableSymbols(options.HideAdvancedMembers, semanticModel.Compilation);
-            unnamedSymbols = unnamedSymbols.FilterToVisibleAndBrowsableSymbols(options.HideAdvancedMembers, semanticModel.Compilation);
-
             var shouldIncludeSymbolContext = new ShouldIncludeSymbolContext(syntaxContext, cancellationToken);
-            namedSymbols = namedSymbols.WhereAsArray(shouldIncludeSymbolContext.ShouldIncludeSymbol);
-            unnamedSymbols = unnamedSymbols.WhereAsArray(shouldIncludeSymbolContext.ShouldIncludeSymbol);
+            namedSymbols = namedSymbols.FilterToVisibleAndBrowsableSymbols(options.HideAdvancedMembers, semanticModel.Compilation, shouldIncludeSymbolContext.ShouldIncludeSymbol);
+            unnamedSymbols = unnamedSymbols.FilterToVisibleAndBrowsableSymbols(options.HideAdvancedMembers, semanticModel.Compilation, shouldIncludeSymbolContext.ShouldIncludeSymbol);
 
             return new RecommendedSymbols(namedSymbols, unnamedSymbols);
         }

@@ -357,9 +357,30 @@ internal partial class CSharpRecommendationService
             var contextOuterTypes = ComputeOuterTypes(_context, _cancellationToken);
             var contextEnclosingNamedType = _context.SemanticModel.GetEnclosingNamedType(_context.Position, _cancellationToken);
 
-            return symbols.WhereAsArray(
-                static (symbol, args) => !IsUndesirable(args._context, args.contextEnclosingNamedType, args.contextOuterTypes, args.filterOutOfScopeLocals, symbol, args._cancellationToken),
-                (_context, contextOuterTypes, contextEnclosingNamedType, filterOutOfScopeLocals, _cancellationToken));
+            // Perf: Expanded this code instead of just doing a symbols.WhereAsArray. This is because these arrays can be quite large,
+            // avoiding the pooling benefit of the underlying use of ArrayBuilder as they exceed the pooling size threshold.
+            // Additionally, as the number of desirable symbols ends up being quite large, multiple resizes of the backing array
+            // would occur if the size weren't calculated up front.
+            using var _ = PooledHashSet<ISymbol>.GetInstance(out var undesirableSymbols);
+            foreach (var symbol in symbols)
+            {
+                if (IsUndesirable(_context, contextEnclosingNamedType, contextOuterTypes, filterOutOfScopeLocals, symbol, _cancellationToken))
+                    undesirableSymbols.Add(symbol);
+            }
+
+            if (undesirableSymbols.Count == 0)
+                return symbols;
+            else if (undesirableSymbols.Count == symbols.Length)
+                return [];
+
+            var builder = ImmutableArray.CreateBuilder<ISymbol>(symbols.Length - undesirableSymbols.Count);
+            foreach (var symbol in symbols)
+            {
+                if (!undesirableSymbols.Contains(symbol))
+                    builder.Add(symbol);
+            }
+
+            return builder.MoveToImmutable();
 
             static bool IsUndesirable(
                 CSharpSyntaxContext context,
