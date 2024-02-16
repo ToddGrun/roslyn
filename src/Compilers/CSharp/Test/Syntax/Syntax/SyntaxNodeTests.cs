@@ -6,8 +6,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using ICSharpCode.Decompiler.CSharp.Syntax;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.CSharp.Test.Utilities;
 using Microsoft.CodeAnalysis.Text;
@@ -93,6 +95,317 @@ class C {
             Assert.Equal(SyntaxKind.SubtractExpression, nodes[4].Kind());
             Assert.Equal(SyntaxKind.ParenthesizedExpression, nodes[5].Kind());
             Assert.Equal(SyntaxKind.AddExpression, nodes[6].Kind());
+        }
+
+        [Fact]
+        public void TestDescendants2_EqualToOld_All()
+        {
+            var text = System.IO.File.ReadAllText(@"d:\sources\Roslyn\src\Compilers\CSharp\Portable\Parser\LanguageParser.cs");
+            var oldTree = SyntaxFactory.ParseSyntaxTree(text);
+            var newTree = SyntaxFactory.ParseSyntaxTree(text);
+
+            var oldNodes = oldTree.GetRoot().DescendantNodes().ToList();
+            var newNodes = newTree.GetRoot().DescendantNodes2().ToList();
+
+            var oldNodeSpanAndKind = oldNodes.Select(n => (n.FullSpan, n.RawKind)).ToList();
+            var newNodeSpanAndKind = newNodes.Select(n => (n.FullSpan, n.RawKind)).ToList();
+
+            Assert.True(newNodeSpanAndKind.SequenceEqual(oldNodeSpanAndKind));
+        }
+
+        [Fact]
+        public void TestDescendants2_EqualToOld_ForKind()
+        {
+            var text = System.IO.File.ReadAllText(@"d:\sources\Roslyn\src\Compilers\CSharp\Portable\Parser\LanguageParser.cs");
+            var oldTree = SyntaxFactory.ParseSyntaxTree(text);
+            var newTree = SyntaxFactory.ParseSyntaxTree(text);
+
+            var oldNodes = oldTree.GetRoot().DescendantNodes().Where(n => n is ConditionalExpressionSyntax).ToList();
+            var newNodes = newTree.GetRoot().DescendantNodes2(getNodeBehavior).ToList();
+
+            var oldNodeSpanAndKind = oldNodes.Select(n => (n.FullSpan, n.RawKind)).ToList();
+            var newNodeSpanAndKind = newNodes.Select(n => (n.FullSpan, n.RawKind)).ToList();
+
+            Assert.True(newNodeSpanAndKind.SequenceEqual(oldNodeSpanAndKind));
+
+            SyntaxNode.NodeTraversalBehavior getNodeBehavior(SyntaxNode.NodeTraversalContext context)
+            {
+                var includeInResult = context.Kind == (int)SyntaxKind.ConditionalExpression ? SyntaxNode.NodeTraversalBehavior.IncludeInResult : 0;
+
+                return includeInResult | SyntaxNode.NodeTraversalBehavior.TraverseInside;
+            }
+        }
+
+        [Fact]
+        public void TestDescendants2_EqualToOld_Directives()
+        {
+            var text = System.IO.File.ReadAllText(@"d:\sources\Roslyn\src\Compilers\CSharp\Portable\Parser\LanguageParser.cs");
+            var oldTree = SyntaxFactory.ParseSyntaxTree(text);
+            var newTree = SyntaxFactory.ParseSyntaxTree(text);
+
+            var oldNodes = oldTree.GetRoot().DescendantNodes(n => n.ContainsDirectives).ToList();
+            var newNodes = newTree.GetRoot().DescendantNodes2(getNodeBehavior).ToList();
+
+            var oldNodeSpanAndKind = oldNodes.Select(n => (n.FullSpan, n.RawKind)).ToList();
+            var newNodeSpanAndKind = newNodes.Select(n => (n.FullSpan, n.RawKind)).ToList();
+
+            Assert.True(newNodeSpanAndKind.SequenceEqual(oldNodeSpanAndKind));
+
+            SyntaxNode.NodeTraversalBehavior getNodeBehavior(SyntaxNode.NodeTraversalContext context)
+            {
+                var traverseInsideResult = context.ContainsDirectives ? SyntaxNode.NodeTraversalBehavior.TraverseInside : 0;
+
+                return traverseInsideResult | SyntaxNode.NodeTraversalBehavior.IncludeInResult;
+            }
+        }
+
+        [Fact]
+        public void TestDescendants2_EqualToOld_RandomSpan()
+        {
+            var text = System.IO.File.ReadAllText(@"d:\sources\Roslyn\src\Compilers\CSharp\Portable\Parser\LanguageParser.cs");
+            var oldTree = SyntaxFactory.ParseSyntaxTree(text);
+            var newTree = SyntaxFactory.ParseSyntaxTree(text);
+
+            var oldNodes = oldTree.GetRoot().DescendantNodes(new TextSpan(1000, 1000)).ToList();
+            var newNodes = newTree.GetRoot().DescendantNodes2(new TextSpan(1000, 1000)).ToList();
+
+            var oldNodeSpanAndKind = oldNodes.Select(n => (n.FullSpan, n.RawKind)).ToList();
+            var newNodeSpanAndKind = newNodes.Select(n => (n.FullSpan, n.RawKind)).ToList();
+
+            Assert.True(newNodeSpanAndKind.SequenceEqual(oldNodeSpanAndKind));
+        }
+
+        private static long s_AllNodes_Populated_OldTime = 0;
+        private static long s_AllNodes_Populated_NewTime = 0;
+        private static long s_AllNodes_Unpopulated_OldTime = 0;
+        private static long s_AllNodes_Unpopulated_NewTime = 0;
+        private static long s_UsingSpan_Populated_OldTime = 0;
+        private static long s_UsingSpan_Populated_NewTime = 0;
+        private static long s_UsingSpan_Unpopulated_OldTime = 0;
+        private static long s_UsingSpan_Unpopulated_NewTime = 0;
+        private static long s_WithTokens_Populated_OldTime = 0;
+        private static long s_WithTokens_Populated_NewTime = 0;
+        private static long s_WithTokens_Unpopulated_OldTime = 0;
+        private static long s_WithTokens_Unpopulated_NewTime = 0;
+        private static long s_UncommonKind_Populated_OldTime = 0;
+        private static long s_UncommonKind_Populated_NewTime = 0;
+        private static long s_UncommonKind_Unpopulated_OldTime = 0;
+        private static long s_UncommonKind_Unpopulated_NewTime = 0;
+
+        [Fact]
+        public void TestDescendants2_ForProfiling()
+        {
+            // System.Diagnostics.Debugger.Launch();
+
+            TestDescendants2_ForProfiling_AllNodes();
+            //TestDescendants2_ForProfiling_UsingSpan();
+            //TestDescendants2_ForProfiling_WithTokens();
+            TestDescendants2_ForProfiling_UncommonKind();
+
+            System.Diagnostics.Debugger.Launch();
+            System.Diagnostics.Debugger.Launch();
+        }
+
+        private void TestDescendants2_ForProfiling_AllNodes()
+        {
+            RunProfiling(
+                runOldAllNodes,
+                runNewAllNodes,
+                ref s_AllNodes_Populated_OldTime,
+                ref s_AllNodes_Populated_NewTime,
+                ref s_AllNodes_Unpopulated_OldTime,
+                ref s_AllNodes_Unpopulated_NewTime);
+
+            void runOldAllNodes(SyntaxNode root)
+            {
+                foreach (var _ in root.DescendantNodes()) ;
+            }
+
+            void runNewAllNodes(SyntaxNode root)
+            {
+                foreach (var _ in root.DescendantNodes2()) ;
+            }
+        }
+
+        private void TestDescendants2_ForProfiling_UsingSpan()
+        {
+            RunProfiling(
+                runOldUsingSpan,
+                runNewUsingSpan,
+                ref s_UsingSpan_Populated_OldTime,
+                ref s_UsingSpan_Populated_NewTime,
+                ref s_UsingSpan_Unpopulated_OldTime,
+                ref s_UsingSpan_Unpopulated_NewTime);
+
+            void runOldUsingSpan(SyntaxNode root)
+            {
+                TextSpan span = TextSpan.FromBounds(0, root.FullWidth);
+                foreach (var _ in root.DescendantNodes(span)) ;
+            }
+
+            void runNewUsingSpan(SyntaxNode root)
+            {
+                TextSpan span = TextSpan.FromBounds(0, root.FullWidth);
+                foreach (var _ in root.DescendantNodes2(span)) ;
+            }
+        }
+
+        private void TestDescendants2_ForProfiling_WithTokens()
+        {
+            RunProfiling(
+                runOldWithTokens,
+                runNewWithTokens,
+                ref s_WithTokens_Populated_OldTime,
+                ref s_WithTokens_Populated_NewTime,
+                ref s_WithTokens_Unpopulated_OldTime,
+                ref s_WithTokens_Unpopulated_NewTime);
+
+            void runOldWithTokens(SyntaxNode root)
+            {
+                foreach (var _ in root.DescendantNodesAndTokens()) ;
+            }
+
+            void runNewWithTokens(SyntaxNode root)
+            {
+                foreach (var _ in root.DescendantNodesAndTokens2()) ;
+            }
+        }
+
+        private void TestDescendants2_ForProfiling_UncommonKind()
+        {
+            RunProfiling(
+                runOldAllUncommonKind,
+                runNewUncommonKind,
+                ref s_UncommonKind_Populated_OldTime,
+                ref s_UncommonKind_Populated_NewTime,
+                ref s_UncommonKind_Unpopulated_OldTime,
+                ref s_UncommonKind_Unpopulated_NewTime);
+
+            void runOldAllUncommonKind(SyntaxNode root)
+            {
+                foreach (var _ in root.DescendantNodes()) ;
+            }
+
+            void runNewUncommonKind(SyntaxNode root)
+            {
+                foreach (var _ in root.DescendantNodes2()) ;
+            }
+        }
+
+        private void RunProfiling(
+            Action<SyntaxNode> runOld,
+            Action<SyntaxNode> runNew,
+            ref long populated_OldTime,
+            ref long populated_NewTime,
+            ref long unpopulated_OldTime,
+            ref long unpopulated_NewTime)
+        {
+            RunProfilingWithPopulated(runOld, runNew, ref populated_OldTime, ref populated_NewTime);
+            RunProfilingWithUnpopulated(runOld, runNew, ref unpopulated_OldTime, ref unpopulated_NewTime);
+        }
+
+        private void RunProfilingWithPopulated(Action<SyntaxNode> runOld, Action<SyntaxNode> runNew, ref long oldTime, ref long newTime)
+        {
+            var roots = GetRoots(populated: true);
+
+            Stopwatch swOld = Stopwatch.StartNew();
+            foreach (var root in roots)
+                runOld(root);
+
+            swOld.Stop();
+            oldTime = swOld.ElapsedMilliseconds;
+
+            roots = GetRoots(populated: true);
+            Stopwatch swNew = Stopwatch.StartNew();
+            foreach (var root in roots)
+                runNew(root);
+
+            swNew.Stop();
+            newTime = swNew.ElapsedMilliseconds;
+        }
+
+        private void RunProfilingWithUnpopulated(Action<SyntaxNode> runOld, Action<SyntaxNode> runNew, ref long oldTime, ref long newTime)
+        {
+            var roots = GetRoots(populated: false);
+
+            Stopwatch swOld = Stopwatch.StartNew();
+            foreach (var root in roots)
+                runOld(root);
+
+            swOld.Stop();
+            oldTime = swOld.ElapsedMilliseconds;
+
+            roots = GetRoots(populated: false);
+            Stopwatch swNew = Stopwatch.StartNew();
+            foreach (var root in roots)
+                runNew(root);
+
+            swNew.Stop();
+            newTime = swNew.ElapsedMilliseconds;
+        }
+
+        private SyntaxNode[] GetRoots(bool populated)
+        {
+            const int rootCount = 1000;
+            var text = System.IO.File.ReadAllText(@"d:\sources\Roslyn\src\Compilers\CSharp\Portable\Parser\LanguageParser.cs");
+            var roots = new SyntaxNode[rootCount];
+
+            if (populated)
+            {
+                var root = SyntaxFactory.ParseSyntaxTree(text).GetRoot();
+                root.DescendantNodes().ToList(); // Realize all the nodes
+                for (int i = 0; i < rootCount; i++)
+                {
+                    roots[i] = root;
+                }
+            }
+            else
+            {
+                for (int i = 0; i < rootCount; i++)
+                {
+                    var root = SyntaxFactory.ParseSyntaxTree(text).GetRoot();
+                    roots[i] = root;
+                }
+            }
+
+            return roots;
+        }
+
+        [Fact]
+        public void TestDescendantsAndTokens2_EqualToOld_All()
+        {
+            var text = System.IO.File.ReadAllText(@"d:\sources\Roslyn\src\Compilers\CSharp\Portable\Parser\LanguageParser.cs");
+            var oldTree = SyntaxFactory.ParseSyntaxTree(text);
+            var newTree = SyntaxFactory.ParseSyntaxTree(text);
+
+            var oldNodes = oldTree.GetRoot().DescendantNodesAndTokens().ToList();
+            var newNodes = newTree.GetRoot().DescendantNodesAndTokens2().ToList();
+
+            var oldNodeSpanAndKind = oldNodes.Select(n => (n.FullSpan, n.RawKind)).ToList();
+            var newNodeSpanAndKind = newNodes.Select(n => (n.FullSpan, n.RawKind)).ToList();
+
+            Assert.True(newNodeSpanAndKind.SequenceEqual(oldNodeSpanAndKind));
+        }
+
+        [Fact]
+        public void TestDescendantsAndTokens2_EqualToOld_OnlyTokens()
+        {
+            var text = System.IO.File.ReadAllText(@"d:\sources\Roslyn\src\Compilers\CSharp\Portable\Parser\LanguageParser.cs");
+            var oldTree = SyntaxFactory.ParseSyntaxTree(text);
+            var newTree = SyntaxFactory.ParseSyntaxTree(text);
+
+            var oldNodes = oldTree.GetRoot().DescendantNodesAndTokens().Where(n => n.IsToken).ToList();
+            var newNodes = newTree.GetRoot().DescendantNodesAndTokens2(getNodeBehavior).ToList();
+
+            var oldNodeSpanAndKind = oldNodes.Select(n => (n.FullSpan, n.RawKind)).ToList();
+            var newNodeSpanAndKind = newNodes.Select(n => (n.FullSpan, n.RawKind)).ToList();
+
+            Assert.True(newNodeSpanAndKind.SequenceEqual(oldNodeSpanAndKind));
+
+            SyntaxNode.NodeTraversalBehavior getNodeBehavior(SyntaxNode.NodeTraversalContext context)
+            {
+                return SyntaxNode.NodeTraversalBehavior.TraverseInside;
+            }
         }
 
         [Fact]

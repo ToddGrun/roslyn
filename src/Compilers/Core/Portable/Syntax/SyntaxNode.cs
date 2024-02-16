@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -11,6 +12,8 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using Microsoft.CodeAnalysis.ErrorReporting;
+using Microsoft.CodeAnalysis.PooledObjects;
+using Microsoft.CodeAnalysis.Syntax.InternalSyntax;
 using Microsoft.CodeAnalysis.Text;
 using Roslyn.Utilities;
 
@@ -882,6 +885,337 @@ namespace Microsoft.CodeAnalysis
         public IEnumerable<SyntaxNode> DescendantNodes(TextSpan span, Func<SyntaxNode, bool>? descendIntoChildren = null, bool descendIntoTrivia = false)
         {
             return DescendantNodesImpl(span, descendIntoChildren, descendIntoTrivia, includeSelf: false);
+        }
+
+        [Flags]
+        public enum NodeTraversalBehavior
+        {
+            TraverseInside = 1,
+            IncludeInResult = 2
+        }
+
+        public readonly struct NodeTraversalContext
+        {
+            public NodeTraversalContext(int kind, bool containsDirectives)
+            {
+                Kind = kind;
+                ContainsDirectives = containsDirectives;
+            }
+
+            public bool ContainsDirectives { get; }
+            public int Kind { get; }
+        }
+
+        /// <summary>
+        /// Gets a list of descendant nodes in prefix document order.
+        /// </summary>
+        public IEnumerable<SyntaxNode> DescendantNodes2()
+        {
+            return DescendantNodes2Helper(getNodeBehavior: null);
+        }
+
+        public IEnumerable<SyntaxNode> DescendantNodes2(Func<NodeTraversalContext, NodeTraversalBehavior> getNodeBehavior)
+        {
+            return DescendantNodes2Helper(getNodeBehavior);
+        }
+
+        public IEnumerable<SyntaxNode> DescendantNodes2(TextSpan span, Func<NodeTraversalContext, NodeTraversalBehavior>? getNodeBehavior = null)
+        {
+            return DescendantNodes2Helper(span, getNodeBehavior);
+        }
+
+        public IEnumerable<SyntaxNodeOrToken> DescendantNodesAndTokens2()
+        {
+            return DescendantNodesAndTokens2Helper(getNodeBehavior: null);
+        }
+
+        public IEnumerable<SyntaxNodeOrToken> DescendantNodesAndTokens2(Func<NodeTraversalContext, NodeTraversalBehavior> getNodeBehavior)
+        {
+            return DescendantNodesAndTokens2Helper(getNodeBehavior);
+        }
+
+        private IEnumerable<SyntaxNode> DescendantNodes2Helper(Func<NodeTraversalContext, NodeTraversalBehavior>? getNodeBehavior = null)
+        {
+            using var stack = new DescendantNodeEnumeratorStack();
+
+            return stack.GetNodes(this, getNodeBehavior);
+        }
+
+        private IEnumerable<SyntaxNodeOrToken> DescendantNodesAndTokens2Helper(Func<NodeTraversalContext, NodeTraversalBehavior>? getNodeBehavior = null)
+        {
+            using var stack = new DescendantNodeEnumeratorStack();
+
+            if (getNodeBehavior == null)
+                return stack.GetNodesAndTokens(this, getNodeBehavior: null);
+            else
+                return stack.GetNodesAndTokens(this, localGetNodeBehavior);
+
+            NodeTraversalBehavior localGetNodeBehavior(GreenNode node)
+            {
+                if (node.IsToken)
+                    return NodeTraversalBehavior.IncludeInResult;
+
+                var context = new NodeTraversalContext(node.RawKind, node.ContainsDirectives);
+                return getNodeBehavior(context);
+            }
+        }
+
+        //private SyntaxNode GetDeepestDescendantOrSelfContainingSpan(TextSpan span)
+        //{
+        //    var parent = this;
+        //    while (true)
+        //    {
+        //        var childContainingStart = parent.ChildThatContainsPosition(span.Start);
+        //        if (!childContainingStart.FullSpan.Contains(span.End))
+        //            return parent;
+
+        //        if (childContainingStart.IsToken)
+        //            return parent;
+
+        //        parent = childContainingStart.AsNode()!;
+        //    }
+        //}
+
+        private IEnumerable<SyntaxNode> DescendantNodes2Helper(TextSpan span, Func<NodeTraversalContext, NodeTraversalBehavior>? getNodeBehavior = null)
+        {
+            using var stack = new DescendantNodeEnumeratorStack();
+
+            var childStart = this.FullSpan.Start;
+            int spanStart = span.Start;
+            int spanEnd = span.End;
+
+            return stack.GetNodesAndTokens(this, localGetNodeBehavior).Select(n => n.AsNode()!);
+
+            NodeTraversalBehavior localGetNodeBehavior(GreenNode node)
+            {
+                var childEnd = childStart + node.FullWidth;
+                if (childEnd <= spanStart &&
+                    (childEnd < spanStart || childEnd != childStart))
+                {
+                    childStart = childEnd;
+                    return 0;
+                }
+
+                if (childStart >= spanEnd &&
+                    (childStart > spanEnd || childEnd != childStart))
+                {
+                    return 0;
+                }
+
+                if (node.IsToken)
+                {
+                    childStart = childEnd;
+                    return 0;
+                }
+
+                if (getNodeBehavior is null)
+                    return NodeTraversalBehavior.IncludeInResult | NodeTraversalBehavior.TraverseInside;
+
+                var context = new NodeTraversalContext(node.RawKind, node.ContainsDirectives);
+                var result = getNodeBehavior(context);
+
+                bool traverseInside = (result & NodeTraversalBehavior.TraverseInside) == NodeTraversalBehavior.TraverseInside;
+                if (!traverseInside)
+                {
+                    childStart = childEnd;
+                }
+
+                return result;
+            }
+        }
+
+        private record DescendantNodeEnumeratorStack : IDisposable
+        {
+            private static readonly ObjectPool<(SyntaxNode? RedParent, Syntax.InternalSyntax.ChildSyntaxList.Enumerator GreenChildren)[]> s_redParentAndGreenChildEnumeratorPool
+                = new(() => new (SyntaxNode?, Syntax.InternalSyntax.ChildSyntaxList.Enumerator)[24], 10);
+
+            private readonly (SyntaxNode? RedParent, Syntax.InternalSyntax.ChildSyntaxList.Enumerator GreenChildren)[] _stack;
+
+            public DescendantNodeEnumeratorStack()
+            {
+                _stack = s_redParentAndGreenChildEnumeratorPool.Allocate();
+            }
+
+            public IEnumerable<SyntaxNode> GetNodes(SyntaxNode startingNode, Func<NodeTraversalContext, NodeTraversalBehavior>? getNodeBehavior = null)
+            {
+                var stack = _stack;
+                var nextStackIndex = 0;
+                var redParent = startingNode;
+                var greenChildEnumerator = redParent.Green.ChildNodesAndTokens().GetEnumerator();
+                var includeInResult = true;
+                var traverseInside = true;
+
+                while (true)
+                {
+                    if (!greenChildEnumerator.MoveNext())
+                    {
+                        if (nextStackIndex == 0)
+                        {
+                            // We've finished enumerating this node's green children, we're done
+                            break;
+                        }
+
+                        // pop to the parent information
+                        nextStackIndex--;
+                        (redParent, greenChildEnumerator) = stack[nextStackIndex];
+
+                        continue;
+                    }
+
+                    var greenChild = greenChildEnumerator.Current;
+                    if (greenChild.IsToken)
+                    {
+                        continue;
+                    }
+
+                    if (getNodeBehavior != null)
+                    {
+                        var context = new NodeTraversalContext(greenChild.RawKind, greenChild.ContainsDirectives);
+                        var childBehavior = getNodeBehavior(context);
+
+                        includeInResult = (childBehavior & NodeTraversalBehavior.IncludeInResult) == NodeTraversalBehavior.IncludeInResult;
+                        traverseInside = (childBehavior & NodeTraversalBehavior.TraverseInside) == NodeTraversalBehavior.TraverseInside;
+                    }
+
+                    SyntaxNode? redChild = null;
+                    if (includeInResult)
+                    {
+                        redParent ??= getRedParent(startingNode, stack, nextStackIndex);
+
+                        redChild = ChildSyntaxList.ItemInternalAsNode(redParent, greenChildEnumerator.CurrentIndex);
+                        yield return redChild!;
+                    }
+
+                    if (traverseInside)
+                    {
+                        if (nextStackIndex >= stack.Length)
+                        {
+                            // Geometric growth
+                            Array.Resize(ref stack, stack.Length * 2);
+                        }
+
+                        // store parent info in stacks before setting locals to child information
+                        stack[nextStackIndex] = (redParent, greenChildEnumerator);
+
+                        nextStackIndex++;
+
+                        redParent = redChild;
+                        greenChildEnumerator = greenChild.ChildNodesAndTokens().GetEnumerator();
+                    }
+                }
+            }
+
+            public IEnumerable<SyntaxNodeOrToken> GetNodesAndTokens(SyntaxNode startingNode, Func<GreenNode, NodeTraversalBehavior>? getNodeBehavior = null)
+            {
+                var stack = _stack;
+                var nextStackIndex = 0;
+                var redParent = startingNode;
+                var greenChildEnumerator = redParent.Green.ChildNodesAndTokens().GetEnumerator();
+                var includeInResult = true;
+                var traverseInside = true;
+
+                while (true)
+                {
+                    if (!greenChildEnumerator.MoveNext())
+                    {
+                        if (nextStackIndex == 0)
+                        {
+                            // We've finished enumerating this node's green children, we're done
+                            break;
+                        }
+
+                        // pop to the parent information
+                        nextStackIndex--;
+                        (redParent, greenChildEnumerator) = stack[nextStackIndex];
+
+                        continue;
+                    }
+
+                    var greenChild = greenChildEnumerator.Current;
+                    if (getNodeBehavior != null)
+                    {
+                        var childBehavior = getNodeBehavior(greenChild);
+
+                        includeInResult = (childBehavior & NodeTraversalBehavior.IncludeInResult) == NodeTraversalBehavior.IncludeInResult;
+                        traverseInside = (childBehavior & NodeTraversalBehavior.TraverseInside) == NodeTraversalBehavior.TraverseInside;
+                    }
+
+                    SyntaxNode? redChild = null;
+                    if (includeInResult)
+                    {
+                        redParent ??= getRedParent(startingNode, stack, nextStackIndex);
+
+                        if (greenChild.IsToken)
+                        {
+                            yield return ChildSyntaxList.ItemInternal(redParent, greenChildEnumerator.CurrentIndex);
+                            continue;
+                        }
+                        else
+                        {
+                            redChild = ChildSyntaxList.ItemInternalAsNode(redParent, greenChildEnumerator.CurrentIndex);
+                            yield return redChild;
+                        }
+                    }
+
+                    if (traverseInside)
+                    {
+                        if (nextStackIndex >= stack.Length)
+                        {
+                            // Geometric growth
+                            Array.Resize(ref stack, stack.Length * 2);
+                        }
+
+                        // store parent info in stacks before setting locals to child information
+                        stack[nextStackIndex] = (redParent, greenChildEnumerator);
+
+                        nextStackIndex++;
+
+                        redParent = redChild;
+                        greenChildEnumerator = greenChild.ChildNodesAndTokens().GetEnumerator();
+                    }
+                }
+            }
+
+            private static SyntaxNode getRedParent(
+                SyntaxNode startingNode,
+                (SyntaxNode? RedParent, Syntax.InternalSyntax.ChildSyntaxList.Enumerator GreenChildren)[] stack,
+                int nextStackIndex)
+            {
+                var redParent = startingNode;
+                if (nextStackIndex > 0)
+                {
+                    for (int i = 1; i < nextStackIndex; i++)
+                    {
+                        var nextRedParentNode = stack[i].RedParent;
+
+                        if (nextRedParentNode == null)
+                        {
+                            var curChildIndex = stack[i - 1].GreenChildren.CurrentIndex;
+
+                            nextRedParentNode = ChildSyntaxList.ItemInternalAsNode(redParent, curChildIndex)!;
+
+                            stack[i].RedParent = nextRedParentNode;
+                        }
+
+                        redParent = nextRedParentNode;
+                    }
+
+                    var lastChildIndex = stack[nextStackIndex - 1].GreenChildren.CurrentIndex;
+                    redParent = ChildSyntaxList.ItemInternalAsNode(redParent, lastChildIndex)!;
+                }
+
+                return redParent;
+            }
+
+            public void Dispose()
+            {
+                // Return only reasonably-sized stacks to the pool.
+                if (_stack.Length < 256)
+                {
+                    Array.Clear(_stack, 0, _stack.Length);
+                    s_redParentAndGreenChildEnumeratorPool.Free(_stack);
+                }
+            }
         }
 
         /// <summary>

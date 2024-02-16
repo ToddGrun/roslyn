@@ -13,6 +13,7 @@ namespace Microsoft.CodeAnalysis.Syntax.InternalSyntax
             private GreenNode? _list;
             private int _listIndex;
             private GreenNode? _currentChild;
+            private int _currentIndex;
 
             internal Enumerator(GreenNode? node)
             {
@@ -21,7 +22,10 @@ namespace Microsoft.CodeAnalysis.Syntax.InternalSyntax
                 _listIndex = -1;
                 _list = null;
                 _currentChild = null;
+                _currentIndex = -1;
             }
+
+            public GreenNode? Node => _node;
 
             public bool MoveNext()
             {
@@ -34,6 +38,7 @@ namespace Microsoft.CodeAnalysis.Syntax.InternalSyntax
                         if (_listIndex < _list.SlotCount)
                         {
                             _currentChild = _list.GetSlot(_listIndex);
+                            _currentIndex++;
                             return true;
                         }
 
@@ -64,6 +69,7 @@ namespace Microsoft.CodeAnalysis.Syntax.InternalSyntax
                             if (_listIndex < _list.SlotCount)
                             {
                                 _currentChild = _list.GetSlot(_listIndex);
+                                _currentIndex++;
                                 return true;
                             }
                             else
@@ -76,6 +82,7 @@ namespace Microsoft.CodeAnalysis.Syntax.InternalSyntax
                         else
                         {
                             _currentChild = child;
+                            _currentIndex++;
                         }
 
                         return true;
@@ -89,6 +96,11 @@ namespace Microsoft.CodeAnalysis.Syntax.InternalSyntax
             public GreenNode Current
             {
                 get { return _currentChild!; }
+            }
+
+            public int CurrentIndex
+            {
+                get { return _currentIndex; }
             }
         }
     }
