@@ -1678,10 +1678,15 @@ namespace Microsoft.CodeAnalysis.CSharp
                 lookupResult.Free();
             }
 
-            ImmutableArray<ISymbol> sealedResults = results.ToImmutableAndFree();
+            if (name == null)
+            {
+                var referenceable = FilterNotReferenceableAndFree(results);
+                results.Free();
+
+                return referenceable;
+            }
             return name == null
-                ? FilterNotReferencable(sealedResults)
-                : sealedResults;
+                : results.ToImmutableAndFree();
         }
 
         private void AppendSymbolsWithName(ArrayBuilder<ISymbol> results, string name, Binder binder, NamespaceOrTypeSymbol container, LookupOptions options, LookupSymbolsInfo info)
@@ -1795,8 +1800,15 @@ namespace Microsoft.CodeAnalysis.CSharp
         /// </summary>
         internal abstract Symbol RemapSymbolIfNecessaryCore(Symbol symbol);
 
-        private static ImmutableArray<ISymbol> FilterNotReferencable(ImmutableArray<ISymbol> sealedResults)
+        private static ImmutableArray<ISymbol> FilterNotReferenceableAndFree(ArrayBuilder<ISymbol> sealedResults)
         {
+            var cannotBeReferencedByNameCount = sealedResults.Count(static s => !s.CanBeReferencedByName);
+
+            if (cannotBeReferencedByNameCount == 0)
+                return sealedResults.ToImmutable();
+
+            sealedResults.WhereAsArray
+
             ArrayBuilder<ISymbol> builder = null;
             int pos = 0;
             foreach (var result in sealedResults)
