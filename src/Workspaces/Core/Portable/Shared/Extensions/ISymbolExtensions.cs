@@ -648,9 +648,9 @@ namespace Microsoft.CodeAnalysis.Shared.Extensions
         /// attribute.
         /// </summary>
         public static ImmutableArray<T> FilterToVisibleAndBrowsableSymbols<T>(
-            this ImmutableArray<T> symbols, bool hideAdvancedMembers, Compilation compilation) where T : ISymbol
+            this ImmutableArray<T> symbols, bool hideAdvancedMembers, Compilation compilation, Func<T, bool>? additionalFilter = null) where T : ISymbol
         {
-            symbols = symbols.RemoveOverriddenSymbolsWithinSet();
+            var overriddenMemberSet = symbols.GetOverriddenMemberSet();
 
             // Since all symbols are from the same compilation, find the required attribute
             // constructors once and reuse.
@@ -660,6 +660,8 @@ namespace Microsoft.CodeAnalysis.Shared.Extensions
             // check to see if we're referencing a symbol defined in source.
             static bool isSymbolDefinedInSource(Location l) => l.IsInSource;
             return symbols.WhereAsArray((s, arg) =>
+                (arg.additionalFilter == null || arg.additionalFilter(s)) &&
+                !arg.overriddenMemberSet.Contains(s) &&
                 // Check if symbol is namespace (which is always visible) first to avoid realizing all locations
                 // of each namespace symbol, which might end up allocating in LOH
                 (s.IsNamespace() || s.Locations.Any(isSymbolDefinedInSource) || !s.HasUnsupportedMetadata) &&
@@ -668,28 +670,27 @@ namespace Microsoft.CodeAnalysis.Shared.Extensions
                     arg.hideAdvancedMembers,
                     arg.editorBrowsableInfo.Compilation,
                     arg.editorBrowsableInfo),
-                (hideAdvancedMembers, editorBrowsableInfo));
+                (hideAdvancedMembers, editorBrowsableInfo, overriddenMemberSet, additionalFilter));
         }
 
-        private static ImmutableArray<T> RemoveOverriddenSymbolsWithinSet<T>(this ImmutableArray<T> symbols) where T : ISymbol
+        private static MetadataUnifyingSymbolHashSet GetOverriddenMemberSet<T>(this ImmutableArray<T> symbols) where T : ISymbol
         {
             var overriddenSymbols = new MetadataUnifyingSymbolHashSet();
 
             foreach (var symbol in symbols)
             {
                 var overriddenMember = symbol.GetOverriddenMember();
-                if (overriddenMember != null && !overriddenSymbols.Contains(overriddenMember))
+                if (overriddenMember != null)
                     overriddenSymbols.Add(overriddenMember);
             }
 
-            return symbols.WhereAsArray(s => !overriddenSymbols.Contains(s));
+            return overriddenSymbols;
         }
 
         public static ImmutableArray<T> FilterToVisibleAndBrowsableSymbolsAndNotUnsafeSymbols<T>(
             this ImmutableArray<T> symbols, bool hideAdvancedMembers, Compilation compilation) where T : ISymbol
         {
-            return symbols.FilterToVisibleAndBrowsableSymbols(hideAdvancedMembers, compilation)
-                .WhereAsArray(s => !s.RequiresUnsafeModifier());
+            return symbols.FilterToVisibleAndBrowsableSymbols(hideAdvancedMembers, compilation, static s => !s.RequiresUnsafeModifier());
         }
     }
 }
