@@ -921,7 +921,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                 }
 
                 public override AssemblyReferenceBinding[] BindAssemblyReferences(
-                    MultiDictionary<string, (AssemblyData DefinitionData, int DefinitionIndex)> assemblies, AssemblyIdentityComparer assemblyIdentityComparer)
+                    AssemblyDataMapping assemblies, AssemblyIdentityComparer assemblyIdentityComparer)
                 {
                     return ResolveReferencedAssemblies(_referencedAssemblies, assemblies, resolveAgainstAssemblyBeingBuilt: true, assemblyIdentityComparer: assemblyIdentityComparer);
                 }

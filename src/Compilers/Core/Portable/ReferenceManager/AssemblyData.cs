@@ -55,7 +55,7 @@ namespace Microsoft.CodeAnalysis
             /// For each assembly referenced by this assembly (<see cref="AssemblyReferences"/>) 
             /// a description of how it binds to one of the input assemblies.
             /// </returns>
-            public abstract AssemblyReferenceBinding[] BindAssemblyReferences(MultiDictionary<string, (AssemblyData DefinitionData, int DefinitionIndex)> assemblies, AssemblyIdentityComparer assemblyIdentityComparer);
+            public abstract AssemblyReferenceBinding[] BindAssemblyReferences(AssemblyDataMapping assemblies, AssemblyIdentityComparer assemblyIdentityComparer);
 
             public abstract bool ContainsNoPiaLocalTypes { get; }
 

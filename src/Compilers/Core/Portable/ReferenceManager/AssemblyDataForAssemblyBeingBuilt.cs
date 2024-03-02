@@ -78,7 +78,7 @@ namespace Microsoft.CodeAnalysis
             }
 
             public override AssemblyReferenceBinding[] BindAssemblyReferences(
-                MultiDictionary<string, (AssemblyData DefinitionData, int DefinitionIndex)> assemblies,
+                AssemblyDataMapping assemblies,
                 AssemblyIdentityComparer assemblyIdentityComparer)
             {
                 var boundReferences = new AssemblyReferenceBinding[_referencedAssemblies.Length];

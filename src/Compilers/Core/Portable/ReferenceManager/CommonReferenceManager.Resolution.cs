@@ -890,7 +890,7 @@ namespace Microsoft.CodeAnalysis
 
         internal static AssemblyReferenceBinding[] ResolveReferencedAssemblies(
             ImmutableArray<AssemblyIdentity> references,
-            MultiDictionary<string, (AssemblyData DefinitionData, int DefinitionIndex)> definitions,
+            AssemblyDataMapping definitions,
             bool resolveAgainstAssemblyBeingBuilt,
             AssemblyIdentityComparer assemblyIdentityComparer)
         {
@@ -915,7 +915,7 @@ namespace Microsoft.CodeAnalysis
         /// </returns>
         internal static AssemblyReferenceBinding ResolveReferencedAssembly(
             AssemblyIdentity reference,
-            MultiDictionary<string, (AssemblyData DefinitionData, int DefinitionIndex)> definitions,
+            AssemblyDataMapping definitions,
             bool resolveAgainstAssemblyBeingBuilt,
             AssemblyIdentityComparer assemblyIdentityComparer)
         {

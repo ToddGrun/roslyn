@@ -784,7 +784,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic
                     End Get
                 End Property
 
-                Public Overrides Function BindAssemblyReferences(assemblies As MultiDictionary(Of String, (DefinitionData As AssemblyData, DefinitionIndex As Integer)), assemblyIdentityComparer As AssemblyIdentityComparer) As AssemblyReferenceBinding()
+                Public Overrides Function BindAssemblyReferences(assemblies As AssemblyDataMapping, assemblyIdentityComparer As AssemblyIdentityComparer) As AssemblyReferenceBinding()
                     Return ResolveReferencedAssemblies(_referencedAssemblies, assemblies, resolveAgainstAssemblyBeingBuilt:=True, assemblyIdentityComparer:=assemblyIdentityComparer)
                 End Function
 
