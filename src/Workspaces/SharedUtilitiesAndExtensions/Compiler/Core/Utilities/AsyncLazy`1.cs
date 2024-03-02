@@ -13,14 +13,77 @@ namespace Roslyn.Utilities;
 
 internal static class AsyncLazy
 {
+    public static AsyncLazyWithData<T, TData> Create<T, TData>(Func<TData, CancellationToken, Task<T>> asynchronousComputeFunction, TData data)
+        => new AsyncLazyWithData<T, TData>(asynchronousComputeFunction, data);
+
     public static AsyncLazy<T> Create<T>(Func<CancellationToken, Task<T>> asynchronousComputeFunction)
-        => new(asynchronousComputeFunction);
+        => new AsyncLazyWithoutData<T>(asynchronousComputeFunction);
 
     public static AsyncLazy<T> Create<T>(Func<CancellationToken, T> synchronousComputeFunction)
-        => new(cancellationToken => Task.FromResult(synchronousComputeFunction(cancellationToken)), synchronousComputeFunction);
+        => new AsyncLazyWithoutData<T>(cancellationToken => Task.FromResult(synchronousComputeFunction(cancellationToken)), synchronousComputeFunction);
 
     public static AsyncLazy<T> Create<T>(T value)
-        => new(value);
+        => new AsyncLazyWithoutData<T>(value);
+}
+
+internal sealed class AsyncLazyWithData<T, TData> : AsyncLazy<T>
+{
+    /// <summary>
+    /// The underlying function that starts an asynchronous computation of the resulting value.
+    /// Null'ed out once we've computed the result and we've been asked to cache it.  Otherwise,
+    /// it is kept around in case the value needs to be computed again.
+    /// </summary>
+    private Func<TData, CancellationToken, Task<T>>? _asynchronousComputeFunction;
+
+    /// <summary>
+    /// The underlying function that starts a synchronous computation of the resulting value.
+    /// Null'ed out once we've computed the result and we've been asked to cache it, or if we
+    /// didn't get any synchronous function given to us in the first place.
+    /// </summary>
+    private Func<TData, CancellationToken, T>? _synchronousComputeFunction;
+
+    private readonly TData _data;
+
+    public AsyncLazyWithData(Func<TData, CancellationToken, Task<T>> asynchronousComputeFunction, TData data)
+        : this(asynchronousComputeFunction, synchronousComputeFunction: null, data)
+    {
+    }
+
+    public AsyncLazyWithData(Func<TData, CancellationToken, Task<T>> asynchronousComputeFunction, Func<TData, CancellationToken, T>? synchronousComputeFunction, TData data)
+    {
+        Contract.ThrowIfNull(asynchronousComputeFunction);
+        _asynchronousComputeFunction = asynchronousComputeFunction;
+        _synchronousComputeFunction = synchronousComputeFunction;
+        _data = data;
+    }
+
+    protected override bool HasAsynchronousComputeFunction()
+        => true;
+
+    protected override bool HasSynchronousComputeFunction()
+    {
+        return _synchronousComputeFunction is not null;
+    }
+
+    protected override T InvokeComputeFunction(CancellationToken cancellationToken)
+    {
+        Contract.ThrowIfNull(_synchronousComputeFunction);
+
+        return _synchronousComputeFunction(_data, cancellationToken);
+    }
+
+    protected override Task<T> InvokeComputeFunctionAsync(CancellationToken cancellationToken)
+    {
+        Contract.ThrowIfNull(_asynchronousComputeFunction);
+
+        return _asynchronousComputeFunction(_data, cancellationToken);
+    }
+
+    protected override void ResetComputeFunctions()
+    {
+        _asynchronousComputeFunction = null;
+        _synchronousComputeFunction = null;
+    }
 }
 
 /// <summary>
@@ -34,7 +97,7 @@ internal static class AsyncLazy
 /// cached for future requests or not. Choosing to not cache means the computation functions are kept
 /// alive, whereas caching means the value (but not functions) are kept alive once complete.
 /// </summary>
-internal sealed class AsyncLazy<T>
+internal sealed class AsyncLazyWithoutData<T> : AsyncLazy<T>
 {
     /// <summary>
     /// The underlying function that starts an asynchronous computation of the resulting value.
@@ -50,6 +113,58 @@ internal sealed class AsyncLazy<T>
     /// </summary>
     private Func<CancellationToken, T>? _synchronousComputeFunction;
 
+    /// <summary>
+    /// Creates an AsyncLazy that always returns the value, analogous to <see cref="Task.FromResult{T}" />.
+    /// </summary>
+    public AsyncLazyWithoutData(T value)
+        : base(value)
+    {
+    }
+
+    public AsyncLazyWithoutData(Func<CancellationToken, Task<T>> asynchronousComputeFunction)
+        : this(asynchronousComputeFunction, synchronousComputeFunction: null)
+    {
+    }
+
+    public AsyncLazyWithoutData(Func<CancellationToken, Task<T>> asynchronousComputeFunction, Func<CancellationToken, T>? synchronousComputeFunction)
+    {
+        Contract.ThrowIfNull(asynchronousComputeFunction);
+        _asynchronousComputeFunction = asynchronousComputeFunction;
+        _synchronousComputeFunction = synchronousComputeFunction;
+    }
+
+    protected override bool HasAsynchronousComputeFunction()
+        => true;
+
+    protected override bool HasSynchronousComputeFunction()
+    {
+        return _synchronousComputeFunction is not null;
+    }
+
+    protected override T InvokeComputeFunction(CancellationToken cancellationToken)
+    {
+        Contract.ThrowIfNull(_synchronousComputeFunction);
+
+        return _synchronousComputeFunction(cancellationToken);
+    }
+
+    protected override Task<T> InvokeComputeFunctionAsync(CancellationToken cancellationToken)
+    {
+        Contract.ThrowIfNull(_asynchronousComputeFunction);
+
+        return _asynchronousComputeFunction(cancellationToken);
+
+    }
+
+    protected override void ResetComputeFunctions()
+    {
+        _asynchronousComputeFunction = null;
+        _synchronousComputeFunction = null;
+    }
+}
+
+internal abstract class AsyncLazy<T>
+{
     /// <summary>
     /// The Task that holds the cached result.
     /// </summary>
@@ -87,26 +202,8 @@ internal sealed class AsyncLazy<T>
     public AsyncLazy(T value)
         => _cachedResult = Task.FromResult(value);
 
-    public AsyncLazy(Func<CancellationToken, Task<T>> asynchronousComputeFunction)
-        : this(asynchronousComputeFunction, synchronousComputeFunction: null)
+    public AsyncLazy()
     {
-    }
-
-    /// <summary>
-    /// Creates an AsyncLazy that supports both asynchronous computation and inline synchronous
-    /// computation.
-    /// </summary>
-    /// <param name="asynchronousComputeFunction">A function called to start the asynchronous
-    /// computation. This function should be cheap and non-blocking.</param>
-    /// <param name="synchronousComputeFunction">A function to do the work synchronously, which
-    /// is allowed to block. This function should not be implemented by a simple Wait on the
-    /// asynchronous value. If that's all you are doing, just don't pass a synchronous function
-    /// in the first place.</param>
-    public AsyncLazy(Func<CancellationToken, Task<T>> asynchronousComputeFunction, Func<CancellationToken, T>? synchronousComputeFunction)
-    {
-        Contract.ThrowIfNull(asynchronousComputeFunction);
-        _asynchronousComputeFunction = asynchronousComputeFunction;
-        _synchronousComputeFunction = synchronousComputeFunction;
     }
 
     #region Lock Wrapper for Invariant Checking
@@ -130,6 +227,14 @@ internal sealed class AsyncLazy<T>
         }
     }
 
+    protected abstract bool HasSynchronousComputeFunction();
+    protected abstract bool HasAsynchronousComputeFunction();
+
+    protected abstract T InvokeComputeFunction(CancellationToken cancellationToken);
+    protected abstract Task<T> InvokeComputeFunctionAsync(CancellationToken cancellationToken);
+
+    protected abstract void ResetComputeFunctions();
+
     private void AssertInvariants_NoLock()
     {
         // Invariant #1: thou shalt never have an asynchronous computation running without it
@@ -148,11 +253,11 @@ internal sealed class AsyncLazy<T>
 
         // Invariant #4: thou shalt never have a cached value and any computation function
         Contract.ThrowIfTrue(_cachedResult != null &&
-                             (_synchronousComputeFunction != null || _asynchronousComputeFunction != null));
+                             (HasSynchronousComputeFunction() || HasAsynchronousComputeFunction()));
 
         // Invariant #5: thou shalt never have a synchronous computation function but not an
         // asynchronous one
-        Contract.ThrowIfTrue(_asynchronousComputeFunction == null && _synchronousComputeFunction != null);
+        Contract.ThrowIfTrue(!HasAsynchronousComputeFunction() && HasSynchronousComputeFunction());
     }
 
     #endregion
@@ -197,7 +302,7 @@ internal sealed class AsyncLazy<T>
             {
                 request = CreateNewRequest_NoLock();
             }
-            else if (_synchronousComputeFunction == null)
+            else if (!HasSynchronousComputeFunction())
             {
                 // A synchronous request, but we have no synchronous function. Start off the async work
                 request = CreateNewRequest_NoLock();
@@ -232,14 +337,14 @@ internal sealed class AsyncLazy<T>
         }
         else
         {
-            Contract.ThrowIfNull(_synchronousComputeFunction);
+            Contract.ThrowIfFalse(!HasSynchronousComputeFunction());
 
             T result;
 
             // We are the active computation, so let's go ahead and compute.
             try
             {
-                result = _synchronousComputeFunction(cancellationToken);
+                result = InvokeComputeFunction(cancellationToken);
             }
             catch (OperationCanceledException)
             {
@@ -350,12 +455,12 @@ internal sealed class AsyncLazy<T>
     private AsynchronousComputationToStart RegisterAsynchronousComputation_NoLock()
     {
         Contract.ThrowIfTrue(_computationActive);
-        Contract.ThrowIfNull(_asynchronousComputeFunction);
+        Contract.ThrowIfFalse(HasAsynchronousComputeFunction());
 
         _asynchronousComputationCancellationSource = new CancellationTokenSource();
         _computationActive = true;
 
-        return new AsynchronousComputationToStart(_asynchronousComputeFunction, _asynchronousComputationCancellationSource);
+        return new AsynchronousComputationToStart(InvokeComputeFunctionAsync, _asynchronousComputationCancellationSource);
     }
 
     private readonly struct AsynchronousComputationToStart(Func<CancellationToken, Task<T>> asynchronousComputeFunction, CancellationTokenSource cancellationTokenSource)
@@ -465,8 +570,7 @@ internal sealed class AsyncLazy<T>
             // Hold onto the completed task. We can get rid of the computation functions for good
             _cachedResult = task;
 
-            _asynchronousComputeFunction = null;
-            _synchronousComputeFunction = null;
+            ResetComputeFunctions();
         }
 
         return task;

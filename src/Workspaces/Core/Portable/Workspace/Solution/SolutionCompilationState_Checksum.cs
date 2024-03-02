@@ -79,7 +79,7 @@ internal partial class SolutionCompilationState
 
         // Extracted as a local function to prevent delegate allocations when not needed.
         AsyncLazy<SolutionCompilationStateChecksums> Compute(ProjectId projectId)
-            => AsyncLazy.Create(c => ComputeChecksumsAsync(projectId, c));
+            => AsyncLazy.Create(static (data, c) => ComputeChecksumsAsync(data.self, data.projectId, c), (self: this, projectId));
     }
 
     /// <summary>Gets the checksum for only the requested project (and any project it depends on)</summary>
@@ -89,28 +89,29 @@ internal partial class SolutionCompilationState
         return checksums.Checksum;
     }
 
-    private async Task<SolutionCompilationStateChecksums> ComputeChecksumsAsync(
+    private static async Task<SolutionCompilationStateChecksums> ComputeChecksumsAsync(
+        SolutionCompilationState self,
         ProjectId? projectId,
         CancellationToken cancellationToken)
     {
         try
         {
-            using (Logger.LogBlock(FunctionId.SolutionCompilationState_ComputeChecksumsAsync, this.SolutionState.FilePath, cancellationToken))
+            using (Logger.LogBlock(FunctionId.SolutionCompilationState_ComputeChecksumsAsync, self.SolutionState.FilePath, cancellationToken))
             {
                 var solutionStateChecksum = projectId == null
-                    ? await this.SolutionState.GetChecksumAsync(cancellationToken).ConfigureAwait(false)
-                    : await this.SolutionState.GetChecksumAsync(projectId, cancellationToken).ConfigureAwait(false);
+                    ? await self.SolutionState.GetChecksumAsync(cancellationToken).ConfigureAwait(false)
+                    : await self.SolutionState.GetChecksumAsync(projectId, cancellationToken).ConfigureAwait(false);
 
                 ChecksumCollection? frozenSourceGeneratedDocumentIdentities = null;
                 ChecksumsAndIds<DocumentId>? frozenSourceGeneratedDocuments = null;
 
-                if (FrozenSourceGeneratedDocumentStates.HasValue)
+                if (self.FrozenSourceGeneratedDocumentStates.HasValue)
                 {
-                    var serializer = this.SolutionState.Services.GetRequiredService<ISerializerService>();
-                    var identityChecksums = FrozenSourceGeneratedDocumentStates.Value
+                    var serializer = self.SolutionState.Services.GetRequiredService<ISerializerService>();
+                    var identityChecksums = self.FrozenSourceGeneratedDocumentStates.Value
                         .SelectAsArray(static (s, arg) => arg.serializer.CreateChecksum(s.Identity, cancellationToken: arg.cancellationToken), (serializer, cancellationToken));
                     frozenSourceGeneratedDocumentIdentities = new ChecksumCollection(identityChecksums);
-                    frozenSourceGeneratedDocuments = await FrozenSourceGeneratedDocumentStates.Value.GetChecksumsAndIdsAsync(cancellationToken).ConfigureAwait(false);
+                    frozenSourceGeneratedDocuments = await self.FrozenSourceGeneratedDocumentStates.Value.GetChecksumsAndIdsAsync(cancellationToken).ConfigureAwait(false);
                 }
 
                 return new SolutionCompilationStateChecksums(
