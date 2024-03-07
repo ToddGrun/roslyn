@@ -21,7 +21,7 @@ internal partial class SolutionCompilationState
     /// <see cref="SolutionState"/>, as well as the checksums for <see cref="FrozenSourceGeneratedDocumentStates"/>
     /// if present.
     /// </summary>
-    private readonly AsyncLazy<SolutionCompilationStateChecksums> _lazyChecksums;
+    private readonly AsyncLazy<SolutionCompilationStateChecksums, SolutionCompilationState> _lazyChecksums;
 
     /// <summary>
     /// Mapping from project-id to the checksums needed to synchronize it over to an OOP host.  Lock this specific
