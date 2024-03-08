@@ -51,14 +51,14 @@ internal sealed class AsyncLazyWithoutArg<T> : AsyncLazy<T>
     protected override bool HasAsynchronousComputeFunction => _asynchronousComputeFunction is not null;
     protected override bool HasSynchronousComputeFunction => _synchronousComputeFunction is not null;
 
-    protected override T InvokeComputeFunction(CancellationToken cancellationToken)
+    protected override T InvokeComputeFunctionCore(CancellationToken cancellationToken)
     {
         Contract.ThrowIfNull(_synchronousComputeFunction);
 
         return _synchronousComputeFunction(cancellationToken);
     }
 
-    protected override Task<T> InvokeComputeFunctionAsync(CancellationToken cancellationToken)
+    protected override Task<T> InvokeComputeFunctionCoreAsync(CancellationToken cancellationToken)
     {
         Contract.ThrowIfNull(_asynchronousComputeFunction);
 

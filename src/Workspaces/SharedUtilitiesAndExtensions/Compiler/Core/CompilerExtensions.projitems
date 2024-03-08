@@ -554,6 +554,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Utilities\SignatureComparer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utilities\SoftCrashException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utilities\SpecializedTasks.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utilities\StateLease.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utilities\StringBreaker.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utilities\ValueTaskExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utilities\WeakEvent`1.cs" />

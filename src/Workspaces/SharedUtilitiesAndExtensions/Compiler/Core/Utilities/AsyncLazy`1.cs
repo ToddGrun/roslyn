@@ -56,6 +56,16 @@ internal abstract class AsyncLazy<T>
     private bool _computationActive;
 
     /// <summary>
+    /// <para>A lightweight lease to ensure transient state is not cleared prior to its last access. Owners interact
+    /// with this lease through <see cref="TryLeaseState(out bool)"/> and <see cref="TryReleaseState(bool)"/>.</para>
+    ///
+    /// <para>The computation methods <see cref="InvokeComputeFunctionCore(CancellationToken)"/> and/or
+    /// <see cref="InvokeComputeFunctionCoreAsync(CancellationToken)"/> must only be invoked while a state lease is held by
+    /// the caller.</para>
+    /// </summary>
+    private StateLease _stateLease;
+
+    /// <summary>
     /// Creates an AsyncLazy that always returns the value, analogous to <see cref="Task.FromResult{T}" />.
     /// </summary>
     protected AsyncLazy(T value)
@@ -63,6 +73,7 @@ internal abstract class AsyncLazy<T>
 
     protected AsyncLazy()
     {
+        _stateLease = new StateLease(1);
     }
 
     #region Lock Wrapper for Invariant Checking
@@ -77,6 +88,16 @@ internal abstract class AsyncLazy<T>
         return new WaitThatValidatesInvariants(this);
     }
 
+    private void TryLeaseState(out bool isOwned)
+    {
+        StateLease.TryLease(ref _stateLease, out isOwned);
+    }
+
+    private void TryReleaseState(bool isOwned)
+    {
+        StateLease.TryRelease(ref _stateLease, isOwned, static self => self.ClearComputeFunctions(), this);
+    }
+
     private readonly struct WaitThatValidatesInvariants(AsyncLazy<T> asyncLazy) : IDisposable
     {
         public void Dispose()
@@ -89,8 +110,49 @@ internal abstract class AsyncLazy<T>
     protected abstract bool HasSynchronousComputeFunction { get; }
     protected abstract bool HasAsynchronousComputeFunction { get; }
 
-    protected abstract T InvokeComputeFunction(CancellationToken cancellationToken);
-    protected abstract Task<T> InvokeComputeFunctionAsync(CancellationToken cancellationToken);
+    protected abstract T InvokeComputeFunctionCore(CancellationToken cancellationToken);
+    protected abstract Task<T> InvokeComputeFunctionCoreAsync(CancellationToken cancellationToken);
+
+    private T InvokeComputeFunction(CancellationToken cancellationToken)
+    {
+        TryLeaseState(out var isOwned);
+        try
+        {
+            if (!isOwned)
+            {
+                var cachedResult = Volatile.Read(ref _cachedResult);
+                Contract.ThrowIfNull(cachedResult);
+
+                return cachedResult.VerifyCompleted();
+            }
+
+            return InvokeComputeFunctionCore(cancellationToken);
+        }
+        finally
+        {
+            TryReleaseState(isOwned);
+        }
+    }
+
+    private Task<T> InvokeComputeFunctionAsync(CancellationToken cancellationToken)
+    {
+        TryLeaseState(out var isOwned);
+        try
+        {
+            if (!isOwned)
+            {
+                var cachedResult = Volatile.Read(ref _cachedResult);
+                Contract.ThrowIfNull(cachedResult);
+                return cachedResult;
+            }
+
+            return InvokeComputeFunctionCoreAsync(cancellationToken);
+        }
+        finally
+        {
+            TryReleaseState(isOwned);
+        }
+    }
 
     protected abstract void ClearComputeFunctions();
 
@@ -146,7 +208,7 @@ internal abstract class AsyncLazy<T>
         }
 
         Request? request = null;
-        AsynchronousComputationToStart? newAsynchronousComputation = null;
+        AsynchronousComputationToStart newAsynchronousComputation = default;
 
         using (TakeLock(cancellationToken))
         {
@@ -183,9 +245,9 @@ internal abstract class AsyncLazy<T>
 
             // Since we already registered for cancellation, it's possible that the registration has
             // cancelled this new computation if we were the only requester.
-            if (newAsynchronousComputation != null)
+            if (newAsynchronousComputation.LazyForAsynchronousCompute != null)
             {
-                StartAsynchronousComputation(newAsynchronousComputation.Value, requestToCompleteSynchronously: request, callerCancellationToken: cancellationToken);
+                StartAsynchronousComputation(in newAsynchronousComputation, requestToCompleteSynchronously: request, callerCancellationToken: cancellationToken);
             }
 
             // The reason we have synchronous codepaths in AsyncLazy is to support the synchronous requests for syntax trees
@@ -223,9 +285,9 @@ internal abstract class AsyncLazy<T>
                     }
                 }
 
-                if (newAsynchronousComputation != null)
+                if (newAsynchronousComputation.LazyForAsynchronousCompute != null)
                 {
-                    StartAsynchronousComputation(newAsynchronousComputation.Value, requestToCompleteSynchronously: null, callerCancellationToken: cancellationToken);
+                    StartAsynchronousComputation(in newAsynchronousComputation, requestToCompleteSynchronously: null, callerCancellationToken: cancellationToken);
                 }
 
                 throw;
@@ -278,7 +340,7 @@ internal abstract class AsyncLazy<T>
         }
 
         Request request;
-        AsynchronousComputationToStart? newAsynchronousComputation = null;
+        AsynchronousComputationToStart newAsynchronousComputation = default;
 
         using (TakeLock(cancellationToken))
         {
@@ -303,9 +365,9 @@ internal abstract class AsyncLazy<T>
         // reentrancy
         request.RegisterForCancellation(OnAsynchronousRequestCancelled, cancellationToken);
 
-        if (newAsynchronousComputation != null)
+        if (newAsynchronousComputation.LazyForAsynchronousCompute != null)
         {
-            StartAsynchronousComputation(newAsynchronousComputation.Value, requestToCompleteSynchronously: request, callerCancellationToken: cancellationToken);
+            StartAsynchronousComputation(in newAsynchronousComputation, requestToCompleteSynchronously: request, callerCancellationToken: cancellationToken);
         }
 
         return request.Task;
@@ -319,16 +381,17 @@ internal abstract class AsyncLazy<T>
         _asynchronousComputationCancellationSource = new CancellationTokenSource();
         _computationActive = true;
 
-        return new AsynchronousComputationToStart(InvokeComputeFunctionAsync, _asynchronousComputationCancellationSource);
+        return new AsynchronousComputationToStart(this, _asynchronousComputationCancellationSource);
     }
 
-    private readonly struct AsynchronousComputationToStart(Func<CancellationToken, Task<T>> asynchronousComputeFunction, CancellationTokenSource cancellationTokenSource)
+    [NonCopyable]
+    private readonly struct AsynchronousComputationToStart(AsyncLazy<T> lazy, CancellationTokenSource cancellationTokenSource)
     {
-        public readonly Func<CancellationToken, Task<T>> AsynchronousComputeFunction = asynchronousComputeFunction;
+        public readonly AsyncLazy<T> LazyForAsynchronousCompute = lazy;
         public readonly CancellationTokenSource CancellationTokenSource = cancellationTokenSource;
     }
 
-    private void StartAsynchronousComputation(AsynchronousComputationToStart computationToStart, Request? requestToCompleteSynchronously, CancellationToken callerCancellationToken)
+    private void StartAsynchronousComputation(ref readonly AsynchronousComputationToStart computationToStart, Request? requestToCompleteSynchronously, CancellationToken callerCancellationToken)
     {
         var cancellationToken = computationToStart.CancellationTokenSource.Token;
 
@@ -342,7 +405,7 @@ internal abstract class AsyncLazy<T>
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var task = computationToStart.AsynchronousComputeFunction(cancellationToken);
+            var task = computationToStart.LazyForAsynchronousCompute.InvokeComputeFunctionAsync(cancellationToken);
 
             // As an optimization, if the task is already completed, mark the 
             // request as being completed as well.
@@ -427,9 +490,10 @@ internal abstract class AsyncLazy<T>
         if (task.Status == TaskStatus.RanToCompletion)
         {
             // Hold onto the completed task. We can get rid of the computation functions for good
-            _cachedResult = task;
+            Volatile.Write(ref _cachedResult, task);
 
-            ClearComputeFunctions();
+            // Release the implicit state ownership of the instance now that _cachedResult is assigned
+            TryReleaseState(isOwned: true);
         }
 
         return task;
