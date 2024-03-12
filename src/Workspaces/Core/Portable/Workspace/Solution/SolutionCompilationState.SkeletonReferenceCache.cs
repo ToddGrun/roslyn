@@ -64,7 +64,7 @@ internal partial class SolutionCompilationState
     [NonCopyable]
     private struct SkeletonReferenceCache
     {
-        private static readonly EmitOptions s_metadataOnlyEmitOptions = new(metadataOnly: true);
+        private static readonly EmitOptions s_metadataOnlyEmitOptions = new(metadataOnly: true, tolerateErrors: false);
 
         /// <summary>
         /// Lock around <see cref="_version"/> and <see cref="_skeletonReferenceSet"/> to ensure they are updated/read

@@ -3440,7 +3440,7 @@ namespace Microsoft.CodeAnalysis.CSharp
 
             if (emitMetadataOnly)
             {
-                if (hasDeclarationErrors)
+                if (hasDeclarationErrors && !moduleBuilder.EmitOptions.TolerateErrors)
                 {
                     return false;
                 }
