@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Internal.Log;
@@ -109,6 +110,10 @@ internal sealed partial class AssetProvider(Checksum solutionChecksum, SolutionA
         }
     }
 
+    private static readonly List<int> s_requestCounts = new();
+    private static readonly List<int> s_s_missingCounts = new();
+    private static readonly object s_lock = new object();
+
     public async ValueTask SynchronizeAssetsAsync(
         AssetHint assetHint, HashSet<Checksum> checksums, CancellationToken cancellationToken)
     {
@@ -118,12 +123,29 @@ internal sealed partial class AssetProvider(Checksum solutionChecksum, SolutionA
 
         using (Logger.LogBlock(FunctionId.AssetService_SynchronizeAssetsAsync, Checksum.GetChecksumsLogInfo, checksums, cancellationToken))
         {
-            using var _1 = ArrayBuilder<Checksum>.GetInstance(checksums.Count, out var missingChecksums);
+            //using var _1 = ArrayBuilder<Checksum>.GetInstance(checksums.Count, out var missingChecksums);
+            using var resultList = SharedPools.Default<List<Checksum>>().GetPooledObject();
+            var missingChecksums = resultList.Object;
+
             foreach (var checksum in checksums)
             {
                 if (!_assetCache.TryGetAsset<object>(checksum, out _))
                     missingChecksums.Add(checksum);
             }
+
+            lock (s_lock)
+            {
+                s_requestCounts.Add(checksums.Count);
+                s_s_missingCounts.Add(missingChecksums.Count);
+            }
+
+#if NETCOREAPP
+            var span = CollectionsMarshal.AsSpan(missingChecksums);
+            
+            ReadOnlyMemory<Checksum> r = new ReadOnlyMemory<Checksum>(
+#else
+#endif
+
 
             var checksumsArray = missingChecksums.ToImmutableAndClear();
             var assets = await RequestAssetsAsync(assetHint, checksumsArray, cancellationToken).ConfigureAwait(false);
@@ -136,9 +158,9 @@ internal sealed partial class AssetProvider(Checksum solutionChecksum, SolutionA
     }
 
     private async Task<ImmutableArray<object>> RequestAssetsAsync(
-        AssetHint assetHint, ImmutableArray<Checksum> checksums, CancellationToken cancellationToken)
+        AssetHint assetHint, ReadOnlyMemory<Checksum> checksums, CancellationToken cancellationToken)
     {
-        Contract.ThrowIfTrue(checksums.Contains(Checksum.Null));
+        Contract.ThrowIfTrue(checksums.Span.Contains(Checksum.Null));
         if (checksums.Length == 0)
             return [];
 

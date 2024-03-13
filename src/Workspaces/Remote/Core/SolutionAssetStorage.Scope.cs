@@ -47,7 +47,7 @@ internal partial class SolutionAssetStorage
         /// </summary>
         public async Task AddAssetsAsync(
             AssetHint assetHint,
-            ImmutableArray<Checksum> checksums,
+            ReadOnlyMemory<Checksum> checksums,
             Dictionary<Checksum, object> assetMap,
             CancellationToken cancellationToken)
         {
