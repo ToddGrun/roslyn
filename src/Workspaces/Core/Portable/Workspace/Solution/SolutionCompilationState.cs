@@ -295,29 +295,38 @@ internal sealed partial class SolutionCompilationState
         return ImmutableSegmentedDictionary.CreateRange(newTrackerInfo);
     }
 
-    /// <inheritdoc cref="SolutionState.AddProject(ProjectInfo)"/>
-    public SolutionCompilationState AddProject(ProjectInfo projectInfo)
+    /// <inheritdoc cref="SolutionState.AddProjects(ImmutableArray{ProjectInfo})"/>
+    public SolutionCompilationState AddProjects(ImmutableArray<ProjectInfo> projectInfos)
     {
-        var newSolutionState = this.SolutionState.AddProject(projectInfo);
-        var newTrackerMap = CreateCompilationTrackerMap(projectInfo.Id, newSolutionState.GetProjectDependencyGraph(), static (_, _) => false, /* unused */ 0);
+        var projectIds = projectInfos.SelectAsArray(static projectInfo => projectInfo.Id);
+
+        var newSolutionState = this.SolutionState.AddProjects(projectInfos);
+        var newTrackerMap = CreateCompilationTrackerMap(projectIds, newSolutionState.GetProjectDependencyGraph(), static (_, _) => false, default(VoidResult));
 
         return Branch(
             newSolutionState,
             projectIdToTrackerMap: newTrackerMap);
     }
 
-    /// <inheritdoc cref="SolutionState.RemoveProject(ProjectId)"/>
-    public SolutionCompilationState RemoveProject(ProjectId projectId)
+    /// <inheritdoc cref="SolutionState.RemoveProjects(ImmutableArray{ProjectId})"/>
+    public SolutionCompilationState RemoveProjects(ImmutableArray<ProjectId> projectIds)
     {
-        var newSolutionState = this.SolutionState.RemoveProject(projectId);
+        var newSolutionState = this.SolutionState.RemoveProjects(projectIds);
         var newTrackerMap = CreateCompilationTrackerMap(
-            projectId,
+            projectIds,
             newSolutionState.GetProjectDependencyGraph(),
-            static (trackerMap, projectId) =>
+            static (trackerMap, projectIds) =>
             {
-                return trackerMap.Remove(projectId);
+                var anyRemoved = false;
+                foreach (var projectId in projectIds)
+                {
+                    if (trackerMap.Remove(projectId))
+                        anyRemoved = true;
+                }
+
+                return anyRemoved;
             },
-            projectId);
+            projectIds);
 
         return this.Branch(
             newSolutionState,
@@ -493,13 +502,16 @@ internal sealed partial class SolutionCompilationState
     }
 
     /// <inheritdoc cref="SolutionState.WithProjectReferences"/>
-    public SolutionCompilationState WithProjectReferences(
-        ProjectId projectId, IReadOnlyList<ProjectReference> projectReferences)
+    public SolutionCompilationState WithProjectReferences(ImmutableArray<(ProjectId Id, ImmutableArray<ProjectReference> Reference)> projectIdsAndReferences)
     {
-        return ForkProject(
-            this.SolutionState.WithProjectReferences(projectId, projectReferences),
-            translate: null,
-            forkTracker: true);
+        var projectIds = projectIdsAndReferences.SelectAsArray(static projectIdAndReference => projectIdAndReference.Id);
+
+        var newSolutionState = this.SolutionState.WithProjectReferences(projectIdsAndReferences);
+        var newTrackerMap = CreateCompilationTrackerMap(projectIds, newSolutionState.GetProjectDependencyGraph(), static (_, _) => false, default(VoidResult));
+
+        return Branch(
+            newSolutionState,
+            projectIdToTrackerMap: newTrackerMap);
     }
 
     /// <inheritdoc cref="SolutionState.AddMetadataReferences"/>

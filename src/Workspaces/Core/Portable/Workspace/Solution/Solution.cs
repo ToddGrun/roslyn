@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Host;
 using Microsoft.CodeAnalysis.Options;
+using Microsoft.CodeAnalysis.PooledObjects;
 using Microsoft.CodeAnalysis.Shared.Extensions;
 using Microsoft.CodeAnalysis.Text;
 using Roslyn.Utilities;
@@ -345,8 +346,17 @@ public partial class Solution
     /// Create a new solution instance that includes a project with the specified project information.
     /// </summary>
     public Solution AddProject(ProjectInfo projectInfo)
+        => AddProjects([projectInfo]);
+
+    /// <summary>
+    /// Create a new solution instance that includes projects with the specified project information.
+    /// </summary>
+    internal Solution AddProjects(ImmutableArray<ProjectInfo> projectInfos)
     {
-        var newCompilationState = _compilationState.AddProject(projectInfo);
+        if (projectInfos.IsEmpty)
+            return this;
+
+        var newCompilationState = _compilationState.AddProjects(projectInfos);
         return newCompilationState == _compilationState ? this : new Solution(newCompilationState);
     }
 
@@ -354,8 +364,17 @@ public partial class Solution
     /// Create a new solution instance without the project specified.
     /// </summary>
     public Solution RemoveProject(ProjectId projectId)
+        => RemoveProjects([projectId]);
+
+    /// <summary>
+    /// Create a new solution instance without the projects specified.
+    /// </summary>
+    internal Solution RemoveProjects(ImmutableArray<ProjectId> projectIds)
     {
-        var newCompilationState = _compilationState.RemoveProject(projectId);
+        if (projectIds.IsEmpty)
+            return this;
+
+        var newCompilationState = _compilationState.RemoveProjects(projectIds);
         return newCompilationState == _compilationState ? this : new Solution(newCompilationState);
     }
 
@@ -623,15 +642,23 @@ public partial class Solution
     /// <exception cref="InvalidOperationException">The solution does not contain <paramref name="projectId"/>.</exception>
     public Solution WithProjectReferences(ProjectId projectId, IEnumerable<ProjectReference>? projectReferences)
     {
-        CheckContainsProject(projectId);
-
         // avoid enumerating multiple times:
         var collection = PublicContract.ToBoxedImmutableArrayWithDistinctNonNullItems(projectReferences, nameof(projectReferences));
 
-        CheckCircularProjectReferences(projectId, collection);
-        CheckSubmissionProjectReferences(projectId, collection, ignoreExistingReferences: true);
+        return WithProjectReferences(ImmutableArray.Create((projectId, collection.ToImmutableArray())));
+    }
 
-        var newCompilationState = _compilationState.WithProjectReferences(projectId, collection);
+    internal Solution WithProjectReferences(ImmutableArray<(ProjectId, ImmutableArray<ProjectReference>)> projectIdsAndReferences)
+    {
+        foreach (var (projectId, projectReferences) in projectIdsAndReferences)
+        {
+            CheckContainsProject(projectId);
+
+            CheckCircularProjectReferences(projectId, projectReferences);
+            CheckSubmissionProjectReferences(projectId, projectReferences, ignoreExistingReferences: true);
+        }
+
+        var newCompilationState = _compilationState.WithProjectReferences(projectIdsAndReferences);
         return newCompilationState == _compilationState ? this : new Solution(newCompilationState);
     }
 

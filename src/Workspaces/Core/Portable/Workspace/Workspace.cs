@@ -599,10 +599,12 @@ public abstract partial class Workspace : IDisposable
 
     #region Host API
 
-    private static Solution CheckAndAddProject(Solution newSolution, ProjectInfo project)
+    private static Solution CheckAndAddProjects(Solution newSolution, ImmutableArray<ProjectInfo> projects)
     {
-        CheckProjectIsNotInSolution(newSolution, project.Id);
-        return newSolution.AddProject(project);
+        foreach (var project in projects)
+            CheckProjectIsNotInSolution(newSolution, project.Id);
+
+        return newSolution.AddProjects(projects);
     }
 
     /// <summary>
@@ -617,8 +619,7 @@ public abstract partial class Workspace : IDisposable
 
                 var newSolution = this.CreateSolution(solutionInfo);
 
-                foreach (var project in solutionInfo.Projects)
-                    newSolution = CheckAndAddProject(newSolution, project);
+                newSolution = CheckAndAddProjects(newSolution, solutionInfo.Projects.ToImmutableArray());
 
                 return newSolution;
             }, WorkspaceChangeKind.SolutionAdded);
@@ -634,8 +635,7 @@ public abstract partial class Workspace : IDisposable
             {
                 var newSolution = this.CreateSolution(reloadedSolutionInfo);
 
-                foreach (var project in reloadedSolutionInfo.Projects)
-                    newSolution = CheckAndAddProject(newSolution, project);
+                newSolution = CheckAndAddProjects(newSolution, reloadedSolutionInfo.Projects.ToImmutableArray());
 
                 return this.AdjustReloadedSolution(oldSolution, newSolution);
             }, WorkspaceChangeKind.SolutionReloaded);
@@ -662,7 +662,7 @@ public abstract partial class Workspace : IDisposable
     protected internal void OnProjectAdded(ProjectInfo projectInfo)
     {
         this.SetCurrentSolution(
-            oldSolution => CheckAndAddProject(oldSolution, projectInfo),
+            oldSolution => CheckAndAddProjects(oldSolution, ImmutableArray.Create(projectInfo)),
             WorkspaceChangeKind.ProjectAdded, projectId: projectInfo.Id);
     }
 

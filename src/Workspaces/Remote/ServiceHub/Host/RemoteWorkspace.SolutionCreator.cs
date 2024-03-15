@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using ICSharpCode.Decompiler.Solution;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.ErrorReporting;
 using Microsoft.CodeAnalysis.Host;
@@ -217,6 +218,10 @@ namespace Microsoft.CodeAnalysis.Remote
                 Dictionary<ProjectId, ProjectStateChecksums> newProjectIdToStateChecksums,
                 CancellationToken cancellationToken)
             {
+                var addProjectsBuilder = ArrayBuilder<ProjectInfo>.GetInstance(newProjectIdToStateChecksums.Count);
+                var withProjectReferencesBuilder = ArrayBuilder<(ProjectId, ImmutableArray<ProjectReference>)>.GetInstance(newProjectIdToStateChecksums.Count);
+                var removeProjectBuilder = ArrayBuilder<ProjectId>.GetInstance(newProjectIdToStateChecksums.Count);
+
                 // added project
                 foreach (var (projectId, newProjectChecksums) in newProjectIdToStateChecksums)
                 {
@@ -227,9 +232,12 @@ namespace Microsoft.CodeAnalysis.Remote
 
                         await _assetProvider.SynchronizeProjectAssetsAsync(newProjectChecksums, cancellationToken).ConfigureAwait(false);
                         var projectInfo = await _assetProvider.CreateProjectInfoAsync(projectId, newProjectChecksums.Checksum, cancellationToken).ConfigureAwait(false);
-                        solution = solution.AddProject(projectInfo);
+
+                        addProjectsBuilder.Add(projectInfo);
                     }
                 }
+
+                solution = solution.AddProjects(addProjectsBuilder.ToImmutableAndFree());
 
                 // remove all project references from projects that changed. this ensures exceptions will not occur for
                 // cyclic references during an incremental update.
@@ -240,9 +248,11 @@ namespace Microsoft.CodeAnalysis.Remote
                     if (oldProjectIdToStateChecksums.TryGetValue(projectId, out var oldProjectChecksums) &&
                         oldProjectChecksums.ProjectReferences.Checksum != newProjectChecksums.ProjectReferences.Checksum)
                     {
-                        solution = solution.WithProjectReferences(projectId, SpecializedCollections.EmptyEnumerable<ProjectReference>());
+                        withProjectReferencesBuilder.Add((projectId, ImmutableArray<ProjectReference>.Empty));
                     }
                 }
+
+                solution = solution.WithProjectReferences(withProjectReferencesBuilder.ToImmutableAndFree());
 
                 // removed project
                 foreach (var (projectId, _) in oldProjectIdToStateChecksums)
@@ -251,9 +261,11 @@ namespace Microsoft.CodeAnalysis.Remote
                     {
                         // Should never be removing projects during cone syncing.
                         Contract.ThrowIfTrue(isConeSync);
-                        solution = solution.RemoveProject(projectId);
+                        removeProjectBuilder.Add(projectId);
                     }
                 }
+
+                solution = solution.RemoveProjects(removeProjectBuilder.ToImmutableAndFree());
 
                 // changed project
                 foreach (var (projectId, newProjectChecksums) in newProjectIdToStateChecksums)
@@ -263,6 +275,7 @@ namespace Microsoft.CodeAnalysis.Remote
                         // If this project was in the old map, then the project must have changed.  Otherwise, we would
                         // have removed it earlier on.
                         Contract.ThrowIfTrue(oldProjectChecksums.Checksum == newProjectChecksums.Checksum);
+
                         solution = await UpdateProjectAsync(
                             solution.GetRequiredProject(projectId), oldProjectChecksums, newProjectChecksums, cancellationToken).ConfigureAwait(false);
                     }

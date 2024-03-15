@@ -298,27 +298,51 @@ internal sealed partial class SolutionState
         return result;
     }
 
-    private SolutionState AddProject(ProjectState projectState)
+    private SolutionState AddProjects(ImmutableArray<ProjectState> addedProjectStates)
     {
-        var projectId = projectState.Id;
+        using var _ = PooledHashSet<ProjectId>.GetInstance(out var addedProjectIdsMap);
+#if NETCOREAPP
+        addedProjectIdsMap.EnsureCapacity(addedProjectStates.Length);
+#endif
 
-        // changed project list so, increment version.
-        var newSolutionAttributes = _solutionAttributes.With(version: Version.GetNewerVersion());
+        var newProjectIdsBuilder = ArrayBuilder<ProjectId>.GetInstance(ProjectIds.Count + addedProjectStates.Length);
+        newProjectIdsBuilder.AddRange(ProjectIds.ToImmutableArray());
 
-        var newProjectIds = ProjectIds.ToImmutableArray().Add(projectId);
-        var newStateMap = _projectIdToProjectStateMap.Add(projectId, projectState);
+        var filePathToDocumentIdsMapBuilder = _filePathToDocumentIdsMap.ToBuilder();
+        var newStateMap = _projectIdToProjectStateMap;
+        var newDependencyGraph = _dependencyGraph;
 
-        var newDependencyGraph = _dependencyGraph
-            .WithAdditionalProject(projectId)
-            .WithAdditionalProjectReferences(projectId, projectState.ProjectReferences);
+        foreach (var addedProjectState in addedProjectStates)
+        {
+            var addedProjectId = addedProjectState.Id;
+
+            newDependencyGraph = newDependencyGraph
+                .WithAdditionalProject(addedProjectId)
+                .WithAdditionalProjectReferences(addedProjectId, addedProjectState.ProjectReferences);
+
+            newStateMap = newStateMap.Add(addedProjectId, addedProjectState);
+            newProjectIdsBuilder.Add(addedProjectId);
+            addedProjectIdsMap.Add(addedProjectId);
+
+            foreach (var (_, documentState) in addedProjectState.DocumentStates.States)
+                filePathToDocumentIdsMapBuilder.Add(documentState.FilePath, documentState.Id);
+
+            foreach (var (_, additionalDocumentState) in addedProjectState.AdditionalDocumentStates.States)
+                filePathToDocumentIdsMapBuilder.Add(additionalDocumentState.FilePath, additionalDocumentState.Id);
+
+            foreach (var (_, analyzerConfigDocumentState) in addedProjectState.AnalyzerConfigDocumentStates.States)
+                filePathToDocumentIdsMapBuilder.Add(analyzerConfigDocumentState.FilePath, analyzerConfigDocumentState.Id);
+        }
 
         // It's possible that another project already in newStateMap has a reference to this project that we're adding, since we allow
         // dangling references like that. If so, we'll need to link those in too.
         foreach (var newState in newStateMap)
         {
-            foreach (var projectReference in newState.Value.ProjectReferences)
+            var projectReferenceCount = newState.Value.ProjectReferences.Count;
+            for (var i = 0; i < projectReferenceCount; i++)
             {
-                if (projectReference.ProjectId == projectId)
+                var projectReference = newState.Value.ProjectReferences[i];
+                if (addedProjectIdsMap.Contains(projectReference.ProjectId))
                 {
                     newDependencyGraph = newDependencyGraph.WithAdditionalProjectReferences(
                         newState.Key,
@@ -329,83 +353,110 @@ internal sealed partial class SolutionState
             }
         }
 
-        var newFilePathToDocumentIdsMap = CreateFilePathToDocumentIdsMapWithAddedDocuments(GetDocumentStates(newStateMap[projectId]));
+        // changed project list so, increment version.
+        var newSolutionAttributes = _solutionAttributes.With(version: Version.GetNewerVersion());
 
         return Branch(
             solutionAttributes: newSolutionAttributes,
-            projectIds: newProjectIds,
+            projectIds: newProjectIdsBuilder.ToImmutableAndFree(),
             idToProjectStateMap: newStateMap,
-            filePathToDocumentIdsMap: newFilePathToDocumentIdsMap,
+            filePathToDocumentIdsMap: filePathToDocumentIdsMapBuilder.ToImmutable(),
             dependencyGraph: newDependencyGraph);
     }
 
     /// <summary>
-    /// Create a new solution instance that includes a project with the specified project information.
+    /// Create a new solution instance that includes projects with the specified project information.
     /// </summary>
-    public SolutionState AddProject(ProjectInfo projectInfo)
+    public SolutionState AddProjects(ImmutableArray<ProjectInfo> projectInfos)
     {
-        if (projectInfo == null)
+        var projectStateBuilder = ArrayBuilder<ProjectState>.GetInstance(projectInfos.Length);
+
+        foreach (var projectInfo in projectInfos)
         {
-            throw new ArgumentNullException(nameof(projectInfo));
+            if (projectInfo == null)
+            {
+                throw new ArgumentNullException(nameof(projectInfo));
+            }
+
+            var projectId = projectInfo.Id;
+
+            var language = projectInfo.Language;
+            if (language == null)
+            {
+                throw new ArgumentNullException(nameof(language));
+            }
+
+            var displayName = projectInfo.Name;
+            if (displayName == null)
+            {
+                throw new ArgumentNullException(nameof(displayName));
+            }
+
+            CheckNotContainsProject(projectId);
+
+            var languageServices = Services.GetLanguageServices(language);
+            if (languageServices == null)
+            {
+                throw new ArgumentException(string.Format(WorkspacesResources.The_language_0_is_not_supported, language));
+            }
+
+            var newProject = new ProjectState(languageServices, projectInfo);
+            projectStateBuilder.Add(newProject);
         }
 
-        var projectId = projectInfo.Id;
-
-        var language = projectInfo.Language;
-        if (language == null)
-        {
-            throw new ArgumentNullException(nameof(language));
-        }
-
-        var displayName = projectInfo.Name;
-        if (displayName == null)
-        {
-            throw new ArgumentNullException(nameof(displayName));
-        }
-
-        CheckNotContainsProject(projectId);
-
-        var languageServices = Services.GetLanguageServices(language);
-        if (languageServices == null)
-        {
-            throw new ArgumentException(string.Format(WorkspacesResources.The_language_0_is_not_supported, language));
-        }
-
-        var newProject = new ProjectState(languageServices, projectInfo);
-
-        return this.AddProject(newProject);
+        return this.AddProjects(projectStateBuilder.ToImmutableAndFree());
     }
 
-    private static IEnumerable<TextDocumentState> GetDocumentStates(ProjectState projectState)
-        => projectState.DocumentStates.States.Values
-               .Concat<TextDocumentState>(projectState.AdditionalDocumentStates.States.Values)
-               .Concat(projectState.AnalyzerConfigDocumentStates.States.Values);
-
     /// <summary>
-    /// Create a new solution instance without the project specified.
+    /// Create a new solution instance without the projects specified.
     /// </summary>
-    public SolutionState RemoveProject(ProjectId projectId)
+    public SolutionState RemoveProjects(ImmutableArray<ProjectId> projectIds)
     {
-        if (projectId == null)
+        using var _ = PooledHashSet<ProjectId>.GetInstance(out var removedProjectIdsMap);
+#if NETCOREAPP
+        removedProjectIdsMap.EnsureCapacity(projectIds.Length);
+#endif
+
+        var filePathToDocumentIdsMapBuilder = _filePathToDocumentIdsMap.ToBuilder();
+        var newStateMap = _projectIdToProjectStateMap;
+        var newDependencyGraph = _dependencyGraph;
+
+        foreach (var projectId in projectIds)
         {
-            throw new ArgumentNullException(nameof(projectId));
+            if (projectId == null)
+            {
+                throw new ArgumentNullException(nameof(projectId));
+            }
+
+            CheckContainsProject(projectId);
+
+            newDependencyGraph = newDependencyGraph.WithProjectRemoved(projectId);
+            newStateMap = newStateMap.Remove(projectId);
+            removedProjectIdsMap.Add(projectId);
+
+            var removedProjectState = _projectIdToProjectStateMap[projectId];
+            foreach (var (_, documentState) in removedProjectState.DocumentStates.States)
+                filePathToDocumentIdsMapBuilder.Remove(documentState.FilePath, documentState.Id);
+
+            foreach (var (_, additionalDocumentState) in removedProjectState.AdditionalDocumentStates.States)
+                filePathToDocumentIdsMapBuilder.Remove(additionalDocumentState.FilePath, additionalDocumentState.Id);
+
+            foreach (var (_, analyzerConfigDocumentState) in removedProjectState.AnalyzerConfigDocumentStates.States)
+                filePathToDocumentIdsMapBuilder.Remove(analyzerConfigDocumentState.FilePath, analyzerConfigDocumentState.Id);
         }
 
-        CheckContainsProject(projectId);
+        var newProjectIds = ProjectIds.ToImmutableArray().WhereAsArray(
+            static (projectId, removedProjectIdsMap) => !removedProjectIdsMap.Contains(projectId),
+            removedProjectIdsMap);
 
         // changed project list so, increment version.
         var newSolutionAttributes = _solutionAttributes.With(version: this.Version.GetNewerVersion());
-
-        var newProjectIds = ProjectIds.ToImmutableArray().Remove(projectId);
-        var newStateMap = _projectIdToProjectStateMap.Remove(projectId);
-        var newDependencyGraph = _dependencyGraph.WithProjectRemoved(projectId);
-        var newFilePathToDocumentIdsMap = CreateFilePathToDocumentIdsMapWithRemovedDocuments(GetDocumentStates(_projectIdToProjectStateMap[projectId]));
 
         return this.Branch(
             solutionAttributes: newSolutionAttributes,
             projectIds: newProjectIds,
             idToProjectStateMap: newStateMap,
-            filePathToDocumentIdsMap: newFilePathToDocumentIdsMap,
+            filePathToDocumentIdsMap: filePathToDocumentIdsMapBuilder.ToImmutable(),
             dependencyGraph: newDependencyGraph);
     }
 
@@ -714,17 +765,28 @@ internal sealed partial class SolutionState
     /// Create a new solution instance with the project specified updated to contain
     /// the specified list of project references.
     /// </summary>
-    public StateChange WithProjectReferences(ProjectId projectId, IReadOnlyList<ProjectReference> projectReferences)
+    public SolutionState WithProjectReferences(ImmutableArray<(ProjectId, ImmutableArray<ProjectReference>)> projectIdsAndReferences)
     {
-        var oldProject = GetRequiredProjectState(projectId);
-        var newProject = oldProject.WithProjectReferences(projectReferences);
-        if (oldProject == newProject)
+        var newDependencyGraph = _dependencyGraph;
+        var newStateMap = _projectIdToProjectStateMap;
+        foreach (var (projectId, projectReferences) in projectIdsAndReferences)
         {
-            return new(this, oldProject, newProject);
+            var oldProjectState = GetRequiredProjectState(projectId);
+            var newProjectState = oldProjectState.WithProjectReferences(projectReferences);
+
+            if (oldProjectState != newProjectState)
+            {
+                newStateMap = newStateMap.SetItem(projectId, newProjectState);
+                newDependencyGraph = newDependencyGraph.WithProjectReferences(projectId, projectReferences);
+            }
         }
 
-        var newDependencyGraph = _dependencyGraph.WithProjectReferences(projectId, projectReferences);
-        return ForkProject(oldProject, newProject, newDependencyGraph: newDependencyGraph);
+        if (newDependencyGraph == _dependencyGraph)
+            return this;
+
+        return Branch(
+            idToProjectStateMap: newStateMap,
+            dependencyGraph: newDependencyGraph);
     }
 
     /// <summary>
