@@ -262,8 +262,9 @@ namespace Microsoft.CodeAnalysis.Remote
         private Solution CreateSolutionFromInfo(SolutionInfo solutionInfo)
         {
             var solution = this.CreateSolution(solutionInfo);
-            foreach (var projectInfo in solutionInfo.Projects)
-                solution = solution.AddProject(projectInfo);
+
+            solution = solution.AddProjects(solutionInfo.Projects.ToImmutableArray());
+
             return solution;
         }
 

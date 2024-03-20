@@ -133,8 +133,7 @@ internal sealed class ProjectSystemProjectFactory
                             analyzerReferences: w.CurrentSolution.AnalyzerReferences).WithTelemetryId(SolutionTelemetryId);
                         var newSolution = w.CreateSolution(solutionInfo);
 
-                        foreach (var project in solutionInfo.Projects)
-                            newSolution = newSolution.AddProject(project);
+                        newSolution = newSolution.AddProjects(solutionInfo.Projects.ToImmutableArray());
 
                         return newSolution;
                     }
