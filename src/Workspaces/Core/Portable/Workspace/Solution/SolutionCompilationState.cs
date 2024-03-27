@@ -1499,6 +1499,9 @@ internal sealed partial class SolutionCompilationState
         var documentIdsByProjectId = documentIds.ToLookup(id => id.ProjectId);
 
         var newCompilationState = this;
+        var projectStates = new List<(ProjectState Old, ProjectState New)>(documentIdsByProjectId.Count);
+        var allRemovedDocumentStates = new T[documentIds.Length];
+        var allRemovedDocumentStatesIndex = 0;
 
         foreach (var documentIdsInProject in documentIdsByProjectId)
         {
@@ -1513,7 +1516,10 @@ internal sealed partial class SolutionCompilationState
 
             foreach (var documentId in documentIdsInProject)
             {
-                removedDocumentStates.Add(getExistingTextDocumentState(oldProjectState, documentId));
+                var removedDocumentState = getExistingTextDocumentState(oldProjectState, documentId);
+                removedDocumentStates.Add(removedDocumentState);
+                allRemovedDocumentStates[allRemovedDocumentStatesIndex] = removedDocumentState;
+                allRemovedDocumentStatesIndex++;
             }
 
             var removedDocumentStatesForProject = removedDocumentStates.ToImmutable();
@@ -1521,11 +1527,13 @@ internal sealed partial class SolutionCompilationState
             var compilationTranslationAction = removeDocumentsFromProjectState(oldProjectState, documentIdsInProject.ToImmutableArray(), removedDocumentStatesForProject);
             var newProjectState = compilationTranslationAction.NewProjectState;
 
-            var stateChange = newCompilationState.SolutionState.ForkProject(
-                oldProjectState,
-                newProjectState,
-                // Intentionally using this.Solution here and not newSolutionState
-                newFilePathToDocumentIdsMap: this.SolutionState.CreateFilePathToDocumentIdsMapWithRemovedDocuments(removedDocumentStatesForProject));
+            projectStates.Add((oldProjectState, newProjectState));
+        }
+
+        var stateChange = newCompilationState.SolutionState.ForkProjects(
+            projectStates,
+            // Intentionally using this.Solution here and not newSolutionState
+            newFilePathToDocumentIdsMap: this.SolutionState.CreateFilePathToDocumentIdsMapWithRemovedDocuments(removedDocumentStatesForProject));
 
             newCompilationState = newCompilationState.ForkProject(
                 stateChange,
