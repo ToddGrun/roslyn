@@ -12,6 +12,7 @@ using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.ErrorReporting;
 using Microsoft.CodeAnalysis.Host;
 using Microsoft.CodeAnalysis.Options;
+using Microsoft.CodeAnalysis.PooledObjects;
 using Microsoft.CodeAnalysis.Shared.Collections;
 using Microsoft.CodeAnalysis.Shared.Extensions;
 using Microsoft.CodeAnalysis.Text;
@@ -861,6 +862,25 @@ internal sealed partial class SolutionState
         return UpdateDocumentState(oldDocument.UpdateText(text, mode), contentChanged: true);
     }
 
+    public ImmutableArray<StateChange> WithDocumentTexts(ImmutableArray<(DocumentId documentId, SourceText text)> documentInfos, PreservationMode mode = PreservationMode.PreserveValue)
+    {
+        using var _ = ArrayBuilder<StateChange>.GetInstance(out var builder);
+
+        foreach (var (documentId, text) in documentInfos)
+        {
+            var oldDocument = GetRequiredDocumentState(documentId);
+            if (oldDocument.TryGetText(out var oldText) && text == oldText)
+            {
+                var oldProject = GetRequiredProjectState(documentId.ProjectId);
+                builder.Add(new(this, oldProject, oldProject));
+            }
+
+            builder.Add(UpdateDocumentState(oldDocument.UpdateText(text, mode), contentChanged: true));
+        }
+
+        return builder.ToImmutableAndFree();
+    }
+
     public StateChange WithDocumentState(DocumentState newDocument)
     {
         var oldDocument = GetRequiredDocumentState(newDocument.Id);
@@ -1107,6 +1127,28 @@ internal sealed partial class SolutionState
             dependencyGraph: newDependencyGraph);
 
         return new(newSolutionState, oldProjectState, newProjectState);
+    }
+
+    public SolutionState ForkProjects(
+        IEnumerable<ProjectState> newProjectStates,
+        ProjectDependencyGraph? newDependencyGraph = null)
+    {
+        var newStateMap = _projectIdToProjectStateMap;
+        foreach (var newProjectState in newProjectStates)
+        {
+            var projectId = newProjectState.Id;
+
+            Contract.ThrowIfFalse(_projectIdToProjectStateMap.ContainsKey(projectId));
+            newStateMap = newStateMap.SetItem(projectId, newProjectState);
+        }
+
+        newDependencyGraph ??= _dependencyGraph;
+
+        var newSolutionState = this.Branch(
+            idToProjectStateMap: newStateMap,
+            dependencyGraph: newDependencyGraph);
+
+        return newSolutionState;
     }
 
     /// <summary>

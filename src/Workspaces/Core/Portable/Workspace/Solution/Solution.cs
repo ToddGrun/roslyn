@@ -1230,6 +1230,27 @@ public partial class Solution
         return newCompilationState == _compilationState ? this : new Solution(newCompilationState);
     }
 
+    internal Solution WithDocumentTexts(ImmutableArray<(DocumentId documentId, SourceText text)> documentTexts, PreservationMode mode = PreservationMode.PreserveValue)
+    {
+        foreach (var (documentId, text) in documentTexts)
+        {
+            CheckContainsDocument(documentId);
+
+            if (text == null)
+            {
+                throw new ArgumentNullException(nameof(text));
+            }
+
+            if (!mode.IsValid())
+            {
+                throw new ArgumentOutOfRangeException(nameof(mode));
+            }
+        }
+
+        var newCompilationState = _compilationState.WithDocumentTexts(documentTexts, mode);
+        return newCompilationState == _compilationState ? this : new Solution(newCompilationState);
+    }
+
     /// <summary>
     /// Creates a new solution instance with the additional document specified updated to have the text
     /// specified.

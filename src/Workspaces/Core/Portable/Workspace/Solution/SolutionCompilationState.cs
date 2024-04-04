@@ -192,6 +192,38 @@ internal sealed partial class SolutionCompilationState
             projectIdToTrackerMap: newTrackerMap);
     }
 
+    private SolutionCompilationState ForceForkUsingTranslations(
+        SolutionState newSolutionState,
+        IEnumerable<TranslationAction> translationActions)
+    {
+        var projectIds = translationActions.SelectAsArray(a => a.NewProjectState.Id);
+        var newDependencyGraph = newSolutionState.GetProjectDependencyGraph();
+
+        var newTrackerMap = CreateCompilationTrackerMap(
+            projectIds,
+            newDependencyGraph,
+            static (trackerMap, translationActions) =>
+            {
+                foreach (var action in translationActions)
+                {
+                    var projectId = action.NewProjectState.Id;
+
+                    // If we have a tracker for this project, then fork it as well (along with the
+                    // translation action and store it in the tracker map.
+                    if (trackerMap.TryGetValue(projectId, out var tracker))
+                    {
+                        trackerMap[projectId] = tracker.Fork(action.NewProjectState, action);
+                    }
+                }
+            },
+            translationActions,
+            skipEmptyCallback: true);
+
+        return this.Branch(
+            newSolutionState,
+            projectIdToTrackerMap: newTrackerMap);
+    }
+
     /// <summary>
     /// Creates a mapping of <see cref="ProjectId"/> to <see cref="ICompilationTracker"/>
     /// </summary>
@@ -636,6 +668,13 @@ internal sealed partial class SolutionCompilationState
             this.SolutionState.WithDocumentText(documentId, text, mode), documentId);
     }
 
+    public SolutionCompilationState WithDocumentTexts(
+        ImmutableArray<(DocumentId documentId, SourceText text)> documentInfos, PreservationMode mode)
+    {
+        return UpdateDocumentState(
+            this.SolutionState.WithDocumentTexts(documentInfos, mode), documentId);
+    }
+
     public SolutionCompilationState WithDocumentState(
         DocumentState documentState)
     {
@@ -753,6 +792,24 @@ internal sealed partial class SolutionCompilationState
     private SolutionCompilationState UpdateDocumentState(StateChange stateChange, DocumentId documentId)
     {
         return ForkProject(
+            stateChange,
+            static (stateChange, documentId) =>
+            {
+                // This function shouldn't have been called if the document has not changed
+                Debug.Assert(stateChange.OldProjectState != stateChange.NewProjectState);
+
+                var oldDocument = stateChange.OldProjectState.DocumentStates.GetRequiredState(documentId);
+                var newDocument = stateChange.NewProjectState.DocumentStates.GetRequiredState(documentId);
+
+                return new TranslationAction.TouchDocumentAction(stateChange.OldProjectState, stateChange.NewProjectState, oldDocument, newDocument);
+            },
+            forkTracker: true,
+            arg: documentId);
+    }
+
+    private SolutionCompilationState UpdateDocumentStates(ImmutableArray<(StateChange stateChange, DocumentId documentId)> documentInfos)
+    {
+        return ForkProjects(
             stateChange,
             static (stateChange, documentId) =>
             {
