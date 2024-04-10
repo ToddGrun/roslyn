@@ -701,6 +701,53 @@ internal sealed partial class SolutionState
         return ForkProject(oldProject, newProject, newDependencyGraph: newDependencyGraph);
     }
 
+    public SolutionState WithProjectsReferences(ArrayBuilder<(ProjectId, IReadOnlyList<ProjectReference>)> projectIdsAndReferences)
+    {
+        var newDependencyGraph = _dependencyGraph;
+        var newStateMapBuilder = _projectIdToProjectStateMap.ToBuilder();
+
+        foreach (var (projectId, projectReferences) in projectIdsAndReferences)
+        {
+            var oldProjectState = GetRequiredProjectState(projectId);
+            var newProjectState = oldProjectState.WithProjectReferences(projectReferences);
+            if (oldProjectState != newProjectState)
+            {
+                newStateMapBuilder[projectId] = newProjectState;
+
+                // TODO: it would be nice to update these graphs without so much forking.
+                newDependencyGraph = newDependencyGraph.WithProjectReferences(projectId, projectReferences);
+            }
+        }
+
+        var newSolutionState = this.Branch(
+            idToProjectStateMap: newStateMapBuilder.ToImmutable(),
+            dependencyGraph: newDependencyGraph);
+
+        return newSolutionState;
+    }
+
+    public SolutionState ForkProjects(
+        IEnumerable<ProjectState> newProjectStates,
+        ProjectDependencyGraph? newDependencyGraph = null)
+    {
+        var newStateMap = _projectIdToProjectStateMap;
+        foreach (var newProjectState in newProjectStates)
+        {
+            var projectId = newProjectState.Id;
+
+            Contract.ThrowIfFalse(_projectIdToProjectStateMap.ContainsKey(projectId));
+            newStateMap = newStateMap.SetItem(projectId, newProjectState);
+        }
+
+        newDependencyGraph ??= _dependencyGraph;
+
+        var newSolutionState = this.Branch(
+            idToProjectStateMap: newStateMap,
+            dependencyGraph: newDependencyGraph);
+
+        return newSolutionState;
+    }
+
     /// <summary>
     /// Creates a new solution instance with the project documents in the order by the specified document ids.
     /// The specified document ids must be the same as what is already in the project; no adding or removing is allowed.

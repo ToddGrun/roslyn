@@ -279,8 +279,10 @@ namespace Microsoft.CodeAnalysis.Remote
                     }
                 }
 
-                // Add solutions in bulk.  Avoiding intermediary forking of it.
+                // Add projects in bulk to avoid intermediary forking.
                 solution = solution.AddProjects(projectInfos);
+
+                using var _3 = ArrayBuilder<(ProjectId, IEnumerable<ProjectReference>?)>.GetInstance(out var withProjectReferencesBuilder);
 
                 // remove all project references from projects that changed. this ensures exceptions will not occur for
                 // cyclic references during an incremental update.
@@ -291,11 +293,14 @@ namespace Microsoft.CodeAnalysis.Remote
                     if (oldProjectIdToStateChecksums.TryGetValue(projectId, out var oldProjectChecksums) &&
                         oldProjectChecksums.ProjectReferences.Checksum != newProjectChecksums.ProjectReferences.Checksum)
                     {
-                        solution = solution.WithProjectReferences(projectId, projectReferences: []);
+                        withProjectReferencesBuilder.Add((projectId, []));
                     }
                 }
 
-                using var _3 = ArrayBuilder<ProjectId>.GetInstance(out var projectsToRemove);
+                // Update project references in bulk to avoid intermediary forking.
+                solution = solution.WithProjectsReferences(withProjectReferencesBuilder);
+
+                using var _4 = ArrayBuilder<ProjectId>.GetInstance(out var projectsToRemove);
 
                 // removed project
                 foreach (var (projectId, _) in oldProjectIdToStateChecksums)
@@ -308,7 +313,7 @@ namespace Microsoft.CodeAnalysis.Remote
                     }
                 }
 
-                // Remove solutions in bulk.  Avoiding intermediary forking of it.
+                // Remove projects in bulk to avoid intermediary forking.
                 solution = solution.RemoveProjects(projectsToRemove);
 
                 // changed project

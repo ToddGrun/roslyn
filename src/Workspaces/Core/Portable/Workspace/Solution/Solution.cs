@@ -617,15 +617,29 @@ public partial class Solution
     /// <exception cref="InvalidOperationException">The solution does not contain <paramref name="projectId"/>.</exception>
     public Solution WithProjectReferences(ProjectId projectId, IEnumerable<ProjectReference>? projectReferences)
     {
-        CheckContainsProject(projectId);
+        var _ = ArrayBuilder<(ProjectId, IEnumerable<ProjectReference>?)>.GetInstance(1, out var projectIdsAndReferences);
+        projectIdsAndReferences.Add((projectId, projectReferences));
+        return WithProjectsReferences(projectIdsAndReferences);
+    }
 
-        // avoid enumerating multiple times:
-        var collection = PublicContract.ToBoxedImmutableArrayWithDistinctNonNullItems(projectReferences, nameof(projectReferences));
+    internal Solution WithProjectsReferences(ArrayBuilder<(ProjectId, IEnumerable<ProjectReference>?)> projectIdsAndReferences)
+    {
+        var _ = ArrayBuilder<(ProjectId, IReadOnlyList<ProjectReference>)>.GetInstance(projectIdsAndReferences.Count, out var projectIdsAndReferencesRealized);
 
-        CheckCircularProjectReferences(projectId, collection);
-        CheckSubmissionProjectReferences(projectId, collection, ignoreExistingReferences: true);
+        foreach (var (projectId, projectReferences) in projectIdsAndReferences)
+        {
+            CheckContainsProject(projectId);
 
-        return WithCompilationState(_compilationState.WithProjectReferences(projectId, collection));
+            // avoid enumerating multiple times:
+            var collection = PublicContract.ToBoxedImmutableArrayWithDistinctNonNullItems(projectReferences, nameof(projectReferences));
+
+            CheckCircularProjectReferences(projectId, collection);
+            CheckSubmissionProjectReferences(projectId, collection, ignoreExistingReferences: true);
+
+            projectIdsAndReferencesRealized.Add((projectId, collection));
+        }
+
+        return WithCompilationState(_compilationState.WithProjectsReferences(projectIdsAndReferencesRealized));
     }
 
     /// <summary>

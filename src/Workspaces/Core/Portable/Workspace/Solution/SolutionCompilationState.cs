@@ -578,6 +578,37 @@ internal sealed partial class SolutionCompilationState
             forkTracker: true);
     }
 
+    public SolutionCompilationState WithProjectsReferences(
+        ArrayBuilder<(ProjectId ProjectId, IReadOnlyList<ProjectReference> References)> projectIdsAndReferences)
+    {
+        var newSolutionState = this.SolutionState.WithProjectsReferences(projectIdsAndReferences);
+
+        var newDependencyGraph = newSolutionState.GetProjectDependencyGraph();
+        var projectIds = projectIdsAndReferences.SelectAsArray(item => item.ProjectId);
+        var newTrackerMap = CreateCompilationTrackerMap(
+            projectIds,
+            newDependencyGraph,
+            static (trackerMap, arg) =>
+            {
+                foreach (var projectId in arg.projectIds)
+                {
+                    // If we have a tracker for this project, then fork it as well (along with the
+                    // translation action and store it in the tracker map.
+                    if (trackerMap.TryGetValue(projectId, out var tracker))
+                    {
+                        var newProjectState = arg.newSolutionState.GetRequiredProjectState(projectId);
+                        trackerMap[projectId] = tracker.Fork(newProjectState, translate: null);
+                    }
+                }
+            },
+            (projectIds, newSolutionState),
+            skipEmptyCallback: true);
+
+        return Branch(
+            newSolutionState,
+            projectIdToTrackerMap: newTrackerMap);
+    }
+
     /// <inheritdoc cref="SolutionState.AddMetadataReferences"/>
     public SolutionCompilationState AddMetadataReferences(
         ProjectId projectId, IReadOnlyCollection<MetadataReference> metadataReferences)
