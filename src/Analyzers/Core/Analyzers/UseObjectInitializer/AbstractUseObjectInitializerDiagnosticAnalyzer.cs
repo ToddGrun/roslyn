@@ -62,9 +62,11 @@ internal abstract partial class AbstractUseObjectInitializerDiagnosticAnalyzer<
     protected abstract TAnalyzer GetAnalyzer();
 
     protected AbstractUseObjectInitializerDiagnosticAnalyzer()
-        : base(ImmutableDictionary<DiagnosticDescriptor, IOption2>.Empty
-                .Add(s_descriptor, CodeStyleOptions2.PreferObjectInitializer)
-                .Add(s_unnecessaryCodeDescriptor, CodeStyleOptions2.PreferObjectInitializer))
+        : base(
+            [
+                (s_descriptor, CodeStyleOptions2.PreferObjectInitializer),
+                (s_unnecessaryCodeDescriptor, CodeStyleOptions2.PreferObjectInitializer)
+            ])
     {
     }
 

@@ -24,9 +24,11 @@ internal abstract class AbstractFileHeaderDiagnosticAnalyzer : AbstractBuiltInCo
         => CreateDescriptorWithId(IDEDiagnosticIds.FileHeaderMismatch, EnforceOnBuildValues.FileHeaderMismatch, hasAnyCodeStyleOption: true, title, message);
 
     protected AbstractFileHeaderDiagnosticAnalyzer()
-        : base(ImmutableDictionary<DiagnosticDescriptor, IOption2>.Empty
-                .Add(s_invalidHeaderDescriptor, CodeStyleOptions2.FileHeaderTemplate)
-                .Add(s_missingHeaderDescriptor, CodeStyleOptions2.FileHeaderTemplate))
+        : base(
+            [
+                (s_invalidHeaderDescriptor, CodeStyleOptions2.FileHeaderTemplate),
+                (s_missingHeaderDescriptor, CodeStyleOptions2.FileHeaderTemplate)
+            ])
     {
     }
 

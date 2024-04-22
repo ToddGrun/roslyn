@@ -40,9 +40,11 @@ internal sealed class MisplacedUsingDirectivesDiagnosticAnalyzer : AbstractBuilt
         s_localizableTitle, s_localizableInsideMessage);
 
     public MisplacedUsingDirectivesDiagnosticAnalyzer()
-       : base(ImmutableDictionary<DiagnosticDescriptor, IOption2>.Empty
-                .Add(s_outsideDiagnosticDescriptor, CSharpCodeStyleOptions.PreferredUsingDirectivePlacement)
-                .Add(s_insideDiagnosticDescriptor, CSharpCodeStyleOptions.PreferredUsingDirectivePlacement))
+       : base(
+           [
+                (s_outsideDiagnosticDescriptor, CSharpCodeStyleOptions.PreferredUsingDirectivePlacement),
+                (s_insideDiagnosticDescriptor, CSharpCodeStyleOptions.PreferredUsingDirectivePlacement)
+           ])
     {
     }
 

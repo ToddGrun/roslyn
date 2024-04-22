@@ -82,9 +82,11 @@ internal abstract partial class AbstractUseCollectionInitializerDiagnosticAnalyz
         isUnnecessary: true);
 
     protected AbstractUseCollectionInitializerDiagnosticAnalyzer()
-        : base(ImmutableDictionary<DiagnosticDescriptor, IOption2>.Empty
-                .Add(s_descriptor, CodeStyleOptions2.PreferCollectionInitializer)
-                .Add(s_unnecessaryCodeDescriptor, CodeStyleOptions2.PreferCollectionInitializer))
+        : base(
+            [
+                (s_descriptor, CodeStyleOptions2.PreferCollectionInitializer),
+                (s_unnecessaryCodeDescriptor, CodeStyleOptions2.PreferCollectionInitializer)
+            ])
     {
     }
 

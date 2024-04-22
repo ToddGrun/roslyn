@@ -28,16 +28,16 @@ internal class UseExpressionBodyDiagnosticAnalyzer : AbstractBuiltInCodeStyleDia
         _syntaxKinds = _helpers.SelectManyAsArray(h => h.SyntaxKinds);
     }
 
-    private static ImmutableDictionary<DiagnosticDescriptor, IOption2> GetSupportedDescriptorsWithOptions()
+    private static ImmutableArray<(DiagnosticDescriptor, IOption2)> GetSupportedDescriptorsWithOptions()
     {
-        var builder = ImmutableDictionary.CreateBuilder<DiagnosticDescriptor, IOption2>();
+        var builder = new FixedSizeArrayBuilder<(DiagnosticDescriptor, IOption2)>(_helpers.Length);
         foreach (var helper in _helpers)
         {
             var descriptor = CreateDescriptorWithId(helper.DiagnosticId, helper.EnforceOnBuild, hasAnyCodeStyleOption: true, helper.UseExpressionBodyTitle, helper.UseExpressionBodyTitle);
-            builder.Add(descriptor, helper.Option);
+            builder.Add((descriptor, helper.Option));
         }
 
-        return builder.ToImmutable();
+        return builder.MoveToImmutable();
     }
 
     public override DiagnosticAnalyzerCategory GetAnalyzerCategory()
