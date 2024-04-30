@@ -259,7 +259,7 @@ namespace Microsoft.CodeAnalysis.Editor.CSharp.UnitTests.RemoveUnusedParametersA
                 """
                 class B
                 {
-                    protected B(int p) { }
+                    protected B(int foo) { }
                 }
 
                 class C: B

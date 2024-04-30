@@ -1456,40 +1456,35 @@ class C
 
         [Theory]
         [CombinatorialData]
-        public async Task CompoundAssignmentOperator_ValueUsed_SameStatement(
-            [CombinatorialValues("1" /*Constant*/, "M2()" /*Non-constant*/)] string rightHandSide,
+        public async Task CompoundAssignmentOperator_ValueUsed_SameStatement_NonConstantOnRHS(
             [CombinatorialValues(UnusedValuePreference.DiscardVariable, UnusedValuePreference.UnusedLocalVariable)] object option)
         {
+            var leftHandSide = ((UnusedValuePreference)option == UnusedValuePreference.DiscardVariable) ? "_" : "var y";
             var source =
                 $$"""
                 class C
                 {
                     void M(int x)
                     {
-                        var {|#0:y|} = x += {{rightHandSide}};
+                        {{leftHandSide}} = {|#0:x|} += M2();
                     }
 
                     int M2() => 0;
                 }
                 """;
 
-            var fixedSource = (UnusedValuePreference)option switch
-            {
-                UnusedValuePreference.UnusedLocalVariable => source,
-                UnusedValuePreference.DiscardVariable =>
+            var fixedSource =
                 $$"""
                 class C
                 {
                     void M(int x)
                     {
-                        _ = x += {{rightHandSide}};
+                        {{leftHandSide}} = x + M2();
                     }
 
                     int M2() => 0;
                 }
-                """,
-                _ => throw ExceptionUtilities.Unreachable(),
-            };
+                """;
 
             var test = new VerifyCS.Test
             {
@@ -1501,12 +1496,58 @@ class C
                 },
             };
 
-            if ((UnusedValuePreference)option == UnusedValuePreference.DiscardVariable)
+            // /0/Test0.cs(5,17): info IDE0059: Unnecessary assignment of a value to 'x'
+            test.TestState.ExpectedDiagnostics.Add(
+                VerifyCS.Diagnostic("IDE0059").WithSeverity(DiagnosticSeverity.Info).WithLocation(0).WithArguments("x"));
+
+            await test.RunAsync();
+        }
+
+        [Theory]
+        [CombinatorialData]
+        public async Task CompoundAssignmentOperator_ValueUsed_SameStatement_ConstantOnRHS(
+            [CombinatorialValues(UnusedValuePreference.DiscardVariable, UnusedValuePreference.UnusedLocalVariable)] object option)
+        {
+            var leftHandSide = ((UnusedValuePreference)option == UnusedValuePreference.DiscardVariable) ? "_" : "var y";
+            var source =
+                $$"""
+                class C
+                {
+                    void M(int x)
+                    {
+                        {{leftHandSide}} = {|#0:x|} += 1;
+                    }
+
+                    int M2() => 0;
+                }
+                """;
+
+            var fixedSource =
+                $$"""
+                class C
+                {
+                    void M(int x)
+                    {
+                        {{leftHandSide}} = x + 1;
+                    }
+
+                    int M2() => 0;
+                }
+                """;
+
+            var test = new VerifyCS.Test
             {
-                test.TestState.ExpectedDiagnostics.Add(
-                    // /0/Test0.cs(5,13): info IDE0059: Unnecessary assignment of a value to 'y'
-                    VerifyCS.Diagnostic("IDE0059").WithSeverity(DiagnosticSeverity.Info).WithLocation(0).WithArguments("y"));
-            }
+                TestCode = source,
+                FixedCode = fixedSource,
+                Options =
+                {
+                    { CSharpCodeStyleOptions.UnusedValueAssignment, (UnusedValuePreference)option },
+                },
+            };
+
+            // /0/Test0.cs(5,17): info IDE0059: Unnecessary assignment of a value to 'x'
+            test.TestState.ExpectedDiagnostics.Add(
+                VerifyCS.Diagnostic("IDE0059").WithSeverity(DiagnosticSeverity.Info).WithLocation(0).WithArguments("x"));
 
             await test.RunAsync();
         }

@@ -561,6 +561,11 @@ internal abstract class AbstractRemoveUnusedValuesCodeFixProvider<TExpressionSyn
                     // For example, "x += MethodCall();", where assignment to 'x' is redundant
                     // is replaced with "_ = MethodCall();" or "var unused = MethodCall();"
                     nodeReplacementMap.Add(node.GetRequiredParent(), GetReplacementNodeForCompoundAssignment(node.GetRequiredParent(), newNameNode, editor, syntaxFacts));
+
+                    // When a compound assignment is not parented by an expression statement, GetReplacementNodeForCompoundAssignment doesn't use newNameNode.
+                    // Instead, it changes something like "x += 1" into "x + 1". In that case, we don't with to create a new local declaration below.
+                    if (!syntaxFacts.IsExpressionStatement(node.GetRequiredParent().GetRequiredParent()))
+                        newLocalNameOpt = null;
                 }
                 else if (syntaxFacts.IsVarPattern(node))
                 {
@@ -598,11 +603,10 @@ internal abstract class AbstractRemoveUnusedValuesCodeFixProvider<TExpressionSyn
                 // Create a new local declaration for the unused local if both following conditions are met:
                 //  1. User prefers unused local variables for unused value assignment AND
                 //  2. Assignment value has side effects and hence cannot be removed.
-                if (preference == UnusedValuePreference.UnusedLocalVariable && !removeAssignments)
+                if (preference == UnusedValuePreference.UnusedLocalVariable && newLocalNameOpt != null)
                 {
                     var type = semanticModel.GetTypeInfo(node, cancellationToken).Type;
                     Contract.ThrowIfNull(type);
-                    Contract.ThrowIfNull(newLocalNameOpt);
                     var declarationStatement = CreateLocalDeclarationStatement(type, newLocalNameOpt);
                     nodesToAdd.Add((declarationStatement, node));
                 }

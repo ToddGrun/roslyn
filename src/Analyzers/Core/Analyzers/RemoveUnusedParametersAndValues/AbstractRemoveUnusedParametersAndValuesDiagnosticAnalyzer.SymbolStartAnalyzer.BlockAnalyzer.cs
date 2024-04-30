@@ -638,6 +638,14 @@ internal abstract partial class AbstractRemoveUnusedParametersAndValuesDiagnosti
                     if (unusedSymbolWriteOperation.Parent is IAssignmentOperation assignment &&
                         assignment.Target == unusedSymbolWriteOperation)
                     {
+                        var isUsedCompoundAssignment = assignment.IsAnyCompoundAssignment() &&
+                                            assignment.Parent?.Kind != OperationKind.ExpressionStatement;
+
+                        if (isUsedCompoundAssignment)
+                        {
+                            return false;
+                        }
+
                         return IsRemovableAssignmentValueWithoutSideEffects(assignment.Value);
                     }
                     else if (unusedSymbolWriteOperation.Parent is IIncrementOrDecrementOperation)
