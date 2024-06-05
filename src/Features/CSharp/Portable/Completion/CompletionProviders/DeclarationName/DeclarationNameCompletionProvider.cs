@@ -67,7 +67,7 @@ internal partial class DeclarationNameCompletionProvider([ImportMany] IEnumerabl
                 }
             }
 
-            var nameInfo = await NameDeclarationInfo.GetDeclarationInfoAsync(document, position, cancellationToken).ConfigureAwait(false);
+            var nameInfo = await NameDeclarationInfo.GetDeclarationInfoAsync(document, position, context.SemanticModel, cancellationToken).ConfigureAwait(false);
             using var _ = PooledHashSet<string>.GetInstance(out var suggestedNames);
 
             var sortValue = 0;

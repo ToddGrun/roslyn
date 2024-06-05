@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Collections;
 using Microsoft.CodeAnalysis.Options;
+using Microsoft.CodeAnalysis.Shared.Extensions;
 using Microsoft.CodeAnalysis.Shared.Extensions.ContextQuery;
 using Microsoft.CodeAnalysis.Text;
 
@@ -214,12 +215,17 @@ public sealed class CompletionContext
         }
     }
 
-    internal Task<SyntaxContext> GetSyntaxContextWithExistingSpeculativeModelAsync(Document document, CancellationToken cancellationToken)
+    internal async Task<SyntaxContext> GetSyntaxContextWithExistingSpeculativeModelAsync(Document document, CancellationToken cancellationToken)
     {
-        if (SharedSyntaxContextsWithSpeculativeModel is null)
-            return Utilities.CreateSyntaxContextWithExistingSpeculativeModelAsync(document, Position, cancellationToken);
+        (document, var semanticModel) = await document.GetFullOrPartialSemanticModelAsync(cancellationToken).ConfigureAwait(false);
+        SyntaxContext result;
 
-        return SharedSyntaxContextsWithSpeculativeModel.GetSyntaxContextAsync(document, cancellationToken);
+        if (SharedSyntaxContextsWithSpeculativeModel is null)
+            result = await Utilities.CreateSyntaxContextWithExistingSpeculativeModelAsync(document, Position, cancellationToken).ConfigureAwait(false);
+        else
+            result = await SharedSyntaxContextsWithSpeculativeModel.GetSyntaxContextAsync(document, cancellationToken).ConfigureAwait(false);
+
+        return result;
     }
 
     private CompletionItem FixItem(CompletionItem item)

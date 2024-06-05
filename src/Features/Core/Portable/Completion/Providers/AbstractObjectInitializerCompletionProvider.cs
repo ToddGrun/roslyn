@@ -27,7 +27,9 @@ internal abstract class AbstractObjectInitializerCompletionProvider : LSPComplet
         var position = context.Position;
         var cancellationToken = context.CancellationToken;
 
-        var semanticModel = await document.ReuseExistingSpeculativeModelAsync(position, cancellationToken).ConfigureAwait(false);
+        var syntaxContext = await context.GetSyntaxContextWithExistingSpeculativeModelAsync(document, cancellationToken).ConfigureAwait(false);
+        var semanticModel = syntaxContext.SemanticModel;
+
         if (GetInitializedType(document, semanticModel, position, cancellationToken) is not var (type, initializerLocation))
         {
             return;

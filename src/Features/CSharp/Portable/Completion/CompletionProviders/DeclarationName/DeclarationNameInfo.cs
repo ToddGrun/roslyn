@@ -41,9 +41,9 @@ internal readonly struct NameDeclarationInfo(
 
     public ImmutableArray<SymbolKindOrTypeKind> PossibleSymbolKinds => _possibleSymbolKinds.NullToEmpty();
 
-    public static async Task<NameDeclarationInfo> GetDeclarationInfoAsync(Document document, int position, CancellationToken cancellationToken)
+    public static async Task<NameDeclarationInfo> GetDeclarationInfoAsync(Document document, int position, SemanticModel semanticModel, CancellationToken cancellationToken)
     {
-        var info = await GetDeclarationInfoWorkerAsync(document, position, cancellationToken).ConfigureAwait(false);
+        var info = await GetDeclarationInfoWorkerAsync(document, position, semanticModel, cancellationToken).ConfigureAwait(false);
 
         // if we bound to some error type, and that error type itself didn't start with an uppercase letter, then
         // it's almost certainly just an error case where the user was referencing something that was not a type.
@@ -63,11 +63,10 @@ internal readonly struct NameDeclarationInfo(
         return info;
     }
 
-    private static async Task<NameDeclarationInfo> GetDeclarationInfoWorkerAsync(Document document, int position, CancellationToken cancellationToken)
+    private static async Task<NameDeclarationInfo> GetDeclarationInfoWorkerAsync(Document document, int position, SemanticModel semanticModel, CancellationToken cancellationToken)
     {
         var tree = await document.GetRequiredSyntaxTreeAsync(cancellationToken).ConfigureAwait(false);
         var token = tree.FindTokenOnLeftOfPosition(position, cancellationToken).GetPreviousTokenIfTouchingWord(position);
-        var semanticModel = await document.ReuseExistingSpeculativeModelAsync(token.SpanStart, cancellationToken).ConfigureAwait(false);
         var typeInferenceService = document.GetRequiredLanguageService<ITypeInferenceService>();
 
         if (IsTupleTypeElement(token, semanticModel, cancellationToken, out var result)

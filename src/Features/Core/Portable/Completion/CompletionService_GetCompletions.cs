@@ -68,9 +68,6 @@ public abstract partial class CompletionService
          ImmutableHashSet<string>? roles = null,
          CancellationToken cancellationToken = default)
     {
-        // We don't need SemanticModel here, just want to make sure it won't get GC'd before CompletionProviders are able to get it.
-        (document, var semanticModel) = await GetDocumentWithFrozenPartialSemanticsAsync(document, cancellationToken).ConfigureAwait(false);
-
         var text = await document.GetValueTextAsync(cancellationToken).ConfigureAwait(false);
         var completionListSpan = GetDefaultCompletionListSpan(text, caretPosition);
 
@@ -114,8 +111,6 @@ public abstract partial class CompletionService
 
         var augmentingContexts = await ComputeNonEmptyCompletionContextsAsync(
             document, caretPosition, trigger, options, completionListSpan, augmentingProviders, sharedContext, cancellationToken).ConfigureAwait(false);
-
-        GC.KeepAlive(semanticModel);
 
         // Providers are ordered, but we processed them in our own order.  Ensure that the
         // groups are properly ordered based on the original providers.
@@ -169,22 +164,6 @@ public abstract partial class CompletionService
 
             return additionalAugmentingProviders.ToImmutableAndFree();
         }
-    }
-
-    /// <summary>
-    /// Returns a document with frozen partial semantic unless we already have a complete compilation available.
-    /// Getting full semantic could be costly in certain scenarios and would cause significant delay in completion. 
-    /// In most cases we'd still end up with complete document, but we'd consider it an acceptable trade-off even when 
-    /// we get into this transient state.
-    /// </summary>
-    private async Task<(Document document, SemanticModel? semanticModel)> GetDocumentWithFrozenPartialSemanticsAsync(Document document, CancellationToken cancellationToken)
-    {
-        if (_suppressPartialSemantics)
-        {
-            return (document, await document.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false));
-        }
-
-        return await document.GetFullOrPartialSemanticModelAsync(cancellationToken).ConfigureAwait(false);
     }
 
     private static bool ValidatePossibleTriggerCharacterSet(CompletionTriggerKind completionTriggerKind, IEnumerable<CompletionProvider> triggeredProviders,

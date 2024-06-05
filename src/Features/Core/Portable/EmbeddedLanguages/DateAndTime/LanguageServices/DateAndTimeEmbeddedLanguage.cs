@@ -31,8 +31,9 @@ internal class DateAndTimeEmbeddedLanguage : IEmbeddedLanguage
         var root = await document.GetRequiredSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
         var token = GetToken(syntaxFacts, root, position);
 
-        var semanticModel = await document.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
-        var detector = DateAndTimeLanguageDetector.GetOrCreate(semanticModel.Compilation, this.Info);
+        (_, var semanticModel) = await document.GetFullOrPartialSemanticModelAsync(cancellationToken).ConfigureAwait(false);
+
+        var detector = DateAndTimeLanguageDetector.GetOrCreate(semanticModel!.Compilation, this.Info);
         return detector.TryParseString(token, semanticModel, cancellationToken) != null
             ? token : null;
     }

@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CSharp.Completion.Providers.DeclarationName;
 using Microsoft.CodeAnalysis.Editing;
 using Microsoft.CodeAnalysis.Editor.UnitTests.Workspaces;
+using Microsoft.CodeAnalysis.Shared.Extensions;
 using Microsoft.CodeAnalysis.Test.Utilities;
 using Roslyn.Test.Utilities;
 using Xunit;
@@ -805,7 +806,10 @@ class C
     private async Task<NameDeclarationInfo> GetResultsAsync(string markup)
     {
         var (document, position) = ApplyChangesToFixture(markup);
-        var result = await NameDeclarationInfo.GetDeclarationInfoAsync(document, position, CancellationToken.None);
+
+        var semanticModel = await document.ReuseExistingSpeculativeModelAsync(position, CancellationToken.None).ConfigureAwait(false);
+
+        var result = await NameDeclarationInfo.GetDeclarationInfoAsync(document, position, semanticModel, CancellationToken.None);
         return result;
     }
 

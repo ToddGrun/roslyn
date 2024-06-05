@@ -33,11 +33,6 @@ public abstract partial class CompletionService : ILanguageService
     private readonly SolutionServices _services;
     private readonly ProviderManager _providerManager;
 
-    /// <summary>
-    /// Test-only switch.
-    /// </summary>
-    private bool _suppressPartialSemantics;
-
     // Prevent inheritance outside of Roslyn.
     internal CompletionService(SolutionServices services, IAsynchronousOperationListenerProvider listenerProvider)
     {
@@ -214,6 +209,7 @@ public abstract partial class CompletionService : ILanguageService
 
         var extensionManager = document.Project.Solution.Workspace.Services.GetRequiredService<IExtensionManager>();
 
+        var frozenDocument = document.WithFrozenPartialSemantics(cancellationToken);
         var description = await extensionManager.PerformFunctionAsync(
             provider,
             cancellationToken => provider.GetDescriptionAsync(document, item, options, displayOptions, cancellationToken),
@@ -406,8 +402,5 @@ public abstract partial class CompletionService : ILanguageService
                 sharedContext: null,
                 cancellationToken).ConfigureAwait(false);
         }
-
-        public void SuppressPartialSemantics()
-            => _completionServiceWithProviders._suppressPartialSemantics = true;
     }
 }

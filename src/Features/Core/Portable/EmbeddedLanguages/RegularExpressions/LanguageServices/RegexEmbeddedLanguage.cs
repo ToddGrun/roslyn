@@ -36,8 +36,9 @@ internal class RegexEmbeddedLanguage : IEmbeddedLanguage
         var root = await document.GetRequiredSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
         var token = root.FindToken(position);
 
-        var semanticModel = await document.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
-        var detector = RegexLanguageDetector.GetOrCreate(semanticModel.Compilation, this.Info);
+        (_, var semanticModel) = await document.GetFullOrPartialSemanticModelAsync(cancellationToken).ConfigureAwait(false);
+
+        var detector = RegexLanguageDetector.GetOrCreate(semanticModel!.Compilation, this.Info);
         var tree = detector.TryParseString(token, semanticModel, cancellationToken);
         return tree == null ? default : (tree, token);
     }
