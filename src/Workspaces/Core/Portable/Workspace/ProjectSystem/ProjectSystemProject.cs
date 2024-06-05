@@ -209,8 +209,8 @@ internal sealed partial class ProjectSystemProject
 
             return language switch
             {
-                LanguageNames.VisualBasic => [new(rootPath, ".vb")],
-                LanguageNames.CSharp => [new(rootPath, ".cs"), new(rootPath, ".razor"), new(rootPath, ".cshtml")],
+                LanguageNames.VisualBasic => [new(rootPath, new OneOrMany<string>(".vb"))],
+                LanguageNames.CSharp => [new(rootPath, new OneOrMany<string>([".cs", ".razor", ".cshtml"]))],
                 _ => []
             };
         }

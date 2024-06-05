@@ -45,26 +45,49 @@ internal sealed class SimpleFileChangeWatcher : IFileChangeWatcher
                 // probably won't ever see a watch for a file under there later anyways.
                 if (Directory.Exists(watchedDirectory.Path))
                 {
-                    var watcher = new FileSystemWatcher(watchedDirectory.Path);
-                    watcher.IncludeSubdirectories = true;
+                    if (watchedDirectory.ExtensionFilters.Count == 0)
+                    {
+                        var watcher = CreateWatcherForPathAndFilter(watchedDirectory.Path, filter: null);
 
-                    if (watchedDirectory.ExtensionFilter != null)
-                        watcher.Filter = '*' + watchedDirectory.ExtensionFilter;
+                        watchedDirectoriesBuilder.Add(watchedDirectory);
+                        watcherBuilder.Add(watcher);
+                    }
+                    else
+                    {
+                        foreach (var filter in watchedDirectory.ExtensionFilters)
+                        {
+                            var watcher = CreateWatcherForPathAndFilter(watchedDirectory.Path, filter);
 
-                    watcher.Changed += RaiseEvent;
-                    watcher.Created += RaiseEvent;
-                    watcher.Deleted += RaiseEvent;
-                    watcher.Renamed += RaiseEvent;
+                            watchedDirectoriesBuilder.Add(watchedDirectory);
+                            watcherBuilder.Add(watcher);
+                        }
+                    }
 
-                    watcher.EnableRaisingEvents = true;
-
-                    watchedDirectoriesBuilder.Add(watchedDirectory);
-                    watcherBuilder.Add(watcher);
                 }
             }
 
             _watchedDirectories = watchedDirectoriesBuilder.ToImmutable();
             _directoryFileSystemWatchers = watcherBuilder.ToImmutable();
+
+            return;
+
+            FileSystemWatcher CreateWatcherForPathAndFilter(string path, string? filter)
+            {
+                var watcher = new FileSystemWatcher(path);
+                watcher.IncludeSubdirectories = true;
+
+                if (filter != null)
+                    watcher.Filter = '*' + filter;
+
+                watcher.Changed += RaiseEvent;
+                watcher.Created += RaiseEvent;
+                watcher.Deleted += RaiseEvent;
+                watcher.Renamed += RaiseEvent;
+
+                watcher.EnableRaisingEvents = true;
+
+                return watcher;
+            }
         }
 
         public event EventHandler<string>? FileChanged;

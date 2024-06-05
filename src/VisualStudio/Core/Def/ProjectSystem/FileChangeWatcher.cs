@@ -53,9 +53,15 @@ internal sealed class FileChangeWatcher : IFileChangeWatcher
             CancellationToken.None);
     }
 
+    private static readonly List<List<WatcherOperation>> s_list = new List<List<WatcherOperation>>();
+    private static readonly List<(int, int)> s_sizes = new List<(int, int)>();
+
     private async ValueTask ProcessBatchAsync(ImmutableSegmentedList<WatcherOperation> operations, CancellationToken cancellationToken)
     {
         var service = await _fileChangeService.ConfigureAwait(false);
+
+        s_list.Add(operations.ToList());
+        var size = 0;
 
         for (var startIndex = 0; startIndex < operations.Count; startIndex++)
         {
@@ -66,7 +72,10 @@ internal sealed class FileChangeWatcher : IFileChangeWatcher
             await combinedOp.ApplyAsync(service, cancellationToken).ConfigureAwait(false);
 
             startIndex = combinableEndIndex;
+            size++;
         }
+
+        s_sizes.Add((size, operations.Count));
 
         return;
 
@@ -100,10 +109,10 @@ internal sealed class FileChangeWatcher : IFileChangeWatcher
         private readonly Kind _kind;
 
         /// <summary>
-        /// The extension filter to apply for <see cref="Kind.WatchDirectory"/>. This value may be
-        /// <see langword="null"/> to disable the extension filter.
+        /// The extension filter(s) to apply for <see cref="Kind.WatchDirectory"/>. This value may be
+        /// empty to disable the extension filter.
         /// </summary>
-        private readonly string? _filter;
+        private readonly OneOrMany<string> _filters;
 
         /// <summary>
         /// The file change flags to apply for <see cref="Kind.WatchFiles"/>.
@@ -141,13 +150,13 @@ internal sealed class FileChangeWatcher : IFileChangeWatcher
         /// </summary>
         private readonly OneOrMany<string> _paths;
 
-        private WatcherOperation(Kind kind, string directory, string? filter, IVsFreeThreadedFileChangeEvents2 sink, List<uint> cookies)
+        private WatcherOperation(Kind kind, string directory, OneOrMany<string> filters, IVsFreeThreadedFileChangeEvents2 sink, List<uint> cookies)
         {
             Contract.ThrowIfFalse(kind is Kind.WatchDirectory);
             _kind = kind;
 
             _paths = new OneOrMany<string>(directory);
-            _filter = filter;
+            _filters = filters;
             _sink = sink;
             _cookies = cookies;
 
@@ -167,7 +176,7 @@ internal sealed class FileChangeWatcher : IFileChangeWatcher
             _tokens = tokens;
 
             // Other watching fields are not used for this kind
-            _filter = null;
+            _filters = OneOrMany<string>.Empty;
             _cookies = null!;
         }
 
@@ -179,7 +188,7 @@ internal sealed class FileChangeWatcher : IFileChangeWatcher
             _cookies = cookies;
 
             // Other watching fields are not used for this kind
-            _filter = null;
+            _filters = OneOrMany<string>.Empty;
             _fileChangeFlags = 0;
             _sink = null!;
             _tokens = OneOrMany<Context.RegularWatchedFile>.Empty;
@@ -194,7 +203,7 @@ internal sealed class FileChangeWatcher : IFileChangeWatcher
             _tokens = tokens;
 
             // Other watching fields are not used for this kind
-            _filter = null;
+            _filters = OneOrMany<string>.Empty;
             _fileChangeFlags = 0;
             _sink = null!;
             _cookies = null!;
@@ -209,8 +218,8 @@ internal sealed class FileChangeWatcher : IFileChangeWatcher
             UnwatchFiles,
         }
 
-        public static WatcherOperation WatchDirectory(string directory, string? filter, IVsFreeThreadedFileChangeEvents2 sink, List<uint> cookies)
-            => new(Kind.WatchDirectory, directory, filter, sink, cookies);
+        public static WatcherOperation WatchDirectory(string directory, OneOrMany<string> filters, IVsFreeThreadedFileChangeEvents2 sink, List<uint> cookies)
+            => new(Kind.WatchDirectory, directory, filters, sink, cookies);
 
         public static WatcherOperation WatchFile(string path, _VSFILECHANGEFLAGS fileChangeFlags, IVsFreeThreadedFileChangeEvents2 sink, Context.RegularWatchedFile token)
             => new(Kind.WatchFiles, OneOrMany.Create(path), fileChangeFlags, sink, OneOrMany.Create(token));
@@ -245,6 +254,7 @@ internal sealed class FileChangeWatcher : IFileChangeWatcher
             using var _1 = ArrayBuilder<Context.RegularWatchedFile>.GetInstance(out var tokensBuilder);
             using var _2 = ArrayBuilder<string>.GetInstance(out var fileNamesBuilder);
             using var _3 = ArrayBuilder<uint>.GetInstance(out var cookiesBuilder);
+            using var _4 = PooledHashSet<string>.GetInstance(out var filterBuilder);
 
             for (; start <= end; start++)
             {
@@ -254,21 +264,20 @@ internal sealed class FileChangeWatcher : IFileChangeWatcher
                 {
                     case Kind.WatchFiles:
                         for (var i = 0; i < op._paths.Count; i++)
-                        {
                             fileNamesBuilder.Add(op._paths[i]);
-                        }
 
                         for (var i = 0; i < op._tokens.Count; i++)
-                        {
                             tokensBuilder.Add(op._tokens[i]);
-                        }
+                        break;
+
+                    case Kind.WatchDirectory:
+                        foreach (var filter in op._filters)
+                            filterBuilder.Add(filter);
                         break;
 
                     case Kind.UnwatchFiles:
                         for (var i = 0; i < op._tokens.Count; i++)
-                        {
                             tokensBuilder.Add(op._tokens[i]);
-                        }
                         break;
 
                     case Kind.UnwatchDirectories:
@@ -284,6 +293,8 @@ internal sealed class FileChangeWatcher : IFileChangeWatcher
             {
                 Kind.WatchFiles =>
                     WatchFiles(fileNamesBuilder.ToImmutable(), firstOp._fileChangeFlags, firstOp._sink, tokensBuilder.ToImmutable()),
+                Kind.WatchDirectory =>
+                    WatchDirectory(firstOp._paths[0], new OneOrMany<string>(filterBuilder.ToImmutableArray()), firstOp._sink, firstOp._cookies),
                 Kind.UnwatchFiles =>
                     UnwatchFiles(tokensBuilder.ToImmutable()),
                 Kind.UnwatchDirectories =>
@@ -295,11 +306,14 @@ internal sealed class FileChangeWatcher : IFileChangeWatcher
 
         public bool CanCombineWith(in WatcherOperation other)
         {
-            // Watching directory operation cannot be combined
-            if (_kind == Kind.WatchDirectory)
+            if (_kind != other._kind)
                 return false;
 
-            return (_kind == other._kind);
+            // Watching directory operation can only be combined on the same path
+            if (_kind == Kind.WatchDirectory && _paths[0] != other._paths[0])
+                return false;
+
+            return true;
         }
 
         public async ValueTask ApplyAsync(IVsAsyncFileChangeEx2 service, CancellationToken cancellationToken)
@@ -312,8 +326,8 @@ internal sealed class FileChangeWatcher : IFileChangeWatcher
                     var cookie = await service.AdviseDirChangeAsync(_paths[0], watchSubdirectories: true, _sink, cancellationToken).ConfigureAwait(false);
                     _cookies.Add(cookie);
 
-                    if (_filter != null)
-                        await service.FilterDirectoryChangesAsync(cookie, new[] { _filter }, cancellationToken).ConfigureAwait(false);
+                    if (_filters.Count > 0)
+                        await service.FilterDirectoryChangesAsync(cookie, _filters.ToArray(), cancellationToken).ConfigureAwait(false);
 
                     return;
 
@@ -370,7 +384,7 @@ internal sealed class FileChangeWatcher : IFileChangeWatcher
             foreach (var watchedDirectory in watchedDirectories)
             {
                 _fileChangeWatcher._taskQueue.AddWork(watchedDirectories.Select(
-                    watchedDirectory => WatcherOperation.WatchDirectory(watchedDirectory.Path, watchedDirectory.ExtensionFilter, this, _directoryWatchCookies)));
+                    watchedDirectory => WatcherOperation.WatchDirectory(watchedDirectory.Path, watchedDirectory.ExtensionFilters, this, _directoryWatchCookies)));
             }
         }
 

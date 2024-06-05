@@ -6,6 +6,7 @@ using System.Collections.Immutable;
 using System.Runtime.InteropServices;
 using Microsoft.CodeAnalysis.LanguageServer.Handler;
 using Microsoft.CodeAnalysis.LanguageServer.LanguageServer;
+using Microsoft.CodeAnalysis.PooledObjects;
 using Microsoft.CodeAnalysis.ProjectSystem;
 using Microsoft.CodeAnalysis.Shared.TestHooks;
 using Roslyn.LanguageServer.Protocol;
@@ -77,19 +78,43 @@ internal sealed class LspFileChangeWatcher : IFileChangeWatcher
             // If we have any watched directories, then watch those directories directly
             if (watchedDirectories.Any())
             {
-                var directoryWatches = watchedDirectories.Select(d => new FileSystemWatcher
-                {
-                    GlobPattern = new RelativePattern
-                    {
-                        BaseUri = ProtocolConversions.CreateRelativePatternBaseUri(d.Path),
-                        Pattern = d.ExtensionFilter is not null ? "**/*" + d.ExtensionFilter : "**/*"
-                    }
-                }).ToArray();
+                using var _ = ArrayBuilder<FileSystemWatcher>.GetInstance(out var directoryWatches);
 
-                _directoryWatchRegistration = new LspFileWatchRegistration(lspFileChangeWatcher, directoryWatches);
+                foreach (var watchedDirectory in watchedDirectories)
+                {
+                    if (watchedDirectory.ExtensionFilters.Count == 0)
+                    {
+                        var watcher = CreateFileSystemWatcher(watchedDirectory.Path, filter: null);
+                        directoryWatches.Add(watcher);
+                    }
+                    else
+                    {
+                        foreach (var filter in watchedDirectory.ExtensionFilters)
+                        {
+                            var watcher = CreateFileSystemWatcher(watchedDirectory.Path, filter);
+                            directoryWatches.Add(watcher);
+                        }
+                    }
+                }
+
+                _directoryWatchRegistration = new LspFileWatchRegistration(lspFileChangeWatcher, directoryWatches.ToArray());
             }
 
             _lspFileChangeWatcher._didChangeWatchedFilesHandler.NotificationRaised += WatchedFilesHandler_OnNotificationRaised;
+
+            return;
+
+            static FileSystemWatcher CreateFileSystemWatcher(string path, string? filter)
+            {
+                return new FileSystemWatcher
+                {
+                    GlobPattern = new RelativePattern
+                    {
+                        BaseUri = ProtocolConversions.CreateRelativePatternBaseUri(path),
+                        Pattern = filter is not null ? "**/*" + filter : "**/*"
+                    }
+                };
+            }
         }
 
         private void WatchedFilesHandler_OnNotificationRaised(object? sender, DidChangeWatchedFilesParams e)

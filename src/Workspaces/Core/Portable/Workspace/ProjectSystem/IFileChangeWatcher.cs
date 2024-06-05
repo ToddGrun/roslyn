@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Immutable;
+using Roslyn.Utilities;
 
 namespace Microsoft.CodeAnalysis.ProjectSystem;
 
@@ -26,7 +27,7 @@ internal interface IFileChangeWatcher
 /// </remarks>
 internal sealed class WatchedDirectory
 {
-    public WatchedDirectory(string path, string? extensionFilter)
+    public WatchedDirectory(string path, OneOrMany<string> extensionFilters)
     {
         // We are doing string comparisons with this path, so ensure it has a trailing directory separator so we don't get confused with sibling
         // paths that won't actually be covered. For example, if we're watching C:\Directory we wouldn't see changes to C:\DirectorySibling\Foo.txt.
@@ -35,13 +36,13 @@ internal sealed class WatchedDirectory
             path += System.IO.Path.DirectorySeparatorChar;
         }
 
-        if (extensionFilter != null && !extensionFilter.StartsWith("."))
+        if (extensionFilters.Count > 0 && extensionFilters.Any(static f => !f.StartsWith(".")))
         {
-            throw new ArgumentException($"{nameof(extensionFilter)} should start with a period.", nameof(extensionFilter));
+            throw new ArgumentException($"{nameof(extensionFilters)} contains a filter that doesn't start with a period.", nameof(extensionFilters));
         }
 
         Path = path;
-        ExtensionFilter = extensionFilter;
+        ExtensionFilters = extensionFilters;
     }
 
     public string Path { get; }
@@ -49,7 +50,7 @@ internal sealed class WatchedDirectory
     /// <summary>
     /// If non-null, only watch the directory for changes to a specific extension. String always starts with a period.
     /// </summary>
-    public string? ExtensionFilter { get; }
+    public OneOrMany<string> ExtensionFilters { get; }
 
     public static bool FilePathCoveredByWatchedDirectories(ImmutableArray<WatchedDirectory> watchedDirectories, string filePath, StringComparison stringComparison)
     {
@@ -57,10 +58,11 @@ internal sealed class WatchedDirectory
         {
             if (filePath.StartsWith(watchedDirectory.Path, stringComparison))
             {
-                // If ExtensionFilter is null, then we're watching for all files in the directory so the prior check
-                // of the directory containment was sufficient. If it isn't null, then we have to check the extension
+                // If ExtensionFilters is empty, then we're watching for all files in the directory so the prior check
+                // of the directory containment was sufficient. If it isn't empty, then we have to check the extension
                 // matches.
-                if (watchedDirectory.ExtensionFilter == null || filePath.EndsWith(watchedDirectory.ExtensionFilter, stringComparison))
+                if (watchedDirectory.ExtensionFilters.Count == 0 ||
+                    watchedDirectory.ExtensionFilters.Any(static (filter, arg) => arg.filePath.EndsWith(filter, arg.stringComparison), (filePath, stringComparison)))
                 {
                     return true;
                 }

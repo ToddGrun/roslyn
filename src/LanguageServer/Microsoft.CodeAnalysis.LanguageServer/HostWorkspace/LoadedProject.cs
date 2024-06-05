@@ -45,9 +45,7 @@ internal sealed class LoadedProject : IDisposable
         var projectDirectory = Path.GetDirectoryName(projectSystemProject.FilePath)!;
         var watchedDirectories = new WatchedDirectory[]
         {
-            new(projectDirectory, ".cs"),
-            new(projectDirectory, ".cshtml"),
-            new(projectDirectory, ".razor")
+            new(projectDirectory, new OneOrMany<string>([".cs", ".cshtml", ".razor"]))
         };
 
         _fileChangeContext = fileWatcher.CreateContext(watchedDirectories);
