@@ -357,9 +357,9 @@ internal sealed class TextDocumentStates<TState>
             if (filePath is null)
                 continue;
 
-            result[filePath] = result.TryGetValue(filePath, out var existingValue)
-                ? existingValue.Add(documentId)
-                : OneOrMany.Create(documentId);
+            // Optimize for the creation case as it's significantly more common
+            if (!result.TryAdd(filePath, OneOrMany.Create(documentId)))
+                result[filePath] = result[filePath].Add(documentId);
         }
 
 #if NET
