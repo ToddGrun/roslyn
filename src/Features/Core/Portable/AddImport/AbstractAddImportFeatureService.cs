@@ -125,6 +125,8 @@ internal abstract partial class AbstractAddImportFeatureService<TSimpleNameSynta
         return result.ToImmutableAndClear();
     }
 
+    private static readonly List<string> s_debugInfo = new List<string>();
+
     private async Task<ImmutableArray<Reference>> FindResultsAsync(
         Document document, SemanticModel semanticModel, string diagnosticId, SyntaxNode node, int maxResults, ISymbolSearchService symbolSearchService,
         AddImportOptions options, ImmutableArray<PackageSource> packageSources, CancellationToken cancellationToken)
@@ -139,22 +141,46 @@ internal abstract partial class AbstractAddImportFeatureService<TSimpleNameSynta
             this, document, semanticModel, diagnosticId, node, symbolSearchService,
             options, packageSources, cancellationToken);
 
+        var sw = Stopwatch.StartNew();
+
         // Look for exact matches first:
-        var exactReferences = await FindResultsAsync(projectToAssembly, referenceToCompilation, project, maxResults, finder, exact: true, cancellationToken: cancellationToken).ConfigureAwait(false);
+        var exactReferencesTask = FindResultsAsync(projectToAssembly, referenceToCompilation, project, maxResults, finder, exact: true, cancellationToken: cancellationToken);
+        Task<ImmutableArray<Reference>>? fuzzyReferencesTask = null;
+        CancellationTokenSource? fuzzyReferencesCancellationTokenSource = null;
+
+        if (IsHostOrRemoteWorkspace(project))
+        {
+            fuzzyReferencesCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            fuzzyReferencesTask = FindResultsAsync(projectToAssembly, referenceToCompilation, project, maxResults, finder, exact: false, cancellationToken: fuzzyReferencesCancellationTokenSource.Token);
+        }
+
+        var exactReferences = await exactReferencesTask.ConfigureAwait(false);
+
+        var t1 = sw.ElapsedMilliseconds;
         if (exactReferences.Length > 0)
+        {
+            fuzzyReferencesCancellationTokenSource?.Cancel();
+
+            s_debugInfo.Add($"match: {exactReferences.Length}, {t1}");
             return exactReferences;
+        }
 
         // No exact matches found.  Fall back to fuzzy searching.
         // Only bother doing this for host workspaces.  We don't want this for 
         // things like the Interactive workspace as this will cause us to 
         // create expensive bk-trees which we won't even be able to save for 
         // future use.
-        if (!IsHostOrRemoteWorkspace(project))
+        if (fuzzyReferencesTask == null)
         {
+            s_debugInfo.Add($"no match: {t1}");
             return [];
         }
 
-        var fuzzyReferences = await FindResultsAsync(projectToAssembly, referenceToCompilation, project, maxResults, finder, exact: false, cancellationToken: cancellationToken).ConfigureAwait(false);
+        var fuzzyReferences = await fuzzyReferencesTask.ConfigureAwait(false);
+        var t2 = sw.ElapsedMilliseconds;
+
+        s_debugInfo.Add($"Insensitive result: {fuzzyReferences.Length}, {t1}, {t2}");
+
         return fuzzyReferences;
     }
 
@@ -166,6 +192,9 @@ internal abstract partial class AbstractAddImportFeatureService<TSimpleNameSynta
         ConcurrentDictionary<PortableExecutableReference, Compilation> referenceToCompilation,
         Project project, int maxResults, SymbolReferenceFinder finder, bool exact, CancellationToken cancellationToken)
     {
+        // Allow caller to proceed
+        await Task.Yield();
+
         var allReferences = new ConcurrentQueue<Reference>();
 
         // First search the current project to see if any symbols (source or metadata) match the 

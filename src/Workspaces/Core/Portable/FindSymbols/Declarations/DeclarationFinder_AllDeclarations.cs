@@ -59,7 +59,8 @@ internal static partial class DeclarationFinder
     internal static async Task<ImmutableArray<ISymbol>> FindAllDeclarationsWithNormalQueryInCurrentProcessAsync(
         Project project, SearchQuery query, SymbolFilter criteria, CancellationToken cancellationToken)
     {
-        using var _ = ArrayBuilder<ISymbol>.GetInstance(out var result);
+        if (!project.SupportsCompilation)
+            return [];
 
         // Lazily produce the compilation.  We don't want to incur any costs (especially source generators) if there
         // are no results for this query in this project.
@@ -67,34 +68,56 @@ internal static partial class DeclarationFinder
             project.GetRequiredCompilationAsync(cancellationToken),
             arg: project);
 
-        if (project.SupportsCompilation)
+        var searchTasks = new List<Task<ArrayBuilder<ISymbol>>>
         {
-            await SearchCurrentProjectAsync().ConfigureAwait(false);
-            await SearchProjectReferencesAsync().ConfigureAwait(false);
-            await SearchMetadataReferencesAsync().ConfigureAwait(false);
+            SearchCurrentProjectAsync(project, query, criteria, lazyCompilation, cancellationToken),
+            SearchProjectReferencesAsync(project, query, criteria, lazyCompilation, cancellationToken),
+            SearchMetadataReferencesAsync(project, query, criteria, lazyCompilation, cancellationToken)
+        };
+
+        using var _ = ArrayBuilder<ISymbol>.GetInstance(out var mergedResult);
+        foreach (var searchTask in searchTasks)
+        {
+            var searchResult = await searchTask.ConfigureAwait(false);
+
+            mergedResult.AddRange(searchResult);
+
+            searchResult.Free();
         }
 
-        return result.ToImmutableAndClear();
+        return mergedResult.ToImmutableAndClear();
 
-        async Task SearchCurrentProjectAsync()
+        static async Task<ArrayBuilder<ISymbol>> SearchCurrentProjectAsync(Project project, SearchQuery query, SymbolFilter criteria, AsyncLazy<Compilation> lazyCompilation, CancellationToken cancellationToken)
         {
+            // Allow caller to proceed
+            await Task.Yield();
+
             // Search in the source symbols for this project first.
             using var _ = ArrayBuilder<ISymbol>.GetInstance(out var buffer);
+            var result = ArrayBuilder<ISymbol>.GetInstance();
 
             // get declarations from the compilation's assembly
             await AddCompilationSourceDeclarationsWithNormalQueryAsync(
                 project, query, criteria, buffer, cancellationToken).ConfigureAwait(false);
 
             // No need to map symbols since we're looking in the starting project.
-            await AddAllAsync(buffer, mapSymbol: false).ConfigureAwait(false);
+            await AddAllAsync(buffer, result, mapSymbol: false, lazyCompilation, cancellationToken).ConfigureAwait(false);
+
+            return result;
         }
 
-        async Task SearchProjectReferencesAsync()
+        static async Task<ArrayBuilder<ISymbol>> SearchProjectReferencesAsync(Project project, SearchQuery query, SymbolFilter criteria, AsyncLazy<Compilation> lazyCompilation, CancellationToken cancellationToken)
         {
+            // Allow caller to proceed
+            await Task.Yield();
+
+            using var _ = ArrayBuilder<ISymbol>.GetInstance(out var buffer);
+            var result = ArrayBuilder<ISymbol>.GetInstance();
+
             // get declarations from directly referenced projects
             foreach (var projectReference in project.ProjectReferences)
             {
-                using var _ = ArrayBuilder<ISymbol>.GetInstance(out var buffer);
+                buffer.Clear();
 
                 var referencedProject = project.Solution.GetProject(projectReference.ProjectId);
                 if (referencedProject is null)
@@ -105,17 +128,23 @@ internal static partial class DeclarationFinder
 
                 // Add all the results.  If they're from a different language, attempt to map them back into the
                 // starting project's language.
-                await AddAllAsync(buffer, mapSymbol: referencedProject.Language != project.Language).ConfigureAwait(false);
+                await AddAllAsync(buffer, result, mapSymbol: referencedProject.Language != project.Language, lazyCompilation, cancellationToken).ConfigureAwait(false);
             }
+
+            return result;
         }
 
-        async Task SearchMetadataReferencesAsync()
+        static async Task<ArrayBuilder<ISymbol>> SearchMetadataReferencesAsync(Project project, SearchQuery query, SymbolFilter criteria, AsyncLazy<Compilation> lazyCompilation, CancellationToken cancellationToken)
         {
+            // Allow caller to proceed
+            await Task.Yield();
+
+            using var _ = ArrayBuilder<ISymbol>.GetInstance(out var buffer);
+            var result = ArrayBuilder<ISymbol>.GetInstance();
+
             // get declarations from directly referenced metadata
             foreach (var peReference in project.MetadataReferences.OfType<PortableExecutableReference>())
             {
-                using var _ = ArrayBuilder<ISymbol>.GetInstance(out var buffer);
-
                 var lazyAssembly = AsyncLazy.Create(static async (arg, cancellationToken) =>
                     {
                         var compilation = await arg.lazyCompilation.GetValueAsync(cancellationToken).ConfigureAwait(false);
@@ -129,26 +158,28 @@ internal static partial class DeclarationFinder
                     query, criteria, buffer, cancellationToken).ConfigureAwait(false);
 
                 // No need to map symbols since we're looking in metadata.  They will always be in the language of our starting project.
-                await AddAllAsync(buffer, mapSymbol: false).ConfigureAwait(false);
+                await AddAllAsync(buffer, result, mapSymbol: false, lazyCompilation, cancellationToken).ConfigureAwait(false);
             }
+
+            return result;
         }
 
-        async Task AddAllAsync(ArrayBuilder<ISymbol> buffer, bool mapSymbol)
+        static async Task AddAllAsync(ArrayBuilder<ISymbol> inputSymbols, ArrayBuilder<ISymbol> resultSymbols, bool mapSymbol, AsyncLazy<Compilation> lazyCompilation, CancellationToken cancellationToken)
         {
-            if (buffer.Count == 0)
+            if (inputSymbols.Count == 0)
                 return;
 
             var compilation = await lazyCompilation.GetValueAsync(cancellationToken).ConfigureAwait(false);
 
             // Make certain all namespace symbols returned by API are from the compilation
             // for the passed in project.
-            foreach (var symbol in buffer)
+            foreach (var symbol in inputSymbols)
             {
                 var mappedSymbol = mapSymbol
                     ? symbol.GetSymbolKey(cancellationToken).Resolve(compilation, cancellationToken: cancellationToken).Symbol
                     : symbol;
 
-                result.AddIfNotNull(mappedSymbol is INamespaceSymbol ns
+                resultSymbols.AddIfNotNull(mappedSymbol is INamespaceSymbol ns
                     ? compilation.GetCompilationNamespace(ns)
                     : mappedSymbol);
             }
