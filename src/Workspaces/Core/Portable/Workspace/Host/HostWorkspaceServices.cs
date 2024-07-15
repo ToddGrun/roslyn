@@ -33,6 +33,11 @@ public abstract class HostWorkspaceServices
     /// </summary>
     public abstract TWorkspaceService? GetService<TWorkspaceService>() where TWorkspaceService : IWorkspaceService;
 
+    internal virtual Lazy<IWorkspaceService>? GetServiceLazy<TWorkspaceService>() where TWorkspaceService : IWorkspaceService
+    {
+        return null;
+    }
+
     protected HostWorkspaceServices()
     {
 #pragma warning disable 618 // 'HostProjectServices.HostSolutionServices(HostLanguageServices)' is obsolete: 'Do not call directly.

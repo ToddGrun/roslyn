@@ -77,6 +77,18 @@ namespace Microsoft.CodeAnalysis.Host.Mef
             }
         }
 
+        internal override Lazy<IWorkspaceService>? GetServiceLazy<TWorkspaceService>()
+        {
+            if (TryGetService(typeof(TWorkspaceService), out var service))
+            {
+                return service;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
         private bool TryGetService(Type serviceType, [NotNullWhen(true)] out Lazy<IWorkspaceService, WorkspaceServiceMetadata>? service)
         {
             if (!_serviceMap.TryGetValue(serviceType, out service))

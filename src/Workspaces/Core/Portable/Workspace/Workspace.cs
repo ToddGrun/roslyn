@@ -687,7 +687,18 @@ public abstract partial class Workspace : IDisposable
             // tearing ourselves down.
             this.ClearSolution(reportChangeEvent: false);
 
-            this.Services.GetService<IWorkspaceEventListenerService>()?.Stop();
+            var lazyEventListenerService = this.Services.GetServiceLazy<IWorkspaceEventListenerService>();
+            if (lazyEventListenerService != null &&
+                lazyEventListenerService.IsValueCreated &&
+                lazyEventListenerService.Value is IWorkspaceEventListenerService eventListenerService)
+            {
+                eventListenerService.Stop();
+            }
+            else
+            {
+                System.Diagnostics.Debugger.Launch();
+                System.Diagnostics.Debug.Assert(false);
+            }
         }
 
         _legacyOptions.UnregisterWorkspace(this);
