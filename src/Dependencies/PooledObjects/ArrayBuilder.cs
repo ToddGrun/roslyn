@@ -64,7 +64,7 @@ namespace Microsoft.CodeAnalysis.PooledObjects
             : this(8)
         { }
 
-        private ArrayBuilder(ObjectPool<ArrayBuilder<T>> pool)
+        public ArrayBuilder(ObjectPool<ArrayBuilder<T>> pool)
             : this()
         {
             _pool = pool;

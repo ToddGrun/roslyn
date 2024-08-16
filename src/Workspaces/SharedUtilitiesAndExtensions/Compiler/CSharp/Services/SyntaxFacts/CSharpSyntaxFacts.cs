@@ -31,6 +31,11 @@ internal class CSharpSyntaxFacts : ISyntaxFacts
 {
     internal static readonly CSharpSyntaxFacts Instance = new();
 
+    // We keep our own ObjectPool of ArrayBuilders as we don't want the threshold used
+    // to determine whether the builder can be placed back in the pool (these arrays
+    // can easily exceed 128 elements).
+    public static readonly ObjectPool<ArrayBuilder<SyntaxNode>> Instance = new ObjectPool<ArrayBuilder<SyntaxNode>>(() => new ArrayBuilder<SyntaxNode>());
+
     protected CSharpSyntaxFacts()
     {
     }
@@ -896,12 +901,12 @@ internal class CSharpSyntaxFacts : ISyntaxFacts
         }
     }
 
-    public void AddTopLevelAndMethodLevelMembers(SyntaxNode? root, ArrayBuilder<SyntaxNode> list)
+    public PooledDisposer<ArrayBuilder<SyntaxNode>> AddTopLevelAndMethodLevelMembers(SyntaxNode? root, out ArrayBuilder<SyntaxNode> list)
     {
         AppendMembers(root, list, topLevel: true, methodLevel: true);
     }
 
-    public void AddMethodLevelMembers(SyntaxNode? root, ArrayBuilder<SyntaxNode> list)
+    public PooledDisposer<ArrayBuilder<SyntaxNode>> AddMethodLevelMembers(SyntaxNode? root, out ArrayBuilder<SyntaxNode> list)
     {
         AppendMembers(root, list, topLevel: false, methodLevel: true);
     }

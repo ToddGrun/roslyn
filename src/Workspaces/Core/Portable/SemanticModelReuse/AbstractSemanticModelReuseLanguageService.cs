@@ -106,7 +106,7 @@ internal abstract class AbstractSemanticModelReuseLanguageService<
         }
         else
         {
-            using var _1 = ArrayBuilder<SyntaxNode>.GetInstance(out var currentMembers);
+            var currentMembers = SyntaxNodePool.Instance.Allocate();
             this.SyntaxFacts.AddMethodLevelMembers(currentRoot, currentMembers);
             var index = currentMembers.IndexOf(currentBodyNode);
             if (index < 0)
@@ -115,7 +115,7 @@ internal abstract class AbstractSemanticModelReuseLanguageService<
                 return null;
             }
 
-            using var _2 = ArrayBuilder<SyntaxNode>.GetInstance(out var previousMembers);
+            var previousMembers = SyntaxNodePool.Instance.Allocate();
             this.SyntaxFacts.AddMethodLevelMembers(previousRoot, previousMembers);
             if (currentMembers.Count != previousMembers.Count)
             {
@@ -123,7 +123,12 @@ internal abstract class AbstractSemanticModelReuseLanguageService<
                 return null;
             }
 
-            return previousMembers[index];
+            var result = previousMembers[index];
+
+            SyntaxNodePool.Instance.Free(currentMembers);
+            SyntaxNodePool.Instance.Free(previousMembers);
+
+            return result;
         }
     }
 
@@ -141,5 +146,14 @@ internal abstract class AbstractSemanticModelReuseLanguageService<
             _originalSyntaxTree = originalSyntaxTree;
             _updatedSyntaxTree = updatedSyntaxTree;
         }
+    }
+
+    private static class SyntaxNodePool
+    {
+        // We keep our own ObjectPool of ArrayBuilders as we don't want the threshold used
+        // to determine whether the builder can be placed back in the pool (these arrays
+        // can easily exceed 128 elements). A separate class is used to hold onto the pool
+        // to allow sharing amongst separate generic variants of AbstractSemanticModelReuseLanguageService.
+        public static readonly ObjectPool<ArrayBuilder<SyntaxNode>> Instance = new ObjectPool<ArrayBuilder<SyntaxNode>>(() => new ArrayBuilder<SyntaxNode>());
     }
 }
