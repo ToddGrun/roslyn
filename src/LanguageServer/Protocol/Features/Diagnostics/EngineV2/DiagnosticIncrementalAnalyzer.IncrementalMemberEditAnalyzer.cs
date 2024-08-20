@@ -34,6 +34,9 @@ namespace Microsoft.CodeAnalysis.Diagnostics.EngineV2
         /// </summary>
         private sealed partial class IncrementalMemberEditAnalyzer
         {
+            // Specifies false for trimOnFree as these objects commonly exceed the default ObjectPool threshold
+            private static readonly ObjectPool<List<SyntaxNode>> s_syntaxNodeListPool = new ObjectPool<List<SyntaxNode>>(() => [], trimOnFree: false);
+
             /// <summary>
             /// Weak reference to the last document snapshot for which full document diagnostics
             /// were computed and saved.
@@ -216,7 +219,7 @@ namespace Microsoft.CodeAnalysis.Diagnostics.EngineV2
                     return null;
                 }
 
-                using var pooledMembers = SharedPools.Default<List<SyntaxNode>>().GetPooledObject();
+                using var pooledMembers = s_syntaxNodeListPool.GetPooledObject();
                 var members = pooledMembers.Object;
 
                 var syntaxFacts = document.GetRequiredLanguageService<ISyntaxFactsService>();

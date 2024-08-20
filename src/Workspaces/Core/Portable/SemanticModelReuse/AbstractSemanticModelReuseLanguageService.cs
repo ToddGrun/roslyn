@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Internal.Log;
 using Microsoft.CodeAnalysis.LanguageService;
+using Microsoft.CodeAnalysis.PooledObjects;
 
 namespace Microsoft.CodeAnalysis.SemanticModelReuse;
 
@@ -20,6 +21,9 @@ internal abstract class AbstractSemanticModelReuseLanguageService<
     where TBasePropertyDeclarationSyntax : TMemberDeclarationSyntax
     where TAccessorDeclarationSyntax : SyntaxNode
 {
+    // Specifies false for trimOnFree as these objects commonly exceed the default ObjectPool threshold
+    private static readonly ObjectPool<List<SyntaxNode>> s_syntaxNodeListPool = new ObjectPool<List<SyntaxNode>>(() => [], trimOnFree: false);
+
     private readonly CountLogAggregator<bool> _logAggregator = new();
 
     protected abstract ISyntaxFacts SyntaxFacts { get; }
@@ -109,8 +113,8 @@ internal abstract class AbstractSemanticModelReuseLanguageService<
             var currentMembersCount = 0;
             var index = 0;
 
-            // Explicitly scope these pooled objects to allow earlier disposal and reduced pool pressure.
-            using (var pooledMembers = SharedPools.Default<List<SyntaxNode>>().GetPooledObject())
+            // Explicitly scope these pooled objects to allow earlier disposal and reduce pool pressure.
+            using (var pooledMembers = s_syntaxNodeListPool.GetPooledObject())
             {
                 var currentMembers = pooledMembers.Object;
 
@@ -125,7 +129,7 @@ internal abstract class AbstractSemanticModelReuseLanguageService<
                 currentMembersCount = currentMembers.Count;
             }
 
-            using (var pooledMembers = SharedPools.Default<List<SyntaxNode>>().GetPooledObject())
+            using (var pooledMembers = s_syntaxNodeListPool.GetPooledObject())
             {
                 var previousMembers = pooledMembers.Object;
 
