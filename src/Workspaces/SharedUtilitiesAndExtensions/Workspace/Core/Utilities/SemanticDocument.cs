@@ -27,4 +27,18 @@ internal sealed class SemanticDocument(Document document, SourceText text, Synta
         var newDocument = this.Document.WithSyntaxRoot(root);
         return await CreateAsync(newDocument, cancellationToken).ConfigureAwait(false);
     }
+
+    /// <summary>
+    /// Creates a SemanticDocument from the current instance with the specified new root and sourceText.
+    /// Useful when root is an annotated version of this document's root.
+    /// </summary>
+    public async Task<SemanticDocument> WithSyntaxRootAndSourceTextAsync(SyntaxNode root, SourceText sourceText, CancellationToken cancellationToken)
+    {
+        var newDocument = this.Document.WithSyntaxRoot(root);
+
+        var newRoot = await newDocument.GetRequiredSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
+        var newModel = await newDocument.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
+
+        return new SemanticDocument(newDocument, sourceText, newRoot, newModel);
+    }
 }

@@ -4,6 +4,7 @@
 
 #nullable disable
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -35,8 +36,8 @@ internal abstract class SelectionResult<TStatementSyntax>
 
         SelectionInExpression = selectionInExpression;
 
-        FirstTokenAnnotation = firstTokenAnnotation;
-        LastTokenAnnotation = lastTokenAnnotation;
+        FirstTokenInSelection = new Lazy<SyntaxToken>(() => SemanticDocument.GetTokenWithAnnotation(firstTokenAnnotation));
+        LastTokenInSelection = new Lazy<SyntaxToken>(() => SemanticDocument.GetTokenWithAnnotation(lastTokenAnnotation));
 
         SemanticDocument = document;
         SelectionChanged = selectionChanged;
@@ -67,8 +68,8 @@ internal abstract class SelectionResult<TStatementSyntax>
     public TextSpan FinalSpan { get; }
     public bool SelectionInExpression { get; }
     public SemanticDocument SemanticDocument { get; private set; }
-    public SyntaxAnnotation FirstTokenAnnotation { get; }
-    public SyntaxAnnotation LastTokenAnnotation { get; }
+    public Lazy<SyntaxToken> FirstTokenInSelection { get; }
+    public Lazy<SyntaxToken> LastTokenInSelection { get; }
     public bool SelectionChanged { get; }
 
     public SelectionResult<TStatementSyntax> With(SemanticDocument document)
@@ -85,10 +86,10 @@ internal abstract class SelectionResult<TStatementSyntax>
     }
 
     public SyntaxToken GetFirstTokenInSelection()
-        => SemanticDocument.GetTokenWithAnnotation(FirstTokenAnnotation);
+        => FirstTokenInSelection.Value;
 
     public SyntaxToken GetLastTokenInSelection()
-        => SemanticDocument.GetTokenWithAnnotation(LastTokenAnnotation);
+        => LastTokenInSelection.Value;
 
     public TNode GetContainingScopeOf<TNode>() where TNode : SyntaxNode
     {

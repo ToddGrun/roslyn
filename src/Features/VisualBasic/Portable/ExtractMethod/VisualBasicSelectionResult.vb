@@ -33,8 +33,13 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.ExtractMethod
             Dim lastAnnotation = New SyntaxAnnotation()
 
             Dim root = document.Root
-            Dim newDocument = Await SemanticDocument.CreateAsync(document.Document.WithSyntaxRoot(AddAnnotations(
-                root, {(firstToken, firstAnnotation), (lastToken, lastAnnotation)})), cancellationToken).ConfigureAwait(False)
+            Dim text = Await document.Document.GetValueTextAsync(cancellationToken).ConfigureAwait(False)
+
+            ' PERF Don't use SemanticDocument.CreateAsync as we can re-use the original source text.
+            Dim newDocument = Await document.WithSyntaxRootAndSourceTextAsync(AddAnnotations(
+                root, {(firstToken, firstAnnotation), (lastToken, lastAnnotation)}),
+                text,
+                cancellationToken).ConfigureAwait(False)
 
             Return New VisualBasicSelectionResult(
                 originalSpan,

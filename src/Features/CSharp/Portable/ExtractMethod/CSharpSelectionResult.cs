@@ -37,12 +37,17 @@ internal abstract partial class CSharpSelectionResult : SelectionResult<Statemen
         var lastTokenAnnotation = new SyntaxAnnotation();
 
         var root = await document.Document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
-        var newDocument = await SemanticDocument.CreateAsync(document.Document.WithSyntaxRoot(AddAnnotations(
+        var text = await document.Document.GetValueTextAsync(cancellationToken).ConfigureAwait(false);
+
+        // PERF: Don't use SemanticDocument.CreateAsync as we can re-use the original source text.
+        var newDocument = await document.WithSyntaxRootAndSourceTextAsync(AddAnnotations(
             root,
             [
                 (firstToken, firstTokenAnnotation),
                 (lastToken, lastTokenAnnotation)
-            ])), cancellationToken).ConfigureAwait(false);
+            ]),
+            text,
+            cancellationToken).ConfigureAwait(false);
 
         if (selectionInExpression)
         {
