@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis.Collections;
+using Microsoft.CodeAnalysis.Collections.Internal;
 using Xunit;
 
 namespace Microsoft.CodeAnalysis.UnitTests.Collections
@@ -119,6 +120,37 @@ namespace Microsoft.CodeAnalysis.UnitTests.Collections
             list.EnsureCapacity(requestedCapacity);
 
             Assert.Equal(expectedCapacity, list.Capacity);
+        }
+
+        [Theory]
+        [InlineData(1)]
+        [InlineData(2)]
+        [InlineData(4)]
+        public void EnsureCapacity_FullSegmentGrowsBySegment(int segmentCount)
+        {
+            var elementCount = segmentCount * SegmentedArray<T>.TestAccessor.SegmentSize;
+            var list = new SegmentedList<T>(elementCount);
+
+            Assert.Equal(elementCount, list.Capacity);
+
+            list.EnsureCapacity(elementCount + 1);
+            Assert.Equal((segmentCount + 1) * SegmentedArray<T>.TestAccessor.SegmentSize, list.Capacity);
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(1)]
+        [InlineData(2)]
+        [InlineData(4)]
+        public void EnsureCapacity_HalfSegmentGrowsToMaxSegmentSize(int segmentCount)
+        {
+            var elementCount = segmentCount * SegmentedArray<T>.TestAccessor.SegmentSize + SegmentedArray<T>.TestAccessor.SegmentSize / 2;
+            var list = new SegmentedList<T>(elementCount);
+
+            Assert.Equal(elementCount, list.Capacity);
+
+            list.EnsureCapacity(elementCount + 1);
+            Assert.Equal((segmentCount + 1) * SegmentedArray<T>.TestAccessor.SegmentSize, list.Capacity);
         }
 
         [Theory]

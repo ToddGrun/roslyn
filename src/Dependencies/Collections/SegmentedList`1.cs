@@ -512,12 +512,27 @@ namespace Microsoft.CodeAnalysis.Collections
         {
             Debug.Assert(_items.Length < capacity);
 
-            var newCapacity = _items.Length == 0 ? DefaultCapacity : 2 * _items.Length;
+            int newCapacity;
 
-            // Allow the list to grow to maximum possible capacity (~2G elements) before encountering overflow.
-            // Note that this check works even when _items.Length overflowed thanks to the (uint) cast
-            if ((uint)newCapacity > MaxLength)
-                newCapacity = MaxLength;
+            if (_items.Length < SegmentedArrayHelper.GetSegmentSize<T>() / 2)
+            {
+                // The array isn't near the maximum segment size. If the array is empty, the new capacity 
+                // should be DefaultCapacity. Otherwise, the new capacity should be double the current array size.
+                newCapacity = _items.Length == 0 ? DefaultCapacity : _items.Length * 2;
+            }
+            else
+            {
+                // Specify a capacity increase such that the last segment's capacity will be the maximum
+                // segment size. If it is already at that size, this indicates a new segment is to be
+                // added of the maximum segment size.
+                var lastSegmentLength = _items.Length & SegmentedArrayHelper.GetOffsetMask<T>();
+                newCapacity = (_items.Length - lastSegmentLength) + SegmentedArrayHelper.GetSegmentSize<T>();
+
+                // Allow the list to grow to maximum possible capacity (~2G elements) before encountering overflow.
+                // Note that this check works even when _items.Length overflowed thanks to the (uint) cast
+                if ((uint)newCapacity > MaxLength)
+                    newCapacity = MaxLength;
+            }
 
             // If the computed capacity is still less than specified, set to the original argument.
             // Capacities exceeding Array.MaxLength will be surfaced as OutOfMemoryException by Array.Resize.
