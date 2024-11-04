@@ -19,7 +19,7 @@ internal static class SegmentedCollectionsMarshal
     /// <param name="array">The segmented array.</param>
     /// <returns>The backing storage array for the segmented array. Note that replacing segments within the returned
     /// value will invalidate the <see cref="SegmentedArray{T}"/> data structure.</returns>
-    public static T[][] AsSegments<T>(SegmentedArray<T> array)
+    public static T[]?[] AsSegments<T>(SegmentedArray<T> array)
         => SegmentedArray<T>.PrivateMarshal.AsSegments(array);
 
     /// <summary>
