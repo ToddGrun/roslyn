@@ -142,6 +142,21 @@ namespace Microsoft.CodeAnalysis
                 var shadowAnalyzerPath = Path.Combine(shadowDirectory, analyzerFileName);
                 CopyFile(originalAnalyzerPath, shadowAnalyzerPath);
 
+#if !NET
+                var path = Path.GetDirectoryName(originalAnalyzerPath)!;
+                var resourceFileName = GetSatelliteFileName(Path.GetFileName(originalAnalyzerPath));
+                var cultureNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+                foreach (var localeDir in Directory.EnumerateDirectories(path, "*"))
+                {
+                    var resourceFilePath = Path.Combine(localeDir, resourceFileName);
+                    var cultureName = Path.GetFileName(localeDir);
+
+                    if (File.Exists(resourceFilePath) && cultureNames.Add(cultureName))
+                        PrepareSatelliteAssemblyToLoad(originalAnalyzerPath, cultureName);
+                }
+#endif
+
                 return shadowAnalyzerPath;
             }
         }
