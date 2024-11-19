@@ -13,6 +13,7 @@ using Microsoft.CodeAnalysis.Shared.Extensions;
 using Microsoft.CodeAnalysis.Text;
 using Roslyn.Utilities;
 using static Microsoft.CodeAnalysis.Host.TemporaryStorageService;
+using System.Collections.Generic;
 
 #if DEBUG
 using System.Linq;
@@ -144,6 +145,17 @@ internal sealed class SerializableSourceText
         }
     }
 
+    public static Stopwatch s_sw = Stopwatch.StartNew();
+    public static readonly List<(string, long, object)> s_debugInfo = new();
+
+    public static void AddDebugInfo(string s, object o)
+    {
+        lock (s_debugInfo)
+        {
+            s_debugInfo.Add((s, s_sw.ElapsedMilliseconds, o));
+        }
+    }
+
     public void Serialize(ObjectWriter writer, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -159,6 +171,9 @@ internal sealed class SerializableSourceText
         else
         {
             RoslynDebug.AssertNotNull(_text);
+
+            AddDebugInfo("Serialize", _text.Container.GetOpenDocumentInCurrentContext().Project.Solution.WorkspaceVersion);
+
             writer.WriteInt32((int)SerializationKinds.Bits);
 
             writer.WriteInt32((int)_text.ChecksumAlgorithm);
@@ -175,6 +190,8 @@ internal sealed class SerializableSourceText
         ITextFactoryService textService,
         CancellationToken cancellationToken)
     {
+        AddDebugInfo("Deserialize", null!);
+
         cancellationToken.ThrowIfCancellationRequested();
 
         var kind = (SerializationKinds)reader.ReadInt32();

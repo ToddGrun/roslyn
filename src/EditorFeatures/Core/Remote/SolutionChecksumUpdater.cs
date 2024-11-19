@@ -3,7 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,8 +14,11 @@ using Microsoft.CodeAnalysis.Collections;
 using Microsoft.CodeAnalysis.Internal.Log;
 using Microsoft.CodeAnalysis.Notification;
 using Microsoft.CodeAnalysis.PooledObjects;
+using Microsoft.CodeAnalysis.Serialization;
 using Microsoft.CodeAnalysis.Shared.TestHooks;
 using Microsoft.CodeAnalysis.Text;
+using Microsoft.VisualStudio.OLE.Interop;
+using Microsoft.VisualStudio.Threading;
 using Roslyn.Utilities;
 
 namespace Microsoft.CodeAnalysis.Remote;
@@ -38,12 +44,13 @@ internal sealed class SolutionChecksumUpdater
     /// operations (only syncing text changes) we don't cancel this when we enter the paused state.  We simply don't
     /// start queuing more requests into this until we become unpaused.
     /// </summary>
-    private readonly AsyncBatchingWorkQueue<(Document oldDocument, Document newDocument)> _textChangeQueue;
+    //private readonly AsyncBatchingWorkQueue<(Document oldDocument, Document newDocument)> _textChangeQueue;
+    //private readonly ConcurrentQueue<(Document oldDocument, Document newDocument)> _textChangeQueueNew;
 
     /// <summary>
     /// Queue for kicking off the work to synchronize the primary workspace's solution.
     /// </summary>
-    private readonly AsyncBatchingWorkQueue _synchronizeWorkspaceQueue;
+    private readonly AsyncBatchingWorkQueue<Solution> _synchronizeWorkspaceQueue;
 
     /// <summary>
     /// Queue for kicking off the work to synchronize the active document to the remote process.
@@ -65,19 +72,21 @@ internal sealed class SolutionChecksumUpdater
         _workspace = workspace;
         _documentTrackingService = workspace.Services.GetRequiredService<IDocumentTrackingService>();
 
-        _synchronizeWorkspaceQueue = new AsyncBatchingWorkQueue(
-            DelayTimeSpan.NearImmediate,
+        _synchronizeWorkspaceQueue = new AsyncBatchingWorkQueue<Solution>(
+            TimeSpan.Zero,
             SynchronizePrimaryWorkspaceAsync,
             listener,
             shutdownToken);
 
         // Text changes and active doc info are tiny messages.  So attempt to send them immediately.  Just batching
         // things up if we get a flurry of notifications.
-        _textChangeQueue = new AsyncBatchingWorkQueue<(Document oldDocument, Document newDocument)>(
-            TimeSpan.Zero,
-            SynchronizeTextChangesAsync,
-            listener,
-            shutdownToken);
+        //_textChangeQueue = new AsyncBatchingWorkQueue<(Document oldDocument, Document newDocument)>(
+        //    TimeSpan.Zero,
+        //    SynchronizeTextChangesAsync,
+        //    listener,
+        //    shutdownToken);
+
+        //_textChangeQueueNew = new ConcurrentQueue<(Document, Document)>();
 
         _synchronizeActiveDocumentQueue = new AsyncBatchingWorkQueue(
             TimeSpan.Zero,
@@ -97,7 +106,7 @@ internal sealed class SolutionChecksumUpdater
 
         // Enqueue the work to sync the initial data over.
         _synchronizeActiveDocumentQueue.AddWork();
-        _synchronizeWorkspaceQueue.AddWork();
+        _synchronizeWorkspaceQueue.AddWork(_workspace.CurrentSolution);
     }
 
     public void Shutdown()
@@ -137,36 +146,74 @@ internal sealed class SolutionChecksumUpdater
         lock (_gate)
         {
             _isSynchronizeWorkspacePaused = false;
-            _synchronizeWorkspaceQueue.AddWork();
+            _synchronizeWorkspaceQueue.AddWork(_workspace.CurrentSolution);
         }
     }
 
+    private readonly HashSet<int> _synchronizedTextWorkspaceVersions = new();
+
     private void OnWorkspaceChanged(object? sender, WorkspaceChangeEventArgs e)
     {
-        if (e.Kind == WorkspaceChangeKind.DocumentChanged)
-        {
-            var oldDocument = e.OldSolution.GetDocument(e.DocumentId);
-            var newDocument = e.NewSolution.GetDocument(e.DocumentId);
-            if (oldDocument != null && newDocument != null)
-                _textChangeQueue.AddWork((oldDocument, newDocument));
-        }
+        dispatchSynchronizeTextChanges(e);
 
         // Check if we're currently paused.  If so ignore this notification.  We don't want to any work in response
         // to whatever the workspace is doing.
         lock (_gate)
         {
             if (!_isSynchronizeWorkspacePaused)
-                _synchronizeWorkspaceQueue.AddWork();
+            {
+                SerializableSourceText.AddDebugInfo("OnWorkspaceChanged, WorkspaceChange", e.NewSolution.WorkspaceVersion + " / " + _workspace.CurrentSolution.WorkspaceVersion);
+                _synchronizeWorkspaceQueue.AddWork(e.NewSolution);
+            }
+        }
+
+        void dispatchSynchronizeTextChanges(WorkspaceChangeEventArgs e)
+        {
+            var builder = ImmutableSegmentedList.CreateBuilder<(Document, Document)>();
+            if (_synchronizedTextWorkspaceVersions.Add(e.NewSolution.WorkspaceVersion)
+                && e.Kind == WorkspaceChangeKind.DocumentChanged)
+            {
+                var oldDocument = e.OldSolution.GetDocument(e.DocumentId);
+                var newDocument = e.NewSolution.GetDocument(e.DocumentId);
+
+                if (oldDocument != null && newDocument != null)
+                    builder.Add((oldDocument, newDocument));
+            }
+
+            var currentSolution = _workspace.CurrentSolution;
+            if (_synchronizedTextWorkspaceVersions.Add(currentSolution.WorkspaceVersion))
+            {
+                var solutionDifferences = currentSolution.GetChanges(e.OldSolution);
+                var projectChanges = solutionDifferences.GetProjectChanges();
+
+                foreach (var change in projectChanges)
+                {
+                    foreach (var changedDocumentId in change.GetChangedDocuments())
+                    {
+                        var oldDocument = e.OldSolution.GetDocument(changedDocumentId)!;
+                        var newDocument = currentSolution.GetDocument(changedDocumentId)!;
+
+                        builder.Add((oldDocument, newDocument));
+                    }
+                }
+            }
+
+            if (builder.Count > 0)
+            {
+                SerializableSourceText.AddDebugInfo("OnWorkspaceChanged.dispatchSynchronizeTextChanges Start: " + builder.Count, e.NewSolution.WorkspaceVersion + " / " + _workspace.CurrentSolution.WorkspaceVersion);
+
+                SynchronizeTextChangesAsync(builder.ToImmutable(), CancellationToken.None).Forget();
+
+                SerializableSourceText.AddDebugInfo("OnWorkspaceChanged.dispatchSynchronizeTextChanges End", e.NewSolution.WorkspaceVersion + " / " + _workspace.CurrentSolution.WorkspaceVersion);
+            }
         }
     }
 
     private void OnActiveDocumentChanged(object? sender, DocumentId? e)
         => _synchronizeActiveDocumentQueue.AddWork();
 
-    private async ValueTask SynchronizePrimaryWorkspaceAsync(CancellationToken cancellationToken)
+    private async ValueTask SynchronizePrimaryWorkspaceAsync(ImmutableSegmentedList<Solution> solutions, CancellationToken cancellationToken)
     {
-        var solution = _workspace.CurrentSolution;
-
         // Wait for the remote side to actually become available (without being the cause of its creation ourselves). We
         // want to wait for some feature to kick this off, then we'll start syncing this data once that has happened.
         await RemoteHostClient.WaitForClientCreationAsync(_workspace, cancellationToken).ConfigureAwait(false);
@@ -175,6 +222,20 @@ internal sealed class SolutionChecksumUpdater
         if (client == null)
             return;
 
+        var solution = solutions.Last();
+        SerializableSourceText.AddDebugInfo("SynchronizePrimaryWorkspaceAsync Start", solution.WorkspaceVersion);
+        //var builder = ImmutableSegmentedList.CreateBuilder<(Document, Document)>();
+        //while (_textChangeQueueNew.TryDequeue(out var enqueued))
+        //{
+        //    builder.Add(enqueued);
+        //    SerializableSourceText.AddDebugInfo("SynchronizePrimaryWorkspaceAsync Loop", enqueued.Item2.Project.Solution.WorkspaceVersion);
+        //}
+
+        //if (builder.Count > 0)
+        //    SynchronizeTextChangesAsync(builder.ToImmutable(), cancellationToken).Forget();
+
+        //SerializableSourceText.AddDebugInfo("SynchronizePrimaryWorkspaceAsync Mid", solution.WorkspaceVersion);
+
         using (Logger.LogBlock(FunctionId.SolutionChecksumUpdater_SynchronizePrimaryWorkspace, cancellationToken))
         {
             await client.TryInvokeAsync<IRemoteAssetSynchronizationService>(
@@ -182,6 +243,7 @@ internal sealed class SolutionChecksumUpdater
                 (service, solution, cancellationToken) => service.SynchronizePrimaryWorkspaceAsync(solution, cancellationToken),
                 cancellationToken).ConfigureAwait(false);
         }
+        SerializableSourceText.AddDebugInfo("SynchronizePrimaryWorkspaceAsync End", solution.WorkspaceVersion);
     }
 
     private async ValueTask SynchronizeActiveDocumentAsync(CancellationToken cancellationToken)
@@ -209,6 +271,8 @@ internal sealed class SolutionChecksumUpdater
         var client = await RemoteHostClient.TryGetClientAsync(_workspace, cancellationToken).ConfigureAwait(false);
         if (client == null)
             return;
+
+        SerializableSourceText.AddDebugInfo("SynchronizeTextChangesAsync: Start", values.Last().newDocument.Project.Solution.WorkspaceVersion);
 
         // this pushes text changes to the remote side if it can. this is purely perf optimization. whether this
         // pushing text change worked or not doesn't affect feature's functionality.
@@ -251,8 +315,10 @@ internal sealed class SolutionChecksumUpdater
         if (builder.Count == 0)
             return;
 
+        SerializableSourceText.AddDebugInfo("SynchronizeTextChangesAsync Mid", values.Last().newDocument.Project.Solution.WorkspaceVersion);
         await client.TryInvokeAsync<IRemoteAssetSynchronizationService>(
             (service, cancellationToken) => service.SynchronizeTextChangesAsync(builder.ToImmutableAndClear(), cancellationToken),
             cancellationToken).ConfigureAwait(false);
+        SerializableSourceText.AddDebugInfo("SynchronizeTextChangesAsync End", values.Last().newDocument.Project.Solution.WorkspaceVersion);
     }
 }

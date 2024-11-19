@@ -467,6 +467,8 @@ internal partial class RemoteWorkspace
             newChecksumsToSync.Clear();
             newChecksumsToSync.AddRange(newDocumentIdToChecksums.Values.Select(v => v.textChecksum));
 
+            RemoteAssetSynchronizationService.AddDebugInfo("RemoteWorkspace.UpdateDocumentsAsync", newChecksumsToSync.FirstOrDefault());
+
             await _assetProvider.GetAssetsAsync<SerializableSourceText>(
                 assetPath: new(AssetPathKind.DocumentText, project.Id), newChecksumsToSync, cancellationToken).ConfigureAwait(false);
 

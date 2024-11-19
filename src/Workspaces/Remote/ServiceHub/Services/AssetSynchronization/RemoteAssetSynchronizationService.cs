@@ -4,6 +4,7 @@
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Internal.Log;
@@ -48,10 +49,28 @@ internal sealed class RemoteAssetSynchronizationService(in BrokeredServiceBase.S
         return ValueTaskFactory.CompletedTask;
     }
 
+    public static Stopwatch s_sw = Stopwatch.StartNew();
+    public static readonly List<(string, long, object)> s_debugInfo = new();
+
+    public static void AddDebugInfo(string s, object o)
+    {
+        lock (s_debugInfo)
+        {
+            s_debugInfo.Add((s, s_sw.ElapsedMilliseconds, o));
+        }
+    }
+
     public ValueTask SynchronizeTextChangesAsync(
         ImmutableArray<(DocumentId documentId, Checksum baseTextChecksum, ImmutableArray<TextChange> textChanges, Checksum newTextChecksum)> changes,
         CancellationToken cancellationToken)
     {
+        AddDebugInfo("RemoteAssetSynchronizationService.SynchronizeTextChangesAsync Count", changes.Length);
+        for (var i = 0; i < changes.Length; i++)
+        {
+            var change = changes[i];
+            AddDebugInfo("RemoteAssetSynchronizationService.SynchronizeTextChangesAsync[" + i + "]", change.newTextChecksum);
+        }
+
         return RunServiceAsync(async cancellationToken =>
         {
             var workspace = GetWorkspace();
@@ -76,6 +95,7 @@ internal sealed class RemoteAssetSynchronizationService(in BrokeredServiceBase.S
                     var newSerializableText = new SerializableSourceText(newText, newTextChecksum);
 
                     WorkspaceManager.SolutionAssetCache.GetOrAdd(newSerializableText.ContentChecksum, newSerializableText);
+                    AddDebugInfo("RemoteAssetSynchronizationService.SynchronizeTextChangesAsync Added", newSerializableText.ContentChecksum);
                 }
             }
 

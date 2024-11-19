@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Host;
 using Microsoft.CodeAnalysis.Internal.Log;
+using Microsoft.CodeAnalysis.Serialization;
 using Microsoft.CodeAnalysis.Text;
 using Roslyn.Utilities;
 
@@ -59,21 +60,31 @@ public abstract partial class Workspace
             projectId = documentId.ProjectId;
         }
 
-        var ev = GetEventHandlers<WorkspaceChangeEventArgs>(WorkspaceChangeEventName);
-        if (ev.HasHandlers)
+        try
         {
-            return this.ScheduleTask(() =>
+            SerializableSourceText.AddDebugInfo("RaiseWorkspaceChangedEventAsync Start", newSolution.WorkspaceVersion);
+            var ev = GetEventHandlers<WorkspaceChangeEventArgs>(WorkspaceChangeEventName);
+            if (ev.HasHandlers)
             {
-                using (Logger.LogBlock(FunctionId.Workspace_Events, (s, p, d, k) => $"{s.Id} - {p} - {d} {kind.ToString()}", newSolution, projectId, documentId, kind, CancellationToken.None))
+                return this.ScheduleTask(() =>
                 {
-                    var args = new WorkspaceChangeEventArgs(kind, oldSolution, newSolution, projectId, documentId);
-                    ev.RaiseEvent(static (handler, arg) => handler(arg.self, arg.args), (self: this, args));
-                }
-            }, WorkspaceChangeEventName);
+                    SerializableSourceText.AddDebugInfo("RaiseWorkspaceChangedEventAsync Start Task", newSolution.WorkspaceVersion);
+                    using (Logger.LogBlock(FunctionId.Workspace_Events, (s, p, d, k) => $"{s.Id} - {p} - {d} {kind.ToString()}", newSolution, projectId, documentId, kind, CancellationToken.None))
+                    {
+                        var args = new WorkspaceChangeEventArgs(kind, oldSolution, newSolution, projectId, documentId);
+                        ev.RaiseEvent(static (handler, arg) => handler(arg.self, arg.args), (self: this, args));
+                    }
+                    SerializableSourceText.AddDebugInfo("RaiseWorkspaceChangedEventAsync End Task", newSolution.WorkspaceVersion);
+                }, WorkspaceChangeEventName);
+            }
+            else
+            {
+                return Task.CompletedTask;
+            }
         }
-        else
+        finally
         {
-            return Task.CompletedTask;
+            SerializableSourceText.AddDebugInfo("RaiseWorkspaceChangedEventAsync End", newSolution.WorkspaceVersion);
         }
     }
 
