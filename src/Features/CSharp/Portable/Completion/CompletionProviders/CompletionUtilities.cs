@@ -188,16 +188,33 @@ internal static class CompletionUtilities
         }
     }
 
-    public static SyntaxNode GetTargetCaretNodeForInsertedMember(SyntaxNode caretTarget)
+    public static TextSpan GetTargetSelectionSpanForMethod(BaseMethodDeclarationSyntax methodDeclaration)
+    {
+        if (methodDeclaration.ExpressionBody is not null)
+        {
+            return methodDeclaration.ExpressionBody.Expression.GetLocation().SourceSpan;
+        }
+        else if (methodDeclaration.Body is not null)
+        {
+            // move to the end of the last statement in the method
+            return methodDeclaration.Body.Statements.Last().GetLocation().SourceSpan;
+        }
+        else
+        {
+            return methodDeclaration.Span;
+        }
+    }
+
+    public static TextSpan GetTargetSelectionSpanForInsertedMember(SyntaxNode caretTarget)
     {
         switch (caretTarget)
         {
             case EventFieldDeclarationSyntax:
                 // Inserted Event declarations are a single line, so move to the end of the line.
-                return caretTarget;
+                return new TextSpan(caretTarget.Span.End, 0);
 
             case BaseMethodDeclarationSyntax methodDeclaration:
-                return GetTargetCaretPositionForMethod(methodDeclaration);
+                return GetTargetSelectionSpanForMethod(methodDeclaration);
 
             case BasePropertyDeclarationSyntax propertyDeclaration:
                 {
@@ -207,11 +224,11 @@ internal static class CompletionUtilities
                         // move to the end of the last statement of the first accessor
                         var firstAccessorStatement = (SyntaxNode)firstAccessor.Body?.Statements.LastOrDefault() ??
                             firstAccessor.ExpressionBody!.Expression;
-                        return firstAccessorStatement;
+                        return new TextSpan(firstAccessorStatement.Span.End, 0);
                     }
                     else
                     {
-                        return propertyDeclaration;
+                        return new TextSpan(propertyDeclaration.Span.End, 0);
                     }
                 }
 

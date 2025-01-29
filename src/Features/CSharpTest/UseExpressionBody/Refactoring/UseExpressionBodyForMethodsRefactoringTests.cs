@@ -237,4 +237,38 @@ public class UseExpressionBodyForMethodsRefactoringTests : AbstractCSharpCodeAct
     }
 }", parameters: new TestParameters(options: UseExpressionBody));
     }
+
+    [Fact]
+    public async Task TestOfferedWithSelectionInBlockBody()
+    {
+        await TestInRegularAndScript1Async(
+@"class C
+{
+    void Goo()
+    {
+        [|Bar()|];
+    }
+}",
+@"class C
+{
+    void Goo() => Bar();
+}", parameters: new TestParameters(options: UseBlockBody));
+    }
+
+    [Fact]
+    public async Task TestOfferedWithSelectionInExpressionBody()
+    {
+        await TestInRegularAndScript1Async(
+@"class C
+{
+    void Goo() => [|Bar()|];
+}",
+@"class C
+{
+    void Goo()
+    {
+        Bar();
+    }
+}", parameters: new TestParameters(options: UseExpressionBody));
+    }
 }
