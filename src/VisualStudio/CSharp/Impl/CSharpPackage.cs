@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Microsoft.CodeAnalysis;
@@ -60,6 +61,7 @@ namespace Microsoft.VisualStudio.LanguageServices.CSharp.LanguageService
 
         protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
         {
+            var sw = Stopwatch.StartNew();
             try
             {
                 await base.InitializeAsync(cancellationToken, progress).ConfigureAwait(false);
@@ -74,6 +76,8 @@ namespace Microsoft.VisualStudio.LanguageServices.CSharp.LanguageService
             catch (Exception e) when (FatalError.ReportAndPropagateUnlessCanceled(e, ErrorSeverity.General))
             {
             }
+
+            AbstractPackage.AddDebugInfo($"CSharpPackage.InitializeAsync: {sw.ElapsedMilliseconds}");
         }
 
         protected override void RegisterObjectBrowserLibraryManager()

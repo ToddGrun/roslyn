@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -36,6 +37,8 @@ internal abstract partial class AbstractPackage<TPackage, TLanguageService> : Ab
 
     protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
     {
+        var sw = Stopwatch.StartNew();
+
         await base.InitializeAsync(cancellationToken, progress).ConfigureAwait(false);
 
         await JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
@@ -79,6 +82,8 @@ internal abstract partial class AbstractPackage<TPackage, TLanguageService> : Ab
         }
 
         LoadComponentsInUIContextOnceSolutionFullyLoadedAsync(cancellationToken).Forget();
+
+        AbstractPackage.AddDebugInfo($"AbstractPackage.InitializeAsync ({this.GetType().Name}): {sw.ElapsedMilliseconds}");
     }
 
     protected override async Task LoadComponentsAsync(CancellationToken cancellationToken)

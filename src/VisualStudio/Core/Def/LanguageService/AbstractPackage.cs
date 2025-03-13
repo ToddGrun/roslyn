@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using Microsoft.CodeAnalysis.Options;
 using Microsoft.VisualStudio.ComponentModelHost;
@@ -15,6 +17,15 @@ namespace Microsoft.VisualStudio.LanguageServices.Implementation.LanguageService
 internal abstract class AbstractPackage : AsyncPackage
 {
     private IComponentModel? _componentModel_doNotAccessDirectly;
+    private static List<string> s_debugInfo = new List<string>();
+
+    public static void AddDebugInfo(string s)
+    {
+        lock (s_debugInfo)
+        {
+            s_debugInfo.Add(s);
+        }
+    }
 
     internal IComponentModel ComponentModel
     {
@@ -27,12 +38,18 @@ internal abstract class AbstractPackage : AsyncPackage
 
     protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
     {
+        var sw = Stopwatch.StartNew();
+
         _componentModel_doNotAccessDirectly = (IComponentModel?)await GetServiceAsync(typeof(SComponentModel)).ConfigureAwait(false);
         Assumes.Present(_componentModel_doNotAccessDirectly);
+
+        AbstractPackage.AddDebugInfo($"AbstractPackage<>.InitializeAsync ({this.GetType().Name}): {sw.ElapsedMilliseconds}");
     }
 
     protected override async Task OnAfterPackageLoadedAsync(CancellationToken cancellationToken)
     {
+        var sw = Stopwatch.StartNew();
+
         // TODO: remove, workaround for https://devdiv.visualstudio.com/DevDiv/_workitems/edit/1985204
         var globalOptions = ComponentModel.GetService<IGlobalOptionService>();
         if (globalOptions.GetOption(SemanticSearchFeatureFlag.Enabled))
@@ -40,6 +57,8 @@ internal abstract class AbstractPackage : AsyncPackage
             await JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
             UIContext.FromUIContextGuid(new Guid(SemanticSearchFeatureFlag.UIContextId)).IsActive = true;
         }
+
+        AbstractPackage.AddDebugInfo($"AbstractPackage<>.OnAfterPackageLoadedAsync ({this.GetType().Name}): {sw.ElapsedMilliseconds}");
     }
 
     protected async Task LoadComponentsInUIContextOnceSolutionFullyLoadedAsync(CancellationToken cancellationToken)

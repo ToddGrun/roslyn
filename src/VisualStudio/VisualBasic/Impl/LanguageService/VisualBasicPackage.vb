@@ -65,6 +65,8 @@ Namespace Microsoft.VisualStudio.LanguageServices.VisualBasic
         End Sub
 
         Protected Overrides Async Function InitializeAsync(cancellationToken As CancellationToken, progress As IProgress(Of ServiceProgressData)) As Task
+            Dim sw = Stopwatch.StartNew()
+
             Try
                 Await MyBase.InitializeAsync(cancellationToken, progress).ConfigureAwait(False)
 
@@ -79,6 +81,8 @@ Namespace Microsoft.VisualStudio.LanguageServices.VisualBasic
             Catch ex As Exception When FatalError.ReportAndPropagateUnlessCanceled(ex)
                 Throw ExceptionUtilities.Unreachable
             End Try
+
+            AbstractPackage.AddDebugInfo($"VisualBasicPackage.InitializeAsync: {sw.ElapsedMilliseconds}")
         End Function
 
         Protected Overrides Sub RegisterObjectBrowserLibraryManager()
