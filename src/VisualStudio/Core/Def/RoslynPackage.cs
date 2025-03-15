@@ -142,8 +142,6 @@ internal sealed class RoslynPackage : AbstractPackage
 
     protected override void RegisterInitializationWork(PackageRegistrationTasks packageRegistrationTasks)
     {
-        base.RegisterInitializationWork(packageRegistrationTasks);
-
         packageRegistrationTasks.AddTask(isMainThreadTask: false, task: PackageInitializationBackgroundThreadAsync);
     }
 

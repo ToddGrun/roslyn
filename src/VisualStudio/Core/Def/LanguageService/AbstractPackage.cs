@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Options;
@@ -25,21 +26,15 @@ internal abstract class AbstractPackage : AsyncPackage
         }
     }
 
-    protected virtual void RegisterInitializationWork(PackageRegistrationTasks packageRegistrationTasks)
-    {
-        // This treatment of registering work on the bg/main threads is a bit unique as we want the component model initialized at the beginning
-        // of whichever context is invoked first. The current architecture doesn't execute any of the registered tasks concurrently,
-        // so that isn't a concern for running calculating or setting _componentModel_doNotAccessDirectly multiple times.
-        packageRegistrationTasks.AddTask(isMainThreadTask: false, task: EnsureComponentModelAsync);
-        packageRegistrationTasks.AddTask(isMainThreadTask: true, task: EnsureComponentModelAsync);
+    protected abstract void RegisterInitializationWork(PackageRegistrationTasks packageRegistrationTasks);
 
-        async Task EnsureComponentModelAsync(IProgress<ServiceProgressData> progress, PackageRegistrationTasks packageRegistrationTasks, CancellationToken token)
+    private async Task EnsureComponentModelAsync()
+    {
+        if (_componentModel_doNotAccessDirectly == null)
         {
-            if (_componentModel_doNotAccessDirectly == null)
-            {
-                _componentModel_doNotAccessDirectly = (IComponentModel?)await GetServiceAsync(typeof(SComponentModel)).ConfigureAwait(false);
-                Assumes.Present(_componentModel_doNotAccessDirectly);
-            }
+            // It doesn't matter if we hit this block concurrently, either way we'll end up with a valid component model.
+            _componentModel_doNotAccessDirectly = (IComponentModel?)await GetServiceAsync(typeof(SComponentModel)).ConfigureAwait(false);
+            Assumes.Present(_componentModel_doNotAccessDirectly);
         }
     }
 
@@ -48,6 +43,8 @@ internal abstract class AbstractPackage : AsyncPackage
     /// to indicate the work your package needs upon initialization.
     protected sealed override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
     {
+        var sw = Stopwatch.StartNew();
+
         var packageRegistrationTasks = new PackageRegistrationTasks(JoinableTaskFactory);
 
         // Request all initially known work, classified into whether it should be processed on the main or
@@ -56,7 +53,13 @@ internal abstract class AbstractPackage : AsyncPackage
         // reducing thread switches during package load.
         RegisterInitializationWork(packageRegistrationTasks);
 
+        await EnsureComponentModelAsync().ConfigureAwait(false);
+
+        PackageRegistrationTasks.s_debugInfo.Add($"{this.GetType().Name}.EnsureComponentModelAsync: {sw.ElapsedMilliseconds}");
+
         await packageRegistrationTasks.ProcessTasksAsync(progress, cancellationToken).ConfigureAwait(false);
+
+        PackageRegistrationTasks.s_debugInfo.Add($"{this.GetType().Name}.InitializeAsync: {sw.ElapsedMilliseconds}");
     }
 
     protected override async Task OnAfterPackageLoadedAsync(CancellationToken cancellationToken)

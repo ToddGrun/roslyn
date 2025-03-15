@@ -36,8 +36,6 @@ internal abstract partial class AbstractPackage<TPackage, TLanguageService> : Ab
 
     protected override void RegisterInitializationWork(PackageRegistrationTasks packageRegistrationTasks)
     {
-        base.RegisterInitializationWork(packageRegistrationTasks);
-
         packageRegistrationTasks.AddTask(isMainThreadTask: true, task: PackageInitializationMainThreadAsync);
     }
 
