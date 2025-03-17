@@ -37,6 +37,8 @@ internal abstract class AbstractPackage : AsyncPackage
         {
             if (_componentModel_doNotAccessDirectly == null)
             {
+                using var _ = DebugInfo.AddScopedInfo("AbstractPackage.RegisterInitializationWork");
+
                 _componentModel_doNotAccessDirectly = (IComponentModel?)await GetServiceAsync(typeof(SComponentModel)).ConfigureAwait(false);
                 Assumes.Present(_componentModel_doNotAccessDirectly);
             }
@@ -48,6 +50,8 @@ internal abstract class AbstractPackage : AsyncPackage
     /// to indicate the work your package needs upon initialization.
     protected sealed override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
     {
+        using var _ = DebugInfo.AddScopedInfo("AbstractPackage.InitializeAsync");
+
         var packageRegistrationTasks = new PackageRegistrationTasks(JoinableTaskFactory);
 
         // Request all initially known work, classified into whether it should be processed on the main or

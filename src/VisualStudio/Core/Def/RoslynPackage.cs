@@ -149,6 +149,8 @@ internal sealed class RoslynPackage : AbstractPackage
 
     private Task PackageInitializationBackgroundThreadAsync(IProgress<ServiceProgressData> progress, PackageRegistrationTasks packageRegistrationTasks, CancellationToken cancellationToken)
     {
+        using var _ = DebugInfo.AddScopedInfo("RoslynPackage.PackageInitializationBackgroundThreadAsync - main(1)");
+
         _colorSchemeApplier = ComponentModel.GetService<ColorSchemeApplier>();
         _colorSchemeApplier.RegisterInitializationWork(packageRegistrationTasks);
 
@@ -156,12 +158,14 @@ internal sealed class RoslynPackage : AbstractPackage
         var globalNotificationService = this.ComponentModel.GetService<IGlobalOperationNotificationService>();
         Assumes.Present(globalNotificationService);
 
-        var settingsEditorFactory = this.ComponentModel.GetService<SettingsEditorFactory>();
+        var settingsEditorFactory = SettingsEditorFactory.GetInstance(new Lazy<IComponentModel>(() => this.ComponentModel));
 
         packageRegistrationTasks.AddTask(
             isMainThreadTask: true,
             task: async (progress, packageRegistrationTasks, cancellationToken) =>
             {
+                using var _ = DebugInfo.AddScopedInfo("RoslynPackage.PackageInitializationBackgroundThreadAsync - bg(2)");
+
                 _solutionEventMonitor = new SolutionEventMonitor(globalNotificationService);
                 TrackBulkFileOperations(globalNotificationService);
 
@@ -183,13 +187,6 @@ internal sealed class RoslynPackage : AbstractPackage
                 serviceBrokerContainer.Proffer(
                     ManagedHotReloadLanguageServiceDescriptor.Descriptor,
                     (_, _, _, _) => ValueTaskFactory.FromResult<object?>(new ManagedEditAndContinueLanguageServiceBridge(this.ComponentModel.GetService<EditAndContinueLanguageService>())));
-
-                packageRegistrationTasks.AddTask(
-                    isMainThreadTask: false,
-                    task: async (progress, packageRegistrationTasks, cancellationToken) =>
-                    {
-                        await miscellaneousFilesWorkspace.InitializeAsync().ConfigureAwait(false);
-                    });
             });
 
         return Task.CompletedTask;

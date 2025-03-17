@@ -14,6 +14,7 @@ using Microsoft.CodeAnalysis.ErrorReporting;
 using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.Options;
 using Microsoft.Internal.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.LanguageServices.Implementation.LanguageService;
 using Microsoft.VisualStudio.Settings;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -61,12 +62,16 @@ internal sealed class VisualStudioOptionPersisterProvider : IOptionPersisterProv
         var localRegistry = await GetFreeThreadedServiceAsync<SLocalRegistry, ILocalRegistry4>().ConfigureAwait(false);
         Assumes.Present(localRegistry);
         var featureFlags = await GetFreeThreadedServiceAsync<SVsFeatureFlags, IVsFeatureFlags>().ConfigureAwait(false);
+        DebugInfo.AddInfo("VisualStudioOptionPersisterProvider, create featureFlags");
 
         // Cancellation is not allowed after this point
         cancellationToken = CancellationToken.None;
+        DebugInfo.AddInfo("VisualStudioOptionPersisterProvider, cancellation token");
 
+        var settingsPersister = new VisualStudioSettingsOptionPersister(RefreshOption, _readFallbacks, settingsManager);
+        DebugInfo.AddInfo("VisualStudioOptionPersisterProvider, create settingsPersister");
         return new VisualStudioOptionPersister(
-            new VisualStudioSettingsOptionPersister(RefreshOption, _readFallbacks, settingsManager),
+            settingsPersister,
             LocalUserRegistryOptionPersister.Create(localRegistry),
             new FeatureFlagPersister(featureFlags));
     }

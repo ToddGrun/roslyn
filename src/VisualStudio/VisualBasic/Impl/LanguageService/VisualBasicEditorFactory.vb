@@ -15,7 +15,7 @@ Namespace Microsoft.VisualStudio.LanguageServices.VisualBasic
     Friend Class VisualBasicEditorFactory
         Inherits AbstractEditorFactory
 
-        Public Sub New(componentModel As IComponentModel)
+        Public Sub New(componentModel As Lazy(Of IComponentModel))
             MyBase.New(componentModel)
         End Sub
 

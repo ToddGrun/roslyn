@@ -43,6 +43,8 @@ internal abstract partial class AbstractPackage<TPackage, TLanguageService> : Ab
 
     private async Task PackageInitializationMainThreadAsync(IProgress<ServiceProgressData> progress, PackageRegistrationTasks packageRegistrationTasks, CancellationToken cancellationToken)
     {
+        using var _ = DebugInfo.AddScopedInfo("AbstractPackage<>.PackageInitializationMainThreadAsync - Total");
+
         // This code uses various main thread only services, so it must run completely on the main thread
         // (thus the CA(true) usage throughout)
         Contract.ThrowIfFalse(JoinableTaskFactory.Context.IsOnMainThread);
@@ -58,25 +60,10 @@ internal abstract partial class AbstractPackage<TPackage, TLanguageService> : Ab
             RegisterEditorFactory(editorFactory);
         }
 
-        RegisterLanguageService(typeof(TLanguageService), async cancellationToken =>
-        {
-            // Ensure we're on the BG when creating the language service.
-            await TaskScheduler.Default;
-
-            // Create the language service, tell it to set itself up, then store it in a field
-            // so we can notify it that it's time to clean up.
-            _languageService = CreateLanguageService();
-            await _languageService.SetupAsync(cancellationToken).ConfigureAwait(false);
-
-            return _languageService.ComAggregate!;
-        });
-
         var miscellaneousFilesWorkspace = this.ComponentModel.GetService<MiscellaneousFilesWorkspace>();
 
         // awaiting an IVsTask guarantees to return on the captured context
         await shell.LoadPackageAsync(Guids.RoslynPackageId);
-
-        RegisterMiscellaneousFilesWorkspaceInformation(miscellaneousFilesWorkspace);
 
         if (!_shell.IsInCommandLineMode())
         {
@@ -84,6 +71,26 @@ internal abstract partial class AbstractPackage<TPackage, TLanguageService> : Ab
             // this is a no op
             RegisterObjectBrowserLibraryManager();
         }
+
+        packageRegistrationTasks.AddTask(
+            isMainThreadTask: false,
+            task: async (IProgress<ServiceProgressData> progress, PackageRegistrationTasks packageRegistrationTasks, CancellationToken cancellationToken) =>
+            {
+                RegisterLanguageService(typeof(TLanguageService), async cancellationToken =>
+                {
+                    // Ensure we're on the BG when creating the language service.
+                    await TaskScheduler.Default;
+
+                    // Create the language service, tell it to set itself up, then store it in a field
+                    // so we can notify it that it's time to clean up.
+                    _languageService = CreateLanguageService();
+                    await _languageService.SetupAsync(cancellationToken).ConfigureAwait(false);
+
+                    return _languageService.ComAggregate!;
+                });
+
+                RegisterMiscellaneousFilesWorkspaceInformation(miscellaneousFilesWorkspace);
+            });
     }
 
     protected override async Task OnAfterPackageLoadedAsync(CancellationToken cancellationToken)

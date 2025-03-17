@@ -6,6 +6,7 @@ Imports System.Runtime.InteropServices
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.ErrorReporting
 Imports Microsoft.CodeAnalysis.Options
+Imports Microsoft.VisualStudio.ComponentModelHost
 Imports Microsoft.VisualStudio.LanguageServices.Implementation.LanguageService
 Imports Microsoft.VisualStudio.LanguageServices.Implementation.ProjectSystem
 Imports Microsoft.VisualStudio.LanguageServices.VisualBasic.ObjectBrowser
@@ -70,18 +71,20 @@ Namespace Microsoft.VisualStudio.LanguageServices.VisualBasic
             packageRegistrationTasks.AddTask(
                 isMainThreadTask:=False,
                 task:=Function(progress, packageRegistrationTasks2, cancellationToken) As Task
-                          Try
-                              RegisterLanguageService(GetType(IVbCompilerService), Function() Task.FromResult(_comAggregate))
+                          Using DebugInfo.AddScopedInfo("VisualBasicPackage.Work")
+                              Try
+                                  RegisterLanguageService(GetType(IVbCompilerService), Function() Task.FromResult(_comAggregate))
 
-                              RegisterService(Of IVbTempPECompilerFactory)(
-                            Async Function(ct)
-                                Dim workspace = Me.ComponentModel.GetService(Of VisualStudioWorkspace)()
-                                Await JoinableTaskFactory.SwitchToMainThreadAsync(ct)
-                                Return New TempPECompilerFactory(workspace)
-                            End Function)
-                          Catch ex As Exception When FatalError.ReportAndPropagateUnlessCanceled(ex)
-                              Throw ExceptionUtilities.Unreachable
-                          End Try
+                                  RegisterService(Of IVbTempPECompilerFactory)(
+                                        Async Function(ct)
+                                            Dim workspace = Me.ComponentModel.GetService(Of VisualStudioWorkspace)()
+                                            Await JoinableTaskFactory.SwitchToMainThreadAsync(ct)
+                                            Return New TempPECompilerFactory(workspace)
+                                        End Function)
+                              Catch ex As Exception When FatalError.ReportAndPropagateUnlessCanceled(ex)
+                                  Throw ExceptionUtilities.Unreachable
+                              End Try
+                          End Using
 
                           Return Task.CompletedTask
                       End Function)
@@ -132,7 +135,7 @@ Namespace Microsoft.VisualStudio.LanguageServices.VisualBasic
         End Function
 
         Protected Overrides Function CreateEditorFactories() As IEnumerable(Of IVsEditorFactory)
-            Dim editorFactory = New VisualBasicEditorFactory(Me.ComponentModel)
+            Dim editorFactory = New VisualBasicEditorFactory(New Lazy(Of IComponentModel)(Function() Me.ComponentModel))
             Dim codePageEditorFactory = New VisualBasicCodePageEditorFactory(editorFactory)
 
             Return {editorFactory, codePageEditorFactory}

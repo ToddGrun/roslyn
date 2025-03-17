@@ -10,6 +10,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.ErrorReporting;
 using Microsoft.CodeAnalysis.Host;
 using Microsoft.CodeAnalysis.Options;
+using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.LanguageServices.CSharp.ObjectBrowser;
 using Microsoft.VisualStudio.LanguageServices.CSharp.ProjectSystemShim;
 using Microsoft.VisualStudio.LanguageServices.CSharp.ProjectSystemShim.Interop;
@@ -67,6 +68,8 @@ namespace Microsoft.VisualStudio.LanguageServices.CSharp.LanguageService
 
         private Task PackageInitializationBackgroundThreadAsync(IProgress<ServiceProgressData> progress, PackageRegistrationTasks packageRegistrationTasks, CancellationToken cancellationToken)
         {
+            using var _ = DebugInfo.AddScopedInfo("CSharpPackage.PackageInitializationBackgroundThreadAsync");
+
             try
             {
                 this.RegisterService<ICSharpTempPECompilerService>(async ct =>
@@ -137,7 +140,7 @@ namespace Microsoft.VisualStudio.LanguageServices.CSharp.LanguageService
 
         protected override IEnumerable<IVsEditorFactory> CreateEditorFactories()
         {
-            var editorFactory = new CSharpEditorFactory(this.ComponentModel);
+            var editorFactory = new CSharpEditorFactory(new Lazy<IComponentModel>(() => this.ComponentModel));
             var codePageEditorFactory = new CSharpCodePageEditorFactory(editorFactory);
 
             return [editorFactory, codePageEditorFactory];

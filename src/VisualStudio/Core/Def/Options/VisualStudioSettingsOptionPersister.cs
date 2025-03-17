@@ -12,6 +12,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeStyle;
 using Microsoft.CodeAnalysis.Diagnostics.Analyzers.NamingStyles;
 using Microsoft.CodeAnalysis.Options;
+using Microsoft.VisualStudio.LanguageServices.Implementation.LanguageService;
 using Microsoft.VisualStudio.LanguageServices.Setup;
 using Microsoft.VisualStudio.Settings;
 using Roslyn.Utilities;
@@ -39,12 +40,16 @@ internal sealed class VisualStudioSettingsOptionPersister
     /// </remarks>
     public VisualStudioSettingsOptionPersister(Action<OptionKey2, object?> refreshOption, ImmutableDictionary<string, Lazy<IVisualStudioStorageReadFallback, OptionNameMetadata>> readFallbacks, ISettingsManager settingsManager)
     {
+        DebugInfo.AddInfo("VisualStudioOptionPersisterProvider, 0");
         _settingManager = settingsManager;
         _refreshOption = refreshOption;
         _readFallbacks = readFallbacks;
 
+        DebugInfo.AddInfo("VisualStudioOptionPersisterProvider, 1");
         var settingsSubset = _settingManager.GetSubset("*");
+        DebugInfo.AddInfo("VisualStudioOptionPersisterProvider, 2");
         settingsSubset.SettingChangedAsync += OnSettingChangedAsync;
+        DebugInfo.AddInfo("VisualStudioOptionPersisterProvider, 3");
     }
 
     private Task OnSettingChangedAsync(object sender, PropertyChangedEventArgs args)

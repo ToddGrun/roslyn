@@ -30,9 +30,9 @@ namespace Microsoft.VisualStudio.LanguageServices.Implementation;
 /// <summary>
 /// The base class of both the Roslyn editor factories.
 /// </summary>
-internal abstract class AbstractEditorFactory(IComponentModel componentModel) : IVsEditorFactory, IVsEditorFactory4, IVsEditorFactoryNotify
+internal abstract class AbstractEditorFactory(Lazy<IComponentModel> componentModel) : IVsEditorFactory, IVsEditorFactory4, IVsEditorFactoryNotify
 {
-    private readonly IComponentModel _componentModel = componentModel;
+    private readonly Lazy<IComponentModel> _componentModel = componentModel;
     private Microsoft.VisualStudio.OLE.Interop.IServiceProvider? _oleServiceProvider;
     private bool _encoding;
 
@@ -93,7 +93,7 @@ internal abstract class AbstractEditorFactory(IComponentModel componentModel) : 
             }
         }
 
-        var editorAdaptersFactoryService = _componentModel.GetService<IVsEditorAdaptersFactoryService>();
+        var editorAdaptersFactoryService = _componentModel.Value.GetService<IVsEditorAdaptersFactoryService>();
 
         // Do we need to create a text buffer?
         if (textBuffer == null)
@@ -154,8 +154,8 @@ internal abstract class AbstractEditorFactory(IComponentModel componentModel) : 
     public object GetDocumentData(uint grfCreate, string pszMkDocument, IVsHierarchy pHier, uint itemid)
     {
         Contract.ThrowIfNull(_oleServiceProvider);
-        var editorAdaptersFactoryService = _componentModel.GetService<IVsEditorAdaptersFactoryService>();
-        var contentTypeRegistryService = _componentModel.GetService<IContentTypeRegistryService>();
+        var editorAdaptersFactoryService = _componentModel.Value.GetService<IVsEditorAdaptersFactoryService>();
+        var contentTypeRegistryService = _componentModel.Value.GetService<IContentTypeRegistryService>();
         var contentType = contentTypeRegistryService.GetContentType(ContentTypeName);
         var textBuffer = editorAdaptersFactoryService.CreateVsTextBufferAdapter(_oleServiceProvider, contentType);
 
@@ -229,7 +229,7 @@ internal abstract class AbstractEditorFactory(IComponentModel componentModel) : 
         // Is this being added from a template?
         if (((__EFNFLAGS)grfEFN & __EFNFLAGS.EFN_ClonedFromTemplate) != 0)
         {
-            var uiThreadOperationExecutor = _componentModel.GetService<IUIThreadOperationExecutor>();
+            var uiThreadOperationExecutor = _componentModel.Value.GetService<IUIThreadOperationExecutor>();
             // TODO(cyrusn): Can this be cancellable?
             uiThreadOperationExecutor.Execute(
                 "Intellisense",
@@ -247,7 +247,7 @@ internal abstract class AbstractEditorFactory(IComponentModel componentModel) : 
 
     private void FormatDocumentCreatedFromTemplate(IVsHierarchy hierarchy, string filePath, CancellationToken cancellationToken)
     {
-        var threadingContext = _componentModel.GetService<IThreadingContext>();
+        var threadingContext = _componentModel.Value.GetService<IThreadingContext>();
         threadingContext.JoinableTaskFactory.Run(() => FormatDocumentCreatedFromTemplateAsync(hierarchy, filePath, cancellationToken));
     }
 
@@ -287,7 +287,7 @@ internal abstract class AbstractEditorFactory(IComponentModel componentModel) : 
         // A file has been created on disk which the user added from the "Add Item" dialog. We need
         // to include this in a workspace to figure out the right options it should be formatted with.
         // This requires us to place it in the correct project.
-        var workspace = _componentModel.GetService<VisualStudioWorkspace>();
+        var workspace = _componentModel.Value.GetService<VisualStudioWorkspace>();
         var solution = workspace.CurrentSolution;
 
         Project? projectToAddTo = null;

@@ -42,7 +42,6 @@ internal sealed partial class ColorSchemeApplier
     [Obsolete(MefConstruction.ImportingConstructorMessage, error: true)]
     public ColorSchemeApplier(
         IThreadingContext threadingContext,
-        IVsService<SVsFontAndColorStorage, IVsFontAndColorStorage> fontAndColorStorage,
         IGlobalOptionService globalOptions,
         SVsServiceProvider serviceProvider,
         IAsynchronousOperationListenerProvider listenerProvider)
@@ -75,13 +74,18 @@ internal sealed partial class ColorSchemeApplier
 
     private async Task PackageInitializationBackgroundThreadAsync(IProgress<ServiceProgressData> progress, PackageRegistrationTasks packageRegistrationTasks, CancellationToken cancellationToken)
     {
+        using var _1 = DebugInfo.AddScopedInfo("ColorSchemeApplier.PackageInitializationBackgroundThreadAsync - Total");
+
         var settingsManager = await _asyncServiceProvider.GetServiceAsync<SVsSettingsPersistenceManager, ISettingsManager>(_threadingContext.JoinableTaskFactory).ConfigureAwait(false);
+        DebugInfo.AddInfo("ColorSchemeApplier.PackageInitializationBackgroundThreadAsync - 1");
 
         // We need to update the theme whenever the Editor Color Scheme setting changes.
         settingsManager.GetSubset(ColorSchemeOptionsStorage.ColorSchemeSettingKey).SettingChangedAsync += ColorSchemeChangedAsync;
+        DebugInfo.AddInfo("ColorSchemeApplier.PackageInitializationBackgroundThreadAsync - 2");
 
         // Try to migrate the `useEnhancedColorsSetting` to the new `ColorSchemeName` setting.
         _settings.MigrateToColorSchemeSetting();
+        DebugInfo.AddInfo("ColorSchemeApplier.PackageInitializationBackgroundThreadAsync - 3");
 
         // Since the Roslyn colors are now defined in the Roslyn repo and no longer applied by the VS pkgdef built from EditorColors.xml,
         // We attempt to apply a color scheme when the Roslyn package is loaded. This is our chance to update the configuration registry
@@ -90,6 +94,7 @@ internal sealed partial class ColorSchemeApplier
 
         // If the color scheme has updated, apply the scheme.
         await UpdateColorSchemeAsync(cancellationToken).ConfigureAwait(false);
+        DebugInfo.AddInfo("ColorSchemeApplier.PackageInitializationBackgroundThreadAsync - 4");
     }
 
     private async Task UpdateColorSchemeAsync(CancellationToken cancellationToken)

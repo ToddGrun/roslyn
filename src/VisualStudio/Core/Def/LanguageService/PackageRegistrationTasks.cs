@@ -41,15 +41,23 @@ internal sealed class PackageRegistrationTasks(JoinableTaskFactory jtf)
 
     public async Task ProcessTasksAsync(IProgress<ServiceProgressData> progress, CancellationToken cancellationToken)
     {
+        using var _1 = DebugInfo.AddScopedInfo("PackageRegistrationTasks.ProcessTasksAsync - 0");
+
         // prime the pump by doing the first group of bg thread work if the initiating thread is not the main thread
         if (!_jtf.Context.IsOnMainThread)
+        {
             await PerformWorkAsync(isMainThreadTask: false, progress, cancellationToken).ConfigureAwait(false);
+            DebugInfo.AddInfo("PackageRegistrationTasks.ProcessTasksAsync - prime");
+        }
 
         // Continue processing work until everything is completed, switching between main and bg threads as needed.
         while (_mainThreadWorkTasks.Count > 0 || _backgroundThreadWorkTasks.Count > 0)
         {
             await PerformWorkAsync(isMainThreadTask: true, progress, cancellationToken).ConfigureAwait(false);
+            DebugInfo.AddInfo("PackageRegistrationTasks.ProcessTasksAsync - loop(main)");
+
             await PerformWorkAsync(isMainThreadTask: false, progress, cancellationToken).ConfigureAwait(false);
+            DebugInfo.AddInfo("PackageRegistrationTasks.ProcessTasksAsync - loop(bg)");
         }
     }
 
