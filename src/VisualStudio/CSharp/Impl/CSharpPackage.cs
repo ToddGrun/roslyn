@@ -58,14 +58,14 @@ namespace Microsoft.VisualStudio.LanguageServices.CSharp.LanguageService
         private ObjectBrowserLibraryManager? _libraryManager;
         private uint _libraryManagerCookie;
 
-        protected override void RegisterInitializationWork(PackageRegistrationTasks packageRegistrationTasks)
+        protected override void RegisterInitializeAsyncWork(PackageLoadTasks packageInitializeTasks)
         {
-            base.RegisterInitializationWork(packageRegistrationTasks);
+            base.RegisterInitializeAsyncWork(packageInitializeTasks);
 
-            packageRegistrationTasks.AddTask(isMainThreadTask: false, task: PackageInitializationBackgroundThreadAsync);
+            packageInitializeTasks.AddTask(isMainThreadTask: false, task: PackageInitializationBackgroundThreadAsync);
         }
 
-        private Task PackageInitializationBackgroundThreadAsync(IProgress<ServiceProgressData> progress, PackageRegistrationTasks packageRegistrationTasks, CancellationToken cancellationToken)
+        private Task PackageInitializationBackgroundThreadAsync(PackageLoadTasks packageInitializeTasks, CancellationToken cancellationToken)
         {
             try
             {

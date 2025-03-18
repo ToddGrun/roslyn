@@ -140,17 +140,17 @@ internal sealed class RoslynPackage : AbstractPackage
         base.OnSaveOptions(key, stream);
     }
 
-    protected override void RegisterInitializationWork(PackageRegistrationTasks packageRegistrationTasks)
+    protected override void RegisterInitializeAsyncWork(PackageLoadTasks packageInitializeTasks)
     {
-        base.RegisterInitializationWork(packageRegistrationTasks);
+        base.RegisterInitializeAsyncWork(packageInitializeTasks);
 
-        packageRegistrationTasks.AddTask(isMainThreadTask: false, task: PackageInitializationBackgroundThreadAsync);
+        packageInitializeTasks.AddTask(isMainThreadTask: false, task: PackageInitializationBackgroundThreadAsync);
     }
 
-    private Task PackageInitializationBackgroundThreadAsync(IProgress<ServiceProgressData> progress, PackageRegistrationTasks packageRegistrationTasks, CancellationToken cancellationToken)
+    private Task PackageInitializationBackgroundThreadAsync(PackageLoadTasks packageInitializeTasks, CancellationToken cancellationToken)
     {
         _colorSchemeApplier = ComponentModel.GetService<ColorSchemeApplier>();
-        _colorSchemeApplier.RegisterInitializationWork(packageRegistrationTasks);
+        _colorSchemeApplier.RegisterInitializationWork(packageInitializeTasks);
 
         // We are at the VS layer, so we know we must be able to get the IGlobalOperationNotificationService here.
         var globalNotificationService = this.ComponentModel.GetService<IGlobalOperationNotificationService>();
@@ -163,9 +163,9 @@ internal sealed class RoslynPackage : AbstractPackage
         // metadata-as-source workspace).
         var miscellaneousFilesWorkspace = this.ComponentModel.GetService<MiscellaneousFilesWorkspace>();
 
-        packageRegistrationTasks.AddTask(
+        packageInitializeTasks.AddTask(
             isMainThreadTask: true,
-            task: async (progress, packageRegistrationTasks, cancellationToken) =>
+            task: async (packageInitializeTasks, cancellationToken) =>
             {
                 _solutionEventMonitor = new SolutionEventMonitor(globalNotificationService);
                 TrackBulkFileOperations(globalNotificationService);
@@ -188,27 +188,40 @@ internal sealed class RoslynPackage : AbstractPackage
         return Task.CompletedTask;
     }
 
-    protected override async Task OnAfterPackageLoadedAsync(CancellationToken cancellationToken)
+    protected override void RegisterOnAfterPackageLoadedAsyncWork(PackageLoadTasks packageLoadedTasks)
     {
-        await base.OnAfterPackageLoadedAsync(cancellationToken).ConfigureAwait(false);
+        base.RegisterOnAfterPackageLoadedAsyncWork(packageLoadedTasks);
 
-        // Ensure the options persisters are loaded since we have to fetch options from the shell
-        LoadOptionPersistersAsync(this.ComponentModel, cancellationToken).Forget();
+        packageLoadedTasks.AddTask(isMainThreadTask: false, task: OnAfterPackageLoadedBackgroundThreadAsync);
+        packageLoadedTasks.AddTask(isMainThreadTask: true, task: OnAfterPackageLoadedMainThreadAsync);
 
-        await JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
+        return;
 
-        // load some services that have to be loaded in UI thread
-        LoadComponentsInUIContextOnceSolutionFullyLoadedAsync(cancellationToken).Forget();
+        Task OnAfterPackageLoadedBackgroundThreadAsync(PackageLoadTasks packageLoadedTasks, CancellationToken cancellationToken)
+        {
+            // Ensure the options persisters are loaded since we have to fetch options from the shell
+            LoadOptionPersistersAsync(this.ComponentModel, cancellationToken).Forget();
+
+            return Task.CompletedTask;
+        }
+
+        Task OnAfterPackageLoadedMainThreadAsync(PackageLoadTasks packageLoadedTasks, CancellationToken cancellationToken)
+        {
+            // load some services that have to be loaded in UI thread
+            LoadComponentsInUIContextOnceSolutionFullyLoadedAsync(cancellationToken).Forget();
+
+            return Task.CompletedTask;
+        }
     }
 
     private async Task LoadOptionPersistersAsync(IComponentModel componentModel, CancellationToken cancellationToken)
     {
+        // Ensure on a background thread to ensure assembly loads don't show up as UI delays attributed to
+        // InitializeAsync.
+        Contract.ThrowIfTrue(JoinableTaskFactory.Context.IsOnMainThread);
+
         var listenerProvider = componentModel.GetService<IAsynchronousOperationListenerProvider>();
         using var token = listenerProvider.GetListener(FeatureAttribute.Workspace).BeginAsyncOperation(nameof(LoadOptionPersistersAsync));
-
-        // Switch to a background thread to ensure assembly loads don't show up as UI delays attributed to
-        // InitializeAsync.
-        await TaskScheduler.Default;
 
         var persisterProviders = componentModel.GetExtensions<IOptionPersisterProvider>().ToImmutableArray();
 
