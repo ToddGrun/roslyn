@@ -56,8 +56,8 @@ internal sealed partial class MiscellaneousFilesWorkspace : Workspace, IOpenText
         IVsService<SVsTextManager, IVsTextManager> textManagerService,
         OpenTextBufferProvider openTextBufferProvider,
         IMetadataAsSourceFileService fileTrackingMetadataAsSourceService,
-        VisualStudioWorkspace visualStudioWorkspace)
-        : base(visualStudioWorkspace.Services.HostServices, WorkspaceKind.MiscellaneousFiles)
+        HostServicesProvider hostServicesProvider)
+        : base(hostServicesProvider.HostServices, WorkspaceKind.MiscellaneousFiles)
     {
         _threadingContext = threadingContext;
         _textManagerService = textManagerService;

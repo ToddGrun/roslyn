@@ -31,14 +31,14 @@ internal sealed class CpsDiagnosticItemSourceProvider(
     IThreadingContext threadingContext,
     [Import(typeof(AnalyzersCommandHandler))] IAnalyzersCommandHandler commandHandler,
     IDiagnosticAnalyzerService diagnosticAnalyzerService,
-    VisualStudioWorkspace workspace,
+    Lazy<VisualStudioWorkspace> workspace,
     IAsynchronousOperationListenerProvider listenerProvider)
     : AttachedCollectionSourceProvider<IVsHierarchyItem>
 {
     private readonly IThreadingContext _threadingContext = threadingContext;
     private readonly IAnalyzersCommandHandler _commandHandler = commandHandler;
     private readonly IDiagnosticAnalyzerService _diagnosticAnalyzerService = diagnosticAnalyzerService;
-    private readonly Workspace _workspace = workspace;
+    private readonly Lazy<VisualStudioWorkspace> _workspace = workspace;
     private readonly IAsynchronousOperationListenerProvider _listenerProvider = listenerProvider;
 
     private IHierarchyItemToProjectIdMap? _projectMap;
@@ -63,7 +63,7 @@ internal sealed class CpsDiagnosticItemSourceProvider(
                         if (hierarchy.GetCanonicalName(itemId, out var projectCanonicalName) == VSConstants.S_OK)
                         {
                             return new CpsDiagnosticItemSource(
-                                _threadingContext, _workspace, projectCanonicalName, projectId, item, _commandHandler, _diagnosticAnalyzerService, _listenerProvider);
+                                _threadingContext, _workspace.Value, projectCanonicalName, projectId, item, _commandHandler, _diagnosticAnalyzerService, _listenerProvider);
                         }
                     }
                 }
@@ -161,7 +161,7 @@ internal sealed class CpsDiagnosticItemSourceProvider(
 
     private IHierarchyItemToProjectIdMap? TryGetProjectMap()
     {
-        _projectMap ??= _workspace.Services.GetService<IHierarchyItemToProjectIdMap>();
+        _projectMap ??= _workspace.Value.Services.GetService<IHierarchyItemToProjectIdMap>();
 
         return _projectMap;
     }

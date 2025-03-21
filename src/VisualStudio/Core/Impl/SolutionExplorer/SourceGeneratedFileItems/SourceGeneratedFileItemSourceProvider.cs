@@ -19,7 +19,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Implementation.SolutionExplore
 [method: ImportingConstructor]
 [method: Obsolete(MefConstruction.ImportingConstructorMessage, error: true)]
 internal sealed class SourceGeneratedFileItemSourceProvider(
-    VisualStudioWorkspace workspace,
+    Lazy<VisualStudioWorkspace> workspace,
     IAsynchronousOperationListenerProvider asyncListenerProvider,
     IThreadingContext threadingContext)
     : AttachedCollectionSourceProvider<SourceGeneratorItem>
@@ -28,6 +28,6 @@ internal sealed class SourceGeneratedFileItemSourceProvider(
 
     protected override IAttachedCollectionSource? CreateCollectionSource(SourceGeneratorItem item, string relationshipName)
         => relationshipName == KnownRelationships.Contains
-            ? new SourceGeneratedFileItemSource(item, threadingContext, workspace, _asyncListener)
+            ? new SourceGeneratedFileItemSource(item, threadingContext, workspace.Value, _asyncListener)
             : null;
 }

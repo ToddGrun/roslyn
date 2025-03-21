@@ -36,8 +36,10 @@ internal abstract class AbstractPackage : AsyncPackage
     protected sealed override Task OnAfterPackageLoadedAsync(CancellationToken cancellationToken)
         => RegisterAndProcessTasksAsync(RegisterOnAfterPackageLoadedAsyncWork, cancellationToken);
 
-    private Task RegisterAndProcessTasksAsync(Action<PackageLoadTasks> registerTasks, CancellationToken cancellationToken)
+    private async Task RegisterAndProcessTasksAsync(Action<PackageLoadTasks> registerTasks, CancellationToken cancellationToken)
     {
+        using var _ = DebugInfo.AddScopedInfo($"RegisterAndProcessTasksAsync ({this.GetType().Name})");
+
         var packageTasks = new PackageLoadTasks(JoinableTaskFactory);
 
         // Request all initially known work, classified into whether it should be processed on the main or
@@ -46,7 +48,7 @@ internal abstract class AbstractPackage : AsyncPackage
         // reducing thread switches during package load.
         registerTasks(packageTasks);
 
-        return packageTasks.ProcessTasksAsync(cancellationToken);
+        await packageTasks.ProcessTasksAsync(cancellationToken).ConfigureAwait(false);
     }
 
     protected virtual void RegisterInitializeAsyncWork(PackageLoadTasks packageInitializationTasks)

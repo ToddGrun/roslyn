@@ -32,9 +32,9 @@ internal sealed class RoslynGraphProvider : IGraphProvider
     private readonly IGlyphService _glyphService;
     private readonly IServiceProvider _serviceProvider;
     private readonly IAsynchronousOperationListener _asyncListener;
-    private readonly Workspace _workspace;
+    private readonly Lazy<VisualStudioWorkspace> _workspace;
     private readonly Lazy<IStreamingFindUsagesPresenter> _streamingPresenter;
-    private readonly GraphQueryManager _graphQueryManager;
+    private GraphQueryManager? _graphQueryManager;
 
     private bool _initialized = false;
 
@@ -44,7 +44,7 @@ internal sealed class RoslynGraphProvider : IGraphProvider
         IThreadingContext threadingContext,
         IGlyphService glyphService,
         SVsServiceProvider serviceProvider,
-        VisualStudioWorkspace workspace,
+        Lazy<VisualStudioWorkspace> workspace,
         Lazy<IStreamingFindUsagesPresenter> streamingPresenter,
         IAsynchronousOperationListenerProvider listenerProvider)
     {
@@ -54,7 +54,6 @@ internal sealed class RoslynGraphProvider : IGraphProvider
         _asyncListener = listenerProvider.GetListener(FeatureAttribute.GraphProvider);
         _workspace = workspace;
         _streamingPresenter = streamingPresenter;
-        _graphQueryManager = new GraphQueryManager(workspace, threadingContext, _asyncListener);
     }
 
     private void EnsureInitialized()
@@ -163,6 +162,8 @@ internal sealed class RoslynGraphProvider : IGraphProvider
         EnsureInitialized();
 
         var graphQueries = GetGraphQueries(context);
+
+        _graphQueryManager ??= new GraphQueryManager(_workspace, _threadingContext, _asyncListener);
 
         // Perform the queries asynchronously  in a fire-and-forget fashion.  This helper will be responsible
         // for always completing the context. AddQueriesAsync is `async`, so it always returns a task and will never
@@ -371,7 +372,7 @@ internal sealed class RoslynGraphProvider : IGraphProvider
             }
 
             if (typeof(T) == typeof(IGraphNavigateToItem))
-                return new GraphNavigatorExtension(_threadingContext, _workspace, _streamingPresenter) as T;
+                return new GraphNavigatorExtension(_threadingContext, _workspace.Value, _streamingPresenter) as T;
 
             if (typeof(T) == typeof(IGraphFormattedLabel))
                 return new GraphFormattedLabelExtension() as T;

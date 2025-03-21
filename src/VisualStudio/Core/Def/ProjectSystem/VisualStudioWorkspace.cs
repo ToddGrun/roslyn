@@ -11,6 +11,7 @@ using Microsoft.CodeAnalysis.ErrorReporting;
 using Microsoft.CodeAnalysis.FindSymbols;
 using Microsoft.CodeAnalysis.Host;
 using Microsoft.CodeAnalysis.Shared.Extensions;
+using Microsoft.VisualStudio.LanguageServices.Implementation.LanguageService;
 using Microsoft.VisualStudio.LanguageServices.Implementation.Library.ObjectBrowser.Lists;
 using Microsoft.VisualStudio.Shell.Interop;
 
@@ -29,6 +30,7 @@ public abstract class VisualStudioWorkspace : Workspace
     internal VisualStudioWorkspace(HostServices hostServices)
         : base(hostServices, WorkspaceKind.Host)
     {
+        DebugInfo.AddInfo("VisualStudioWorkspace.ctor");
     }
 
     protected internal override bool PartialSemanticsEnabled => true;

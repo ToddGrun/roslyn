@@ -29,8 +29,7 @@ internal sealed class SettingsEditorFactory : IVsEditorFactory, IVsEditorFactory
     public const string SettingsEditorFactoryGuidString = "68b46364-d378-42f2-9e72-37d86c5f4468";
     public const string Extension = ".editorconfig";
 
-    private readonly ISettingsAggregator _settingsDataProviderFactory;
-    private readonly VisualStudioWorkspace _workspace;
+    private readonly Lazy<VisualStudioWorkspace> _workspace;
     private readonly IWpfTableControlProvider _controlProvider;
     private readonly ITableManagerProvider _tableMangerProvider;
     private readonly IVsEditorAdaptersFactoryService _vsEditorAdaptersFactoryService;
@@ -39,13 +38,12 @@ internal sealed class SettingsEditorFactory : IVsEditorFactory, IVsEditorFactory
 
     [ImportingConstructor]
     [Obsolete(MefConstruction.ImportingConstructorMessage, error: true)]
-    public SettingsEditorFactory(VisualStudioWorkspace workspace,
+    public SettingsEditorFactory(Lazy<VisualStudioWorkspace> workspace,
                                  IWpfTableControlProvider controlProvider,
                                  ITableManagerProvider tableMangerProvider,
                                  IVsEditorAdaptersFactoryService vsEditorAdaptersFactoryService,
                                  IThreadingContext threadingContext)
     {
-        _settingsDataProviderFactory = workspace.Services.GetRequiredService<ISettingsAggregator>();
         _workspace = workspace;
         _controlProvider = controlProvider;
         _tableMangerProvider = tableMangerProvider;
@@ -81,14 +79,15 @@ internal sealed class SettingsEditorFactory : IVsEditorFactory, IVsEditorFactory
         pgrfCDW = 0;
         pbstrEditorCaption = null;
 
-        if (!_workspace.CurrentSolution.Projects.Any(p => p.Language is LanguageNames.CSharp or LanguageNames.VisualBasic))
+        var workspace = _workspace.Value;
+        if (!workspace.CurrentSolution.Projects.Any(p => p.Language is LanguageNames.CSharp or LanguageNames.VisualBasic))
         {
             // If there are no VB or C# projects loaded in the solution (so an editorconfig file in a C++ project) then we want their
             // editorfactory to present the file instead of use showing ours
             return VSConstants.VS_E_UNSUPPORTEDFORMAT;
         }
 
-        if (!_workspace.CurrentSolution.Projects.Any(p => p.AnalyzerConfigDocuments.Any(editorconfig => StringComparer.OrdinalIgnoreCase.Equals(editorconfig.FilePath, filePath))))
+        if (!workspace.CurrentSolution.Projects.Any(p => p.AnalyzerConfigDocuments.Any(editorconfig => StringComparer.OrdinalIgnoreCase.Equals(editorconfig.FilePath, filePath))))
         {
             // If the user is simply opening an editorconfig file that does not apply to the current solution we just want to show the text view
             return VSConstants.VS_E_UNSUPPORTEDFORMAT;
@@ -138,15 +137,17 @@ internal sealed class SettingsEditorFactory : IVsEditorFactory, IVsEditorFactory
             throw new InvalidOperationException("unable to acquire text buffer");
         }
 
+        var settingsDataProviderFactory = workspace.Services.GetRequiredService<ISettingsAggregator>();
+
         // Create the editor
         var newEditor = new SettingsEditorPane(_vsEditorAdaptersFactoryService,
                                                _threadingContext,
-                                               _settingsDataProviderFactory,
+                                               settingsDataProviderFactory,
                                                _controlProvider,
                                                _tableMangerProvider,
                                                filePath,
                                                textBuffer,
-                                               _workspace);
+                                               workspace);
         ppunkDocView = Marshal.GetIUnknownForObject(newEditor);
         ppunkDocData = Marshal.GetIUnknownForObject(textBuffer);
         pbstrEditorCaption = "";

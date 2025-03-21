@@ -16,6 +16,7 @@ using Microsoft.CodeAnalysis.Workspaces.AnalyzerRedirecting;
 using Microsoft.CodeAnalysis.Workspaces.ProjectSystem;
 using Microsoft.VisualStudio.LanguageServices.ExternalAccess.VSTypeScript.Api;
 using Microsoft.VisualStudio.LanguageServices.Implementation.Diagnostics;
+using Microsoft.VisualStudio.LanguageServices.Implementation.LanguageService;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Telemetry;
@@ -31,7 +32,7 @@ internal sealed class VisualStudioProjectFactory : IVsTypeScriptVisualStudioProj
     private const string SolutionSessionIdPropertyName = "SolutionSessionID";
 
     private readonly IThreadingContext _threadingContext;
-    private readonly VisualStudioWorkspaceImpl _visualStudioWorkspaceImpl;
+    private readonly Lazy<VisualStudioWorkspaceImpl> _visualStudioWorkspaceImpl;
     private readonly ImmutableArray<Lazy<IDynamicFileInfoProvider, FileExtensionsMetadata>> _dynamicFileInfoProviders;
     private readonly IVisualStudioDiagnosticAnalyzerProviderFactory _vsixAnalyzerProviderFactory;
     private readonly ImmutableArray<IAnalyzerAssemblyRedirector> _analyzerAssemblyRedirectors;
@@ -41,7 +42,7 @@ internal sealed class VisualStudioProjectFactory : IVsTypeScriptVisualStudioProj
     [Obsolete(MefConstruction.ImportingConstructorMessage, error: true)]
     public VisualStudioProjectFactory(
         IThreadingContext threadingContext,
-        VisualStudioWorkspaceImpl visualStudioWorkspaceImpl,
+        Lazy<VisualStudioWorkspaceImpl> visualStudioWorkspaceImpl,
         [ImportMany] IEnumerable<Lazy<IDynamicFileInfoProvider, FileExtensionsMetadata>> fileInfoProviders,
         IVisualStudioDiagnosticAnalyzerProviderFactory vsixAnalyzerProviderFactory,
         [ImportMany] IEnumerable<IAnalyzerAssemblyRedirector> analyzerAssemblyRedirectors,
@@ -65,10 +66,17 @@ internal sealed class VisualStudioProjectFactory : IVsTypeScriptVisualStudioProj
         // moved off we'll need to fix up it's constructor to be free-threaded.
 
         await _threadingContext.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
-        _visualStudioWorkspaceImpl.Services.GetRequiredService<VisualStudioMetadataReferenceManager>();
 
-        _visualStudioWorkspaceImpl.SubscribeExternalErrorDiagnosticUpdateSourceToSolutionBuildEvents();
-        _visualStudioWorkspaceImpl.SubscribeToSourceGeneratorImpactingEvents();
+        // TODO: How can I ensure this happens after the package is loaded?
+        //await Task.Delay(1000000, cancellationToken).ConfigureAwait(false);
+        DebugInfo.AddInfo("VisualStudioProjectFactory.CreateAndAddToWorkspaceAsync");
+
+        var visualStudioWorkspaceImpl = _visualStudioWorkspaceImpl.Value;
+
+        visualStudioWorkspaceImpl.Services.GetRequiredService<VisualStudioMetadataReferenceManager>();
+
+        visualStudioWorkspaceImpl.SubscribeExternalErrorDiagnosticUpdateSourceToSolutionBuildEvents();
+        visualStudioWorkspaceImpl.SubscribeToSourceGeneratorImpactingEvents();
 
 #pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task
         // Since we're on the UI thread here anyways, use that as an opportunity to grab the
@@ -94,17 +102,17 @@ internal sealed class VisualStudioProjectFactory : IVsTypeScriptVisualStudioProj
         cancellationToken = CancellationToken.None;
 #pragma warning restore IDE0059 // Unnecessary assignment of a value
 
-        _visualStudioWorkspaceImpl.ProjectSystemProjectFactory.SolutionPath = solutionFilePath;
-        _visualStudioWorkspaceImpl.ProjectSystemProjectFactory.SolutionTelemetryId = GetSolutionSessionId();
+        visualStudioWorkspaceImpl.ProjectSystemProjectFactory.SolutionPath = solutionFilePath;
+        visualStudioWorkspaceImpl.ProjectSystemProjectFactory.SolutionTelemetryId = GetSolutionSessionId();
 
         var hostInfo = new ProjectSystemHostInfo(_dynamicFileInfoProviders, vsixAnalyzerProvider, _analyzerAssemblyRedirectors);
-        var project = await _visualStudioWorkspaceImpl.ProjectSystemProjectFactory.CreateAndAddToWorkspaceAsync(projectSystemName, language, creationInfo, hostInfo);
+        var project = await visualStudioWorkspaceImpl.ProjectSystemProjectFactory.CreateAndAddToWorkspaceAsync(projectSystemName, language, creationInfo, hostInfo);
 
-        _visualStudioWorkspaceImpl.AddProjectToInternalMaps(project, creationInfo.Hierarchy, creationInfo.ProjectGuid, projectSystemName);
+        visualStudioWorkspaceImpl.AddProjectToInternalMaps(project, creationInfo.Hierarchy, creationInfo.ProjectGuid, projectSystemName);
 
         // Ensure that other VS contexts get accurate information that the UIContext for this language is now active.
         // This is not cancellable as we have already mutated the solution.
-        await _visualStudioWorkspaceImpl.RefreshProjectExistsUIContextForLanguageAsync(language, CancellationToken.None);
+        await visualStudioWorkspaceImpl.RefreshProjectExistsUIContextForLanguageAsync(language, CancellationToken.None);
 
         return project;
 

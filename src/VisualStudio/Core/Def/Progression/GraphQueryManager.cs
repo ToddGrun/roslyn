@@ -13,6 +13,7 @@ using Microsoft.CodeAnalysis.ErrorReporting;
 using Microsoft.CodeAnalysis.Shared.TestHooks;
 using Microsoft.CodeAnalysis.Threading;
 using Microsoft.VisualStudio.GraphModel;
+using Microsoft.VisualStudio.LanguageServices.Implementation.LanguageService;
 using Roslyn.Utilities;
 
 namespace Microsoft.VisualStudio.LanguageServices.Implementation.Progression;
@@ -21,7 +22,7 @@ using Workspace = Microsoft.CodeAnalysis.Workspace;
 
 internal class GraphQueryManager
 {
-    private readonly Workspace _workspace;
+    private readonly Lazy<Workspace> _workspace;
 
     /// <summary>
     /// This gate locks manipulation of <see cref="_trackedQueries"/>.
@@ -32,12 +33,10 @@ internal class GraphQueryManager
     private readonly AsyncBatchingWorkQueue _updateQueue;
 
     internal GraphQueryManager(
-        Workspace workspace,
+        Lazy<VisualStudioWorkspace> workspace,
         IThreadingContext threadingContext,
         IAsynchronousOperationListener asyncListener)
     {
-        _workspace = workspace;
-
         // Update any existing live/tracking queries 1.5 seconds after every workspace changes.
         _updateQueue = new AsyncBatchingWorkQueue(
             DelayTimeSpan.Idle,
@@ -45,19 +44,28 @@ internal class GraphQueryManager
             asyncListener,
             threadingContext.DisposalToken);
 
-        // Note: this ends up always listening for workspace events, even if we have no active 'live' queries that
-        // need updating.  But this should basically be practically no cost.  The queue just holds a single item
-        // indicating a change happened.  And when UpdateExistingQueriesAsync fires, it will just see that there are
-        // no live queries and immediately return.  So it's just simple to do things this way instead of trying to 
-        // have state management where we try to decide if we should listen or not.
-        _workspace.WorkspaceChanged += (_, _) => _updateQueue.AddWork();
+        _workspace = new Lazy<Workspace>(() =>
+        {
+            // Note: this ends up always listening for workspace events, even if we have no active 'live' queries that
+            // need updating.  But this should basically be practically no cost.  The queue just holds a single item
+            // indicating a change happened.  And when UpdateExistingQueriesAsync fires, it will just see that there are
+            // no live queries and immediately return.  So it's just simple to do things this way instead of trying to 
+            // have state management where we try to decide if we should listen or not.
+            workspace.Value.WorkspaceChanged += (_, _) => _updateQueue.AddWork();
+
+            return workspace.Value;
+        });
     }
 
     public async Task AddQueriesAsync(IGraphContext context, ImmutableArray<IGraphQuery> graphQueries, CancellationToken disposalToken)
     {
         try
         {
-            var solution = _workspace.CurrentSolution;
+            // TODO: How can I ensure this happens after the package is loaded?
+            //await Task.Delay(100000, disposalToken).ConfigureAwait(false);
+            DebugInfo.AddInfo("GraphQueryManager.AddQueriesAsync");
+
+            var solution = _workspace.Value.CurrentSolution;
 
             // Perform the actual graph query first.
             await PopulateContextGraphAsync(solution, context, graphQueries, disposalToken).ConfigureAwait(false);
@@ -98,7 +106,7 @@ internal class GraphQueryManager
             });
         }
 
-        var solution = _workspace.CurrentSolution;
+        var solution = _workspace.Value.CurrentSolution;
 
         // Update all the live queries in parallel.
         var tasks = liveQueries.Select(t => PopulateContextGraphAsync(solution, t.context, t.queries, disposalToken)).ToArray();

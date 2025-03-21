@@ -29,7 +29,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Implementation.CodeModel
     {
         private readonly ConcurrentDictionary<ProjectId, ProjectCodeModel> _projectCodeModels = [];
 
-        private readonly VisualStudioWorkspace _visualStudioWorkspace;
+        private readonly Lazy<VisualStudioWorkspace> _visualStudioWorkspace;
         private readonly IServiceProvider _serviceProvider;
         private readonly IThreadingContext _threadingContext;
 
@@ -38,12 +38,19 @@ namespace Microsoft.VisualStudio.LanguageServices.Implementation.CodeModel
         [ImportingConstructor]
         [Obsolete(MefConstruction.ImportingConstructorMessage, error: true)]
         public ProjectCodeModelFactory(
-            VisualStudioWorkspace visualStudioWorkspace,
+            Lazy<VisualStudioWorkspace> visualStudioWorkspace,
             [Import(typeof(SVsServiceProvider))] IServiceProvider serviceProvider,
             IThreadingContext threadingContext,
             IAsynchronousOperationListenerProvider listenerProvider)
         {
-            _visualStudioWorkspace = visualStudioWorkspace;
+            _visualStudioWorkspace = new Lazy<VisualStudioWorkspace>(() =>
+            {
+                var worksapce = visualStudioWorkspace.Value;
+                worksapce.WorkspaceChanged += OnWorkspaceChanged;
+
+                return worksapce;
+            });
+
             _serviceProvider = serviceProvider;
             _threadingContext = threadingContext;
 
@@ -60,8 +67,6 @@ namespace Microsoft.VisualStudio.LanguageServices.Implementation.CodeModel
                 EqualityComparer<DocumentId>.Default,
                 Listener,
                 threadingContext.DisposalToken);
-
-            _visualStudioWorkspace.WorkspaceChanged += OnWorkspaceChanged;
         }
 
         internal IAsynchronousOperationListener Listener { get; }
@@ -83,7 +88,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Implementation.CodeModel
             // This code avoids allocations where possible.
             // https://github.com/dotnet/roslyn/issues/54159
             string? previousLanguage = null;
-            foreach (var (_, projectState) in _visualStudioWorkspace.CurrentSolution.SolutionState.ProjectStates)
+            foreach (var (_, projectState) in _visualStudioWorkspace.Value.CurrentSolution.SolutionState.ProjectStates)
             {
                 if (projectState.Language == previousLanguage)
                 {
@@ -125,7 +130,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Implementation.CodeModel
                 if (projectCodeModel == null)
                     return;
 
-                var filename = _visualStudioWorkspace.GetFilePath(documentId);
+                var filename = _visualStudioWorkspace.Value.GetFilePath(documentId);
                 if (filename == null)
                     return;
 
@@ -195,7 +200,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Implementation.CodeModel
 
         public IProjectCodeModel CreateProjectCodeModel(ProjectId id, ICodeModelInstanceFactory codeModelInstanceFactory)
         {
-            var projectCodeModel = new ProjectCodeModel(_threadingContext, id, codeModelInstanceFactory, _visualStudioWorkspace, _serviceProvider, this);
+            var projectCodeModel = new ProjectCodeModel(_threadingContext, id, codeModelInstanceFactory, _visualStudioWorkspace.Value, _serviceProvider, this);
             if (!_projectCodeModels.TryAdd(id, projectCodeModel))
             {
                 throw new InvalidOperationException($"A {nameof(IProjectCodeModel)} has already been created for project with ID {id}");

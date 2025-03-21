@@ -25,7 +25,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Implementation.ProjectSystem.C
     {
         private readonly IThreadingContext _threadingContext;
         private readonly VisualStudioProjectFactory _projectFactory;
-        private readonly VisualStudioWorkspaceImpl _workspace;
+        private readonly Lazy<VisualStudioWorkspaceImpl> _workspace;
         private readonly IProjectCodeModelFactory _projectCodeModelFactory;
         private readonly IAsyncServiceProvider _serviceProvider;
 
@@ -40,7 +40,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Implementation.ProjectSystem.C
         public CPSProjectFactory(
             IThreadingContext threadingContext,
             VisualStudioProjectFactory projectFactory,
-            VisualStudioWorkspaceImpl workspace,
+            Lazy<VisualStudioWorkspaceImpl> workspace,
             IProjectCodeModelFactory projectCodeModelFactory,
             SVsServiceProvider serviceProvider)
         {
@@ -145,7 +145,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Implementation.ProjectSystem.C
                 // Let EnC service known the checksum might not match, in case we need to diagnose related issue.
                 if (commandLineArgs.IsEmpty())
                 {
-                    ImmutableInterlocked.Update(ref _solutionsWithMissingChecksumAlgorithm, static (set, solutionPath) => set.Add(solutionPath), _workspace.CurrentSolution.FilePath ?? "");
+                    ImmutableInterlocked.Update(ref _solutionsWithMissingChecksumAlgorithm, static (set, solutionPath) => set.Add(solutionPath), _workspace.Value.CurrentSolution.FilePath ?? "");
                 }
             }
             else
@@ -176,7 +176,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Implementation.ProjectSystem.C
                 await TaskScheduler.Default;
             }
 
-            var project = new CPSProject(visualStudioProject, _workspace, _projectCodeModelFactory, id);
+            var project = new CPSProject(visualStudioProject, _workspace.Value, _projectCodeModelFactory, id);
 
             // Set the properties in a batch; if we set the property directly we'll be taking a synchronous lock here and
             // potentially block up thread pool threads. Doing this in a batch means the global lock will be acquired asynchronously.
