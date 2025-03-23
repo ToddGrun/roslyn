@@ -9,7 +9,7 @@ using Microsoft.CodeAnalysis.Editor.Shared.Utilities;
 using Microsoft.CodeAnalysis.Internal.Log;
 using Microsoft.CodeAnalysis.Options;
 using Microsoft.CodeAnalysis.StackTraceExplorer;
-using Microsoft.VisualStudio.LanguageServices.Setup;
+using Microsoft.VisualStudio.LanguageServices.Implementation.LanguageService;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Roslyn.Utilities;
@@ -18,13 +18,13 @@ namespace Microsoft.VisualStudio.LanguageServices.StackTraceExplorer;
 
 internal class StackTraceExplorerCommandHandler : IVsBroadcastMessageEvents, IDisposable
 {
-    private readonly RoslynPackage _package;
+    private readonly AbstractPackage _package;
     private readonly IThreadingContext _threadingContext;
     private readonly IGlobalOptionService _globalOptions;
     private static StackTraceExplorerCommandHandler? _instance;
     private uint _vsShellBroadcastCookie;
 
-    private StackTraceExplorerCommandHandler(RoslynPackage package)
+    private StackTraceExplorerCommandHandler(AbstractPackage package)
     {
         _package = package;
         _threadingContext = package.ComponentModel.GetService<IThreadingContext>();
@@ -177,7 +177,7 @@ internal class StackTraceExplorerCommandHandler : IVsBroadcastMessageEvents, IDi
         window.Root?.OnClear();
     }
 
-    internal static void Initialize(OleMenuCommandService menuCommandService, RoslynPackage package)
+    internal static void Initialize(OleMenuCommandService menuCommandService, AbstractPackage package)
     {
         if (_instance is not null)
         {

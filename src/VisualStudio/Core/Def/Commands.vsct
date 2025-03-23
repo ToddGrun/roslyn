@@ -711,7 +711,8 @@
   </UsedCommands>
 
   <Symbols>
-    <GuidSymbol name="guidRoslynPkgId" value="{6cf2e545-6109-4730-8883-cf43d7aec3e1}" />
+    <!-- RoslynPackage is implemented by CSharpPackage -->
+    <GuidSymbol name="guidRoslynPkgId" value="{13c3bbb4-f18f-4111-9f54-a0fb010d9194}" />
 
     <GuidSymbol name="guidCSharpEditorFactory" value="{a6c744a8-0e4a-4fc6-886a-064283054674}" />
     <GuidSymbol name="guidCSharpCodePageEditorFactory" value="{08467b34-b90f-4d91-bdca-eb8c8cf3033a}" />

@@ -6,6 +6,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.Debugger.Interop;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 
@@ -34,18 +35,27 @@ internal sealed class PackageLoadTasks(JoinableTaskFactory jtf)
         workTasks.Enqueue(task);
     }
 
+    private static int s_id = 0;
+
     public async Task ProcessTasksAsync(CancellationToken cancellationToken)
     {
+        Interlocked.Increment(ref s_id);
+        DebugInfo.AddInfo($"PackageLoadtAsks.ProcessTasksAsync ({s_id}: 1");
+
         // prime the pump by doing the first group of bg thread work if the initiating thread is not the main thread
         if (!_jtf.Context.IsOnMainThread)
             await PerformWorkAsync(isMainThreadTask: false, cancellationToken).ConfigureAwait(false);
 
+        DebugInfo.AddInfo($"PackageLoadtAsks.ProcessTasksAsync ({s_id}: 2");
         // Continue processing work until everything is completed, switching between main and bg threads as needed.
         while (!_mainThreadWorkTasks.IsEmpty || !_backgroundThreadWorkTasks.IsEmpty)
         {
             await PerformWorkAsync(isMainThreadTask: true, cancellationToken).ConfigureAwait(false);
+            DebugInfo.AddInfo($"PackageLoadtAsks.ProcessTasksAsync ({s_id}: 3");
             await PerformWorkAsync(isMainThreadTask: false, cancellationToken).ConfigureAwait(false);
+            DebugInfo.AddInfo($"PackageLoadtAsks.ProcessTasksAsync ({s_id}: 4");
         }
+        DebugInfo.AddInfo($"PackageLoadtAsks.ProcessTasksAsync ({s_id}: 5");
     }
 
     private ConcurrentQueue<WorkTask> GetWorkTasks(bool isMainThreadTask)
