@@ -39,43 +39,47 @@ internal sealed class GlobalOptionService(
 
     private ImmutableArray<IOptionPersister> GetOptionPersisters()
     {
-        if (_lazyOptionPersisters.IsDefault)
+        if (!_lazyOptionPersisters.IsDefault)
         {
-            // Option persisters cannot be initialized while holding the global options lock
-            // https://dev.azure.com/devdiv/DevDiv/_workitems/edit/1353715
-            Debug.Assert(!Monitor.IsEntered(_gate));
-
-            ImmutableInterlocked.InterlockedInitialize(
-                ref _lazyOptionPersisters,
-                GetOptionPersistersSlow(workspaceThreadingService, _optionPersisterProviders, CancellationToken.None));
+            return _lazyOptionPersisters;
         }
 
-        return _lazyOptionPersisters;
-
-        // Local functions
-        static ImmutableArray<IOptionPersister> GetOptionPersistersSlow(
-            IWorkspaceThreadingService? workspaceThreadingService,
-            ImmutableArray<Lazy<IOptionPersisterProvider>> persisterProviders,
-            CancellationToken cancellationToken)
+        var result = GetOptionPersistersImplAsync();
+        if (workspaceThreadingService is not null)
         {
-            if (workspaceThreadingService is not null)
-            {
-                return workspaceThreadingService.Run(() => GetOptionPersistersAsync(persisterProviders, cancellationToken));
-            }
-            else
-            {
-                return GetOptionPersistersAsync(persisterProviders, cancellationToken).WaitAndGetResult_CanCallOnBackground(cancellationToken);
-            }
+            return workspaceThreadingService.Run(() => result);
+        }
+        else
+        {
+            return result.WaitAndGetResult_CanCallOnBackground(CancellationToken.None);
+        }
+    }
+
+    private ValueTask<ImmutableArray<IOptionPersister>> GetOptionPersistersAsync()
+    {
+        if (!_lazyOptionPersisters.IsDefault)
+        {
+            return new ValueTask<ImmutableArray<IOptionPersister>>(_lazyOptionPersisters);
         }
 
-        static async Task<ImmutableArray<IOptionPersister>> GetOptionPersistersAsync(
-            ImmutableArray<Lazy<IOptionPersisterProvider>> persisterProviders,
-            CancellationToken cancellationToken)
-        {
-            return await persisterProviders.SelectAsArrayAsync(
-                static (lazyProvider, cancellationToken) => lazyProvider.Value.GetOrCreatePersisterAsync(cancellationToken),
-                cancellationToken).ConfigureAwait(false);
-        }
+        return new ValueTask<ImmutableArray<IOptionPersister>>(GetOptionPersistersImplAsync());
+    }
+
+    private async Task<ImmutableArray<IOptionPersister>> GetOptionPersistersImplAsync()
+    {
+        // Option persisters cannot be initialized while holding the global options lock
+        // https://dev.azure.com/devdiv/DevDiv/_workitems/edit/1353715
+        Debug.Assert(!Monitor.IsEntered(_gate));
+
+        var lazyOptionPersisters = await _optionPersisterProviders.SelectAsArrayAsync(
+            static (lazyProvider, cancellationToken) => lazyProvider.Value.GetOrCreatePersisterAsync(cancellationToken),
+            CancellationToken.None).ConfigureAwait(false);
+
+        ImmutableInterlocked.InterlockedInitialize(
+            ref _lazyOptionPersisters,
+            lazyOptionPersisters);
+
+        return lazyOptionPersisters;
     }
 
     private static object? LoadOptionFromPersisterOrGetDefault(OptionKey2 optionKey, ImmutableArray<IOptionPersister> persisters)
@@ -102,14 +106,14 @@ internal sealed class GlobalOptionService(
     public T GetOption<T>(Option2<T> option)
         => GetOption<T>(new OptionKey2(option));
 
+    public ValueTask<T> GetOptionAsync<T>(Option2<T> option)
+        => GetOptionAsync<T>(new OptionKey2(option));
+
     public T GetOption<T>(PerLanguageOption2<T> option, string language)
         => GetOption<T>(new OptionKey2(option, language));
 
     public T GetOption<T>(OptionKey2 optionKey)
     {
-        // Ensure the option persisters are available before taking the global lock
-        var persisters = GetOptionPersisters();
-
         // Performance: This is called very frequently, with the vast majority (> 99%) of calls requesting a previously
         //  added key. In those cases, we can avoid taking the lock as _currentValues is an immutable structure.
         if (_currentValues.TryGetValue(optionKey, out var value))
@@ -117,9 +121,35 @@ internal sealed class GlobalOptionService(
             return (T)value!;
         }
 
+        // Ensure the option persisters are available before taking the global lock
+        var persisters = GetOptionPersisters();
+
         lock (_gate)
         {
             return (T)GetOption_NoLock(ref _currentValues, optionKey, persisters)!;
+        }
+    }
+
+    public ValueTask<T> GetOptionAsync<T>(OptionKey2 optionKey)
+    {
+        // Performance: This is called very frequently, with the vast majority (> 99%) of calls requesting a previously
+        //  added key. In those cases, we can avoid taking the lock as _currentValues is an immutable structure.
+        if (_currentValues.TryGetValue(optionKey, out var value))
+        {
+            return new ValueTask<T>((T)value!);
+        }
+
+        return GetOptionSlowAsync<T>(optionKey);
+
+        async ValueTask<T> GetOptionSlowAsync<T>(OptionKey2 optionKey)
+        {
+            // Ensure the option persisters are available before taking the global lock
+            var persisters = await GetOptionPersistersAsync().ConfigureAwait(false);
+
+            lock (_gate)
+            {
+                return (T)GetOption_NoLock(ref _currentValues, optionKey, persisters)!;
+            }
         }
     }
 
