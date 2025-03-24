@@ -25,10 +25,10 @@
     </PackageDescription>
   </PropertyGroup>
   <PropertyGroup>
-    <RoslynPackageGuid>6cf2e545-6109-4730-8883-cf43d7aec3e1</RoslynPackageGuid>
+    <!-- 13c3bbb4-f18f-4111-9f54-a0fb010d9194 is the guid for CSharpPackage (sole derivation of RoslynPackage) -->
+    <RoslynPackageGuid>13c3bbb4-f18f-4111-9f54-a0fb010d9194</RoslynPackageGuid>
   </PropertyGroup>
   <ItemGroup Label="PkgDef">
-    <PkgDefPackageRegistration Include="{$(RoslynPackageGuid)}" Name="RoslynPackage" Class="Microsoft.VisualStudio.LanguageServices.Setup.RoslynPackage" AllowsBackgroundLoad="true" />
     <None Include="CodeCleanup\readme.md" />
     <None Include="PackageRegistration.pkgdef" PkgDefEntry="FileContent" />
     <None Include=".\ColorSchemes\VisualStudio2019.pkgdef" PkgDefEntry="FileContent" />

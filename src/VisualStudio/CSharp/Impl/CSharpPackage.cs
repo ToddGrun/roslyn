@@ -15,6 +15,7 @@ using Microsoft.VisualStudio.LanguageServices.CSharp.ProjectSystemShim;
 using Microsoft.VisualStudio.LanguageServices.CSharp.ProjectSystemShim.Interop;
 using Microsoft.VisualStudio.LanguageServices.Implementation.LanguageService;
 using Microsoft.VisualStudio.LanguageServices.Implementation.ProjectSystem;
+using Microsoft.VisualStudio.LanguageServices.Setup;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Task = System.Threading.Tasks.Task;
@@ -53,7 +54,7 @@ namespace Microsoft.VisualStudio.LanguageServices.CSharp.LanguageService
     [ProvideLanguageEditorOptionPage(typeof(Options.IntelliSenseOptionPage), "CSharp", null, "IntelliSense", pageNameResourceId: "#103", keywordListResourceId: 312)]
     [ProvideSettingsManifest(PackageRelativeManifestFile = @"UnifiedSettings\csharpSettings.registration.json")]
     [Guid(Guids.CSharpPackageIdString)]
-    internal sealed class CSharpPackage : AbstractPackage<CSharpPackage, CSharpLanguageService>, IVsUserSettingsQuery
+    internal sealed class CSharpPackage : RoslynPackage<CSharpPackage, CSharpLanguageService>, IVsUserSettingsQuery
     {
         private ObjectBrowserLibraryManager? _libraryManager;
         private uint _libraryManagerCookie;
@@ -80,6 +81,12 @@ namespace Microsoft.VisualStudio.LanguageServices.CSharp.LanguageService
             {
             }
 
+            return Task.CompletedTask;
+        }
+
+        protected override Task LoadDependentPackagesAsync(IVsShell7 shell, CancellationToken cancellationToken)
+        {
+            // CSharpPackage doesn't have any dependent packages.
             return Task.CompletedTask;
         }
 
@@ -137,10 +144,11 @@ namespace Microsoft.VisualStudio.LanguageServices.CSharp.LanguageService
 
         protected override IEnumerable<IVsEditorFactory> CreateEditorFactories()
         {
+            var baseEditorFactories = base.CreateEditorFactories();
             var editorFactory = new CSharpEditorFactory(this.ComponentModel);
             var codePageEditorFactory = new CSharpCodePageEditorFactory(editorFactory);
 
-            return [editorFactory, codePageEditorFactory];
+            return [.. baseEditorFactories, editorFactory, codePageEditorFactory];
         }
 
         protected override CSharpLanguageService CreateLanguageService()

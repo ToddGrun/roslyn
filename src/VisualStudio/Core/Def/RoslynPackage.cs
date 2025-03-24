@@ -3,9 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel.Design;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -23,7 +25,6 @@ using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.LanguageServices.EditorConfigSettings;
 using Microsoft.VisualStudio.LanguageServices.Implementation.Diagnostics;
 using Microsoft.VisualStudio.LanguageServices.Implementation.LanguageService;
-using Microsoft.VisualStudio.LanguageServices.Implementation.ProjectSystem;
 using Microsoft.VisualStudio.LanguageServices.Implementation.ProjectSystem.RuleSets;
 using Microsoft.VisualStudio.LanguageServices.Implementation.Suppression;
 using Microsoft.VisualStudio.LanguageServices.Implementation.SyncNamespaces;
@@ -44,16 +45,11 @@ using Task = System.Threading.Tasks.Task;
 namespace Microsoft.VisualStudio.LanguageServices.Setup;
 
 [Guid(Guids.RoslynPackageIdString)]
-[ProvideToolWindow(typeof(ValueTracking.ValueTrackingToolWindow))]
-[ProvideToolWindow(typeof(StackTraceExplorerToolWindow))]
-internal sealed class RoslynPackage : AbstractPackage
+internal sealed class RoslynPackage : AsyncPackage
 {
-    private static RoslynPackage? s_lazyInstance;
+    private static AbstractPackage? s_lazyInstance;
 
-    private RuleSetEventHandler? _ruleSetEventHandler;
-    private SolutionEventMonitor? _solutionEventMonitor;
-
-    internal static async ValueTask<RoslynPackage?> GetOrLoadAsync(IThreadingContext threadingContext, IAsyncServiceProvider serviceProvider, CancellationToken cancellationToken)
+    internal static async ValueTask<AbstractPackage?> GetOrLoadAsync(IThreadingContext threadingContext, IAsyncServiceProvider serviceProvider, CancellationToken cancellationToken)
     {
         if (s_lazyInstance is null)
         {
@@ -61,38 +57,68 @@ internal sealed class RoslynPackage : AbstractPackage
 
             var shell = (IVsShell7?)await serviceProvider.GetServiceAsync(typeof(SVsShell)).ConfigureAwait(true);
             Assumes.Present(shell);
-            await shell.LoadPackageAsync(typeof(RoslynPackage).GUID);
+            await shell.LoadPackageAsync(Guids.CSharpPackageId);
 
-            if (ErrorHandler.Succeeded(((IVsShell)shell).IsPackageLoaded(typeof(RoslynPackage).GUID, out var package)))
+            if (ErrorHandler.Succeeded(((IVsShell)shell).IsPackageLoaded(Guids.CSharpPackageId, out var package)))
             {
-                s_lazyInstance = (RoslynPackage)package;
+                s_lazyInstance = (AbstractPackage)package;
             }
         }
 
         return s_lazyInstance;
     }
 
+    // The Roslyn package guid is well known and used outside of Roslyn to check if Roslyn is installed. This package used 
+    // to be responsible for loading various Roslyn specific, language agnostic components. However, as part of our package
+    // load performance-driven review, we've moved the loading of these components to the CSharpPackage. Thus, if someone
+    // attempts to load this package, we will do an indirect load the CSharpPackage on their behalf.
+    protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
+    {
+        var componentModel = await GetServiceAsync<SComponentModel, IComponentModel>(throwOnFailure: true, cancellationToken).ConfigureAwait(false);
+        var serviceProvider = await GetServiceAsync<SAsyncServiceProvider, IAsyncServiceProvider>(throwOnFailure: true, cancellationToken).ConfigureAwait(false);
+
+        var threadingContext = componentModel!.GetService<IThreadingContext>();
+
+        await GetOrLoadAsync(threadingContext, serviceProvider!, cancellationToken).ConfigureAwait(false);
+
+        await base.InitializeAsync(cancellationToken, progress).ConfigureAwait(false);
+    }
+}
+
+/// <summary>
+/// This abstract class serves as a base class for *only* CSharpPackage and provides general Roslyn package initialization.
+/// The reason this isn't registered as a separate package is for performance reasons, as we want to avoid the overhead of
+/// thread switches associated with having separate registered packages. Other AbstractPackage derived implementations
+/// ensure this package is loaded through the default implementation of LoadDependentPackagesAsync.
+/// </summary>
+/// <typeparam name="TPackage"></typeparam>
+/// <typeparam name="TLanguageService"></typeparam>
+[ProvideToolWindow(typeof(ValueTracking.ValueTrackingToolWindow))]
+[ProvideToolWindow(typeof(StackTraceExplorerToolWindow))]
+internal abstract class RoslynPackage<TPackage, TLanguageService> : AbstractPackage<TPackage, TLanguageService>
+    where TPackage : AbstractPackage<TPackage, TLanguageService>
+    where TLanguageService : AbstractLanguageService<TPackage, TLanguageService>
+{
+    private RuleSetEventHandler? _ruleSetEventHandler;
+    private SolutionEventMonitor? _solutionEventMonitor;
+
     protected override void RegisterInitializeAsyncWork(PackageLoadTasks packageInitializationTasks)
     {
         base.RegisterInitializeAsyncWork(packageInitializationTasks);
 
-        packageInitializationTasks.AddTask(isMainThreadTask: false, task: PackageInitializationBackgroundThreadAsync);
         packageInitializationTasks.AddTask(isMainThreadTask: true, task: PackageInitializationMainThreadAsync);
 
         return;
 
-        Task PackageInitializationBackgroundThreadAsync(PackageLoadTasks packageInitializationTasks, CancellationToken cancellationToken)
+        Task PackageInitializationMainThreadAsync(PackageLoadTasks packageInitializationTasks, CancellationToken cancellationToken)
         {
             return ProfferServiceBrokerServicesAsync();
         }
+    }
 
-        Task PackageInitializationMainThreadAsync(PackageLoadTasks packageInitializationTasks, CancellationToken cancellationToken)
-        {
-            var settingsEditorFactory = SettingsEditorFactory.GetInstance();
-            RegisterEditorFactory(settingsEditorFactory);
-
-            return Task.CompletedTask;
-        }
+    protected override IEnumerable<IVsEditorFactory> CreateEditorFactories()
+    {
+        return [SettingsEditorFactory.GetInstance()];
     }
 
     protected override void RegisterOnAfterPackageLoadedAsyncWork(PackageLoadTasks afterPackageLoadedTasks)
@@ -132,17 +158,25 @@ internal sealed class RoslynPackage : AbstractPackage
 
     private async Task ProfferServiceBrokerServicesAsync()
     {
+        DebugInfo.AddInfo($"RoslynPackage.ProfferServiceBrokerServicesAsync (1)");
+
         // Proffer in-process service broker services
         var serviceBrokerContainer = await this.GetServiceAsync<SVsBrokeredServiceContainer, IBrokeredServiceContainer>(this.JoinableTaskFactory).ConfigureAwait(false);
+
+        DebugInfo.AddInfo($"RoslynPackage.ProfferServiceBrokerServicesAsync (2)");
 
         serviceBrokerContainer.Proffer(
             WorkspaceProjectFactoryServiceDescriptor.ServiceDescriptor,
             (_, _, _, _) => ValueTaskFactory.FromResult<object?>(new WorkspaceProjectFactoryService(this.ComponentModel.GetService<IWorkspaceProjectContextFactory>())));
 
+        DebugInfo.AddInfo($"RoslynPackage.ProfferServiceBrokerServicesAsync (3)");
+
         // Must be profferred before any C#/VB projects are loaded and the corresponding UI context activated.
         serviceBrokerContainer.Proffer(
             ManagedHotReloadLanguageServiceDescriptor.Descriptor,
             (_, _, _, _) => ValueTaskFactory.FromResult<object?>(new ManagedEditAndContinueLanguageServiceBridge(this.ComponentModel.GetService<EditAndContinueLanguageService>())));
+
+        DebugInfo.AddInfo($"RoslynPackage.ProfferServiceBrokerServicesAsync (4)");
     }
 
     private async Task LoadOptionPersistersAsync(IComponentModel componentModel, CancellationToken cancellationToken)
@@ -162,6 +196,8 @@ internal sealed class RoslynPackage : AbstractPackage
 
     protected override async Task LoadComponentsAsync(CancellationToken cancellationToken)
     {
+        await base.LoadComponentsAsync(cancellationToken).ConfigureAwait(false);
+
         await TaskScheduler.Default;
 
         await GetServiceAsync(typeof(SVsErrorList)).ConfigureAwait(false);
@@ -200,9 +236,6 @@ internal sealed class RoslynPackage : AbstractPackage
 
         return base.GetAsyncToolWindowFactory(toolWindowType);
     }
-
-    protected override string GetToolWindowTitle(Type toolWindowType, int id)
-            => base.GetToolWindowTitle(toolWindowType, id);
 
     protected override Task<object?> InitializeToolWindowAsync(Type toolWindowType, int id, CancellationToken cancellationToken)
         => Task.FromResult((object?)null);

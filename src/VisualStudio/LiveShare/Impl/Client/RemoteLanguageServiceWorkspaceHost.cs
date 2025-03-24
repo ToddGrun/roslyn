@@ -13,6 +13,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Editor.Shared.Utilities;
 using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.VisualStudio.LanguageServices.LiveShare.Client.Projects;
+using Microsoft.VisualStudio.LanguageServices.Setup;
 using Microsoft.VisualStudio.LiveShare;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -39,7 +40,7 @@ namespace Microsoft.VisualStudio.LanguageServices.LiveShare.Client
         private TaskCompletionSource<bool> _projectsLoadedTaskCompletionSource = new TaskCompletionSource<bool>();
         private readonly RemoteProjectInfoProvider _remoteProjectInfoProvider;
 
-        private readonly SVsServiceProvider _serviceProvider;
+        private readonly IAsyncServiceProvider _serviceProvider;
         private readonly IThreadingContext _threadingContext;
 
         public RemoteLanguageServiceWorkspace Workspace { get; }
@@ -52,7 +53,7 @@ namespace Microsoft.VisualStudio.LanguageServices.LiveShare.Client
         [Obsolete(MefConstruction.ImportingConstructorMessage, error: true)]
         public RemoteLanguageServiceWorkspaceHost(RemoteLanguageServiceWorkspace remoteLanguageServiceWorkspace,
                                                   RemoteProjectInfoProvider remoteProjectInfoProvider,
-                                                  SVsServiceProvider serviceProvider,
+                                                  [Import(typeof(SAsyncServiceProvider))] IAsyncServiceProvider serviceProvider,
                                                   IThreadingContext threadingContext)
         {
             Workspace = Requires.NotNull(remoteLanguageServiceWorkspace, nameof(remoteLanguageServiceWorkspace));
@@ -63,7 +64,7 @@ namespace Microsoft.VisualStudio.LanguageServices.LiveShare.Client
 
         public async Task<ICollaborationService> CreateServiceAsync(CollaborationSession collaborationSession, CancellationToken cancellationToken)
         {
-            await LoadRoslynPackageAsync(cancellationToken).ConfigureAwait(false);
+            await RoslynPackage.GetOrLoadAsync(_threadingContext, _serviceProvider, cancellationToken).ConfigureAwait(false);
 
             await Workspace.SetSessionAsync(collaborationSession).ConfigureAwait(false);
 
@@ -93,17 +94,6 @@ namespace Microsoft.VisualStudio.LanguageServices.LiveShare.Client
                 _projectsLoadedTaskCompletionSource.SetCanceled();
             });
             await _projectsLoadedTaskCompletionSource.Task.ConfigureAwait(false);
-        }
-
-        private async Task LoadRoslynPackageAsync(CancellationToken cancellationToken)
-        {
-            await _threadingContext.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
-
-            // Explicitly trigger the load of the Roslyn package. This ensures that UI-bound services are appropriately prefetched,
-            // that FatalError is correctly wired up, etc. Ideally once the things happening in the package initialize are cleaned up with
-            // better patterns, this would go away.
-            var shellService = (IVsShell7)_serviceProvider.GetService(typeof(SVsShell));
-            await shellService.LoadPackageAsync(Guids.RoslynPackageId);
         }
 
         /// <summary>

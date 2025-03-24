@@ -34,18 +34,27 @@ internal sealed class PackageLoadTasks(JoinableTaskFactory jtf)
         workTasks.Enqueue(task);
     }
 
+    private static int s_id = 0;
+    private readonly int _id = Interlocked.Increment(ref s_id);
+
     public async Task ProcessTasksAsync(CancellationToken cancellationToken)
     {
+        DebugInfo.AddInfo($"PackageLoadTasks.ProcessTasksAsync ({_id}: 1)");
+
         // prime the pump by doing the first group of bg thread work if the initiating thread is not the main thread
         if (!_jtf.Context.IsOnMainThread)
             await PerformWorkAsync(isMainThreadTask: false, cancellationToken).ConfigureAwait(false);
 
+        DebugInfo.AddInfo($"PackageLoadTasks.ProcessTasksAsync ({_id}: 2)");
         // Continue processing work until everything is completed, switching between main and bg threads as needed.
         while (!_mainThreadWorkTasks.IsEmpty || !_backgroundThreadWorkTasks.IsEmpty)
         {
             await PerformWorkAsync(isMainThreadTask: true, cancellationToken).ConfigureAwait(false);
+            DebugInfo.AddInfo($"PackageLoadTasks.ProcessTasksAsync ({_id}: 3)");
             await PerformWorkAsync(isMainThreadTask: false, cancellationToken).ConfigureAwait(false);
+            DebugInfo.AddInfo($"PackageLoadTasks.ProcessTasksAsync ({_id}: 4)");
         }
+        DebugInfo.AddInfo($"PackageLoadTasks.ProcessTasksAsync ({_id}: 5)");
     }
 
     private ConcurrentQueue<WorkTask> GetWorkTasks(bool isMainThreadTask)
@@ -57,18 +66,22 @@ internal sealed class PackageLoadTasks(JoinableTaskFactory jtf)
         if (workTasks.IsEmpty)
             return;
 
+        DebugInfo.AddInfo($"PackageLoadTasks.PerformWorkAsync ({_id}, {isMainThreadTask}: 1)");
         // Ensure we're invoking the task on the right thread
         if (isMainThreadTask)
             await _jtf.SwitchToMainThreadAsync(cancellationToken);
         else if (_jtf.Context.IsOnMainThread)
             await TaskScheduler.Default;
 
+        DebugInfo.AddInfo($"PackageLoadTasks.PerformWorkAsync ({_id}, {isMainThreadTask}: 2)");
         while (workTasks.TryDequeue(out var work))
         {
             // CA(true) is important here, as we want to ensure that each iteration is done in the same
             // captured context. Thus, even poorly behaving tasks (ie, those that do their own thread switching)
             // don't effect the next loop iteration.
             await work(this, cancellationToken).ConfigureAwait(true);
+            DebugInfo.AddInfo($"PackageLoadTasks.PerformWorkAsync ({_id}, {isMainThreadTask}: 3)");
         }
+        DebugInfo.AddInfo($"PackageLoadTasks.PerformWorkAsync ({_id}, {isMainThreadTask}: 4)");
     }
 }

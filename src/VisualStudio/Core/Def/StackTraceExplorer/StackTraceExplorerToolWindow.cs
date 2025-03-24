@@ -16,7 +16,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Editor.Shared.Utilities;
 using Microsoft.CodeAnalysis.EmbeddedLanguages.StackFrame;
 using Microsoft.CodeAnalysis.StackTraceExplorer;
-using Microsoft.VisualStudio.LanguageServices.Setup;
+using Microsoft.VisualStudio.LanguageServices.Implementation.LanguageService;
 using Microsoft.VisualStudio.LanguageServices.Utilities;
 using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell;
@@ -113,7 +113,7 @@ internal class StackTraceExplorerToolWindow : ToolWindowPane, IOleCommandTarget
         return firstNodeOrToken.Token.LeadingTrivia.Any(static t => t.Kind == StackFrameKind.AtTrivia);
     }
 
-    public void InitializeIfNeeded(RoslynPackage roslynPackage)
+    public void InitializeIfNeeded(AbstractPackage roslynPackage)
     {
         if (_initialized)
         {
