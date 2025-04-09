@@ -40,6 +40,12 @@ internal class ProjectSystemProjectOptionsProcessor : IDisposable
     /// <remarks>Note: this will be null in the case that the command line is an empty array.</remarks>
     private ITemporaryStorageStreamHandle? _commandLineStorageHandle;
 
+    private ImmutableArray<string> _currentCommandLineArguments = ImmutableArray<string>.Empty;
+    private ImmutableArray<string> _previousCommandLineArguments = ImmutableArray<string>.Empty;
+
+    private string _currentStackTrace = string.Empty;
+    private string _previousStackTrace = string.Empty;
+
     private CommandLineArguments _commandLineArgumentsForCommandLine;
     private string? _explicitRuleSetFilePath;
     private IReferenceCountedDisposable<ICacheEntry<string, IRuleSetFile>>? _ruleSetFile = null;
@@ -73,6 +79,9 @@ internal class ProjectSystemProjectOptionsProcessor : IDisposable
         // Dispose the existing stored command-line and then persist the new one so we can
         // recover it later.  Only bother persisting things if we have a non-empty string.
 
+        _previousCommandLineArguments = _currentCommandLineArguments;
+        _previousStackTrace = _currentStackTrace;
+
         _commandLineStorageHandle = null;
         if (!arguments.IsEmpty)
         {
@@ -85,6 +94,8 @@ internal class ProjectSystemProjectOptionsProcessor : IDisposable
             writer.Flush();
             _commandLineStorageHandle = _temporaryStorageService.WriteToTemporaryStorage(stream, CancellationToken.None);
         }
+        _currentCommandLineArguments = arguments;
+        _currentStackTrace = Environment.StackTrace;
 
         ReparseCommandLine_NoLock(arguments);
         return true;

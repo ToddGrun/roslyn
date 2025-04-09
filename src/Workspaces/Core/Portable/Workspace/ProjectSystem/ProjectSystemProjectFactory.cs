@@ -16,6 +16,7 @@ using Microsoft.CodeAnalysis.ProjectSystem;
 using Microsoft.CodeAnalysis.Shared.Extensions;
 using Microsoft.CodeAnalysis.Shared.TestHooks;
 using Microsoft.CodeAnalysis.Text;
+using Microsoft.CodeAnalysis.Utilities;
 using Roslyn.Utilities;
 
 namespace Microsoft.CodeAnalysis.Workspaces.ProjectSystem;
@@ -96,7 +97,7 @@ internal sealed partial class ProjectSystemProjectFactory
     public FileTextLoader CreateFileTextLoader(string fullPath)
         => new WorkspaceFileTextLoader(this.SolutionServices, fullPath, defaultEncoding: null);
 
-    public async Task<ProjectSystemProject> CreateAndAddToWorkspaceAsync(string projectSystemName, string language, ProjectSystemProjectCreationInfo creationInfo, ProjectSystemHostInfo hostInfo)
+    public async Task<ProjectSystemProject> CreateAndAddToWorkspaceAsync(string callerStackTrace, string projectSystemName, string language, ProjectSystemProjectCreationInfo creationInfo, ProjectSystemHostInfo hostInfo)
     {
         var projectId = ProjectId.CreateNewId(projectSystemName);
         var assemblyName = creationInfo.AssemblyName ?? projectSystemName;
@@ -294,6 +295,8 @@ internal sealed partial class ProjectSystemProjectFactory
         }
     }
 
+    public static int s_ApplyBatchChangeToWorkspaceMaybe_NoLockAsync_Count = 0;
+
     /// <summary>
     /// Applies a change to the workspace that can do any number of project changes.
     /// The mutation action must be safe to attempt multiple times, in case there are interceding solution changes.
@@ -305,6 +308,8 @@ internal sealed partial class ProjectSystemProjectFactory
     public async Task ApplyBatchChangeToWorkspaceMaybe_NoLockAsync(bool useAsync, Func<SolutionChangeAccumulator, ProjectUpdateState, ProjectUpdateState> mutation, Action<ProjectUpdateState>? onAfterUpdateAlways)
     {
         Contract.ThrowIfFalse(_gate.CurrentCount == 0);
+
+        Interlocked.Increment(ref s_ApplyBatchChangeToWorkspaceMaybe_NoLockAsync_Count);
 
         // We need the data from the accumulator across the lambda callbacks to SetCurrentSolutionAsync, so declare
         // it here. It will be assigned in `transformation:` below (which may happen multiple times if the

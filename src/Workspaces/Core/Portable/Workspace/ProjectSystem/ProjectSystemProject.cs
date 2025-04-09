@@ -231,7 +231,7 @@ internal sealed partial class ProjectSystemProject
         }
     }
 
-    private void ChangeProjectProperty<T>(ref T field, T newValue, Func<Solution, Solution> updateSolution, bool logThrowAwayTelemetry = false)
+    private void ChangeProjectProperty<T>(ref T field, T newValue, Func<Solution, Solution> updateSolution, bool logThrowAwayTelemetry = false, string context = "", object? contextObject = null)
     {
         ChangeProjectProperty(
             ref field,
@@ -241,14 +241,18 @@ internal sealed partial class ProjectSystemProject
                 solutionChanges.UpdateSolutionForProjectAction(Id, updateSolution(solutionChanges.Solution));
                 return projectUpdateState;
             },
-            logThrowAwayTelemetry);
+            logThrowAwayTelemetry,
+            context,
+            contextObject);
     }
 
     private void ChangeProjectProperty<T>(
         ref T field,
         T newValue,
         Func<SolutionChangeAccumulator, ProjectUpdateState, T, ProjectUpdateState> updateSolution,
-        bool logThrowAwayTelemetry = false)
+        bool logThrowAwayTelemetry = false,
+        string context = "",
+        object? contextObject = null)
     {
         using var _ = CreateBatchScope();
 
@@ -284,7 +288,7 @@ internal sealed partial class ProjectSystemProject
 
                     if (!isFullyLoaded)
                     {
-                        TryReportCompilationThrownAway(_projectSystemProjectFactory.Workspace.CurrentSolution, Id);
+                        TryReportCompilationThrownAway(_projectSystemProjectFactory.Workspace.CurrentSolution, Id, context, contextObject);
                     }
                 }
             }
@@ -294,11 +298,13 @@ internal sealed partial class ProjectSystemProject
         }
     }
 
+    private static readonly List<(string, object?)> s_contexts = new();
+
     /// <summary>
     /// Reports a telemetry event if compilation information is being thrown away after being previously computed
     /// </summary>
     private static void TryReportCompilationThrownAway(
-        Solution solution, ProjectId projectId)
+        Solution solution, ProjectId projectId, string context, object? contextObject)
     {
         // We log the number of syntax trees that have been parsed even if there was no compilation created yet
         var projectState = solution.SolutionState.GetRequiredProjectState(projectId);
@@ -316,6 +322,15 @@ internal sealed partial class ProjectSystemProject
 
         if (parsedTrees > 0 || hadCompilation)
         {
+            lock (s_contexts)
+            {
+                s_contexts.Add((context, contextObject));
+                if (s_contexts.Count == 3)
+                {
+                    System.Diagnostics.Debugger.Launch();
+                }
+            }
+
             Logger.Log(FunctionId.Workspace_Project_CompilationThrownAway, KeyValueLogMessage.Create(m =>
             {
                 // Note: Not using our project Id. This is the same ProjectGuid that the project system uses
@@ -352,7 +367,7 @@ internal sealed partial class ProjectSystemProject
     public string AssemblyName
     {
         get => _assemblyName;
-        set => ChangeProjectProperty(ref _assemblyName, value, s => s.WithProjectAssemblyName(Id, value), logThrowAwayTelemetry: true);
+        set => ChangeProjectProperty(ref _assemblyName, value, s => s.WithProjectAssemblyName(Id, value), logThrowAwayTelemetry: true, context: "AssemblyName", (_assemblyName, value));
     }
 
     // The property could be null if this is a non-C#/VB language and we don't have one for it. But we disallow assigning null, because C#/VB cannot end up null
@@ -370,7 +385,7 @@ internal sealed partial class ProjectSystemProject
     public ParseOptions? ParseOptions
     {
         get => _parseOptions;
-        set => ChangeProjectProperty(ref _parseOptions, value, s => s.WithProjectParseOptions(Id, value), logThrowAwayTelemetry: true);
+        set => ChangeProjectProperty(ref _parseOptions, value, s => s.WithProjectParseOptions(Id, value), logThrowAwayTelemetry: true, context: "ParseOptions", (_parseOptions, value));
     }
 
     /// <summary>

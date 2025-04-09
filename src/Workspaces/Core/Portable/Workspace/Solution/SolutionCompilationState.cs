@@ -499,6 +499,26 @@ internal sealed partial class SolutionCompilationState
         ProjectId projectId, ParseOptions? options)
     {
         var stateChange = this.SolutionState.WithProjectParseOptions(projectId, options);
+        var oldTrees = 0;
+        var newTrees = 0;
+
+        foreach(var (_, documentState) in stateChange.OldProjectState.DocumentStates.States)
+        {
+            if (documentState.TryGetSyntaxTree(out _))
+                oldTrees++;
+        }
+
+        foreach (var (_, documentState) in stateChange.NewProjectState.DocumentStates.States)
+        {
+            if (documentState.TryGetSyntaxTree(out _))
+                newTrees++;
+        }
+
+        if (oldTrees != 0)
+        {
+//            System.Diagnostics.Debugger.Launch();
+//            System.Diagnostics.Debug.Assert(false);
+        }
 
         if (this.PartialSemanticsEnabled)
         {

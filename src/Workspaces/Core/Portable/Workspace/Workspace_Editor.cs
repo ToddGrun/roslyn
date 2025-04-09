@@ -357,6 +357,8 @@ public abstract partial class Workspace
         return ValueTaskFactory.CompletedTask;
     }
 
+    private static int s_OnDocumentOpenedCount = 0;
+
     internal void OnDocumentOpened(DocumentId documentId, SourceTextContainer textContainer, bool isCurrentContext, bool requireDocumentPresentAndClosed)
     {
         SetCurrentSolution(
@@ -389,6 +391,8 @@ public abstract partial class Workspace
                     else
                         return oldSolution;
                 }
+
+                Interlocked.Increment(ref s_OnDocumentOpenedCount);
 
                 var oldDocumentState = oldDocument.State;
 

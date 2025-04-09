@@ -42,10 +42,14 @@ public partial class Solution
     /// </summary>
     private readonly Dictionary<DocumentId, AsyncLazy<Solution>> _documentIdToFrozenSolution = [];
 
+    private static int s_SolutionsCreated = 0;
+
     private Solution(
         SolutionCompilationState compilationState,
         AsyncLazy<Solution>? cachedFrozenSolution = null)
     {
+        Interlocked.Increment(ref s_SolutionsCreated);
+
         _projectIdToProjectMap = ImmutableDictionary<ProjectId, Project>.Empty;
         CompilationState = compilationState;
 
