@@ -1879,4 +1879,8 @@ Additional information: {1}</value>
   <data name="Show_completion_list_after_a_character_is_typed" xml:space="preserve">
     <value>Show completion list after a character is typed</value>
   </data>
+  <data name="Relationship_ContainsText" xml:space="preserve">
+    <value>Contains</value>
+    <comment>The display value shown in the pivot for the Contains relationship</comment>
+  </data>
 </root>
