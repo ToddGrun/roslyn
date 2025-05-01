@@ -16,6 +16,7 @@ using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.Options;
 using Microsoft.CodeAnalysis.Shared.Extensions;
 using Microsoft.CodeAnalysis.Text;
+using Microsoft.CodeAnalysis.Text.Shared.Extensions;
 using Microsoft.VisualStudio.Commanding;
 using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion;
 using Microsoft.VisualStudio.Text;
@@ -141,7 +142,8 @@ internal sealed class ConvertNamespaceCommandHandler(
         if (!ConvertNamespaceAnalysis.CanOfferUseFileScoped(s_fileScopedNamespacePreferenceOption, (CompilationUnitSyntax)parsedDocument.Root, namespaceDecl, forAnalyzer: true, LanguageVersion.CSharp10))
             return default;
 
-        var formattingOptions = subjectBuffer.GetSyntaxFormattingOptions(_editorOptionsService, document.Project.GetFallbackAnalyzerOptions(), document.Project.Services, explicitFormat: false);
+        var caretSnapshotPoint = subjectBuffer.CurrentSnapshot.GetPoint(caret);
+        var formattingOptions = caretSnapshotPoint.GetSyntaxFormattingOptions(_editorOptionsService, document.Project.GetFallbackAnalyzerOptions(), document.Project.Services, explicitFormat: false);
         return ConvertNamespaceTransform.ConvertNamespaceDeclaration(parsedDocument, namespaceDecl, formattingOptions, cancellationToken);
     }
 }

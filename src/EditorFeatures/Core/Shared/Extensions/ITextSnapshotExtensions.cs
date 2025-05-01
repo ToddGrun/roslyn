@@ -12,6 +12,7 @@ using Microsoft.CodeAnalysis.Internal.Log;
 using Microsoft.CodeAnalysis.Options;
 using Microsoft.CodeAnalysis.Shared.Extensions;
 using Microsoft.CodeAnalysis.Text;
+using Microsoft.CodeAnalysis.Text.Shared.Extensions;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Utilities;
 
@@ -39,7 +40,7 @@ internal static partial class ITextSnapshotExtensions
 
         var formatter = document.GetRequiredLanguageService<ISyntaxFormattingService>();
 
-        var options = textBuffer.GetSyntaxFormattingOptions(editorOptionsService, document.Project.GetFallbackAnalyzerOptions(), document.Project.Services, explicitFormat: false);
+        var options = new SnapshotPoint(textBuffer.CurrentSnapshot, span.Start).GetSyntaxFormattingOptions(editorOptionsService, document.Project.GetFallbackAnalyzerOptions(), document.Project.Services, explicitFormat: false);
         var result = formatter.GetFormattingResult(documentSyntax.Root, [span], options, rules, cancellationToken);
         var changes = result.GetTextChanges(cancellationToken);
 

@@ -310,11 +310,11 @@ internal sealed partial class AutomaticLineEnderCommandHandler(
         ParsedDocument document,
         SyntaxNode selectedNode,
         bool addBrace,
-        int caretPosition,
+        SnapshotPoint caretPosition,
         StructuredAnalyzerConfigOptions fallbackOptions,
         CancellationToken cancellationToken)
     {
-        var formattingOptions = args.SubjectBuffer.GetSyntaxFormattingOptions(EditorOptionsService, fallbackOptions, document.LanguageServices, explicitFormat: false);
+        var formattingOptions = caretPosition.GetSyntaxFormattingOptions(EditorOptionsService, fallbackOptions, document.LanguageServices, explicitFormat: false);
 
         // Add braces for the selected node
         if (addBrace)

@@ -62,7 +62,7 @@ internal abstract class AbstractAutomaticLineEnderCommandHandler :
     /// <summary>
     /// Add or remove the braces for <param name="selectedNode"/>.
     /// </summary>
-    protected abstract void ModifySelectedNode(AutomaticLineEnderCommandArgs args, ParsedDocument document, SyntaxNode selectedNode, bool addBrace, int caretPosition, StructuredAnalyzerConfigOptions fallbackOptions, CancellationToken cancellationToken);
+    protected abstract void ModifySelectedNode(AutomaticLineEnderCommandArgs args, ParsedDocument document, SyntaxNode selectedNode, bool addBrace, SnapshotPoint caretPosition, StructuredAnalyzerConfigOptions fallbackOptions, CancellationToken cancellationToken);
 
     /// <summary>
     /// Get the syntax node needs add/remove braces.
@@ -143,7 +143,7 @@ internal abstract class AbstractAutomaticLineEnderCommandHandler :
             if (endingInsertionPosition != null)
             {
                 using var transaction = args.TextView.CreateEditTransaction(EditorFeaturesResources.Automatic_Line_Ender, _undoRegistry, _editorOperationsFactoryService);
-                var formattingOptions = args.SubjectBuffer.GetSyntaxFormattingOptions(EditorOptionsService, document.Project.GetFallbackAnalyzerOptions(), parsedDocument.LanguageServices, explicitFormat: false);
+                var formattingOptions = caretPosition.GetSyntaxFormattingOptions(EditorOptionsService, document.Project.GetFallbackAnalyzerOptions(), parsedDocument.LanguageServices, explicitFormat: false);
                 InsertEnding(args.TextView, args.SubjectBuffer, parsedDocument, endingInsertionPosition.Value, caretPosition, formattingOptions, cancellationToken);
                 NextAction(operations, nextHandler);
                 transaction.Complete();

@@ -1066,7 +1066,7 @@ internal class SnippetExpansionClient : IVsExpansionClient
         var languageServices = documentWithImports.Project.Services;
         var fallbackOptions = documentWithImports.Project.GetFallbackAnalyzerOptions();
         var addImportOptions = SubjectBuffer.GetAddImportPlacementOptions(EditorOptionsService, fallbackOptions, languageServices, documentWithImports.AllowImportsInHiddenRegions());
-        var formattingOptions = SubjectBuffer.GetSyntaxFormattingOptions(EditorOptionsService, fallbackOptions, languageServices, explicitFormat: false);
+        var formattingOptions = new SnapshotPoint(SubjectBuffer.CurrentSnapshot, position).GetSyntaxFormattingOptions(EditorOptionsService, fallbackOptions, languageServices, explicitFormat: false);
 
         documentWithImports = await _languageHelper.AddImportsAsync(
             documentWithImports, addImportOptions, formattingOptions, position, snippetNode, cancellationToken).ConfigureAwait(true);

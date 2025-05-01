@@ -73,27 +73,27 @@ internal sealed class CSharpFormattingInteractionService(EditorOptionsService ed
         return s_supportedChars.IndexOf(ch) >= 0;
     }
 
-    public Task<ImmutableArray<TextChange>> GetFormattingChangesAsync(
+    public async Task<ImmutableArray<TextChange>> GetFormattingChangesAsync(
         Document document,
         ITextBuffer textBuffer,
         TextSpan? textSpan,
         CancellationToken cancellationToken)
     {
         var parsedDocument = ParsedDocument.CreateSynchronously(document, cancellationToken);
-        var options = textBuffer.GetSyntaxFormattingOptions(_editorOptionsService, document.Project.GetFallbackAnalyzerOptions(), parsedDocument.LanguageServices, explicitFormat: true);
+        var options = await document.GetSyntaxFormattingOptionsAsync(textBuffer, textSpan, _editorOptionsService, document.Project.GetFallbackAnalyzerOptions(), parsedDocument.LanguageServices, explicitFormat: true, cancellationToken).ConfigureAwait(false);
 
         var span = textSpan ?? new TextSpan(0, parsedDocument.Root.FullSpan.Length);
         var formattingSpan = CommonFormattingHelpers.GetFormattingSpan(parsedDocument.Root, span);
 
-        return Task.FromResult(Formatter.GetFormattedTextChanges(parsedDocument.Root, [formattingSpan], document.Project.Solution.Services, options, cancellationToken).ToImmutableArray());
+        return Formatter.GetFormattedTextChanges(parsedDocument.Root, [formattingSpan], document.Project.Solution.Services, options, cancellationToken).ToImmutableArray();
     }
 
-    public Task<ImmutableArray<TextChange>> GetFormattingChangesOnPasteAsync(Document document, ITextBuffer textBuffer, TextSpan textSpan, CancellationToken cancellationToken)
+    public async Task<ImmutableArray<TextChange>> GetFormattingChangesOnPasteAsync(Document document, ITextBuffer textBuffer, TextSpan textSpan, CancellationToken cancellationToken)
     {
         var parsedDocument = ParsedDocument.CreateSynchronously(document, cancellationToken);
-        var options = textBuffer.GetSyntaxFormattingOptions(_editorOptionsService, document.Project.GetFallbackAnalyzerOptions(), parsedDocument.LanguageServices, explicitFormat: true);
+        var options = await document.GetSyntaxFormattingOptionsAsync(textBuffer, textSpan, _editorOptionsService, document.Project.GetFallbackAnalyzerOptions(), parsedDocument.LanguageServices, explicitFormat: true, cancellationToken).ConfigureAwait(false);
         var service = parsedDocument.LanguageServices.GetRequiredService<ISyntaxFormattingService>();
-        return Task.FromResult(service.GetFormattingChangesOnPaste(parsedDocument, textSpan, options, cancellationToken));
+        return service.GetFormattingChangesOnPaste(parsedDocument, textSpan, options, cancellationToken);
     }
 
     public Task<ImmutableArray<TextChange>> GetFormattingChangesOnReturnAsync(Document document, int caretPosition, CancellationToken cancellationToken)

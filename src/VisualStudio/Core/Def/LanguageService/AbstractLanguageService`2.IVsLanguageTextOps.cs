@@ -13,6 +13,7 @@ using Microsoft.CodeAnalysis.Formatting.Rules;
 using Microsoft.CodeAnalysis.Options;
 using Microsoft.CodeAnalysis.Shared.Extensions;
 using Microsoft.CodeAnalysis.Text;
+using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.TextManager.Interop;
 using Microsoft.VisualStudio.Utilities;
 using Roslyn.Utilities;
@@ -56,11 +57,13 @@ internal abstract partial class AbstractLanguageService<TPackage, TLanguageServi
         var documentSyntax = ParsedDocument.CreateSynchronously(document, cancellationToken);
         var text = documentSyntax.Text;
         var root = documentSyntax.Root;
-        var formattingOptions = textBuffer.GetSyntaxFormattingOptions(EditorOptionsService, document.Project.GetFallbackAnalyzerOptions(), document.Project.Services, explicitFormat: true);
 
         var ts = selections.Single();
         var start = text.Lines[ts.iStartLine].Start + ts.iStartIndex;
         var end = text.Lines[ts.iEndLine].Start + ts.iEndIndex;
+
+        var formattingOptions = new SnapshotPoint(textBuffer.CurrentSnapshot, start).GetSyntaxFormattingOptions(EditorOptionsService, document.Project.GetFallbackAnalyzerOptions(), document.Project.Services, explicitFormat: true);
+
         var adjustedSpan = GetFormattingSpan(root, start, end);
 
         // Since we know we are on the UI thread, lets get the base indentation now, so that there is less
