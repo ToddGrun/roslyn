@@ -243,6 +243,9 @@ public partial class Project
     public Document? GetDocument(DocumentId documentId)
         => GetOrAddDocumentUnderLock(documentId, ref _idToDocumentMap, s_tryCreateDocumentFunction, this);
 
+    internal bool TryGetDocument(DocumentId documentId, out Document? document)
+        => TryGetDocumentValueUnderLock(documentId, ref _idToDocumentMap, out document);
+
     /// <summary>
     /// Get the additional document in this project with the specified document Id.
     /// </summary>
@@ -270,11 +273,26 @@ public partial class Project
         }
     }
 
-    private static bool TryGetDocumentValueUnderLock<TDocument>(DocumentId documentId, ref Dictionary<DocumentId, TDocument>? idMap, out TDocument? document)
+    private static bool TryGetDocumentValueUnderLock<TDocument>(DocumentId documentId, ref Dictionary<DocumentId, TDocument?>? idMap, out TDocument? document)
     {
         if (idMap == null)
         {
             document = default;
+            return false;
+        }
+
+        lock (idMap)
+        {
+            return idMap.TryGetValue(documentId, out document);
+        }
+    }
+
+    private bool TryGetSourceGeneratedDocumentValueUnderLock(DocumentId documentId, out SourceGeneratedDocument? document)
+    {
+        var idMap = _idToSourceGeneratedDocumentMap;
+        if (idMap == null)
+        {
+            document = null;
             return false;
         }
 
@@ -343,7 +361,7 @@ public partial class Project
             return null;
 
         // Quick check first: if we already have created a SourceGeneratedDocument wrapper, we're good
-        if (TryGetDocumentValueUnderLock(documentId, ref _idToSourceGeneratedDocumentMap, out var sourceGeneratedDocument))
+        if (TryGetSourceGeneratedDocumentValueUnderLock(documentId, out var sourceGeneratedDocument))
             return sourceGeneratedDocument;
 
         // We'll have to run generators if we haven't already and now try to find it.
@@ -377,7 +395,7 @@ public partial class Project
             return null;
 
         // Easy case: do we already have the SourceGeneratedDocument created?
-        if (TryGetDocumentValueUnderLock(documentId, ref _idToSourceGeneratedDocumentMap, out var document))
+        if (TryGetSourceGeneratedDocumentValueUnderLock(documentId, out var document))
             return document;
 
         // Trickier case now: it's possible we generated this, but we don't actually have the SourceGeneratedDocument for it, so let's go

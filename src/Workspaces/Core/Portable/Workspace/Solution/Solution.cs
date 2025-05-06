@@ -248,6 +248,17 @@ public partial class Solution
     public Document? GetDocument(DocumentId? documentId)
         => GetProject(documentId?.ProjectId)?.GetDocument(documentId!);
 
+    internal bool TryGetDocument(DocumentId documentId, [NotNullWhen(true)] out Document? document)
+    {
+        if (GetProject(documentId.ProjectId) is not Project project)
+        {
+            document = null;
+            return false;
+        }
+
+        return project.TryGetDocument(documentId, out document);
+    }
+
     /// <summary>
     /// Gets a document or a source generated document in this solution with the specified document ID.
     /// </summary>
