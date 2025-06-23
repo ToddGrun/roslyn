@@ -9,14 +9,14 @@ using System.Text.Json.Serialization;
 /// <summary>
 /// Class representing single continue character for completion.
 /// </summary>
+[Kind("singleChar", "_vs_type")]
 internal sealed class VSInternalContinueCharacterSingle
 {
     /// <summary>
     /// Gets the type value.
     /// </summary>
     [JsonPropertyName("_vs_type")]
-    [JsonRequired]
-    public const string Type = "singleChar";
+    public string Type { get; } = "singleChar";
 
     /// <summary>
     /// Gets or sets the completion character.

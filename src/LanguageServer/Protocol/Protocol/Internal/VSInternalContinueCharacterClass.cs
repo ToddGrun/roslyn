@@ -9,14 +9,14 @@ using System.Text.Json.Serialization;
 /// <summary>
 /// Class representing a unicode character class for completion continuation.
 /// </summary>
+[Kind("unicodeClass", "_vs_type")]
 internal sealed class VSInternalContinueCharacterClass
 {
     /// <summary>
     /// Gets the type value.
     /// </summary>
     [JsonPropertyName("_vs_type")]
-    [JsonRequired]
-    public const string Type = "unicodeClass";
+    public string Type { get; } = "unicodeClass";
 
     /// <summary>
     /// Gets or sets the unicode class.
