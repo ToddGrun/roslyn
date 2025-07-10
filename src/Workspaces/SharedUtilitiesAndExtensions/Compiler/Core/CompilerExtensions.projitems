@@ -368,8 +368,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Options\OptionKey2.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Options\Option2.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Options\PerLanguageOption2.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Services\RefactoringHelpers\AbstractRefactoringHelpers.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Services\RefactoringHelpers\IRefactoringHelpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\SelectedMembers\AbstractSelectedMembers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\SemanticFacts\ForEachSymbols.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\SemanticFacts\ISemanticFactsExtensions.cs" />
@@ -549,6 +547,5 @@
     <Folder Include="$(MSBuildThisFileDirectory)CodeCleanup\" />
     <Folder Include="$(MSBuildThisFileDirectory)Extensions\Compiler\" />
     <Folder Include="$(MSBuildThisFileDirectory)Services\FileBannerFacts\" />
-    <Folder Include="$(MSBuildThisFileDirectory)Services\RefactoringHelpers\" />
   </ItemGroup>
 </Project>
