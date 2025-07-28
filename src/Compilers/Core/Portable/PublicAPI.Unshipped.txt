@@ -13,6 +13,65 @@ Microsoft.CodeAnalysis.Emit.EmitDifferenceOptions.EmitDifferenceOptions() -> voi
 Microsoft.CodeAnalysis.Emit.EmitDifferenceOptions.EmitFieldRva.get -> bool
 Microsoft.CodeAnalysis.Emit.EmitDifferenceOptions.EmitFieldRva.init -> void
 Microsoft.CodeAnalysis.IMethodSymbol.IsIterator.get -> bool
+Microsoft.CodeAnalysis.PooledHybridDictionary<TKey, TValue>
+Microsoft.CodeAnalysis.PooledHybridDictionary<TKey, TValue>.Add(TKey key, TValue? value) -> void
+Microsoft.CodeAnalysis.PooledHybridDictionary<TKey, TValue>.ContainsKey(TKey key) -> bool
+Microsoft.CodeAnalysis.PooledHybridDictionary<TKey, TValue>.Count.get -> int
+Microsoft.CodeAnalysis.PooledHybridDictionary<TKey, TValue>.Dispose() -> void
+Microsoft.CodeAnalysis.PooledHybridDictionary<TKey, TValue>.Enumerator
+Microsoft.CodeAnalysis.PooledHybridDictionary<TKey, TValue>.Enumerator.Current.get -> (TKey Key, TValue? Value)
+Microsoft.CodeAnalysis.PooledHybridDictionary<TKey, TValue>.Enumerator.Dispose() -> void
+Microsoft.CodeAnalysis.PooledHybridDictionary<TKey, TValue>.Enumerator.Enumerator() -> void
+Microsoft.CodeAnalysis.PooledHybridDictionary<TKey, TValue>.Enumerator.Enumerator(in Microsoft.CodeAnalysis.PooledHybridDictionary<TKey, TValue> dictionary) -> void
+Microsoft.CodeAnalysis.PooledHybridDictionary<TKey, TValue>.Enumerator.MoveNext() -> bool
+Microsoft.CodeAnalysis.PooledHybridDictionary<TKey, TValue>.GetEnumerator() -> Microsoft.CodeAnalysis.PooledHybridDictionary<TKey, TValue>.Enumerator
+Microsoft.CodeAnalysis.PooledHybridDictionary<TKey, TValue>.PooledHybridDictionary() -> void
+Microsoft.CodeAnalysis.PooledHybridDictionary<TKey, TValue>.Remove(TKey key) -> void
+Microsoft.CodeAnalysis.PooledHybridDictionary<TKey, TValue>.this[TKey key].get -> TValue?
+Microsoft.CodeAnalysis.PooledHybridDictionary<TKey, TValue>.this[TKey key].set -> void
+Microsoft.CodeAnalysis.SmallDictionary<K, V>
+Microsoft.CodeAnalysis.SmallDictionary<K, V>.Add(K key, V value) -> void
+Microsoft.CodeAnalysis.SmallDictionary<K, V>.ContainsKey(K key) -> bool
+Microsoft.CodeAnalysis.SmallDictionary<K, V>.EnumerableImpl
+Microsoft.CodeAnalysis.SmallDictionary<K, V>.EnumerableImpl.EnumerableImpl(Microsoft.CodeAnalysis.SmallDictionary<K, V>.Enumerator e) -> void
+Microsoft.CodeAnalysis.SmallDictionary<K, V>.Enumerator
+Microsoft.CodeAnalysis.SmallDictionary<K, V>.Enumerator.Current.get -> System.Collections.Generic.KeyValuePair<K, V>
+Microsoft.CodeAnalysis.SmallDictionary<K, V>.Enumerator.Enumerator() -> void
+Microsoft.CodeAnalysis.SmallDictionary<K, V>.Enumerator.Enumerator(Microsoft.CodeAnalysis.SmallDictionary<K, V>! dict) -> void
+Microsoft.CodeAnalysis.SmallDictionary<K, V>.Enumerator.MoveNext() -> bool
+Microsoft.CodeAnalysis.SmallDictionary<K, V>.GetEnumerator() -> Microsoft.CodeAnalysis.SmallDictionary<K, V>.Enumerator
+Microsoft.CodeAnalysis.SmallDictionary<K, V>.KeyCollection
+Microsoft.CodeAnalysis.SmallDictionary<K, V>.KeyCollection.EnumerableImpl
+Microsoft.CodeAnalysis.SmallDictionary<K, V>.KeyCollection.EnumerableImpl.EnumerableImpl(Microsoft.CodeAnalysis.SmallDictionary<K, V>.KeyCollection.Enumerator e) -> void
+Microsoft.CodeAnalysis.SmallDictionary<K, V>.KeyCollection.Enumerator
+Microsoft.CodeAnalysis.SmallDictionary<K, V>.KeyCollection.Enumerator.Current.get -> K
+Microsoft.CodeAnalysis.SmallDictionary<K, V>.KeyCollection.Enumerator.Enumerator() -> void
+Microsoft.CodeAnalysis.SmallDictionary<K, V>.KeyCollection.Enumerator.Enumerator(Microsoft.CodeAnalysis.SmallDictionary<K, V>! dict) -> void
+Microsoft.CodeAnalysis.SmallDictionary<K, V>.KeyCollection.Enumerator.MoveNext() -> bool
+Microsoft.CodeAnalysis.SmallDictionary<K, V>.KeyCollection.GetEnumerator() -> Microsoft.CodeAnalysis.SmallDictionary<K, V>.KeyCollection.Enumerator
+Microsoft.CodeAnalysis.SmallDictionary<K, V>.KeyCollection.KeyCollection() -> void
+Microsoft.CodeAnalysis.SmallDictionary<K, V>.KeyCollection.KeyCollection(Microsoft.CodeAnalysis.SmallDictionary<K, V>! dict) -> void
+Microsoft.CodeAnalysis.SmallDictionary<K, V>.Keys.get -> Microsoft.CodeAnalysis.SmallDictionary<K, V>.KeyCollection
+Microsoft.CodeAnalysis.SmallDictionary<K, V>.SmallDictionary() -> void
+Microsoft.CodeAnalysis.SmallDictionary<K, V>.SmallDictionary(Microsoft.CodeAnalysis.SmallDictionary<K, V>! other, System.Collections.Generic.IEqualityComparer<K>! comparer) -> void
+Microsoft.CodeAnalysis.SmallDictionary<K, V>.SmallDictionary(System.Collections.Generic.IEqualityComparer<K>! comparer) -> void
+Microsoft.CodeAnalysis.SmallDictionary<K, V>.this[K key].get -> V
+Microsoft.CodeAnalysis.SmallDictionary<K, V>.this[K key].set -> void
+Microsoft.CodeAnalysis.SmallDictionary<K, V>.TryGetValue(K key, out V value) -> bool
+Microsoft.CodeAnalysis.SmallDictionary<K, V>.ValueCollection
+Microsoft.CodeAnalysis.SmallDictionary<K, V>.ValueCollection.EnumerableImpl
+Microsoft.CodeAnalysis.SmallDictionary<K, V>.ValueCollection.EnumerableImpl.EnumerableImpl(Microsoft.CodeAnalysis.SmallDictionary<K, V>.ValueCollection.Enumerator e) -> void
+Microsoft.CodeAnalysis.SmallDictionary<K, V>.ValueCollection.Enumerator
+Microsoft.CodeAnalysis.SmallDictionary<K, V>.ValueCollection.Enumerator.Current.get -> V
+Microsoft.CodeAnalysis.SmallDictionary<K, V>.ValueCollection.Enumerator.Enumerator() -> void
+Microsoft.CodeAnalysis.SmallDictionary<K, V>.ValueCollection.Enumerator.Enumerator(Microsoft.CodeAnalysis.SmallDictionary<K, V>! dict) -> void
+Microsoft.CodeAnalysis.SmallDictionary<K, V>.ValueCollection.Enumerator.MoveNext() -> bool
+Microsoft.CodeAnalysis.SmallDictionary<K, V>.ValueCollection.GetEnumerator() -> Microsoft.CodeAnalysis.SmallDictionary<K, V>.ValueCollection.Enumerator
+Microsoft.CodeAnalysis.SmallDictionary<K, V>.ValueCollection.ValueCollection() -> void
+Microsoft.CodeAnalysis.SmallDictionary<K, V>.ValueCollection.ValueCollection(Microsoft.CodeAnalysis.SmallDictionary<K, V>! dict) -> void
+Microsoft.CodeAnalysis.SmallDictionary<K, V>.Values.get -> Microsoft.CodeAnalysis.SmallDictionary<K, V>.ValueCollection
+readonly Microsoft.CodeAnalysis.PooledHybridDictionary<TKey, TValue>.KeyComparer -> System.Collections.Generic.IEqualityComparer<TKey>!
+readonly Microsoft.CodeAnalysis.SmallDictionary<K, V>.Comparer -> System.Collections.Generic.IEqualityComparer<K>!
 static readonly Microsoft.CodeAnalysis.Emit.EmitDifferenceOptions.Default -> Microsoft.CodeAnalysis.Emit.EmitDifferenceOptions
 Microsoft.CodeAnalysis.IEventSymbol.IsPartialDefinition.get -> bool
 Microsoft.CodeAnalysis.IEventSymbol.PartialDefinitionPart.get -> Microsoft.CodeAnalysis.IEventSymbol?
@@ -41,3 +100,4 @@ const Microsoft.CodeAnalysis.WellKnownMemberNames.CheckedDecrementAssignmentOper
 const Microsoft.CodeAnalysis.WellKnownMemberNames.CheckedIncrementAssignmentOperatorName = "op_CheckedIncrementAssignment" -> string!
 const Microsoft.CodeAnalysis.WellKnownMemberNames.DecrementAssignmentOperatorName = "op_DecrementAssignment" -> string!
 const Microsoft.CodeAnalysis.WellKnownMemberNames.IncrementAssignmentOperatorName = "op_IncrementAssignment" -> string!
+static readonly Microsoft.CodeAnalysis.SmallDictionary<K, V>.Empty -> Microsoft.CodeAnalysis.SmallDictionary<K, V>!

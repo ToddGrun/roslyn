@@ -32,7 +32,7 @@ namespace Microsoft.CodeAnalysis
     /// If the size of the dictionary is known at creation and it is likely to contain more than 10 elements, 
     /// then regular Dictionary is a better choice.
     /// </summary>
-    internal sealed class SmallDictionary<K, V> : IEnumerable<KeyValuePair<K, V>>
+    public sealed class SmallDictionary<K, V> : IEnumerable<KeyValuePair<K, V>>
         where K : notnull
     {
         private AvlNode? _root;
@@ -503,7 +503,7 @@ hasBucket:
 
         public KeyCollection Keys => new KeyCollection(this);
 
-        internal readonly struct KeyCollection : IEnumerable<K>
+        public readonly struct KeyCollection : IEnumerable<K>
         {
             private readonly SmallDictionary<K, V> _dict;
 
@@ -618,7 +618,7 @@ hasBucket:
 
         public ValueCollection Values => new ValueCollection(this);
 
-        internal readonly struct ValueCollection : IEnumerable<V>
+        public readonly struct ValueCollection : IEnumerable<V>
         {
             private readonly SmallDictionary<K, V> _dict;
 
