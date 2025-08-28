@@ -234,10 +234,11 @@ internal sealed class SumConverter<T> : JsonConverter<T>
                     continue;
                 }
 
-                if (unionTypeInfo.KindAttribute != null)
-                {
-                    continue;
-                }
+                // Temporarily removed until vslanguageserverclient updates the VSInternalContinueCharacter* serialization
+                //if (unionTypeInfo.KindAttribute != null)
+                //{
+                //    continue;
+                //}
 
                 try
                 {
