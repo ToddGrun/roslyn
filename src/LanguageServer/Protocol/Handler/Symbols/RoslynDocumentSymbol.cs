@@ -12,8 +12,17 @@ namespace Microsoft.CodeAnalysis.LanguageServer.Handler;
 /// internal consumers.  For example, the richer <see cref="Glyph"/> which is a superset of <see
 /// cref="DocumentSymbol.Kind"/>.
 /// </summary>
+[Kind("RoslynDocumentSymbol", "_vs_type")]
 internal sealed class RoslynDocumentSymbol : DocumentSymbol
 {
+    [JsonPropertyName("_vs_type")]
+    [JsonRequired]
+    [JsonInclude]
+    internal override string TypeDiscriminator
+    {
+        get => "RoslynDocumentSymbol";
+    }
+
     [JsonPropertyName("glyph")]
     public int Glyph { get; set; }
 

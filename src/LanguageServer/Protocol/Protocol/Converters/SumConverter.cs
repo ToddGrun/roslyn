@@ -60,7 +60,9 @@ internal sealed class SumConverter : JsonConverterFactory
                 var declaredConstructor = typeInfo.GetConstructor([parameterType]) ??
                     throw new ArgumentException(nameof(sumTypeType), "All constructor parameter types must be represented in the generic type arguments of the SumType");
 
-                var kindAttribute = parameterType.GetCustomAttribute<KindAttribute>();
+                var kindAttribute = parameterTypeInfo.IsArray
+                    ? parameterType.GetElementType().GetCustomAttribute<KindAttribute>()
+                    : parameterType.GetCustomAttribute<KindAttribute>();
                 var unionTypeInfo = new UnionTypeInfo(parameterType, declaredConstructor, kindAttribute);
                 allUnionTypeInfosSet.Add(unionTypeInfo);
 
@@ -87,7 +89,18 @@ internal sealed class SumConverter : JsonConverterFactory
 
             this.allUnionTypeInfos = allUnionTypeInfosSet;
             this.primitiveUnionTypeInfos = primitiveUnionTypeInfosSet ?? EmptyUnionInfos;
-            this.arrayUnionTypeInfos = arrayUnionTypeInfosSet ?? EmptyUnionInfos;
+            //this.arrayUnionTypeInfos = arrayUnionTypeInfosSet ?? EmptyUnionInfos;
+            if ((arrayUnionTypeInfosSet?.Count ?? 0) > 1)
+            {
+                // If some types are tagged with a KindAttribute, make sure they are first in the list in order to avoid the wrong type being deserialized
+                this.arrayUnionTypeInfos = arrayUnionTypeInfosSet.Where(t => t.KindAttribute is not null).Concat(
+                                           arrayUnionTypeInfosSet.Where(t => t.KindAttribute is null)).ToList();
+            }
+            else
+            {
+                this.arrayUnionTypeInfos = arrayUnionTypeInfosSet ?? EmptyUnionInfos;
+            }
+
             if ((objectUnionTypeInfosSet?.Count ?? 0) > 1)
             {
                 // If some types are tagged with a KindAttribute, make sure they are first in the list in order to avoid the wrong type being deserialized
@@ -183,6 +196,27 @@ internal sealed class SumConverter<T> : JsonConverter<T>
     where T : struct, ISumType
 {
     private static readonly ConcurrentDictionary<Type, SumConverter.SumTypeInfoCache> SumTypeCache = new ConcurrentDictionary<Type, SumConverter.SumTypeInfoCache>();
+    private static List<string> s_debugInfo = new();
+    private TypeInfo[] _parameterTypeInfos;
+
+    public SumConverter()
+    {
+        s_debugInfo.Add(typeof(T).Name);
+        var typeInfo = typeof(T).GetTypeInfo();
+        var parameterTypes = typeInfo.GenericTypeArguments;
+        _parameterTypeInfos = new TypeInfo[parameterTypes.Length];
+        for (var i = 0; i < parameterTypes.Length; i++)
+        {
+            var parameterType = parameterTypes[i];
+            var parameterTypeInfo = NormalizeToNonNullable(parameterType).GetTypeInfo();
+            _parameterTypeInfos[i] = parameterTypeInfo;
+        }
+    }
+
+    private static Type NormalizeToNonNullable(Type sumTypeType)
+    {
+        return Nullable.GetUnderlyingType(sumTypeType) ?? sumTypeType;
+    }
 
     /// <inheritdoc/>
     public override T Read(ref Utf8JsonReader reader, Type objectType, JsonSerializerOptions options)
@@ -200,13 +234,29 @@ internal sealed class SumConverter<T> : JsonConverter<T>
         var applicableUnionTypeInfos = sumTypeInfoCache.GetApplicableInfos(reader.TokenType);
         if (applicableUnionTypeInfos.Count > 0)
         {
+            //if (applicableUnionTypeInfos[0].Type.Name == "DocumentSymbol[]")
+            //{
+            //    System.Diagnostics.Debug.Assert(false);
+            //}
+
             var backupReader = reader;
             if (applicableUnionTypeInfos[0].KindAttribute is { } kindAttribute)
             {
                 using var document = JsonDocument.ParseValue(ref reader);
                 reader = backupReader;
-                if (document.RootElement.TryGetProperty(kindAttribute.KindPropertyName, out var value))
+                var rootElement = document.RootElement;
+                if (rootElement.ValueKind == JsonValueKind.Array && rootElement.GetArrayLength() > 0)
                 {
+                    rootElement = rootElement[0];
+                }
+
+                if (rootElement.TryGetProperty(kindAttribute.KindPropertyName, out var value))
+                {
+                    if (document.RootElement.ValueKind == JsonValueKind.Array)
+                    {
+                        System.Diagnostics.Debug.Assert(false);
+                    }
+
                     var kind = value.GetString();
                     for (var i = 0; i < applicableUnionTypeInfos.Count; i++)
                     {
@@ -261,6 +311,18 @@ internal sealed class SumConverter<T> : JsonConverter<T>
         writer = writer ?? throw new ArgumentNullException(nameof(writer));
 
         var sumValue = value.Value;
+
+        //if (sumValue is null)
+        //{
+        //    return;
+        //}
+
+        //// objectType will be one of the various SumType variants. In order for this converter to work with all SumTypes it has to use reflection.
+        //// This method works by attempting to deserialize the json into each of the type parameters to a SumType and stops at the first success.
+        //var sumTypeInfoCache = SumTypeCache.GetOrAdd(sumValue.GetType(), (t) => new SumConverter.SumTypeInfoCache(t));
+
+        //var applicableUnionTypeInfos = sumTypeInfoCache.GetApplicableInfos(reader.TokenType);
+
 
         // behavior from DocumentUriConverter
         if (sumValue is DocumentUri documentUri)

@@ -15,8 +15,17 @@ using System.Text.Json.Serialization;
 /// See the <see href="https://microsoft.github.io/language-server-protocol/specifications/specification-current/#documentSymbol">Language Server Protocol specification</see> for additional information.
 /// </para>
 /// </summary>
+[Kind("DocumentSymbol", "_vs_type")]
 internal class DocumentSymbol
 {
+    [JsonPropertyName("_vs_type")]
+    [JsonRequired]
+    [JsonInclude]
+    internal virtual string TypeDiscriminator
+    {
+        get => "DocumentSymbol";
+    }
+
     /// <summary>
     /// The name of this symbol. Will be displayed in the user interface and
     /// therefore must not be an empty string or a string consisting only of whitespace.
