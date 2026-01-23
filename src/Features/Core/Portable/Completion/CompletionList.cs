@@ -163,8 +163,8 @@ public sealed class CompletionList
     /// <summary>
     /// Creates a copy of this <see cref="CompletionList"/> with the <see cref="ItemsList"/> property changed.
     /// </summary>
-    internal CompletionList WithItemsList(IReadOnlyList<CompletionItem> itemsList)
-        => With(itemsList: new(itemsList));
+    internal CompletionList WithItemsList(ImmutableArray<CompletionItem> itemsList)
+        => With(itemsList: itemsList);
 
     /// <summary>
     /// Creates a copy of this <see cref="CompletionList"/> with the <see cref="Rules"/> property changed.
