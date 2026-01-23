@@ -131,6 +131,12 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 return null;
             }
 
+            if (!MethodTypeInferrer.IsValidTypeForInferringTypeArguments(thisType))
+            {
+                wasFullyInferred = false;
+                return null;
+            }
+
             var containingAssembly = method.ContainingAssembly;
             var errorNamespace = containingAssembly.GlobalNamespace;
             var conversions = containingAssembly.CorLibrary.TypeConversions;
@@ -147,19 +153,19 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             var otherArgumentValue = new BoundLiteral(syntax, ConstantValue.Bad, otherArgumentType) { WasCompilerGenerated = true };
 
             var paramCount = method.ParameterCount;
-            var arguments = new BoundExpression[paramCount];
+            var arguments = new FixedSizeArrayBuilder<BoundExpression>(paramCount);
 
             for (int i = 0; i < paramCount; i++)
             {
                 var argument = (i == 0) ? thisArgumentValue : otherArgumentValue;
-                arguments[i] = argument;
+                arguments.Add(argument);
             }
 
             var typeArgs = MethodTypeInferrer.InferTypeArgumentsFromFirstArgument(
                 compilation,
                 conversions,
                 method,
-                arguments.AsImmutable(),
+                arguments.MoveToImmutable(),
                 useSiteInfo: ref useSiteInfo);
 
             if (typeArgs.IsDefault)

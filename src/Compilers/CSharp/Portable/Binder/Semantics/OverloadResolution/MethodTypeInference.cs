@@ -3256,6 +3256,11 @@ OuterBreak:
             return inferrer.GetInferredTypeArguments(out _);
         }
 
+        public static bool IsValidTypeForInferringTypeArguments(TypeSymbol typeSymbol)
+        {
+            return IsReallyAType(typeSymbol);
+        }
+
         public static bool CanInferTypeArgumentsFromFirstArgument(
             CSharpCompilation compilation,
             ConversionsBase conversions,
