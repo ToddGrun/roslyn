@@ -2,8 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Shared.Extensions;
@@ -56,5 +58,34 @@ internal static class Utilities
 
         var service = document.GetRequiredLanguageService<ISyntaxContextService>();
         return service.CreateContext(document, semanticModel, position, cancellationToken);
+    }
+
+    public static bool Any<T>(this ReadOnlySpan<T> span, Func<T, bool> predicate)
+    {
+        foreach (var item in span)
+        {
+            if (predicate(item))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static ImmutableArray<TResult> SelectAsArray<TSource, TResult>(this ReadOnlySpan<TSource> span, Func<TSource, TResult> predicate)
+    {
+        if (span.IsEmpty)
+        {
+            return ImmutableArray<TResult>.Empty;
+        }
+
+        var array = new TResult[span.Length];
+        for (var i = 0; i < span.Length; i++)
+        {
+            array[i] = predicate(span[i]);
+        }
+
+        return ImmutableCollectionsMarshal.AsImmutableArray(array);
     }
 }

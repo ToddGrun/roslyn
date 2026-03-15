@@ -147,7 +147,7 @@ internal sealed partial class ExplicitInterfaceTypeCompletionProvider() : Abstra
         string displayText,
         string displayTextSuffix,
         string insertionText,
-        ImmutableArray<SymbolAndSelectionInfo> symbols,
+        ReadOnlySpan<SymbolAndSelectionInfo> symbols,
         CSharpSyntaxContext context,
         SupportedPlatformData? supportedPlatformData)
     {

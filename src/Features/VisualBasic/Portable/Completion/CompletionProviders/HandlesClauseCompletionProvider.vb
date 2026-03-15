@@ -159,7 +159,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Completion.Providers
             Return CompletionUtilities.GetInsertionTextAtInsertionTime(item, ch)
         End Function
 
-        Protected Overrides Function CreateItem(completionContext As CompletionContext, displayText As String, displayTextSuffix As String, insertionText As String, symbols As ImmutableArray(Of SymbolAndSelectionInfo), context As VisualBasicSyntaxContext, supportedPlatformData As SupportedPlatformData) As CompletionItem
+        Protected Overrides Function CreateItem(completionContext As CompletionContext, displayText As String, displayTextSuffix As String, insertionText As String, symbols As ReadOnlySpan(Of SymbolAndSelectionInfo), context As VisualBasicSyntaxContext, supportedPlatformData As SupportedPlatformData) As CompletionItem
             Return CreateItemDefault(displayText, displayTextSuffix, insertionText, symbols, context, supportedPlatformData)
         End Function
     End Class

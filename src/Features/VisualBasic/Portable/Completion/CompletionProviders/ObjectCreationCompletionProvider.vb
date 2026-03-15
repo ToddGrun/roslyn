@@ -61,7 +61,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Completion.Providers
                 matchPriority:=MatchPriority.Preselect,
                 selectionBehavior:=CompletionItemSelectionBehavior.HardSelection)
 
-        Protected Overrides Function GetCompletionItemRules(symbols As ImmutableArray(Of SymbolAndSelectionInfo)) As CompletionItemRules
+        Protected Overrides Function GetCompletionItemRules(symbols As ReadOnlySpan(Of SymbolAndSelectionInfo)) As CompletionItemRules
             Return s_rules
         End Function
 

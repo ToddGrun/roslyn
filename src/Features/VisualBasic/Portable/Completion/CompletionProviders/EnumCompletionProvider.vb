@@ -118,7 +118,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Completion.Providers
                 displayText As String,
                 displayTextSuffix As String,
                 insertionText As String,
-                symbols As ImmutableArray(Of SymbolAndSelectionInfo),
+                symbols As ReadOnlySpan(Of SymbolAndSelectionInfo),
                 context As VisualBasicSyntaxContext,
                 supportedPlatformData As SupportedPlatformData) As CompletionItem
 

@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Collections;
@@ -40,7 +41,7 @@ internal abstract partial class AbstractSymbolCompletionProvider<TSyntaxContext>
         string displayText,
         string displayTextSuffix,
         string insertionText,
-        ImmutableArray<SymbolAndSelectionInfo> symbols,
+        ReadOnlySpan<SymbolAndSelectionInfo> symbols,
         TSyntaxContext context,
         SupportedPlatformData? supportedPlatformData);
 
@@ -189,11 +190,11 @@ internal abstract partial class AbstractSymbolCompletionProvider<TSyntaxContext>
                 var noMerge = symbolLists.Length > 1;
                 foreach (var symbolList in symbolLists)
                 {
-                    CreateAndAddItem(symbolList, noMerge);
+                    CreateAndAddItem(symbolList.AsSpan(), noMerge);
                 }
             }
 
-            void CreateAndAddItem(ImmutableArray<SymbolAndSelectionInfo> symbolList, bool doNotMerge)
+            void CreateAndAddItem(ReadOnlySpan<SymbolAndSelectionInfo> symbolList, bool doNotMerge)
             {
                 var includeItemInTargetTypedCompletion = false;
                 var arbitraryFirstContext = contextLookup(symbolList[0]);
@@ -206,13 +207,20 @@ internal abstract partial class AbstractSymbolCompletionProvider<TSyntaxContext>
                         // This would ensure a symbol matches target types to be used for description if there's any,
                         // assuming the default implementation of GetDescriptionWorkerAsync is used.
                         var firstMatch = symbolList[index];
-                        symbolList = symbolList.RemoveAt(index);
-                        symbolList = symbolList.Insert(0, firstMatch);
+
+                        // Shift the matched symbol to the front of the list
+                        var newSymbolList = symbolList.ToArray();
+                        Array.Copy(newSymbolList, sourceIndex: 0, newSymbolList, destinationIndex: 1, index);
+                        newSymbolList[0] = firstMatch;
+
+                        symbolList = newSymbolList;
                     }
                 }
 
                 var supportedPlatformData = ComputeSupportedPlatformData(completionContext, symbolList, invalidProjectMap, totalProjects);
-                var item = CreateItem(
+                CompletionItem item;
+
+                item = CreateItem(
                     completionContext, symbolGroup.Key.displayText, symbolGroup.Key.suffix, symbolGroup.Key.insertionText, symbolList, arbitraryFirstContext, supportedPlatformData);
 
                 if (includeItemInTargetTypedCompletion)
@@ -258,7 +266,7 @@ internal abstract partial class AbstractSymbolCompletionProvider<TSyntaxContext>
 
     protected static bool TryFindFirstSymbolMatchesTargetTypes(
         Func<SymbolAndSelectionInfo, TSyntaxContext> contextLookup,
-        ImmutableArray<SymbolAndSelectionInfo> symbolList,
+        ReadOnlySpan<SymbolAndSelectionInfo> symbolList,
         Dictionary<ITypeSymbol, bool> typeConvertibilityCache,
         out int index)
     {
@@ -275,7 +283,7 @@ internal abstract partial class AbstractSymbolCompletionProvider<TSyntaxContext>
 
     private static SupportedPlatformData? ComputeSupportedPlatformData(
         CompletionContext completionContext,
-        ImmutableArray<SymbolAndSelectionInfo> symbols,
+        ReadOnlySpan<SymbolAndSelectionInfo> symbols,
         Dictionary<ISymbol, ArrayBuilder<ProjectId>>? invalidProjectMap,
         ImmutableArray<ProjectId> totalProjects)
     {
@@ -300,7 +308,7 @@ internal abstract partial class AbstractSymbolCompletionProvider<TSyntaxContext>
         string displayText,
         string displayTextSuffix,
         string insertionText,
-        ImmutableArray<SymbolAndSelectionInfo> symbols,
+        ReadOnlySpan<SymbolAndSelectionInfo> symbols,
         TSyntaxContext context,
         SupportedPlatformData? supportedPlatformData)
     {

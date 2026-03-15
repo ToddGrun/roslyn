@@ -209,7 +209,7 @@ internal sealed class SymbolCompletionProvider() : AbstractRecommendationService
     protected override (string displayText, string suffix, string insertionText) GetDisplayAndSuffixAndInsertionText(ISymbol symbol, CSharpSyntaxContext context)
         => CompletionUtilities.GetDisplayAndSuffixAndInsertionText(symbol, context);
 
-    protected override CompletionItemRules GetCompletionItemRules(ImmutableArray<SymbolAndSelectionInfo> symbols, CSharpSyntaxContext context)
+    protected override CompletionItemRules GetCompletionItemRules(ReadOnlySpan<SymbolAndSelectionInfo> symbols, CSharpSyntaxContext context)
     {
         var preselect = symbols.Any(static t => t.Preselect);
         s_cachedRules.TryGetValue(ValueTuple.Create(context.IsLeftSideOfImportAliasDirective, preselect, context.IsPossibleTupleContext), out var rule);
@@ -222,7 +222,7 @@ internal sealed class SymbolCompletionProvider() : AbstractRecommendationService
         string displayText,
         string displayTextSuffix,
         string insertionText,
-        ImmutableArray<SymbolAndSelectionInfo> symbols,
+        ReadOnlySpan<SymbolAndSelectionInfo> symbols,
         CSharpSyntaxContext context,
         SupportedPlatformData? supportedPlatformData)
     {

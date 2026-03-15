@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
@@ -21,14 +22,14 @@ internal abstract class AbstractObjectCreationCompletionProvider<TSyntaxContext>
     /// Return null if not in object creation type context.
     /// </summary>
     protected abstract SyntaxNode? GetObjectCreationNewExpression(SyntaxTree tree, int position, CancellationToken cancellationToken);
-    protected abstract CompletionItemRules GetCompletionItemRules(ImmutableArray<SymbolAndSelectionInfo> symbols);
+    protected abstract CompletionItemRules GetCompletionItemRules(ReadOnlySpan<SymbolAndSelectionInfo> symbols);
 
     protected override CompletionItem CreateItem(
         CompletionContext completionContext,
         string displayText,
         string displayTextSuffix,
         string insertionText,
-        ImmutableArray<SymbolAndSelectionInfo> symbols,
+        ReadOnlySpan<SymbolAndSelectionInfo> symbols,
         TSyntaxContext context,
         SupportedPlatformData? supportedPlatformData)
     {

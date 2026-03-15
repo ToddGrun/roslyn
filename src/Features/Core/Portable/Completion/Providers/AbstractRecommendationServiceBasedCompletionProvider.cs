@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -23,7 +24,7 @@ internal abstract class AbstractRecommendationServiceBasedCompletionProvider<TSy
     protected abstract Task<bool> ShouldPreselectInferredTypesAsync(CompletionContext? completionContext, int position, CompletionOptions options, CancellationToken cancellationToken);
     protected abstract Task<bool> ShouldProvideAvailableSymbolsInCurrentContextAsync(CompletionContext? completionContext, TSyntaxContext context, int position, CompletionOptions options, CancellationToken cancellationToken);
 
-    protected abstract CompletionItemRules GetCompletionItemRules(ImmutableArray<SymbolAndSelectionInfo> symbols, TSyntaxContext context);
+    protected abstract CompletionItemRules GetCompletionItemRules(ReadOnlySpan<SymbolAndSelectionInfo> symbols, TSyntaxContext context);
     protected abstract CompletionItemSelectionBehavior PreselectedItemSelectionBehavior { get; }
     protected abstract bool IsInstrinsic(ISymbol symbol);
     protected abstract bool IsTriggerOnDot(SyntaxToken token, int characterPosition);
@@ -161,7 +162,7 @@ internal abstract class AbstractRecommendationServiceBasedCompletionProvider<TSy
         string displayText,
         string displayTextSuffix,
         string insertionText,
-        ImmutableArray<SymbolAndSelectionInfo> symbols,
+        ReadOnlySpan<SymbolAndSelectionInfo> symbols,
         TSyntaxContext context,
         SupportedPlatformData? supportedPlatformData)
     {
@@ -262,7 +263,7 @@ internal abstract class AbstractRecommendationServiceBasedCompletionProvider<TSy
                 if (bestSymbols.Any())
                 {
                     if (options.TargetTypedCompletionFilter &&
-                        TryFindFirstSymbolMatchesTargetTypes(_ => context, bestSymbols, typeConvertibilityCache, out var index) && index > 0)
+                        TryFindFirstSymbolMatchesTargetTypes(_ => context, bestSymbols.AsSpan(), typeConvertibilityCache, out var index) && index > 0)
                     {
                         // Since the first symbol is used to get the item description by default,
                         // this would ensure the displayed one matches target types (if there's any).

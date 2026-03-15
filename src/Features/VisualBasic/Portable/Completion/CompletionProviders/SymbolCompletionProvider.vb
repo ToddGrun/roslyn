@@ -112,7 +112,7 @@ Namespace Microsoft.CodeAnalysis.VisualBasic.Completion.Providers
             Return GetFilterTextDefault(symbol, displayText, context)
         End Function
 
-        Protected Overrides Function GetCompletionItemRules(symbols As ImmutableArray(Of SymbolAndSelectionInfo), context As VisualBasicSyntaxContext) As CompletionItemRules
+        Protected Overrides Function GetCompletionItemRules(symbols As ReadOnlySpan(Of SymbolAndSelectionInfo), context As VisualBasicSyntaxContext) As CompletionItemRules
             Dim preselect = symbols.Any(Function(s) s.Preselect)
             Return If(s_cachedRules(ValueTuple.Create(context.IsInImportsDirective, preselect, context.IsPossibleTupleContext)),
                       CompletionItemRules.Default)

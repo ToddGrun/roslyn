@@ -116,7 +116,7 @@ internal sealed partial class ObjectCreationCompletionProvider : AbstractObjectC
             matchPriority: MatchPriority.Preselect,
             selectionBehavior: CompletionItemSelectionBehavior.HardSelection);
 
-    protected override CompletionItemRules GetCompletionItemRules(ImmutableArray<SymbolAndSelectionInfo> symbols)
+    protected override CompletionItemRules GetCompletionItemRules(ReadOnlySpan<SymbolAndSelectionInfo> symbols)
     {
         var preselect = symbols.Any(static t => t.Preselect);
         if (!preselect)
