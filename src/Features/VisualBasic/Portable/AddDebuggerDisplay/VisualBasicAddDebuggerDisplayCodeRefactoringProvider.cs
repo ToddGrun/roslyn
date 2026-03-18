@@ -1,0 +1,26 @@
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
+using System.Composition;
+using Microsoft.CodeAnalysis.AddDebuggerDisplay;
+using Microsoft.CodeAnalysis.CodeRefactorings;
+using Microsoft.CodeAnalysis.Host.Mef;
+using Microsoft.CodeAnalysis.VisualBasic.Syntax;
+
+namespace Microsoft.CodeAnalysis.VisualBasic.AddDebuggerDisplay;
+
+[ExportCodeRefactoringProvider(LanguageNames.VisualBasic, Name = PredefinedCodeRefactoringProviderNames.AddDebuggerDisplay), Shared]
+[method: ImportingConstructor]
+[method: Obsolete(MefConstruction.ImportingConstructorMessage, error: true)]
+internal sealed class VisualBasicAddDebuggerDisplayCodeRefactoringProvider()
+    : AbstractAddDebuggerDisplayCodeRefactoringProvider<TypeBlockSyntax, MethodStatementSyntax>
+{
+    protected override bool CanNameofAccessNonPublicMembersFromAttributeArgument => false;
+
+    protected override bool SupportsConstantInterpolatedStrings(Document document)
+    {
+        return false;
+    }
+}
