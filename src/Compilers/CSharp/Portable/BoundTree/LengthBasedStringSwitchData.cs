@@ -9,7 +9,6 @@ using Microsoft.CodeAnalysis.CodeGen;
 using Microsoft.CodeAnalysis.Collections;
 using Microsoft.CodeAnalysis.CSharp.Symbols;
 using Microsoft.CodeAnalysis.PooledObjects;
-using Roslyn.Utilities;
 
 namespace Microsoft.CodeAnalysis.CSharp
 {
@@ -136,24 +135,45 @@ namespace Microsoft.CodeAnalysis.CSharp
             }
 
             LabelSymbol? nullCaseLabel = null;
-            foreach (var inputCase in inputCases)
-            {
-                if (inputCase.value.IsNull)
-                {
-                    Debug.Assert(nullCaseLabel is null, "At most one null case per string dispatch");
-                    nullCaseLabel = inputCase.label;
-                }
-            }
-
             var lengthCaseLabels = ArrayBuilder<(int value, LabelSymbol label)>.GetInstance();
             var charJumpTables = ArrayBuilder<CharJumpTable>.GetInstance();
             var stringJumpTables = ArrayBuilder<StringJumpTable>.GetInstance();
-            foreach (var group in inputCases.Where(c => !c.value.IsNull).GroupBy(c => c.value.StringValue!.Length))
+
+            // Bucket cases by string length
+            var buckets = PooledDictionary<int, ArrayBuilder<(string value, LabelSymbol label)>>.GetInstance();
+            var bucketOrder = ArrayBuilder<int>.GetInstance();
+            foreach (var (value, label) in inputCases)
             {
-                int stringLength = group.Key;
-                var labelForLength = CreateAndRegisterCharJumpTables(stringLength, group.SelectAsArray(c => (c.value.StringValue!, c.label)), charJumpTables, stringJumpTables);
+                if (value.IsNull)
+                {
+                    Debug.Assert(nullCaseLabel is null, "At most one null case per string dispatch");
+                    nullCaseLabel = label;
+
+                    continue;
+                }
+
+                var stringLength = value.StringValue!.Length;
+                if (!buckets.TryGetValue(stringLength, out var bucket))
+                {
+                    bucket = ArrayBuilder<(string value, LabelSymbol label)>.GetInstance();
+                    buckets[stringLength] = bucket;
+                    bucketOrder.Add(stringLength);
+                }
+
+                bucket.Add((value.StringValue!, label));
+            }
+
+            // Iterate buckets in order of first occurrence
+            foreach (var stringLength in bucketOrder)
+            {
+                var bucket = buckets[stringLength];
+                var labelForLength = CreateAndRegisterCharJumpTables(stringLength, bucket.ToImmutableAndFree(), charJumpTables, stringJumpTables);
                 lengthCaseLabels.Add((stringLength, labelForLength));
             }
+
+            // free pooled bucket structures
+            bucketOrder.Free();
+            buckets.Free();
 
             // Based on benchmarks, the previous hashcode-based approach arguably performs better
             // when buckets have 6 candidates or more.
@@ -193,16 +213,43 @@ namespace Microsoft.CodeAnalysis.CSharp
 
             var bestCharacterPosition = selectBestCharacterIndex(stringLength, casesWithGivenLength);
             var charCaseLabels = ArrayBuilder<(char value, LabelSymbol label)>.GetInstance();
-            foreach (var group in casesWithGivenLength.GroupBy(c => c.value[bestCharacterPosition]))
+
+            // Bucket by character at the selected position
+            var charBuckets = PooledDictionary<char, ArrayBuilder<(string value, LabelSymbol label)>>.GetInstance();
+            var charOrder = ArrayBuilder<char>.GetInstance();
+            foreach (var (value, label) in casesWithGivenLength)
             {
-                // When dealing with a stringLength==1 bucket, a character check gives us the final answer,
-                // no need to follow with a string check.
-                LabelSymbol label = (stringLength == 1)
-                    ? group.Single().label
-                    : CreateAndRegisterStringJumpTable(group.ToImmutableArray(), stringJumpTables);
-                char character = group.Key;
+                var ch = value[bestCharacterPosition];
+                if (!charBuckets.TryGetValue(ch, out var list))
+                {
+                    list = ArrayBuilder<(string value, LabelSymbol label)>.GetInstance();
+                    charBuckets[ch] = list;
+                    charOrder.Add(ch);
+                }
+
+                list.Add((value, label));
+            }
+
+            foreach (var character in charOrder)
+            {
+                var group = charBuckets[character];
+                LabelSymbol label;
+
+                if (stringLength == 1)
+                {
+                    label = group.Single().label;
+                    group.Free();
+                }
+                else
+                {
+                    label = CreateAndRegisterStringJumpTable(group.ToImmutableAndFree(), stringJumpTables);
+                }
+
                 charCaseLabels.Add((character, label));
             }
+
+            charOrder.Free();
+            charBuckets.Free();
 
             var charJumpTable = new CharJumpTable(label: new GeneratedLabelSymbol("char-dispatch"), bestCharacterPosition, charCaseLabels.ToImmutableAndFree());
             charJumpTables.Add(charJumpTable);
