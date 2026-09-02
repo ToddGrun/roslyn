@@ -5,15 +5,12 @@
 #nullable disable
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
-using Microsoft.CodeAnalysis.CSharp.CodeGen;
 using Microsoft.CodeAnalysis.CSharp.Symbols;
 using Microsoft.CodeAnalysis.PooledObjects;
-using Roslyn.Utilities;
 using static Microsoft.CodeAnalysis.CSharp.SyntheticBoundNodeFactory;
 
 namespace Microsoft.CodeAnalysis.CSharp
@@ -759,8 +756,7 @@ namespace Microsoft.CodeAnalysis.CSharp
 
                         if (!this._localRewriter._compilation.FeatureDisableLengthBasedSwitch &&
                             this._factory.Compilation.Options.OptimizationLevel == OptimizationLevel.Release &&
-                            LengthBasedStringSwitchData.Create(node.Cases) is var lengthBasedDispatch &&
-                            lengthBasedDispatch.ShouldGenerateLengthBasedSwitch(node.Cases.Length) &&
+                            LengthBasedStringSwitchData.TryCreate(node.Cases, out var lengthBasedDispatch) &&
                             hasLengthBasedDispatchRequiredMembers(stringPatternInput))
                         {
                             lengthBasedDispatchOpt = lengthBasedDispatch;

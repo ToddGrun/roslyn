@@ -102,7 +102,7 @@ public class StringSwitchBenchmarks
     [Benchmark]
     public void Call_LengthBasedStringSwitchData_Create()
     {
-        var result = LengthBasedStringSwitchData.Create(_inputArray);
+        _ = LengthBasedStringSwitchData.TryCreate(_inputArray, out var result);
 
         GC.KeepAlive(result);
     }

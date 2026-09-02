@@ -2,12 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using Microsoft.CodeAnalysis.CodeGen;
+using Microsoft.CodeAnalysis.Collections;
 using Microsoft.CodeAnalysis.CSharp.Symbols;
 using Microsoft.CodeAnalysis.PooledObjects;
 using Roslyn.Utilities;
@@ -126,17 +125,15 @@ namespace Microsoft.CodeAnalysis.CSharp
             }
         }
 
-        // Based on benchmarks, the previous hashcode-based approach arguably performs better
-        // when buckets have 6 candidates or more.
-        internal bool ShouldGenerateLengthBasedSwitch(int labelsCount)
-        {
-            return SwitchStringJumpTableEmitter.ShouldGenerateHashTableSwitch(labelsCount) &&
-                StringBasedJumpTables.All(t => t.StringCaseLabels.Length <= 5);
-        }
-
-        internal static LengthBasedStringSwitchData Create(ImmutableArray<(ConstantValue value, LabelSymbol label)> inputCases)
+        internal static bool TryCreate(ImmutableArray<(ConstantValue value, LabelSymbol label)> inputCases, out LengthBasedStringSwitchData? switchData)
         {
             Debug.Assert(inputCases.All(c => c.value.IsString && c.label is not null));
+
+            if (!SwitchStringJumpTableEmitter.ShouldGenerateHashTableSwitch(inputCases.Length))
+            {
+                switchData = null;
+                return false;
+            }
 
             LabelSymbol? nullCaseLabel = null;
             foreach (var inputCase in inputCases)
@@ -158,8 +155,20 @@ namespace Microsoft.CodeAnalysis.CSharp
                 lengthCaseLabels.Add((stringLength, labelForLength));
             }
 
+            // Based on benchmarks, the previous hashcode-based approach arguably performs better
+            // when buckets have 6 candidates or more.
+            if (stringJumpTables.Any(t => t.StringCaseLabels.Length > 5))
+            {
+                lengthCaseLabels.Free();
+                charJumpTables.Free();
+                stringJumpTables.Free();
+                switchData = null;
+                return false;
+            }
+
             var lengthJumpTable = new LengthJumpTable(nullCaseLabel, lengthCaseLabels.ToImmutableAndFree());
-            return new LengthBasedStringSwitchData(lengthJumpTable, charJumpTables.ToImmutableAndFree(), stringJumpTables.ToImmutableAndFree());
+            switchData = new LengthBasedStringSwitchData(lengthJumpTable, charJumpTables.ToImmutableAndFree(), stringJumpTables.ToImmutableAndFree());
+            return true;
         }
 
         private static LabelSymbol CreateAndRegisterCharJumpTables(int stringLength, ImmutableArray<(string value, LabelSymbol label)> casesWithGivenLength,
@@ -253,7 +262,7 @@ namespace Microsoft.CodeAnalysis.CSharp
         private static LabelSymbol CreateAndRegisterStringJumpTable(ImmutableArray<(string value, LabelSymbol label)> cases, ArrayBuilder<StringJumpTable> stringJumpTables)
         {
             Debug.Assert(cases.Length > 0 && cases.All(c => c.value is not null));
-            var stringJumpTable = new StringJumpTable(label: new GeneratedLabelSymbol("string-dispatch"), cases.SelectAsArray(c => (c.value, c.label)));
+            var stringJumpTable = new StringJumpTable(label: new GeneratedLabelSymbol("string-dispatch"), cases);
             stringJumpTables.Add(stringJumpTable);
             return stringJumpTable.Label;
         }
