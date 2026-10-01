@@ -1,0 +1,128 @@
+c:\src\Roslyn\src\Tools\Benchmarks\CompilerBenchmarks.csproj : warning NU1506: Duplicate 'PackageVersion' items found. Remove the duplicate items or use the Update functionality to ensure a consistent restore behavior. The duplicate 'PackageVersion' items are: System.Text.Json 10.0.10, System.Text.Json 10.0.10, System.Text.Json 10.0.10.
+c:\src\Roslyn\src\Compilers\Core\Portable\Microsoft.CodeAnalysis.csproj : warning NU1506: Duplicate 'PackageVersion' items found. Remove the duplicate items or use the Update functionality to ensure a consistent restore behavior. The duplicate 'PackageVersion' items are: System.Text.Json 10.0.10, System.Text.Json 10.0.10. [c:\src\Roslyn\src\Tools\Benchmarks\CompilerBenchmarks.csproj]
+c:\src\Roslyn\src\Compilers\Core\Portable\Microsoft.CodeAnalysis.csproj : warning NU1506: Duplicate 'PackageVersion' items found. Remove the duplicate items or use the Update functionality to ensure a consistent restore behavior. The duplicate 'PackageVersion' items are: System.Text.Json 10.0.10, System.Text.Json 10.0.10. [c:\src\Roslyn\src\Tools\Benchmarks\CompilerBenchmarks.csproj]
+c:\src\Roslyn\src\Compilers\Core\Portable\Microsoft.CodeAnalysis.csproj : warning NU1506: Duplicate 'PackageVersion' items found. Remove the duplicate items or use the Update functionality to ensure a consistent restore behavior. The duplicate 'PackageVersion' items are: System.Text.Json 10.0.10, System.Text.Json 10.0.10. [c:\src\Roslyn\src\Tools\Benchmarks\CompilerBenchmarks.csproj]
+c:\src\Roslyn\src\Workspaces\Core\Portable\Microsoft.CodeAnalysis.Workspaces.csproj : warning NU1506: Duplicate 'PackageVersion' items found. Remove the duplicate items or use the Update functionality to ensure a consistent restore behavior. The duplicate 'PackageVersion' items are: System.Text.Json 10.0.10, System.Text.Json 10.0.10. [c:\src\Roslyn\src\Tools\Benchmarks\CompilerBenchmarks.csproj]
+c:\src\Roslyn\src\Workspaces\Core\Portable\Microsoft.CodeAnalysis.Workspaces.csproj : warning NU1506: Duplicate 'PackageVersion' items found. Remove the duplicate items or use the Update functionality to ensure a consistent restore behavior. The duplicate 'PackageVersion' items are: System.Text.Json 10.0.10, System.Text.Json 10.0.10. [c:\src\Roslyn\src\Tools\Benchmarks\CompilerBenchmarks.csproj]
+c:\src\Roslyn\src\Workspaces\Core\Portable\Microsoft.CodeAnalysis.Workspaces.csproj : warning NU1506: Duplicate 'PackageVersion' items found. Remove the duplicate items or use the Update functionality to ensure a consistent restore behavior. The duplicate 'PackageVersion' items are: System.Text.Json 10.0.10, System.Text.Json 10.0.10. [c:\src\Roslyn\src\Tools\Benchmarks\CompilerBenchmarks.csproj]
+c:\src\Roslyn\src\Tools\ExternalAccess\RazorCompiler\Microsoft.CodeAnalysis.ExternalAccess.RazorCompiler.csproj : warning NU1506: Duplicate 'PackageVersion' items found. Remove the duplicate items or use the Update functionality to ensure a consistent restore behavior. The duplicate 'PackageVersion' items are: System.Text.Json 10.0.10, System.Text.Json 10.0.10. [c:\src\Roslyn\src\Tools\Benchmarks\CompilerBenchmarks.csproj]
+c:\src\Roslyn\src\Tools\ExternalAccess\RazorCompiler\Microsoft.CodeAnalysis.ExternalAccess.RazorCompiler.csproj : warning NU1506: Duplicate 'PackageVersion' items found. Remove the duplicate items or use the Update functionality to ensure a consistent restore behavior. The duplicate 'PackageVersion' items are: System.Text.Json 10.0.10, System.Text.Json 10.0.10. [c:\src\Roslyn\src\Tools\Benchmarks\CompilerBenchmarks.csproj]
+c:\src\Roslyn\src\Tools\ExternalAccess\RazorCompiler\Microsoft.CodeAnalysis.ExternalAccess.RazorCompiler.csproj : warning NU1506: Duplicate 'PackageVersion' items found. Remove the duplicate items or use the Update functionality to ensure a consistent restore behavior. The duplicate 'PackageVersion' items are: System.Text.Json 10.0.10, System.Text.Json 10.0.10. [c:\src\Roslyn\src\Tools\Benchmarks\CompilerBenchmarks.csproj]
+c:\src\Roslyn\src\Workspaces\MSBuild\Contracts\Microsoft.CodeAnalysis.Workspaces.MSBuild.Contracts.csproj : warning NU1506: Duplicate 'PackageVersion' items found. Remove the duplicate items or use the Update functionality to ensure a consistent restore behavior. The duplicate 'PackageVersion' items are: System.Text.Json 10.0.10, System.Text.Json 10.0.10. [c:\src\Roslyn\src\Tools\Benchmarks\CompilerBenchmarks.csproj]
+c:\src\Roslyn\src\Workspaces\MSBuild\Contracts\Microsoft.CodeAnalysis.Workspaces.MSBuild.Contracts.csproj : warning NU1506: Duplicate 'PackageVersion' items found. Remove the duplicate items or use the Update functionality to ensure a consistent restore behavior. The duplicate 'PackageVersion' items are: System.Text.Json 10.0.10, System.Text.Json 10.0.10. [c:\src\Roslyn\src\Tools\Benchmarks\CompilerBenchmarks.csproj]
+c:\src\Roslyn\src\Workspaces\MSBuild\Contracts\Microsoft.CodeAnalysis.Workspaces.MSBuild.Contracts.csproj : warning NU1506: Duplicate 'PackageVersion' items found. Remove the duplicate items or use the Update functionality to ensure a consistent restore behavior. The duplicate 'PackageVersion' items are: System.Text.Json 10.0.10, System.Text.Json 10.0.10. [c:\src\Roslyn\src\Tools\Benchmarks\CompilerBenchmarks.csproj]
+c:\src\Roslyn\src\Tools\CompilerGeneratorTools\Source\CSharpSyntaxGenerator\CSharpSyntaxGenerator.csproj : warning NU1506: Duplicate 'PackageVersion' items found. Remove the duplicate items or use the Update functionality to ensure a consistent restore behavior. The duplicate 'PackageVersion' items are: System.Text.Json 10.0.10, System.Text.Json 10.0.10. [c:\src\Roslyn\src\Tools\Benchmarks\CompilerBenchmarks.csproj]
+c:\src\Roslyn\src\Tools\CompilerGeneratorTools\Source\CSharpSyntaxGenerator\CSharpSyntaxGenerator.csproj : warning NU1506: Duplicate 'PackageVersion' items found. Remove the duplicate items or use the Update functionality to ensure a consistent restore behavior. The duplicate 'PackageVersion' items are: System.Text.Json 10.0.10, System.Text.Json 10.0.10. [c:\src\Roslyn\src\Tools\Benchmarks\CompilerBenchmarks.csproj]
+c:\src\Roslyn\src\Tools\CompilerGeneratorTools\Source\CSharpSyntaxGenerator\CSharpSyntaxGenerator.csproj : warning NU1506: Duplicate 'PackageVersion' items found. Remove the duplicate items or use the Update functionality to ensure a consistent restore behavior. The duplicate 'PackageVersion' items are: System.Text.Json 10.0.10, System.Text.Json 10.0.10. [c:\src\Roslyn\src\Tools\Benchmarks\CompilerBenchmarks.csproj]
+c:\src\Roslyn\src\Workspaces\MSBuild\Core\Microsoft.CodeAnalysis.Workspaces.MSBuild.csproj : warning NU1506: Duplicate 'PackageVersion' items found. Remove the duplicate items or use the Update functionality to ensure a consistent restore behavior. The duplicate 'PackageVersion' items are: System.Text.Json 10.0.10, System.Text.Json 10.0.10. [c:\src\Roslyn\src\Tools\Benchmarks\CompilerBenchmarks.csproj]
+c:\src\Roslyn\src\Workspaces\MSBuild\Core\Microsoft.CodeAnalysis.Workspaces.MSBuild.csproj : warning NU1506: Duplicate 'PackageVersion' items found. Remove the duplicate items or use the Update functionality to ensure a consistent restore behavior. The duplicate 'PackageVersion' items are: System.Text.Json 10.0.10, System.Text.Json 10.0.10. [c:\src\Roslyn\src\Tools\Benchmarks\CompilerBenchmarks.csproj]
+c:\src\Roslyn\src\Workspaces\MSBuild\Core\Microsoft.CodeAnalysis.Workspaces.MSBuild.csproj : warning NU1506: Duplicate 'PackageVersion' items found. Remove the duplicate items or use the Update functionality to ensure a consistent restore behavior. The duplicate 'PackageVersion' items are: System.Text.Json 10.0.10, System.Text.Json 10.0.10. [c:\src\Roslyn\src\Tools\Benchmarks\CompilerBenchmarks.csproj]
+c:\src\Roslyn\src\Workspaces\MSBuild\BuildHost\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.csproj : warning NU1506: Duplicate 'PackageVersion' items found. Remove the duplicate items or use the Update functionality to ensure a consistent restore behavior. The duplicate 'PackageVersion' items are: System.Text.Json 10.0.10, System.Text.Json 10.0.10. [c:\src\Roslyn\src\Tools\Benchmarks\CompilerBenchmarks.csproj]
+c:\src\Roslyn\src\Workspaces\MSBuild\BuildHost\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.csproj : warning NU1506: Duplicate 'PackageVersion' items found. Remove the duplicate items or use the Update functionality to ensure a consistent restore behavior. The duplicate 'PackageVersion' items are: System.Text.Json 10.0.10, System.Text.Json 10.0.10. [c:\src\Roslyn\src\Tools\Benchmarks\CompilerBenchmarks.csproj]
+c:\src\Roslyn\src\Workspaces\MSBuild\BuildHost\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.csproj : warning NU1506: Duplicate 'PackageVersion' items found. Remove the duplicate items or use the Update functionality to ensure a consistent restore behavior. The duplicate 'PackageVersion' items are: System.Text.Json 10.0.10, System.Text.Json 10.0.10. [c:\src\Roslyn\src\Tools\Benchmarks\CompilerBenchmarks.csproj]
+c:\src\Roslyn\src\Compilers\CSharp\Portable\Microsoft.CodeAnalysis.CSharp.csproj : warning NU1506: Duplicate 'PackageVersion' items found. Remove the duplicate items or use the Update functionality to ensure a consistent restore behavior. The duplicate 'PackageVersion' items are: System.Text.Json 10.0.10, System.Text.Json 10.0.10. [c:\src\Roslyn\src\Tools\Benchmarks\CompilerBenchmarks.csproj]
+c:\src\Roslyn\src\Compilers\CSharp\Portable\Microsoft.CodeAnalysis.CSharp.csproj : warning NU1506: Duplicate 'PackageVersion' items found. Remove the duplicate items or use the Update functionality to ensure a consistent restore behavior. The duplicate 'PackageVersion' items are: System.Text.Json 10.0.10, System.Text.Json 10.0.10. [c:\src\Roslyn\src\Tools\Benchmarks\CompilerBenchmarks.csproj]
+c:\src\Roslyn\src\Compilers\CSharp\Portable\Microsoft.CodeAnalysis.CSharp.csproj : warning NU1506: Duplicate 'PackageVersion' items found. Remove the duplicate items or use the Update functionality to ensure a consistent restore behavior. The duplicate 'PackageVersion' items are: System.Text.Json 10.0.10, System.Text.Json 10.0.10. [c:\src\Roslyn\src\Tools\Benchmarks\CompilerBenchmarks.csproj]
+// Validating benchmarks:
+// ***** BenchmarkRunner: Start   *****
+// ***** Found 1 benchmark(s) in total *****
+// ***** Building 1 exe(s) in Parallel: Start   *****
+// start dotnet restore "c:\src\Roslyn\artifacts\bin\CompilerBenchmarks\Release\net10.0\CompilerBenchmarks-DefaultJob-1\DllGatherer.csproj" --nodeReuse:false /p:UseSharedCompilation=false /p:Deterministic=true /p:Optimize=true /p:ArtifactsPath="c:\src\Roslyn\artifacts\bin\CompilerBenchmarks\Release\net10.0\CompilerBenchmarks-DefaultJob-1/.artifacts/" /p:OutDir="c:\src\Roslyn\artifacts\bin\CompilerBenchmarks\Release\net10.0\CompilerBenchmarks-DefaultJob-1\bin\Release\net10.0/" /p:OutputPath="c:\src\Roslyn\artifacts\bin\CompilerBenchmarks\Release\net10.0\CompilerBenchmarks-DefaultJob-1\bin\Release\net10.0/" /p:PublishDir="c:\src\Roslyn\artifacts\bin\CompilerBenchmarks\Release\net10.0\CompilerBenchmarks-DefaultJob-1\publish/" in c:\src\Roslyn\artifacts\bin\CompilerBenchmarks\Release\net10.0\CompilerBenchmarks-DefaultJob-1
+// command took 0.99 sec and exited with 0
+// start dotnet build "c:\src\Roslyn\artifacts\bin\CompilerBenchmarks\Release\net10.0\CompilerBenchmarks-DefaultJob-1\DllGatherer.csproj" -f net10.0 -c Release --no-restore --nodeReuse:false /p:UseSharedCompilation=false /p:Deterministic=true /p:Optimize=true /p:ArtifactsPath="c:\src\Roslyn\artifacts\bin\CompilerBenchmarks\Release\net10.0\CompilerBenchmarks-DefaultJob-1/.artifacts/" /p:OutDir="c:\src\Roslyn\artifacts\bin\CompilerBenchmarks\Release\net10.0\CompilerBenchmarks-DefaultJob-1\bin\Release\net10.0/" /p:OutputPath="c:\src\Roslyn\artifacts\bin\CompilerBenchmarks\Release\net10.0\CompilerBenchmarks-DefaultJob-1\bin\Release\net10.0/" /p:PublishDir="c:\src\Roslyn\artifacts\bin\CompilerBenchmarks\Release\net10.0\CompilerBenchmarks-DefaultJob-1\publish/" --output "c:\src\Roslyn\artifacts\bin\CompilerBenchmarks\Release\net10.0\CompilerBenchmarks-DefaultJob-1\bin\Release\net10.0/" in c:\src\Roslyn\artifacts\bin\CompilerBenchmarks\Release\net10.0\CompilerBenchmarks-DefaultJob-1
+// command took 13.12 sec and exited with 1
+Failed to gather assembly references, reason:
+Standard output: 
+  
+ Standard error: 
+   Microsoft.CodeAnalysis -> c:\src\Roslyn\artifacts\bin\CompilerBenchmarks\Release\net10.0\CompilerBenchmarks-DefaultJob-1\bin\Release\net10.0\Microsoft.CodeAnalysis.dll
+  CSharpSyntaxGenerator -> c:\src\Roslyn\artifacts\bin\CompilerBenchmarks\Release\net10.0\CompilerBenchmarks-DefaultJob-1\bin\Release\net10.0\CSharpSyntaxGenerator.dll
+  Microsoft.CodeAnalysis.Workspaces -> c:\src\Roslyn\artifacts\bin\CompilerBenchmarks\Release\net10.0\CompilerBenchmarks-DefaultJob-1\bin\Release\net10.0\Microsoft.CodeAnalysis.Workspaces.dll
+  Microsoft.CodeAnalysis.CSharp -> c:\src\Roslyn\artifacts\bin\CompilerBenchmarks\Release\net10.0\CompilerBenchmarks-DefaultJob-1\bin\Release\net10.0\Microsoft.CodeAnalysis.CSharp.dll
+  Microsoft.CodeAnalysis.ExternalAccess.RazorCompiler -> c:\src\Roslyn\artifacts\bin\CompilerBenchmarks\Release\net10.0\CompilerBenchmarks-DefaultJob-1\bin\Release\net10.0\Microsoft.CodeAnalysis.ExternalAccess.RazorCompiler.dll
+  Microsoft.CodeAnalysis.Workspaces.MSBuild.Contracts -> c:\src\Roslyn\artifacts\bin\CompilerBenchmarks\Release\net10.0\CompilerBenchmarks-DefaultJob-1\bin\Release\net10.0\Microsoft.CodeAnalysis.Workspaces.MSBuild.Contracts.dll
+  Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost -> c:\src\Roslyn\artifacts\bin\CompilerBenchmarks\Release\net10.0\CompilerBenchmarks-DefaultJob-1\bin\Release\net10.0\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.dll
+  Microsoft.CodeAnalysis.Workspaces.MSBuild.Contracts -> c:\src\Roslyn\artifacts\bin\CompilerBenchmarks\Release\net10.0\CompilerBenchmarks-DefaultJob-1\bin\Release\net10.0\Microsoft.CodeAnalysis.Workspaces.MSBuild.Contracts.dll
+  Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost -> c:\src\Roslyn\artifacts\bin\CompilerBenchmarks\Release\net10.0\CompilerBenchmarks-DefaultJob-1\bin\Release\net10.0\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.exe
+CSC : error CS1705: Assembly 'Microsoft.CodeAnalysis.Workspaces.MSBuild.Contracts' with identity 'Microsoft.CodeAnalysis.Workspaces.MSBuild.Contracts, Version=42.42.42.42, Culture=neutral, PublicKeyToken=31bf3856ad364e35' uses 'System.Text.Json, Version=10.0.0.10, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51' which has a higher version than referenced assembly 'System.Text.Json' with identity 'System.Text.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51' [c:\src\Roslyn\src\Workspaces\MSBuild\Core\Microsoft.CodeAnalysis.Workspaces.MSBuild.csproj::TargetFramework=net10.0]
+Build FAILED.
+CSC : error CS1705: Assembly 'Microsoft.CodeAnalysis.Workspaces.MSBuild.Contracts' with identity 'Microsoft.CodeAnalysis.Workspaces.MSBuild.Contracts, Version=42.42.42.42, Culture=neutral, PublicKeyToken=31bf3856ad364e35' uses 'System.Text.Json, Version=10.0.0.10, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51' which has a higher version than referenced assembly 'System.Text.Json' with identity 'System.Text.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51' [c:\src\Roslyn\src\Workspaces\MSBuild\Core\Microsoft.CodeAnalysis.Workspaces.MSBuild.csproj::TargetFramework=net10.0]
+    0 Warning(s)
+    1 Error(s)
+Time Elapsed 00:00:12.87
+// start dotnet restore "c:\src\Roslyn\artifacts\bin\CompilerBenchmarks\Release\net10.0\CompilerBenchmarks-DefaultJob-1\BenchmarkDotNet.Autogenerated.csproj" --nodeReuse:false /p:UseSharedCompilation=false /p:Deterministic=true /p:Optimize=true /p:ArtifactsPath="c:\src\Roslyn\artifacts\bin\CompilerBenchmarks\Release\net10.0\CompilerBenchmarks-DefaultJob-1/.artifacts/" /p:OutDir="c:\src\Roslyn\artifacts\bin\CompilerBenchmarks\Release\net10.0\CompilerBenchmarks-DefaultJob-1\bin\Release\net10.0/" /p:OutputPath="c:\src\Roslyn\artifacts\bin\CompilerBenchmarks\Release\net10.0\CompilerBenchmarks-DefaultJob-1\bin\Release\net10.0/" /p:PublishDir="c:\src\Roslyn\artifacts\bin\CompilerBenchmarks\Release\net10.0\CompilerBenchmarks-DefaultJob-1\publish/" in c:\src\Roslyn\artifacts\bin\CompilerBenchmarks\Release\net10.0\CompilerBenchmarks-DefaultJob-1
+// command took 0.95 sec and exited with 0
+// start dotnet build "c:\src\Roslyn\artifacts\bin\CompilerBenchmarks\Release\net10.0\CompilerBenchmarks-DefaultJob-1\BenchmarkDotNet.Autogenerated.csproj" -f net10.0 -c Release --no-restore --nodeReuse:false /p:UseSharedCompilation=false /p:Deterministic=true /p:Optimize=true /p:ArtifactsPath="c:\src\Roslyn\artifacts\bin\CompilerBenchmarks\Release\net10.0\CompilerBenchmarks-DefaultJob-1/.artifacts/" /p:OutDir="c:\src\Roslyn\artifacts\bin\CompilerBenchmarks\Release\net10.0\CompilerBenchmarks-DefaultJob-1\bin\Release\net10.0/" /p:OutputPath="c:\src\Roslyn\artifacts\bin\CompilerBenchmarks\Release\net10.0\CompilerBenchmarks-DefaultJob-1\bin\Release\net10.0/" /p:PublishDir="c:\src\Roslyn\artifacts\bin\CompilerBenchmarks\Release\net10.0\CompilerBenchmarks-DefaultJob-1\publish/" --output "c:\src\Roslyn\artifacts\bin\CompilerBenchmarks\Release\net10.0\CompilerBenchmarks-DefaultJob-1\bin\Release\net10.0/" in c:\src\Roslyn\artifacts\bin\CompilerBenchmarks\Release\net10.0\CompilerBenchmarks-DefaultJob-1
+// command took 12.72 sec and exited with 1
+// ***** Done, took 00:00:28 (28.5 sec)   *****
+// Found 1 benchmarks:
+//   StringSwitchBenchmarks_RoslynSolutionEmit.EmitAllSolutionProjects: DefaultJob
+
+Setup power plan (GUID: 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c FriendlyName: High performance)
+// Build Error: Standard output: 
+  
+ Standard error: 
+   Microsoft.CodeAnalysis -> c:\src\Roslyn\artifacts\bin\CompilerBenchmarks\Release\net10.0\CompilerBenchmarks-DefaultJob-1\bin\Release\net10.0\Microsoft.CodeAnalysis.dll
+  CSharpSyntaxGenerator -> c:\src\Roslyn\artifacts\bin\CompilerBenchmarks\Release\net10.0\CompilerBenchmarks-DefaultJob-1\bin\Release\net10.0\CSharpSyntaxGenerator.dll
+  Microsoft.CodeAnalysis.CSharp -> c:\src\Roslyn\artifacts\bin\CompilerBenchmarks\Release\net10.0\CompilerBenchmarks-DefaultJob-1\bin\Release\net10.0\Microsoft.CodeAnalysis.CSharp.dll
+  Microsoft.CodeAnalysis.Workspaces -> c:\src\Roslyn\artifacts\bin\CompilerBenchmarks\Release\net10.0\CompilerBenchmarks-DefaultJob-1\bin\Release\net10.0\Microsoft.CodeAnalysis.Workspaces.dll
+  Microsoft.CodeAnalysis.ExternalAccess.RazorCompiler -> c:\src\Roslyn\artifacts\bin\CompilerBenchmarks\Release\net10.0\CompilerBenchmarks-DefaultJob-1\bin\Release\net10.0\Microsoft.CodeAnalysis.ExternalAccess.RazorCompiler.dll
+  Microsoft.CodeAnalysis.Workspaces.MSBuild.Contracts -> c:\src\Roslyn\artifacts\bin\CompilerBenchmarks\Release\net10.0\CompilerBenchmarks-DefaultJob-1\bin\Release\net10.0\Microsoft.CodeAnalysis.Workspaces.MSBuild.Contracts.dll
+  Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost -> c:\src\Roslyn\artifacts\bin\CompilerBenchmarks\Release\net10.0\CompilerBenchmarks-DefaultJob-1\bin\Release\net10.0\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.dll
+  Microsoft.CodeAnalysis.Workspaces.MSBuild.Contracts -> c:\src\Roslyn\artifacts\bin\CompilerBenchmarks\Release\net10.0\CompilerBenchmarks-DefaultJob-1\bin\Release\net10.0\Microsoft.CodeAnalysis.Workspaces.MSBuild.Contracts.dll
+  Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost -> c:\src\Roslyn\artifacts\bin\CompilerBenchmarks\Release\net10.0\CompilerBenchmarks-DefaultJob-1\bin\Release\net10.0\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.exe
+CSC : error CS1705: Assembly 'Microsoft.CodeAnalysis.Workspaces.MSBuild.Contracts' with identity 'Microsoft.CodeAnalysis.Workspaces.MSBuild.Contracts, Version=42.42.42.42, Culture=neutral, PublicKeyToken=31bf3856ad364e35' uses 'System.Text.Json, Version=10.0.0.10, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51' which has a higher version than referenced assembly 'System.Text.Json' with identity 'System.Text.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51' [c:\src\Roslyn\src\Workspaces\MSBuild\Core\Microsoft.CodeAnalysis.Workspaces.MSBuild.csproj::TargetFramework=net10.0]
+Build FAILED.
+CSC : error CS1705: Assembly 'Microsoft.CodeAnalysis.Workspaces.MSBuild.Contracts' with identity 'Microsoft.CodeAnalysis.Workspaces.MSBuild.Contracts, Version=42.42.42.42, Culture=neutral, PublicKeyToken=31bf3856ad364e35' uses 'System.Text.Json, Version=10.0.0.10, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51' which has a higher version than referenced assembly 'System.Text.Json' with identity 'System.Text.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51' [c:\src\Roslyn\src\Workspaces\MSBuild\Core\Microsoft.CodeAnalysis.Workspaces.MSBuild.csproj::TargetFramework=net10.0]
+    0 Warning(s)
+    1 Error(s)
+Time Elapsed 00:00:12.47
+
+// BenchmarkDotNet has failed to build the auto-generated boilerplate code.
+// It can be found in c:\src\Roslyn\artifacts\bin\CompilerBenchmarks\Release\net10.0\CompilerBenchmarks-DefaultJob-1
+// Please follow the troubleshooting guide: https://benchmarkdotnet.org/articles/guides/troubleshooting.html
+
+// ** Remained 0 (0.0%) benchmark(s) to run. Estimated finish 2026-09-02 8:16 (0h 0m from now) **
+Successfully reverted power plan (GUID: 381b4222-f694-41f0-9685-ff5bb260df2e FriendlyName: Balanced)
+// ***** BenchmarkRunner: Finish  *****
+
+// * Export *
+  BenchmarkDotNet.Artifacts\results\Benchmarks.StringSwitchBenchmarks_RoslynSolutionEmit-report.csv
+  BenchmarkDotNet.Artifacts\results\Benchmarks.StringSwitchBenchmarks_RoslynSolutionEmit-report-github.md
+  BenchmarkDotNet.Artifacts\results\Benchmarks.StringSwitchBenchmarks_RoslynSolutionEmit-report.html
+
+// * Detailed results *
+StringSwitchBenchmarks_RoslynSolutionEmit.EmitAllSolutionProjects: DefaultJob
+Runtime = ; GC = 
+There are not any results runs
+
+// * Summary *
+
+BenchmarkDotNet v0.16.0-preview.1, Windows 11 (10.0.26200.9168/25H2/2025Update/HudsonValley2)
+AMD Ryzen 7 9800X3D 4.70GHz, 1 CPU, 16 logical and 8 physical cores
+Memory: 31.11 GB Total, 8.92 GB Available
+.NET SDK 11.0.100-preview.7.26381.103
+  [Host] : .NET 10.0.11 (10.0.11, 10.0.1126.37416), X64 RyuJIT x86-64-v4
+
+
+| Method                  | Mean | Error |
+|------------------------ |-----:|------:|
+| EmitAllSolutionProjects |   NA |    NA |
+
+Benchmarks with issues:
+  StringSwitchBenchmarks_RoslynSolutionEmit.EmitAllSolutionProjects: DefaultJob
+
+// * Legends *
+  Mean  : Arithmetic mean of all measurements
+  Error : Half of 99.9% confidence interval
+  1 ns  : 1 Nanosecond (0.000000001 sec)
+
+// * Diagnostic Output - MemoryDiagnoser *
+
+
+// ***** BenchmarkRunner: End *****
+Run time: 00:00:00 (0.42 sec), executed benchmarks: 0
+
+Global total time: 00:00:30 (30.18 sec), executed benchmarks: 0
+// * Artifacts cleanup *
+Artifacts cleanup is finished

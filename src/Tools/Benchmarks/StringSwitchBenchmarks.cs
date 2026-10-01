@@ -3,11 +3,15 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using BenchmarkDotNet.Attributes;
+using Microsoft.Build.Locator;
+using Microsoft.CodeAnalysis.MSBuild;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Symbols;
@@ -15,6 +19,128 @@ using Microsoft.CodeAnalysis.PooledObjects;
 using Microsoft.CodeAnalysis.Text;
 
 namespace Benchmarks;
+
+[MemoryDiagnoser]
+public class StringSwitchBenchmarks_RoslynSolutionEmit
+{
+    private List<Compilation>? _solutionCompilations = null!;
+
+    [GlobalSetup]
+    public void Setup()
+    {
+        // prepare solution compilations for EmitAllSolutionProjects benchmark
+        PrepareSolutionCompilations();
+    }
+
+    [Benchmark]
+    public void EmitAllSolutionProjects()
+    {
+        if (_solutionCompilations == null)
+        {
+            throw new InvalidOperationException("Solution compilations were not prepared in Setup.");
+        }
+
+        foreach (var comp in _solutionCompilations)
+        {
+            // emit into a null sink to avoid retaining large byte arrays
+            using var ns = new NullStream();
+            var result = comp.Emit(ns);
+            if (!result.Success)
+            {
+                throw new Exception("Emit failed for project: " + comp.AssemblyName + " - " + string.Join(";", result.Diagnostics));
+            }
+        }
+    }
+
+    // Prepare solution compilations in setup so the Emit-only benchmark can just iterate and emit.
+    private void PrepareSolutionCompilations()
+    {
+        // find solution
+        var solutionPath = FindSolutionPath("Roslyn.slnx");
+        if (solutionPath == null)
+        {
+            // no solution found from current directory; skip preparing solution compilations
+            _solutionCompilations = null;
+            return;
+        }
+
+        var solutionDir = Path.GetDirectoryName(solutionPath)!;
+
+        // register MSBuild if available
+        if (!Microsoft.Build.Locator.MSBuildLocator.IsRegistered)
+        {
+            var instances = Microsoft.Build.Locator.MSBuildLocator.QueryVisualStudioInstances();
+            var instance = instances.OrderByDescending(i => i.Version).FirstOrDefault();
+            if (instance != null)
+            {
+                Microsoft.Build.Locator.MSBuildLocator.RegisterInstance(instance);
+            }
+        }
+
+        var props = new Dictionary<string, string>
+        {
+            ["Configuration"] = "Release"
+        };
+
+        using var workspace = Microsoft.CodeAnalysis.MSBuild.MSBuildWorkspace.Create(props);
+        var solution = workspace.OpenSolutionAsync(solutionPath).GetAwaiter().GetResult();
+        var comps = new List<Compilation>();
+        var compilersDir = Path.Combine(solutionDir, "src", "Compilers");
+        foreach (var project in solution.Projects)
+        {
+            // only compile projects under src/Compilers to limit scope
+            var filePath = project.FilePath ?? string.Empty;
+            if (!filePath.StartsWith(compilersDir, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            if (project.Language != LanguageNames.CSharp)
+            {
+                continue;
+            }
+
+            var compilation = project.GetCompilationAsync().GetAwaiter().GetResult();
+            if (compilation != null)
+            {
+                comps.Add(compilation);
+            }
+        }
+
+        _solutionCompilations = comps;
+    }
+
+    private static string? FindSolutionPath(string solutionFileName)
+    {
+        var dir = new DirectoryInfo(Environment.CurrentDirectory);
+        while (dir != null)
+        {
+            var candidate = Path.Combine(dir.FullName, solutionFileName);
+            if (File.Exists(candidate))
+            {
+                return candidate;
+            }
+            dir = dir.Parent;
+        }
+
+        return null;
+    }
+
+    private sealed class NullStream : Stream
+    {
+        public override bool CanRead => false;
+        public override bool CanSeek => false;
+        public override bool CanWrite => true;
+        public override long Length => 0;
+        public override long Position { get => 0; set { } }
+        public override void Flush() { }
+        public override int Read(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+        public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+        public override void SetLength(long value) => throw new NotSupportedException();
+        public override void Write(byte[] buffer, int offset, int count) { /* discard */ }
+    }
+}
+
 
 [MemoryDiagnoser]
 public class StringSwitchBenchmarks

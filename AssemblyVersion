@@ -1,0 +1,15 @@
+At line:1 char:144
++ ... $_.FullName $an=[System.Reflection.AssemblyName]::GetAssemblyName($p) ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Unexpected token '$an=[System.Reflection.AssemblyName]::GetAssemblyName' in expression or statement.
+At line:1 char:202
++ ...  $an=[System.Reflection.AssemblyName]::GetAssemblyName($p) $p -=$($an ...
++                                                                ~~
+Unexpected token '$p' in expression or statement.
+At line:1 char:222
++ ... $($an.Version) FileVersion=$((Get-Item $p).VersionInfo.FileVersion) }
++                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Unexpected token 'FileVersion=$((Get-Item $p).VersionInfo.FileVersion)' in expression or statement.
+    + CategoryInfo          : ParserError: (:) [], ParentContainsErrorRecordException
+    + FullyQualifiedErrorId : UnexpectedToken
+ 
